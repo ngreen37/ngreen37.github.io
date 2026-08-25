@@ -50,7 +50,7 @@ function world(profile) {
     },
     PJCCParkBots: {
       maxwell: { name: 'Maxwell' }, crockett: { name: 'Crockett' }, argus: { name: 'Argus' },
-      auston: { name: 'Auston' }, dad: { name: 'The Dad' }, robert: { name: 'Robert' },
+      auston: { name: 'Auston' }, dad: { name: 'Kedar' }, robert: { name: 'Robert' },
       princess: { name: 'Princess' }, ceo: { name: 'The CEO' }
     }
   };

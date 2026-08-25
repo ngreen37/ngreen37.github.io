@@ -165,32 +165,64 @@ ok(iFrag > -1 && iEggs > -1 && iFrag < iEggs,
    'default.html loads the ledger BEFORE pjcc-eggs.js — both defer, so markup order is run order',
    'ledger tag at ' + iFrag + ', eggs tag at ' + iEggs);
 
-/* ── 6 · ⭐ THE ONE THAT MATTERS: every minter's page actually loads the ledger ─── */
-/* Each mint site, and the file that decides whether the ledger is on the page with it.
-   A minter that is its OWN host (a standalone game page, a standalone layout) lists
-   itself. The assertion below is that this list COVERS every minter found by the grep —
-   so a mint added anywhere new fails here until somebody answers the question. */
-const HOSTS = {
-  'assets/js/pjcc-eggs.js':      { host: '_layouts/default.html',       what: 'the eclipse + rare-sky doors' },
-  '_layouts/easter-eggs.html':   { host: '_layouts/easter-eggs.html',   what: 'a page that IS a fragment (/classified/)' },
-  'assets/games/pjcc_fork.html': { host: 'assets/games/pjcc_fork.html', what: 'half the road to Chess City' }
-};
-const unregistered = minters.filter(f => !HOSTS[f]);
-ok(unregistered.length === 0,
-   'every file that calls mint() is registered with the page that carries it',
-   'unregistered: ' + unregistered.join(' · '));
+/* ── 6 · ⭐⭐ THE ONE THAT MATTERS: EVERY page that can mint also carries the ledger ──
+   ⛑⛑ THE FIRST VERSION OF THIS SECTION WAS A HAND-TYPED TABLE OF ONE HOST PER MINTING
+   FILE, IT WENT GREEN, AND IT WAS WRONG WITHIN THE HOUR. `pjcc-eggs.js` is loaded from
+   THREE files — _layouts/default.html, _layouts/game.html and _includes/site-header.html —
+   and the table named only the first. _layouts/game.html includes town-sky.html, so it
+   carries BOTH rare-sky doors, and it did not load the ledger: **a meteor shower caught on
+   a game page, which is most of the site, minted nothing.**
+   ⭐⭐ DERIVING THE MINTERS AND THEN RETYPING THEIR HOSTS IS HALF A DERIVED LIST, AND THE
+   HALF THAT IS TYPED IS THE HALF THAT ROTS. [[dead-game-links-trap]] — the rule is not
+   "grep for the thing", it is "never write down a list the repo can answer".
 
-for (const f of minters) {
-  const h = HOSTS[f];
-  if (!h) continue;
-  const hostSrc = read(h.host);
-  /* ⚠ A <script> TAG, NOT THE FILENAME. Three files on this site mention
-     "pjcc-fragments.js" inside a comment explaining why it has to be there, and a bare
-     substring test is satisfied by the explanation instead of by the thing. Third time this
-     exact shape has bitten in one sitting — see §5 and §9. */
-  ok(/<script[^>]*pjcc-fragments\.js/.test(hostSrc),
-     h.what + ': ' + h.host + ' loads the ledger',
-     'mint() is guarded, so a miss here is SILENT — the egg is unwinnable and looks unfound');
+   So the model is the real one, and it is small: this site has exactly THREE root layouts
+   (the files carrying their own <!DOCTYPE>); everything else sets `layout: default`. For
+   each root, resolve its includes, and ask of the resolved page: if it can mint, does it
+   carry the ledger? A page-shaped minter (a standalone game file) answers for itself. */
+
+/* every file with its own <!DOCTYPE> under _layouts — the roots of the whole site */
+const ROOTS = fs.readdirSync(path.join(ROOT, '_layouts'))
+  .filter(f => /\.html$/.test(f))
+  .map(f => '_layouts/' + f)
+  .filter(f => /<!DOCTYPE/i.test(read(f)));
+ok(ROOTS.length === 3, 'three root layouts carry their own <!DOCTYPE> — default · game · easter-eggs',
+   ROOTS.join(' · '));
+
+/* resolve {% include x.html %} so a script pulled in by a partial counts as loaded */
+function resolved(file, depth) {
+  let src = read(file);
+  if ((depth || 0) > 3) return src;
+  const inc = /\{%-?\s*include\s+([A-Za-z0-9_\-./]+\.html)/g;
+  let m;
+  while ((m = inc.exec(src)) !== null) {
+    const part = '_includes/' + m[1];
+    if (has(part)) src += '\n' + resolved(part, (depth || 0) + 1);
+  }
+  return src;
+}
+/* ⚠ A <script> TAG, NOT THE FILENAME. Several files on this site mention
+   "pjcc-fragments.js" inside the comment explaining why it must be there, and a bare
+   substring test is satisfied by the explanation instead of by the thing. */
+const loadsTag = (src, file) => new RegExp('<script[^>]*' + file.replace('.', '\\.')).test(src);
+
+/* the minters that are SCRIPTS — they mint on whatever page loads them */
+const jsMinters = minters.filter(f => f.startsWith('assets/js/'));
+ok(jsMinters.length >= 1, 'at least one minter is a shared script', jsMinters.join(' · '));
+
+for (const rootFile of ROOTS) {
+  const src = resolved(rootFile, 0);
+  const carried = jsMinters.filter(js => loadsTag(src, js.split('/').pop()));
+  if (!carried.length) continue;                 // this root cannot mint; nothing to carry
+  ok(loadsTag(src, 'pjcc-fragments.js'),
+     rootFile + ' loads the ledger — it carries ' + carried.map(f => f.split('/').pop()).join(' + '),
+     'mint() is guarded, so a miss here is SILENT: the egg is unwinnable and looks unfound');
+}
+
+/* the minters that are PAGES — a standalone layout or a game file answers for itself */
+for (const f of minters.filter(x => !x.startsWith('assets/js/'))) {
+  ok(loadsTag(resolved(f, 0), 'pjcc-fragments.js'),
+     f + ' is its own page and loads the ledger');
 }
 
 /* ── 7 · the service worker carries it too ─────────────────────────────────────── */

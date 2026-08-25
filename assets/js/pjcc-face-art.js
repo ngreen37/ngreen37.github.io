@@ -297,8 +297,86 @@
       '</svg>';
   }
 
+  /* ══ THE CHROME: HEADWEAR + EMBLEM ══════════════════════════════════
+     ⛑⛑ THESE TABLES LIVED IN pjcc-creator.js UNTIL 2026-08-25, AND THAT IS THE WHOLE BUG.
+     Nate: *"I don't see my headwear or eye color change."*
+
+     The face is drawn here; the hat and the emblem were composited by the FORGE, in
+     `renderAvatar()`, out of tables only the Forge could see. So `PJCC.avatarMarkup()` —
+     which every other surface uses: the nav, the leaderboards, the gift card, the follow
+     rows — called `svg()` and got a face **with no hat on it**, correctly, forever. The
+     Forge's own preview looked right, which is exactly why it read as a sync problem.
+
+     ⭐⭐ THE PICKER OWNED THE PICTURE. A table of what a crown LOOKS LIKE is drawing data and
+     belongs with the drawing code — the module loaded on every page that shows a face. The
+     Forge still owns the picker (which hats are offered, in what order, under what label);
+     it reads the glyph from here. One copy, living with the thing that renders it.
+     ⚠ `n:` IS THE PICKER'S LABEL and stays on the entry: splitting the name from the glyph
+     would put half the table back in the file that had all of it. */
+  var HATS = {
+    none:    { em:'',   n:'None' },
+    crown:   { em:'👑', n:'Crown' },
+    tophat:  { em:'🎩', n:'Top hat' },
+    cap:     { em:'🧢', n:'Cap' },
+    grad:    { em:'🎓', n:'Scholar' },
+    helmet:  { em:'⛑️', n:'Helmet' },
+    beret:   { em:'🪖', n:'Beret' },
+    sunhat:  { em:'👒', n:'Sun hat' },
+    bow:     { em:'🎀', n:'Bow' },
+    flower:  { em:'🌸', n:'Blossom' },
+    star:    { em:'🌟', n:'Halo' }
+    /* ⚑ PAW REMOVED 2026-08-11 (Nate: "remove paws from headwear"). 🐾 is the McPuppy
+       STUDIO's mark — the /projects/ nav icon and the site favicon — so wearing it made a
+       studio badge into a costume. Every other entry is a thing a person puts on a head.
+       ⚠ NO MIGRATION NEEDED, BY DESIGN, IN TWO PLACES: the Forge's loader heals an unknown
+       hat key to `none`, and `chrome()` below is independently guarded, so an unhealed value
+       paints nothing rather than throwing. Delete an entry and both halves are handled. */
+  };
+  var EMBLEMS = {
+    none:    { em:'',   n:'None' },
+    king:    { em:'♔', n:'King' },
+    queen:   { em:'♕', n:'Queen' },
+    rook:    { em:'♖', n:'Rook' },
+    bishop:  { em:'♗', n:'Bishop' },
+    knight:  { em:'♘', n:'Knight' },
+    pawn:    { em:'♙', n:'Pawn' },
+    star:    { em:'⭐', n:'Star' },
+    bolt:    { em:'⚡', n:'Bolt' },
+    flame:   { em:'🔥', n:'Flame' },
+    shield:  { em:'🛡️', n:'Shield' },
+    heart:   { em:'❤️', n:'Heart' }
+  };
+
+  /* The two spans that sit ON the portrait. Kept out of `svg()` because they are not part
+     of the drawing — they are absolutely positioned siblings, and the crown deliberately
+     overhangs the frame. */
+  function chrome(look) {
+    look = look || {};
+    var h = HATS[look.hat] && look.hat !== 'none' ? HATS[look.hat].em : '';
+    var e = EMBLEMS[look.emblem] && look.emblem !== 'none' ? EMBLEMS[look.emblem].em : '';
+    return (h ? '<span class="idn-hat" aria-hidden="true">' + h + '</span>' : '') +
+           (e ? '<span class="idn-emblem" aria-hidden="true">' + e + '</span>' : '');
+  }
+
+  /* ⭐ THE WHOLE CHARACTER, IN ONE SELF-CONTAINED BLOCK — 2026-08-25.
+     `svg()` is the face; this is the face wearing what you chose. It brings its OWN
+     positioning context (`.av-mini`), so it drops into a 44px nav circle, a leaderboard row
+     or a gift card **without the container knowing anything about hats**. That mattered:
+     every surface that calls this was written before headwear existed and none of them has
+     a rule for an absolutely-positioned crown. A composite that depends on its container is
+     one that breaks on the next surface.
+     ⚠ NO WRAPPER WHEN THERE IS NOTHING TO WRAP — a bare head returns the same string it
+     always did, so nothing that renders a hatless character changes by a pixel. */
+  function avatar(look) {
+    var c = chrome(look);
+    if (!c) return svg(look);
+    return '<span class="av-mini">' + svg(look) + c + '</span>';
+  }
+
   window.PJCCFaceArt = {
     svg: svg,
+    avatar: avatar, chrome: chrome,
+    HATS: HATS, EMBLEMS: EMBLEMS,
     SKIN: SKIN, SKIN_ORDER: SKIN_ORDER,
     HAIR: HAIR, HAIR_ORDER: HAIR_ORDER,
     HAIRCOL: HAIRCOL, HAIRCOL_ORDER: HAIRCOL_ORDER,

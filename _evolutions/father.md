@@ -1,6 +1,6 @@
 ---
 layout: evolution
-title: The Dad
+title: Kedar
 category: character
 entity_url: /characters/father/
 role: Family

@@ -195,7 +195,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('⚠ …and a short game SAYS it was short',
      /first impression/i.test(res.note), '"' + res.note.slice(0, 72) + '…"');
   ok('…pointing at a seat that actually exists on the bench',
-     /(Maxwell|Crockett|Argus|Auston|The Dad|Robert)/.test(res.seat), res.seat);
+     /(Maxwell|Crockett|Argus|Auston|Kedar|Robert)/.test(res.seat), res.seat);
 
   /* ── ⚠⚠ IT MUST NOT TOUCH THE PROFILE ───────────────────────────────────────── */
   const SRCTEXT = fs.readFileSync(SRC, 'utf8');

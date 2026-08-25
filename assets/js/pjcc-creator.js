@@ -79,45 +79,21 @@
   function art() { return window.PJCCFaceArt || null; }
   function TONE_ORDER() { var A = art(); return A ? A.SKIN_ORDER : ['']; }
 
-  var HATS = {
-    none:    { em:'',   n:'None' },
-    crown:   { em:'👑', n:'Crown' },
-    tophat:  { em:'🎩', n:'Top hat' },
-    cap:     { em:'🧢', n:'Cap' },
-    grad:    { em:'🎓', n:'Scholar' },
-    helmet:  { em:'⛑️', n:'Helmet' },
-    beret:   { em:'🪖', n:'Beret' },
-    sunhat:  { em:'👒', n:'Sun hat' },
-    bow:     { em:'🎀', n:'Bow' },
-    flower:  { em:'🌸', n:'Blossom' },
-    star:    { em:'🌟', n:'Halo' }
-    /* ⚑ PAW REMOVED 2026-08-11 (Nate: "remove paws from headwear"). 🐾 is the McPuppy
-       STUDIO's mark — it is the /projects/ nav icon and the site's favicon — so wearing it
-       on your head made a studio badge into a costume. Every other entry here is a thing a
-       person actually puts on a head; this one was a logo.
+  /* ⛑⛑ HATS AND EMBLEMS MOVED TO pjcc-face-art.js ON 2026-08-25, AND THE MOVE IS THE FIX
+     for *"I don't see my headwear or eye color change."* This file composited the hat out of
+     tables only this file could see, so `PJCC.avatarMarkup()` — the nav, the boards, the
+     gift card, the follow rows — drew a perfectly correct face with nothing on its head.
+     The Forge's own preview was right, which is exactly why it read as a sync problem.
 
-       ⚠ NO MIGRATION NEEDED, AND THE REASON IS TWO LINES DOWN THE FILE, NOT LUCK.
-       `if (!HATS[op.hat]) op.hat = 'none'` in the loader already heals any saved look whose
-       hat key no longer exists, so anyone wearing it lands on None on their next load — the
-       same guard that made dropping the old emoji bases safe. The renderer is independently
-       guarded too (`HATS[look.hat] && …`), so even an unhealed value paints nothing rather
-       than throwing. Delete an entry from this object and both halves are already handled;
-       ADD one and neither is needed. */
-  };
-  var EMBLEMS = {
-    none:    { em:'',   n:'None' },
-    king:    { em:'♔', n:'King' },
-    queen:   { em:'♕', n:'Queen' },
-    rook:    { em:'♖', n:'Rook' },
-    bishop:  { em:'♗', n:'Bishop' },
-    knight:  { em:'♘', n:'Knight' },
-    pawn:    { em:'♙', n:'Pawn' },
-    star:    { em:'⭐', n:'Star' },
-    bolt:    { em:'⚡', n:'Bolt' },
-    flame:   { em:'🔥', n:'Flame' },
-    shield:  { em:'🛡️', n:'Shield' },
-    heart:   { em:'❤️', n:'Heart' }
-  };
+     ⭐⭐ THE PICKER OWNED THE PICTURE. What a crown LOOKS LIKE is drawing data. The picker —
+     which hats exist, in what order, labelled how — is still this file's job, and it reads
+     the glyph from the module that draws it. The full note is over there.
+     ⚠ READ THROUGH art(), NEVER CAPTURED AT LOAD. pjcc-face-art.js is a separate script and
+     this one must not assume it has run; a missing dependency then draws an EMPTY picker,
+     which is visibly broken, rather than throwing or silently drawing a default. Same guard
+     every other palette in this file uses. */
+  function HATS_() { var A = art(); return (A && A.HATS) || {}; }
+  function EMBLEMS_() { var A = art(); return (A && A.EMBLEMS) || {}; }
   /* Aura = the glow ring + the operative's personal accent color.
      ⚑ THE PALETTE LIVES IN pjcc-profile.js NOW (2026-08-13) — the Park Tables VS streaks
      draw the same twelve colors on a page this file is not loaded on, and two copies of a
@@ -179,7 +155,7 @@
      the Forge does not load the Park Tables. `npm run test:regulars` fails if a name here
      stops matching the real BOTS object. */
   var BOT_NAMES = { maxwell: 'Maxwell', crockett: 'Crockett', argus: 'Argus', nate: 'Nate',
-                    dad: 'The Dad', robert: 'Robert', princess: 'Princess', ceo: 'The CEO' };
+                    dad: 'Kedar', robert: 'Robert', princess: 'Princess', ceo: 'The CEO' };
   var P = window.PJCC || {};
   function accountProfile() { try { return P.getProfile ? P.getProfile() : null; } catch (e) { return null; } }
   /* Tapped a locked color: say what it costs, where the thumb already is. No alert, no
@@ -247,8 +223,8 @@
        invalid — and this line would quietly overwrite a real choice with gold. Leave a
        value we cannot judge alone: unverified is not the same as wrong. */
     if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'azure';   // a FREE color — see defaults()
-    if (!HATS[op.hat]) op.hat = 'none';
-    if (!EMBLEMS[op.emblem]) op.emblem = 'none';
+    if (!HATS_()[op.hat]) op.hat = 'none';
+    if (!EMBLEMS_()[op.emblem]) op.emblem = 'none';
     /* MIGRATION off the filter era (2026-07-28). `tint` was the coat when the pet was
        an emoji wearing an SVG filter; the drawn palette renamed two of its entries
        (`none` was really "natural fur", and `spirit` has no equivalent — `snow` is the
@@ -405,12 +381,12 @@
     look = look || identity();
     el.classList.add('idn-av');
     el.style.setProperty('--aura', auraColor(look.aura));
-    var hat = HATS[look.hat] && look.hat !== 'none' ? HATS[look.hat].em : '';
-    var emb = EMBLEMS[look.emblem] && look.emblem !== 'none' ? EMBLEMS[look.emblem].em : '';
-    el.innerHTML =
-      faceSvg(look) +
-      (hat ? '<span class="idn-hat">' + hat + '</span>' : '') +
-      (emb ? '<span class="idn-emblem">' + emb + '</span>' : '');
+    /* ⭐ ONE COMPOSITOR — 2026-08-25. This used to build the hat and emblem spans itself,
+       out of its own tables, which is precisely why every OTHER surface drew a bare head.
+       It now asks the drawing module for the same chrome `PJCC.avatarMarkup()` gets, so
+       the Forge preview and the nav avatar cannot disagree again. */
+    var A = art();
+    el.innerHTML = faceSvg(look) + (A && A.chrome ? A.chrome(look) : '');
   }
 
   /* ---- THE identity card ---------------------------------------------------
@@ -803,7 +779,21 @@
       /* ⚠ THE FALLBACK IS THE NAME, NOT THE RAW KEY. `mono`/`azure`/`rose`/`lime` belong to
          nobody and carry no word, and a swatch labelled with a bare lowercase key reads as
          a variable that leaked. */
-      var lab  = (word || auraName(k)) + (open ? '' : ' — locked, beat ' + who + ' with no help');
+      /* ⛑⛑ IT NOW SAYS WHERE, AND WHAT "NO HELP" MEANS — 2026-08-25.
+         Nate: *"The locked auras are great. Make sure we understand WHY they are locked (in
+         this case, the gauntlet I believe)."* **It is not the Gauntlet. It is the Park
+         Tables** — and the fact that he guessed wrong about his own site IS the bug report.
+         The label said "locked, beat Robert with no help", which names a person and a
+         standard but not a ROOM, so the only way to find out was to go looking.
+         ⭐ "No help" is now spelled out because it is two specific things, both of which the
+         player can see a button for while they are playing: `tierEarned()` in the Park
+         Tables gives a FULL star only when neither the ONE takeback nor the analysis board
+         was used. A price you can accidentally pay without knowing is not a price.
+         ⚠ THIS STRING IS BOTH THE aria-label AND THE TAPPED CAPTION (nudgeLocked reads the
+         aria-label straight off the element), so it has to read as a sentence on its own —
+         and it must stay short enough to sit under the swatch row on a phone. */
+      var lab  = (word || auraName(k)) +
+                 (open ? '' : ' — locked · beat ' + who + ' at the Park Tables, no takeback, no analysis');
       h += swatch(look.aura === k, AURAS[k],
         'data-aura="' + k + '"' + (open ? '' : ' data-locked="1"') +
         ' aria-label="' + esc(lab) + '" title="' + esc(lab) + '"');
@@ -811,11 +801,13 @@
     h += '</div><p class="forge-aura-word" id="op-aura-word"></p></div>';
     // headwear
     h += '<div class="forge-section"><h3>Headwear</h3><div class="forge-grid">';
-    Object.keys(HATS).forEach(function (k) { h += cell(look.hat === k, HATS[k].em, HATS[k].n, 'data-hat="' + k + '"'); });
+    var HT = HATS_();
+    Object.keys(HT).forEach(function (k) { h += cell(look.hat === k, HT[k].em, HT[k].n, 'data-hat="' + k + '"'); });
     h += '</div></div>';
     // emblem
     h += '<div class="forge-section"><h3>Emblem <small>— a badge that follows your name</small></h3><div class="forge-grid">';
-    Object.keys(EMBLEMS).forEach(function (k) { h += cell(look.emblem === k, EMBLEMS[k].em, EMBLEMS[k].n, 'data-emblem="' + k + '"'); });
+    var EM = EMBLEMS_();
+    Object.keys(EM).forEach(function (k) { h += cell(look.emblem === k, EM[k].em, EM[k].n, 'data-emblem="' + k + '"'); });
     h += '</div></div>';
     // text (2026-07-15 Nate: "take out the Call sign" — your codename IS your call sign,
     // set once when you claim it; the Forge no longer duplicates it. Title gets a dice.)
@@ -1030,7 +1022,7 @@
     if (tab === 'operative') {
       var A = art(), f = pick(FACES);
       var p = { hair: f.key, brow: f.brow, mouth: f.mouth, aura: pick(AURA_ORDER),
-                hat: pick(Object.keys(HATS)), emblem: pick(Object.keys(EMBLEMS)) };
+                hat: pick(Object.keys(HATS_())), emblem: pick(Object.keys(EMBLEMS_())) };
       if (A) {
         p.tone = pick(A.SKIN_ORDER);
         p.hairColor = pick(A.HAIRCOL_ORDER);

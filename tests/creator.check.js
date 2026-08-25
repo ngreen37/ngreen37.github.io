@@ -74,6 +74,47 @@ const check = (n, c, d) => {
 
 console.log('\n── THE IDENTITY FORGE ────────────────────────────────────\n');
 
+/* ══ THE DRAWN FACE HAS TO BE ON THE PAGE THAT DRAWS IT ═════════════════════
+   ⛑⛑ 2026-08-25, Nate: *"I don't see my headwear or eye color change."* He was right and the
+   Forge was innocent. `PJCC.avatarMarkup()` paints the composited character if
+   pjcc-face-art.js is loaded and **falls back to a plain emoji if it is not** — and
+   _layouts/game.html, a standalone layout, loaded pjcc-profile-bar.js (which draws the nav
+   avatar) without it. Every game page showed a face with no hat and no eye color.
+
+   ⭐⭐ THE FALLBACK IS EXACTLY WHY IT LASTED. It renders something plausible, so the bug
+   presents as "the Forge didn't save" rather than as anything broken. [[feature-shipped-but-
+   never-loaded]]: a fallback must LOOK missing. This one looks like a design decision.
+   ⚠ SAME SHAPE AS THE FRAGMENT LEDGER, SAME DAY, DIFFERENT DEPENDENCY — which is why this
+   is derived rather than a list of pages: every root layout is asked, so a fourth one added
+   next year is asked too. */
+{
+  const roots = fs.readdirSync(path.join(ROOT, '_layouts'))
+    .filter((f) => /\.html$/.test(f))
+    .map((f) => '_layouts/' + f)
+    .filter((f) => /<!DOCTYPE/i.test(read(f)));
+  const resolve = (file, d) => {
+    let src = read(file);
+    if ((d || 0) > 3) return src;
+    let m; const inc = /\{%-?\s*include\s+([A-Za-z0-9_\-./]+\.html)/g;
+    while ((m = inc.exec(src)) !== null) {
+      const part = path.join(ROOT, '_includes', m[1]);
+      if (fs.existsSync(part)) src += '\n' + resolve('_includes/' + m[1], (d || 0) + 1);
+    }
+    return src;
+  };
+  /* ⚠ the TAG, not the filename — both names appear in comments explaining this rule */
+  const tag = (src, f) => new RegExp('<script[^>]*' + f.replace(/\./g, '\\.')).test(src);
+  let asked = 0;
+  for (const r of roots) {
+    const src = resolve(r, 0);
+    if (!tag(src, 'pjcc-profile-bar.js') && !tag(src, 'pjcc-profile.js')) continue;
+    asked++;
+    check(r + ' loads pjcc-face-art.js beside the profile', tag(src, 'pjcc-face-art.js'),
+      'without it avatarMarkup() silently falls back to an emoji — no hat, no eye color');
+  }
+  check('every root layout that shows an avatar was asked', asked >= 2, asked + ' of ' + roots.length);
+}
+
 /* ── 1. HUMAN ONLY ────────────────────────────────────────────────────────────────
    ⚠ COMMENTS STRIPPED FIRST. The block explaining what left NAMES what left — Fox,
    Visitor, Robot, Fairy — and a test that cannot tell a rule from the note about the

@@ -473,9 +473,47 @@
   &:hover, &:focus-visible { border-color: #F5C518; color: #F5C518; }
 }
 .dsr-fol-av {
-  width: 32px; height: 32px; flex: 0 0 auto; overflow: hidden; border-radius: 50%;
+  /* ⚠ `overflow: hidden` WAS HERE AND IT DECAPITATED THE CROWN — removed 2026-08-25.
+     The avatar wears its headwear now, and headwear deliberately sits ABOVE the portrait
+     (see `.av-mini` in _pjcc-16-creator.scss). Clipping the frame is the obvious way to
+     round a face off and it is the one thing this element must not do — exactly the trap
+     `.idn-av` has documented since the person got drawn. The face rounds ITSELF: both
+     `.fa-svg` rules carry `border-radius: 50%`. */
+  width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 19px; line-height: 1; background: #150f33;
-  .fa-svg { width: 100%; height: 100%; display: block; }
+  .fa-svg { width: 100%; height: 100%; display: block; border-radius: 50%; }
 }
 .dsr-fol-nm { font-family: 'Poppins', sans-serif; font-weight: 700; }
+
+/* ══ THE FRAGMENT SHELF ═════════════════════════════════════════════
+   2026-08-25 — Nate: *"The Fragment collection — I don't see it anywhere."* Six sockets,
+   always six, however many exist to fill them.
+
+   ⭐ AN EMPTY SOCKET IS DRAWN AS AN ABSENCE, NOT AS A MYSTERY. No question mark, no lock
+   icon, no silhouette — a dash. A "?" invites you to guess what goes there, which is a
+   checklist wearing a costume; the ledger deliberately keeps the NAME of an unfound
+   fragment out of the DOM, and the styling has to agree with that or it undoes it.
+   ⚠ THE FOUND ONES CARRY THE ONE PIECE OF GOLD ON THIS PAGE, on purpose: a fragment is the
+   rarest thing on the site, and gold is what the dossier already spends on your codename. */
+.frag-shelf {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px; margin: 4px 0 10px;
+}
+.frag-slot {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; min-height: 76px; padding: 10px 6px; text-align: center;
+  border: 1px dashed #3d2b8a; border-radius: 12px; background: #1c1443;
+}
+.frag-slot .frag-mark { font-size: 20px; line-height: 1; color: #4a3a86; }
+.frag-slot .frag-name {
+  font-size: 0.7rem; letter-spacing: 0.04em; color: #6f5fa8; line-height: 1.25;
+}
+.frag-slot.got {
+  border-style: solid; border-color: #F5C518; background: #2a1f52;
+  box-shadow: 0 0 14px -6px rgba(245, 197, 24, 0.7);
+  .frag-mark { color: #F5C518; }
+  .frag-name { color: #f0e6ff; font-weight: 700; }
+}
+.frag-line { margin: 0 0 4px; font-size: 0.84rem; color: #ab9fc9; }
+.frag-line b { color: #F5C518; }

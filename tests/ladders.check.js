@@ -338,7 +338,8 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
 
   /* the park's four seats */
   const PT = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
-  /* ⚠ [^'] NOT \w — the bench has "The Dad" and "The CEO" on it since 2026-08-10, and a
+  /* ⚠ [^'] NOT \w — the bench has "The CEO" on it, and had "The Dad" from 2026-08-10
+     until he was named Kedar on 2026-08-25. A multi-word seat name is the case, and a
      \w+ name pattern SKIPS a seat with a space in it rather than failing on it. A roster
      check that quietly counts six of seven is worse than no roster check at all: it was
      reporting five names here while seven were shipping. */

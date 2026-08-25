@@ -39,8 +39,66 @@ permalink: /dossier/
 <div id="forge-mount"></div>
 <p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your character <em>and</em> your companion. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to keep it.</span></p>
 
+{% comment %} ══ THE FRAGMENTS ════════════════════════════════════════════
+     2026-08-25, Nate: *"The Fragment collection — I don't see it anywhere. Let's put it
+     somewhere on the Profile screen, right?"* Right. It had no surface at all: three eggs
+     were mintable and the only way to know you held one was the toast at the moment.
+
+     ⚠⚠ IT SITS ABOVE THE SIGNED-IN RECORD, NOT INSIDE IT. Fragments are LOCAL and always
+     have been — a signed-out stranger who finds one keeps it ([[fragment-ledger]]). Putting
+     the panel in `#dossier-body` would have hidden a guest's own discoveries behind a login,
+     which is the exact opposite of what the ledger was built for.
+     ⚠⚠ AN UNFOUND SLOT IS NEVER NAMED. The ledger deliberately keeps `nm` out of the DOM
+     for anything you have not found, so this cannot be read as a checklist of things to go
+     hunt. Empty sockets are empty — that is the whole design of a slow reveal.
+     ⚠ AND IT NEVER SAYS "UNLOCK" OR "ACCESS". /pjcc/ answers to anyone who types it; six
+     fragments put the DOORS back. Describing it as a lock would be a lie the site would then
+     have to keep. {% endcomment %}
+<div id="frag-mount"></div>
+
 <!-- ── Operative record — loads with your account, inline into the one dossier ── -->
 <div id="dossier-body"><p class="lb-empty">Loading your record…</p></div>
+
+<script>
+/* The fragment shelf. Reads PJCCFrag (loaded site-wide by _layouts/default.html) and
+   paints once; there is nothing live to subscribe to, because a fragment is minted on the
+   page where it is found and this page is not one of them. */
+(function () {
+  var mount = document.getElementById('frag-mount');
+  if (!mount) return;
+  /* ⚠ A MISSING LEDGER DRAWS NOTHING, NOT AN EMPTY SHELF. Six blank sockets on a page whose
+     script failed is indistinguishable from six blank sockets on a page belonging to someone
+     who has found nothing — and one of those is a bug. [[down-never-stuck]] */
+  if (!window.PJCCFrag) return;
+
+  var slots = PJCCFrag.slots(), target = PJCCFrag.target();
+  var found = PJCCFrag.found(), n = found.length;
+  var held = {}; found.forEach(function (s) { held[s.id] = 1; });
+
+  var h = '<h2 class="dsr-h">Fragments</h2><div class="frag-shelf">';
+  /* Walk the TARGET, not the slot list: three of the six do not exist yet, and a shelf that
+     is six sockets long from the first day tells the truth about the journey. Nate, on the
+     three that are unbuilt: "We can leave PJCC as unattainable for now." */
+  for (var i = 0; i < target; i++) {
+    var s = slots[i] || null;
+    var got = s && held[s.id];
+    h += '<div class="frag-slot' + (got ? ' got' : '') + '"' +
+         (got ? ' title="' + s.nm.replace(/"/g, '&quot;') + '"' : '') + '>' +
+         '<span class="frag-mark" aria-hidden="true">' + (got ? '✦' : '') + '</span>' +
+         '<span class="frag-name">' + (got ? s.nm : '—') + '</span></div>';
+  }
+  h += '</div>';
+  h += '<p class="frag-line">' +
+       (n >= target
+         ? '<b>All ' + target + '.</b> The signposts are back — the world shows itself again.'
+         : '<b>' + n + ' of ' + target + '.</b> ' +
+           (n === 0
+             ? 'Nothing yet. They are hidden around the site, and none of them is on this page.'
+             : 'Keep looking. There are more out there.')) +
+       '</p>';
+  mount.innerHTML = h;
+})();
+</script>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>

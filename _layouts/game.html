@@ -230,6 +230,20 @@
 
   <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+  {%- comment -%} ⛑⛑ THE DRAWN FACE — ADDED 2026-08-25, AND IT WAS MISSING SINCE THE FORGE
+       SHIPPED. Nate: *"I don't see my headwear or eye color change."* He was right, and the
+       cause was one absent script tag, not the Forge.
+
+       `PJCC.avatarMarkup()` paints the composited character IF `pjcc-face-art.js` is on the
+       page, and **falls back to a plain emoji if it is not**. THIS LAYOUT IS STANDALONE —
+       its own `<!DOCTYPE html>`, not an extension of _layouts/default.html, where the tag
+       lives — so every game page loaded pjcc-profile-bar.js (which draws the nav avatar),
+       called avatarMarkup, got the fallback, and showed a face with no hat and no eye color.
+       ⭐⭐ THE FALLBACK IS WHY IT SURVIVED. It renders something plausible, so nothing looked
+       broken — it looked like the Forge had not saved. [[feature-shipped-but-never-loaded]]:
+       a fallback must LOOK missing, and this one looks like a design choice.
+       ⚠ IT MUST LOAD BEFORE pjcc-profile-bar.js, which paints on load. {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-face-art.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile-bar.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
   <script>
@@ -323,6 +337,18 @@
       </div>
     </div>
   </div>
+  {%- comment -%} ⛑⛑ THE FRAGMENT LEDGER — ADDED 2026-08-25, SAME BUG, DIFFERENT FILE.
+       This layout includes town-sky.html (line ~200), which carries BOTH rare-sky doors, and
+       it loads pjcc-eggs.js below, which mints against them. It did not load the ledger. So
+       a meteor shower caught on a GAME page — which is most of the site — minted nothing.
+       ⚠⚠ THIRD INSTANCE IN ONE DAY of a standalone layout missing a dependency that
+       _layouts/default.html has. pjcc-eggs.js is loaded from THREE files (this one,
+       default.html, and site-header.html) and only one of them carried the ledger.
+       `tests/fragments.check.js` now DERIVES the host list instead of being handed one
+       host per minting file — which is what let this sit here after the gate went green.
+       Order matters: the ledger before the eggs. Both defer, so markup order is run order.
+       {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-fragments.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-eggs.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
   <!-- "It's your move at the park" — lights the Play Now nav when a table waits on you -->

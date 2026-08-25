@@ -704,7 +704,12 @@ body_class: theme-hall
        Creator plays back", which is a REAL async table against the actual person. Flagged
        to him: a bot called Nate stands next to a door that offers the real one. */
     nate:     { name: 'Nate',     icon: '♙', diff: 'Club',     elo: 1200, movetime: 480,  aura: 'jade' },
-    // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
+    /* ⛑ "Father" → "The Dad" (2026-08-10) → "Kedar" (2026-08-25). Same character, same
+       seat, same `dad` key. Nate picked the name off the Autobiography of a Yogi shortlist:
+       *"not one with too much reverence like Paramahansa but something in-between."*
+       ⚠ THE KEY STAYS `dad` — it is an identifier: in the save data, the aura table, the
+       duel roster and three test fixtures. Renaming an identifier to match a display name
+       is how a rename becomes a migration ([[site-two-brand-split]]). */
     /* ⛑ `mono` → `azure` → `turquoise`, 2026-08-19 then 08-20. `mono` had to go because it is
        not a color at all — it is the palette's literal "no color chosen", the gray the site
        paints a stranger with no identity yet, so on a bench where everyone else wears a hue
@@ -712,7 +717,7 @@ body_class: theme-hall
        day; the real answer is Nate's: *"make the Dad character's aura turquoise to match the
        frequency of love and wisdom"*. It is the only seat whose color means something
        stated rather than chosen, so do not "tidy" it back toward the blues. */
-    dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'turquoise' },
+    dad:      { name: 'Kedar',    icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'turquoise' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
     robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet' },
     /* ⚑⚑ SHE WEARS A PAWN, AND THAT IS THE WHOLE POINT (2026-08-19, Nate: *"Make it a pawn -

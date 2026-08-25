@@ -1,6 +1,9 @@
 ---
 layout: character
-title: The Dad
+# ⛑ 2026-08-25: HE HAS A NAME NOW. `title` is what the site DISPLAYS — the same field
+# that makes murphy read "Gerald" and narrator read "Nate" — so it had to move too;
+# `full_name` alone changed nothing anybody could see. The file id stays `father`.
+title: Kedar
 full_name: Kedar
 role: Family
 permalink: /characters/father/

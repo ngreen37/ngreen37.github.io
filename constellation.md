@@ -70,12 +70,12 @@ permalink: /constellation/
         <text x="400" y="132" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.65)" pointer-events="none">Narrator</text>
       </g>
 
-      <!-- The Dad (upper left) -->
-      <g class="const-node-group" data-char="father" data-name="The Dad" data-role="Family" data-url="/characters/father/">
+      <!-- Kedar, Nate's father (upper left) -->
+      <g class="const-node-group" data-char="father" data-name="Kedar" data-role="Family" data-url="/characters/father/">
         <circle cx="180" cy="180" r="20" fill="rgba(100,200,100,0.06)" stroke="rgba(100,200,100,0.1)" stroke-width="1" class="const-node-ring"/>
         <circle cx="180" cy="180" r="14" fill="rgba(100,200,100,0.12)" stroke="rgba(100,200,100,0.45)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="180" y="185" text-anchor="middle" font-size="11" fill="rgba(100,200,100,0.75)" pointer-events="none">♜</text>
-        <text x="180" y="207" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(100,200,100,0.55)" pointer-events="none">The Dad</text>
+        <text x="180" y="207" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(100,200,100,0.55)" pointer-events="none">Kedar</text>
       </g>
 
       <!-- Maxwell (lower left) -->

@@ -592,10 +592,21 @@
 
        Falls back to the emoji whenever pjcc-face-art.js is not on the page, so a surface
        that forgets to load it degrades to what it showed yesterday. */
+    /* ⛑⛑ `.avatar()`, NOT `.svg()` — 2026-08-25. Nate: *"I don't see my headwear or eye
+       color change."* This called `svg()`, which is the FACE. The hat and the emblem were
+       composited only by the Forge, out of tables only the Forge could see, so every surface
+       that goes through here — the nav, the leaderboards, the gift card, the follow rows —
+       drew a perfectly correct head with nothing on it. The tables moved to pjcc-face-art.js
+       and `avatar()` returns the whole character, self-contained.
+       ⚠ `avatar()` FALLS BACK TO `svg()` for a hatless look, so a character wearing nothing
+       renders byte-identically to yesterday. Only people with headwear see a change. */
     avatarMarkup: function (prof) {
       var look = prof && prof.companion && prof.companion.look;
       if (look && window.PJCCFaceArt && (look.hair || look.base)) {
-        try { return window.PJCCFaceArt.svg(look); } catch (e) {}
+        try {
+          var A = window.PJCCFaceArt;
+          return (A.avatar || A.svg)(look);
+        } catch (e) {}
       }
       return PJCC.avatarEmoji(prof);
     },
