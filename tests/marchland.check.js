@@ -365,9 +365,28 @@ check('…and the chain never marches a shield pawn away',
 
 const b16 = freshDefender(true);
 const o16 = G.applyDefenderPos(b16, 'b', 7);
-check('a 7 tucks the king in ALONE', o16.castled === true && b16[F.g8] === 'k');
+/* ⛑⛑ A 7 NO LONGER TUCKS HIM IN ALONE — 2026-08-25. Nate, looking at a board he had
+   just won: *"The castled King should probably have at least one protective pawn
+   (depending on the roll)."* The old rule walked the king into the corner and gave him
+   nothing, which made the lower castling band strictly WORSE than not castling: he had
+   left the middle of his own back rank to stand on an open file. A reward you can regret
+   is a bug, and this check used to assert it. */
+check('a 7 tucks the king into the corner', o16.castled === true && b16[F.g8] === 'k');
 check('…with NO rook — it is still on h8', o16.rook === false && b16[7] === 'r' && !b16[F.f8]);
-check('…and NO shield claimed', o16.shield === 0);
+check('…and with a shield of exactly ONE, the pawn in front of him',
+      o16.shield === 1 && b16[F.g7] === 'p',
+      'one, not three — the band is what separates the two castles');
+/* ⚠ THE FIRST VERSION OF THIS ALSO ASSERTED f7 AND h7 WERE EMPTY, AND THAT WAS TESTING THE
+   WRONG RULE. With a full muster those two squares hold ordinary pawns that the shield never
+   touched — the chain simply had no reason to march them. What makes the band ONE is the
+   count and the frozen square, not the emptiness of its neighbors. The sparse fixture below
+   is what actually proves it: two pawns on the far side, and the 7 pulls exactly one of them
+   all the way across to g7 and stops. */
+const bOne = freshDefender(true, [0, 1]);
+const oOne = G.applyDefenderPos(bOne, 'b', 7);
+check('…and a 7 PULLS one pawn across when the g-file is empty',
+      oOne.shield === 1 && bOne[F.g7] === 'p' && bOne[F.f7] !== 'p' && bOne[F.h7] !== 'p',
+      'one pawn moved, the second stayed where it was — the lower band buys exactly one');
 
 const b15 = freshDefender(true);
 check('a 6 leaves the king on e8', G.applyDefenderPos(b15, 'b', 6).castled === false && b15[F.e8] === 'k');
@@ -414,20 +433,73 @@ check('no bare threshold survives outside the two constants',
    ⚠ EACH OF THESE SEARCHES ONLY THE REGION THAT WRITES THE STRING. Grepping the whole
    file lets a check pass on a comment that explains the rule instead of on the screen
    that states it — which is exactly what happened to the "rook hooks around" check. */
+/* ══ THE MATE REPLAY: RAYS, ORDER, AND CLEAN-UP ═══════════════════════════
+   2026-08-25, Nate: *"progressively explode from nearest square all the way to the king and
+   show the controlled lines."* Verified end to end in a browser on the day; these pin the
+   four things that would break it silently. */
+{
+  const lm = slice('function lightMate', 'function showEndcard');
+  check('the lines come from the REFEREE, not from geometry re-derived here',
+        /C\.attackersOf\(B\.S\.b, tgt, win\)/.test(lm),
+        'pjcc-chess.js owns what attacks what — a picture that disagrees with the rules is worse than none');
+  check('the king is always the LAST thing to go off',
+        /rays\.sort\(function \(a, b2\) \{ return \(a\.king - b2\.king\)/.test(lm) &&
+        /pop\[k\] = Math\.max\(/.test(lm),
+        'sorted king-last, then the king square is pushed past the longest ray');
+  check('a sealed square with no attacker still detonates',
+        /if \(pop\[sealed\[i2\]\] == null\) pop\[sealed\[i2\]\] = last;/.test(lm),
+        'a square blocked by his OWN piece has no line to draw — dropping it would ring the king with a hole');
+  check('every ray declares pathLength="1"',
+        /pathLength="1"/.test(src),
+        '⚠ without it the dash resolves in pixels and the ray draws DOTTED');
+  /* the `.mate-ray` rule, on its own, so a `vector-effect` somewhere else in the file
+     cannot fail this and a `vector-effect` INSIDE it cannot hide */
+  const rayRule = slice('.mate-ray {', '@keyframes ray-draw');
+  check('…and nothing sets vector-effect inside the ray rule',
+        !/vector-effect/.test(rayRule),
+        'non-scaling-stroke overrules pathLength in Chrome — that is what drew it dotted, twice');
+  check('…and the stroke is measured in board squares, not pixels',
+        /stroke-width: 0\.0/.test(rayRule),
+        'a width in user units scales with the board, which is what non-scaling-stroke was for');
+  check('the men paint OVER the rays',
+        /\.men \{ position: absolute; inset: 0; pointer-events: none; z-index: 4; \}/.test(src),
+        'a ray ends ON the king square; without this it is drawn across the piece it is about');
+  check('hideEndcard sweeps the SVG off the board',
+        /querySelector\('\.mate-rays'\)[\s\S]{0,90}removeChild/.test(slice('function hideEndcard', 'function resolveLand')),
+        'B.mate = null only stops the CLASSES — the lines are real DOM and would hang over the next battle');
+  check('reduced motion parks the rays DRAWN, not hidden',
+        /\.mate-ray \{ animation: none; stroke-dashoffset: 0; \}/.test(src),
+        'this fires while a player is reading the board to find out why they lost');
+}
+
 const howScreen = slice('<section class="screen" id="screen-how">', '</section>');
+/* ⛑ RE-ANCHORED TO THE TRIMMED COPY — 2026-08-25 (his: "it's too much text it's
+   overwhelming"). The screen lost about half its words and not one of its rules, which is
+   the only thing these six checks are for: they are what makes a trim safe to make.
+   ⭐ AND THE 7-BAND CLAUSE GREW RATHER THAN SHRANK, because the RULE changed the same day —
+   a 7 now brings a pawn with the king, so the screen has to say so. */
 check('the how-it-works screen states BOTH castling bands',
-      /<b>7 or better<\/b> tucks your\s+king into the corner/.test(howScreen) &&
-      /<b>an 8<\/b> brings his rook around/.test(howScreen),
+      /<b>7 or better<\/b> tucks your king into the corner/.test(howScreen.replace(/\s+/g, ' ')) &&
+      /<b>an 8<\/b> brings his rook around/.test(howScreen.replace(/\s+/g, ' ')),
       'the page and the rule agree, on both halves of it — re-checked when the die shrank');
+check('…and that the lower band brings a pawn',
+      /with a pawn in front of him/.test(howScreen.replace(/\s+/g, ' ')),
+      'his 2026-08-25 rule: a castled king is never bare');
+/* ⚠ \s+ BETWEEN THE WORDS, NOT A LITERAL SPACE. This copy is hand-wrapped HTML, so any
+   trim that re-flows a line puts a newline and six spaces in the middle of a phrase — and
+   three of these checks went red on the 2026-08-25 trim for exactly that, reporting missing
+   RULES when nothing but the wrapping had moved. A gate that cannot survive a reflow makes
+   editing copy scarier than it should be. */
+const flat = howScreen.replace(/\s+/g, ' ');
 check('…and it explains that ranks are dice',
-      /keep the best/i.test(howScreen) && /one die per two ranks/i.test(howScreen));
+      /keep the best/i.test(flat) && /one die per two ranks/i.test(flat));
 check('…and that your own flag is your own loss',
-      /Run your own clock out and you lose/i.test(howScreen),
+      /Run your own clock out and you lose/i.test(flat),
       'the rule that replaced "either flag goes to the defender"');
 check('…and what a chain is',
-      /chained/i.test(howScreen) && /extra die/i.test(howScreen));
+      /chained/i.test(flat) && /extra die/i.test(flat));
 check('…and that you only get three attacks',
-      /three attacks a round/i.test(howScreen), 'his 2026-08-25 rule, stated on the screen');
+      /three attacks a round/i.test(flat), 'his 2026-08-25 rule, stated on the screen');
 
 /* ══ 8b. HIS VOCABULARY, 2026-08-25 ═════════════════════════════════════════════════
    "change Levy phase to deployment phase… change March phase to attack phase, and night

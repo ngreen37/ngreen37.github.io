@@ -66,6 +66,41 @@ function isAttacked(b, sq, by){
     while(onb(nr,nf)){ var o=b[nr*8+nf]; if(o){ if(colorOf(o)===by && (o.toLowerCase()==='r'||o.toLowerCase()==='q')) return true; break; } nr+=ORTH[i][0]; nf+=ORTH[i][1]; } }
   return false;
 }
+/* ══ WHICH pieces attack a square, not just whether any do ══════════════════════
+   Added 2026-08-25 for Campaign's checkmate replay, which draws the LINES that trap the
+   king — Nate: *"show the controlled lines."* A picture of who controls what needs the
+   squares, and `isAttacked` only ever answers yes/no.
+
+   ⚠⚠ IT LIVES HERE, BESIDE isAttacked, AND SHARES ITS TABLES. The alternative was a copy
+   of the attack geometry inside the game, which is the one thing this file exists to stop
+   ([[stockfish-integration]]: engine proposes, referee disposes — and there is exactly one
+   referee). KNJ / KGJ / DIAG / ORTH are the same four constants isAttacked walks.
+   ⚠ isAttacked IS NOT REIMPLEMENTED IN TERMS OF THIS ONE, on purpose. It early-returns on
+   the first attacker and sits in the move generator's hot path; this one cannot early-return
+   and would make every legality test slower for a feature that runs once per checkmate.
+   The two are kept honest by a check in tests/chess.check.js that runs them against each
+   other over every square of a few hundred positions.
+   ⚠ SLIDERS STOP AT THE FIRST PIECE, exactly as they do above — so a rook behind a rook is
+   correctly NOT listed. This reports who genuinely bears on the square. */
+function attackersOf(b, sq, by){
+  var p=rf(sq), r=p[0], f=p[1], i, nr, nf, out=[];
+  for(i=0;i<8;i++){ nr=r+KNJ[i][0]; nf=f+KNJ[i][1];
+    if(onb(nr,nf) && b[nr*8+nf]===(by==='w'?'N':'n')) out.push(nr*8+nf); }
+  for(i=0;i<8;i++){ nr=r+KGJ[i][0]; nf=f+KGJ[i][1];
+    if(onb(nr,nf) && b[nr*8+nf]===(by==='w'?'K':'k')) out.push(nr*8+nf); }
+  var dir = by==='w' ? -1 : 1, pr=r-dir;
+  if(onb(pr,f-1) && b[pr*8+(f-1)]===(by==='w'?'P':'p')) out.push(pr*8+(f-1));
+  if(onb(pr,f+1) && b[pr*8+(f+1)]===(by==='w'?'P':'p')) out.push(pr*8+(f+1));
+  for(i=0;i<4;i++){ nr=r+DIAG[i][0]; nf=f+DIAG[i][1];
+    while(onb(nr,nf)){ var d=b[nr*8+nf];
+      if(d){ if(colorOf(d)===by && (d.toLowerCase()==='b'||d.toLowerCase()==='q')) out.push(nr*8+nf); break; }
+      nr+=DIAG[i][0]; nf+=DIAG[i][1]; } }
+  for(i=0;i<4;i++){ nr=r+ORTH[i][0]; nf=f+ORTH[i][1];
+    while(onb(nr,nf)){ var o=b[nr*8+nf];
+      if(o){ if(colorOf(o)===by && (o.toLowerCase()==='r'||o.toLowerCase()==='q')) out.push(nr*8+nf); break; }
+      nr+=ORTH[i][0]; nf+=ORTH[i][1]; } }
+  return out;
+}
 function kingSq(b, color){ var t=color==='w'?'K':'k'; for(var i=0;i<64;i++) if(b[i]===t) return i; return -1; }
 function inCheck(S, color){ var ks=kingSq(S.b,color); return ks>=0 && isAttacked(S.b, ks, color==='w'?'b':'w'); }
 
@@ -194,7 +229,7 @@ return {
   START_FEN: START_FEN,
   parseFEN: parseFEN, toFEN: toFEN,
   sqFromName: sqFromName, nameFromSq: nameFromSq,
-  colorOf: colorOf, kingSq: kingSq, isAttacked: isAttacked,
+  colorOf: colorOf, kingSq: kingSq, isAttacked: isAttacked, attackersOf: attackersOf,
   legalMoves: legalMoves, makeMove: makeMove,
   inCheck: inCheck, isCheckmate: isCheckmate, isStalemate: isStalemate,
   insufficientMaterial: insufficientMaterial, gameResult: gameResult, posKey: posKey,

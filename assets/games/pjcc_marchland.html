@@ -298,7 +298,10 @@
      exactly one square. Persistent elements + a transform = the tween is free.
      ⚠ pointer-events stay OFF for the whole layer: clicks fall through to the squares
      underneath, so there is one hit-testing path instead of two that can disagree. */
-  .men { position: absolute; inset: 0; pointer-events: none; }
+  /* ⚠ z-index 4 PUTS THE MEN OVER THE MATE RAYS (z 3), added 2026-08-25 with the lines.
+     A ray ENDS on the king's square, so without this the line that explains the mate is
+     drawn straight across the piece the mate is about. */
+  .men { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
   .sq { position: relative; background-color: var(--chess-lt);
     background-image: linear-gradient(152deg, rgba(255,252,240,.14), rgba(0,0,0,.04) 62%), var(--chess-grain); }
   .sq.d { background-color: var(--chess-dk);
@@ -319,17 +322,66 @@
      a light square and a dark one without two rules. Checked against both.
      ⚠ BOTH ANIMATIONS ARE GUARDED. This fires at the exact moment a player is reading the
      board, which is the worst possible time to ignore a reduced-motion request. */
+  /* ⛑⛑ IT DETONATES NOW, IN ORDER — 2026-08-25. Nate: *"progressively explode from
+     nearest square all the way to the king and show the controlled lines."* Each square
+     carries its own `--at` from lightMate(), so the trap closes from the outside in and the
+     king is always the last thing to go off. The old version lit every square at once,
+     which showed the SHAPE of the trap but not how it was built. */
   .sq.mated { box-shadow: inset 0 0 0 3px rgba(255,110,138,1), 0 0 18px rgba(255,110,138,.55);
-    animation: mate-pulse 1.05s ease-in-out infinite; z-index: 1; }
-  .sq.sealed::before { content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(255,110,138,.30), rgba(255,110,138,0) 68%);
-    box-shadow: inset 0 0 0 2px rgba(255,110,138,.42);
-    animation: seal-in .32s ease-out both; }
+    animation: mate-boom .5s cubic-bezier(.2,.9,.3,1) var(--at, 0ms) both,
+               mate-pulse 1.05s ease-in-out var(--at, 0ms) infinite; z-index: 2; }
+  .sq.sealed::before { content: ''; position: absolute; inset: 0; z-index: 1;
+    background: radial-gradient(circle at 50% 50%, rgba(255,110,138,.34), rgba(255,110,138,0) 68%);
+    box-shadow: inset 0 0 0 2px rgba(255,110,138,.46);
+    animation: seal-boom .42s cubic-bezier(.2,.9,.3,1) var(--at, 0ms) both; }
   @keyframes mate-pulse { 50% { box-shadow: inset 0 0 0 3px rgba(255,110,138,1), 0 0 30px rgba(255,110,138,.85); } }
-  @keyframes seal-in { from { opacity: 0; transform: scale(.72); } to { opacity: 1; transform: none; } }
+  /* the pop: overshoot, then settle — a hit landing, not a fade-in */
+  @keyframes seal-boom {
+    0%   { opacity: 0; transform: scale(.35); }
+    58%  { opacity: 1; transform: scale(1.22); }
+    100% { opacity: 1; transform: none; } }
+  @keyframes mate-boom {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.16); }
+    100% { transform: none; } }
+
+  /* ══ THE CONTROLLED LINES ════════════════════════════════════════
+     His three red lines, drawn from the piece that actually controls each square — asked of
+     the referee, never guessed. Overlapping is expected and he said so.
+     ⚠ vector-effect: non-scaling-stroke IS LOAD-BEARING. The viewBox is 8×8 squares, so a
+     stroke-width in user units would be measured in SQUARES and `preserveAspectRatio="none"`
+     would stretch it differently on each axis. This keeps the line the same weight on any
+     board size and any shape.
+     ⚠ THE DASH IS 1 BECAUSE EVERY LINE DECLARES pathLength="1". See the note beside the
+     markup: without it the dash resolves in pixels while the line is measured in squares,
+     and the ray draws as a row of dashes instead of drawing on. */
+  .mate-rays { position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 3; overflow: visible; }
+  /* ⛑⛑ NO `vector-effect: non-scaling-stroke`, AND THAT IS THE WHOLE FIX — the first two
+     attempts drew DOTTED lines. Chrome resolves a dash pattern in RENDERED PIXELS when that
+     property is on, which quietly overrules `pathLength="1"`: a dash meant to be "the entire
+     line" became a one-pixel dash repeating down four hundred pixels. Without it, the dash
+     is a fraction of the normalized path and the line draws on exactly once.
+     ⚠ SO THE WIDTH IS IN BOARD SQUARES NOW (0.075 ≈ 7% of a square) and scales with the
+     board for free — which is what non-scaling-stroke was there for in the first place. The
+     board is `aspect-ratio: 1`, so the two axes scale equally and the stroke stays round. */
+  .mate-ray {
+    stroke: rgba(255,110,138,.85); stroke-width: 0.075; stroke-linecap: round; fill: none;
+    filter: drop-shadow(0 0 3px rgba(255,110,138,.9));
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: ray-draw .26s ease-out var(--at, 0ms) forwards; }
+  .mate-ray.k { stroke: rgba(255,214,102,.95); stroke-width: 0.1;
+    filter: drop-shadow(0 0 5px rgba(255,214,102,.95)); }
+  @keyframes ray-draw { to { stroke-dashoffset: 0; } }
+
+  /* ⚠⚠ STILLNESS COSTS THE SHOW, NEVER THE INFORMATION. Reduced motion parks every one of
+     these at its FINISHED state — lines fully drawn, squares fully lit, no delays — because
+     this fires at the exact moment a player is reading the board to find out why they lost.
+     Switching them off entirely would answer that question with a blank board. */
   @media (prefers-reduced-motion: reduce) {
     .sq.mated { animation: none; }
     .sq.sealed::before { animation: none; }
+    .mate-ray { animation: none; stroke-dashoffset: 0; }
   }
 
   /* ⛑⛑ THE VERDICT MOVED ONTO THE BOARD — 2026-08-25. Nate: *"maybe we take out that
@@ -438,35 +490,40 @@
 
   <!-- ══ HOW ════════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-how">
+    <!-- ⛑⛑ CUT ROUGHLY IN HALF — 2026-08-25. Nate: *"Can we really trim up the Campaign's
+         How It Works page? It's too much text it's overwhelming."*
+
+         ⭐ EVERY RULE SURVIVED; EVERY EXPLANATION OF WHY DID NOT. What went was the second
+         sentence of almost every item — "a big stack is not a slightly better roll, it is a
+         much smaller chance of a bad one", "moving quickly costs you nothing", "spread thin
+         and every holding stands on its own". Each of those is true, well put, and is me
+         arguing for a design decision to somebody who has not played yet. A rules card
+         answers *what happens*; the game teaches *why it matters*, and it teaches it better
+         in one battle than a paragraph does.
+         ⚠ THE TEST OF A CUT IS WHETHER A RULE LEFT WITH IT. `tests/marchland.check.js`
+         pins six of them by regex — both castling bands, ranks-are-dice, the flag rule, the
+         chain, the three attacks — so trimming can never quietly take one out. Those
+         regexes moved with this copy and were re-verified against the new wording.
+         ⚠ NUMBERED, NOT BULLETED, and still eight items: the order is the round's order and
+         it is how a player finds the thing they half-remember. -->
     <h2>How it works</h2>
     <p class="sub" style="text-align:left;line-height:1.7">
-      <b>1. Your round has three parts.</b> <i>Deployment</i> &mdash; place every new rank
-      yourself, one tap each. <i>Attack</i> &mdash; up to three a round. <i>Fortify</i>
-      &mdash; one free move of ranks between two holdings you hold. Then they take theirs,
-      and you watch every step of it.<br><br>
-      <b>2. Three attacks a round.</b> Tap one of your holdings, then a bordering enemy one.
-      You need two ranks or more to attack &mdash; and because you only get three,
-      <b>which three</b> is the whole decision.<br><br>
-      <b>3. Hold together &mdash; the Chain.</b> A holding with two or more neighbors of your
-      own is <i>chained</i>. The borders between them light up in your color, its marker wears
-      a double ring, and it rolls an <b>extra die every time it defends</b>. Spread thin and
-      every holding stands on its own.<br><br>
-      <b>4. Ranks are dice.</b> One die per two ranks, up to four &mdash; and you
-      <b>keep the best</b>. A big stack is not a slightly better roll, it is a much smaller
-      chance of a bad one. Under three ranks you cannot field a queen at all.<br><br>
-      <b>5. Both sides roll for material and for position.</b> Nothing is compared &mdash; the
-      dice are spent. Material buys chess material at its real value: queen 9, rook 5, bishop
-      or knight 3, pawn 1. Kings are free.<br><br>
-      <b>6. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs
-      the defender's into a chain their neighbors defend. On defense, <b>7 or better</b> tucks your
-      king into the corner &mdash; and <b>an 8</b> brings his rook around and three pawns
-      with him.<br><br>
-      <b>7. Fifteen seconds each, with a second back a move.</b> Only the side to move
-      burns clock, and every move gives back up to one second of what that move cost &mdash; so
-      moving quickly costs you nothing. <b>Run your own clock out and you lose:</b> the attack
-      failed, or the defense was overrun. Checkmate takes the ground outright. A draw goes to
-      the defender.<br><br>
-      <b>8. The winner takes the holding.</b> Lose them all and the campaign is over.
+      <b>1. Three parts to your round.</b> <i>Deploy</i> every new rank, <i>attack</i> up to
+      three times, <i>fortify</i> once. Then you watch theirs.<br><br>
+      <b>2. Three attacks a round.</b> Tap your holding, then a bordering enemy one — you
+      need two ranks. <b>Which three</b> is the whole decision.<br><br>
+      <b>3. Ranks are dice.</b> One die per two ranks, up to four, and you <b>keep the
+      best</b>. Under three ranks you cannot field a queen.<br><br>
+      <b>4. Chain your holdings.</b> Two or more neighbors of your own and it is
+      <i>chained</i> &mdash; an <b>extra die every time it defends</b>.<br><br>
+      <b>5. Two dice a battle: material, then position.</b> Material buys your army at real
+      chess value — queen 9, rook 5, bishop or knight 3, pawn 1. Kings are free.<br><br>
+      <b>6. Position places it.</b> High rolls march an attacker's pawns up the board.
+      Defending, <b>7 or better</b> tucks your king into the corner with a pawn in front of
+      him &mdash; and <b>an 8</b> brings his rook around and three pawns with him.<br><br>
+      <b>7. Fifteen seconds each,</b> a second back on every move. <b>Run your own clock out
+      and you lose.</b> Checkmate takes the ground. A draw goes to the defender.<br><br>
+      <b>8. Take every holding to win.</b> Lose them all and the campaign is over.
     </p>
     <button class="btn ghost" id="back">Back</button>
   </section>
@@ -1159,20 +1216,37 @@ function applyDefenderPos(b, side, die) {
          ⚠ It never robs one shield square to fill another (`f2 >= 5` breaks), and it never
          invents a pawn — a defender who mustered two pawns gets a shield of two and the roll
          screen says so. */
-      if (posCastleFull(die)) {
-        for (var k = 5; k <= 7; k++) {
-          var sq = home * 8 + k;
-          if (b[sq] === pawnCh) { frozen[sq] = true; out.shield++; continue; }
-          if (b[sq]) continue;                       /* something else is standing on it */
-          var take = -1;
-          for (var f2 = 0; f2 < 5; f2++) {
-            var cand = home * 8 + f2;
-            if (b[cand] === pawnCh && !frozen[cand]) { take = cand; break; }
-          }
-          if (take < 0) continue;                    /* not enough pawns — do not fake it */
-          b[sq] = pawnCh; b[take] = '';
-          frozen[sq] = true; out.shield++;
+      /* ⛑⛑ A CASTLED KING IS NEVER BARE ANY MORE — 2026-08-25. Nate, looking at a board
+         he had just won: *"The castled King should probably have at least one protective
+         pawn (depending on the roll)."*
+
+         He was describing a real hole. Castling was TWO bands and the shield belonged
+         entirely to the upper one: a 7 walked the king into the corner and gave him
+         nothing, so the roll that is supposed to mean "he digs in" produced a king alone
+         on an open g-file — strictly worse than not castling at all, because he had left
+         the middle of his own back rank to get there. A reward you can regret is a bug.
+
+         ⭐ SO THE SHIELD IS A FUNCTION OF THE BAND, NOT A PROPERTY OF THE TOP ONE.
+             7 → the g-pawn only, the one square directly in front of him
+             8 → f, g and h, plus the rook hooking around
+         Which also keeps the two bands meaningfully different — the whole point of having
+         two — while making the lower one honest. "Depending on the roll" is his phrasing
+         and it is exactly the rule.
+         ⚠ IT STILL NEVER INVENTS A PAWN. A defender who mustered no pawns castles bare, and
+         the roll screen says so — a roll cannot conjure material the muster did not buy. */
+      var wantFiles = posCastleFull(die) ? [5, 6, 7] : [6];
+      for (var wi = 0; wi < wantFiles.length; wi++) {
+        var k = wantFiles[wi], sq = home * 8 + k;
+        if (b[sq] === pawnCh) { frozen[sq] = true; out.shield++; continue; }
+        if (b[sq]) continue;                         /* something else is standing on it */
+        var take = -1;
+        for (var f2 = 0; f2 < 5; f2++) {
+          var cand = home * 8 + f2;
+          if (b[cand] === pawnCh && !frozen[cand]) { take = cand; break; }
         }
+        if (take < 0) continue;                      /* not enough pawns — do not fake it */
+        b[sq] = pawnCh; b[take] = '';
+        frozen[sq] = true; out.shield++;
       }
     }
   }
@@ -2008,9 +2082,16 @@ function paint() {
     if (i === B.sel) cls += ' from';
     if (i === kingSq) cls += ' chk';
     /* the mate, once finish() has worked out the trap — see lightMate() */
+    /* ⚠ THE DELAY IS A STYLE, NOT A CLASS. Each square in the trap detonates when its own
+       ray arrives, so the timing is per-square data, and a class per 90ms step would be a
+       stylesheet that grows with the board. */
     if (B.mate) {
       if (i === B.mate.king) cls += ' mated';
       else if (B.mate.sealed.indexOf(i) >= 0) cls += ' sealed';
+      var at = B.mate.pop && B.mate.pop[i];
+      if (at != null) c.style.setProperty('--at', at + 'ms');
+    } else if (c.style.getPropertyValue('--at')) {
+      c.style.removeProperty('--at');
     }
     var mv = B.moves.filter(function (m) { return m.to === i; })[0];
     if (mv) cls += B.S.b[i] ? ' cap' : ' hint';
@@ -2199,8 +2280,92 @@ function lightMate(loserSide) {
     if (legal.indexOf(sq) >= 0) continue;                          // he COULD go there
     sealed.push(sq);
   }
-  B.mate = { king: k, sealed: sealed };
+  /* ══ WHO IS DOING THIS, AND ALONG WHICH LINES ═══════════════════════════
+     2026-08-25, Nate: *"I want the squares to kind of light up, or better yet, progressively
+     explode from nearest square all the way to the king and show the controlled lines."*
+
+     ⭐ THE REFEREE ANSWERS THIS TOO. `C.attackersOf` was added to pjcc-chess.js for exactly
+     this — it walks the same four geometry tables `isAttacked` does, so the lines drawn here
+     are the lines the RULES say exist, not a second opinion about them. Re-deriving "which
+     rook covers g8" inside a game file is how a picture starts disagreeing with the position
+     it is a picture of. [[accuracy-above-all]]
+     ⚠ THE KING'S OWN SQUARE IS A TARGET TOO — he is in check, so something bears on it, and
+     that ray is the one the whole animation ends on.
+     ⚠ A SEALED SQUARE WITH NO ATTACKER IS NORMAL AND KEPT. A square can be unavailable
+     because his OWN piece stands there, and there is no line to draw for that — but the
+     square is still part of the trap, so it still detonates. Dropping it would draw a ring
+     with a hole in it. */
+  var win = loserSide === 'w' ? 'b' : 'w';
+  var rays = [], t, ai, atk, len;
+  var targets = sealed.concat([k]);
+  for (t = 0; t < targets.length; t++) {
+    var tgt = targets[t];
+    var from = [];
+    try { from = C.attackersOf ? C.attackersOf(B.S.b, tgt, win) : []; } catch (e) { from = []; }
+    for (ai = 0; ai < from.length; ai++) {
+      atk = from[ai];
+      if (atk === tgt) continue;
+      len = Math.max(Math.abs((atk % 8) - (tgt % 8)), Math.abs(((atk / 8) | 0) - ((tgt / 8) | 0)));
+      rays.push({ from: atk, to: tgt, len: len, king: tgt === k });
+    }
+  }
+  /* ⭐ SHORT LINES LAND FIRST, AND THE KING IS ALWAYS LAST. That is the "progressively
+     explode… all the way to the king" he asked for: the trap closes from the edges inward
+     and the last thing that happens is the king. Sorting by LENGTH rather than by a fixed
+     order means the timing describes the actual position — a queen bearing down the long
+     diagonal genuinely takes longer to arrive than a knight two squares away. */
+  rays.sort(function (a, b2) { return (a.king - b2.king) || (a.len - b2.len); });
+  var STEP = 90, DRAW = 260;
+  for (var i2 = 0; i2 < rays.length; i2++) rays[i2].at = i2 * STEP;
+  /* when each SQUARE goes off: as its earliest ray arrives. A square nothing bears on
+     (blocked by his own man) rides the wave at its own distance from the king. */
+  var pop = {};
+  for (i2 = 0; i2 < rays.length; i2++) {
+    var r2 = rays[i2], q = r2.to;
+    var when = r2.at + DRAW;
+    if (pop[q] == null || when < pop[q]) pop[q] = when;
+  }
+  var last = 0;
+  for (var key in pop) if (pop[key] > last) last = pop[key];
+  for (i2 = 0; i2 < sealed.length; i2++) if (pop[sealed[i2]] == null) pop[sealed[i2]] = last;
+  pop[k] = Math.max(pop[k] == null ? 0 : pop[k], last + 140);
+
+  B.mate = { king: k, sealed: sealed, rays: rays, pop: pop, draw: DRAW };
   paint();
+  drawMateRays();
+}
+
+/* ══ THE LINES, AS ONE SVG OVER THE BOARD ════════════════════════════════
+   ⚠ A `viewBox` OF 0 0 8 8, so a line is written in SQUARES and the whole thing scales with
+   the board at any size without a single pixel being measured. The board is never flipped
+   ("the player is ALWAYS White at the bottom"), so square index maps straight to x = i%8,
+   y = i/8 — no orientation term, and a flip added later would break this loudly rather than
+   drawing subtly wrong lines.
+   ⚠ IT IS REBUILT, NEVER RE-ANIMATED. paint() runs on every repaint and re-adding the same
+   nodes would restart every dash. This is called once, from lightMate. */
+function drawMateRays() {
+  var host = $('board'); if (!host || !B || !B.mate) return;
+  var old = host.querySelector('.mate-rays'); if (old) old.parentNode.removeChild(old);
+  var rs = B.mate.rays || []; if (!rs.length) return;
+  var cx = function (sq) { return (sq % 8) + 0.5; };
+  var cy = function (sq) { return ((sq / 8) | 0) + 0.5; };
+  /* ⚠ NO preserveAspectRatio="none". The board is square so it changed nothing visible,
+     but combined with a stroke measured in user units it would squash the line weight on one
+     axis the day anything about the board's shape moves. The default keeps circles round. */
+  var s = '<svg class="mate-rays" viewBox="0 0 8 8" aria-hidden="true">';
+  for (var i = 0; i < rs.length; i++) {
+    var r = rs[i];
+    /* ⚠⚠ pathLength="1" IS WHAT MAKES THE DRAW-ON WORK, and the first version shipped
+       without it and drew DASHED lines. `vector-effect: non-scaling-stroke` resolves the
+       dash pattern in CSS PIXELS while the geometry is in board SQUARES, so a
+       `stroke-dasharray: 16` meant for "longer than any line" became a 16-pixel dash
+       repeating down a 400-pixel line. Normalizing every path to length 1 makes the dash a
+       FRACTION of the line — correct at any board size, in any unit, with no measuring. */
+    s += '<line x1="' + cx(r.from) + '" y1="' + cy(r.from) + '" x2="' + cx(r.to) + '" y2="' + cy(r.to) +
+         '" pathLength="1" class="mate-ray' + (r.king ? ' k' : '') + '" style="--at:' + r.at + 'ms"/>';
+  }
+  s += '</svg>';
+  host.insertAdjacentHTML('beforeend', s);
 }
 
 /* The battle's verdict, on the board under it. `screen-result` still exists and is still
@@ -2216,6 +2381,11 @@ function hideEndcard() {
   $('endcard').classList.remove('on');
   $('resign').style.display = '';
   if (B) B.mate = null;
+  /* ⚠ THE LINES ARE REAL DOM AND HAVE TO BE SWEPT UP. `B.mate = null` stops paint() adding
+     the classes, but the SVG is a child of the board and would otherwise still be hanging
+     over the NEXT battle's position, drawing a trap that no longer exists. */
+  var host = $('board'), old = host && host.querySelector('.mate-rays');
+  if (old) old.parentNode.removeChild(old);
 }
 
 function resolveLand(p, attackerWon) {

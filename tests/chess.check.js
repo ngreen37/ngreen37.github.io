@@ -58,5 +58,47 @@ eq(C.gameResult(C.parseFEN('8/8/4k3/8/8/2K5/8/8 w - - 0 1'), 1), 'material', 'K 
 eq(C.gameResult(C.parseFEN('8/8/4k3/8/8/2K1B3/8/8 w - - 0 1'), 1), 'material', 'K+B vs K = insufficient material');
 ok(C.gameResult(C.parseFEN(C.START_FEN), 1) === null, 'startpos is not terminal');
 
+/* ══ attackersOf AGREES WITH isAttacked, EVERYWHERE ═════════════════════════
+   `attackersOf` was added 2026-08-25 so Campaign's checkmate can draw the LINES that trap
+   the king. It walks the same four tables as `isAttacked` but cannot early-return, so the
+   two are deliberately separate functions — which makes them two implementations of one
+   rule, and therefore free to drift.
+   ⭐ THIS IS THE ONLY THING KEEPING THEM ONE RULE: play a real game and, after every move,
+   ask BOTH about all 64 squares for both colors. One disagreement anywhere fails.
+   ⚠ IT ALSO ASSERTS THE HARNESS DID WORK. A walk that stalemates on move three would
+   compare almost nothing and report a confident pass. [[green-must-name-what-ran]] */
+console.log('\n=== pjcc-chess: attackersOf vs isAttacked ===');
+(function () {
+  let compared = 0, foundSome = 0, bad = null;
+  let g = C.parseFEN(C.START_FEN);
+  for (let ply = 0; ply < 120 && !bad; ply++) {
+    for (let sq = 0; sq < 64 && !bad; sq++) {
+      for (const by of ['w', 'b']) {
+        const any = C.isAttacked(g.b, sq, by);
+        const who = C.attackersOf(g.b, sq, by);
+        compared++;
+        if (who.length > 0) foundSome++;
+        if (any !== (who.length > 0)) {
+          bad = 'ply ' + ply + ' sq ' + sq + ' by ' + by +
+                ' \u2014 isAttacked=' + any + ' attackersOf=[' + who.join(',') + ']';
+          break;
+        }
+        for (const a of who) {
+          if (!g.b[a] || C.colorOf(g.b[a]) !== by) {
+            bad = 'ply ' + ply + ': attackersOf named ' + a + ', not a ' + by + ' piece';
+            break;
+          }
+        }
+      }
+    }
+    const mv = C.legalMoves(g);
+    if (!mv.length) break;
+    g = C.makeMove(g, mv[(ply * 7 + 3) % mv.length]);
+  }
+  ok(!bad, 'attackersOf and isAttacked agree on every square of a full game' + (bad ? ' \u2014 ' + bad : ''));
+  ok(compared > 10000, 'the comparison actually ran (' + compared + ' square/color pairs)');
+  ok(foundSome > 500, 'and it found real attackers, not just empty answers (' + foundSome + ')');
+})();
+
 console.log(fails === 0 ? '\nRESULT: PASS (all engine checks)\n' : '\nRESULT: FAIL (' + fails + ' checks)\n');
 process.exit(fails === 0 ? 0 : 1);
