@@ -4,7 +4,7 @@
 
    TWO PHASES, and the split is the point:
 
-     PHASE 1 (vm)      the pure rules — position die, dice pools, banner caps, the chain,
+     PHASE 1 (vm)      the pure rules — position die, dice pools, rank caps, the chain,
                        the shape of the map. Sliced straight out of the shipped HTML and
                        run in a vm. Fast, and nothing is stubbed.
      PHASE 2 (browser) the things a vm cannot see, because they live in the DOM and in the
@@ -58,6 +58,7 @@ function slice(from, to) {
 const code =
   slice('var LAND = [',     '/* ── THE CHAIN') +
   slice('var CHAIN_MIN',    '/* ── DIFFICULTY') +
+  slice('var LEVELS = {',   'var G = null;') +
   slice('function d20()',   '/* ── THE MATERIAL DIE') +
   slice('var MAT_SCALE',    '/* ── THE POSITION DIE') +
   slice('var POS_CASTLE',   'function posSteps') +
@@ -75,18 +76,18 @@ vm.runInContext(code, G);
 
 /* ══ 1. THE MAP — ten holdings, and an even start ═══════════════════════════════════
    ⚑ His: "Let's add another territory so they are even." He was right and it was worse
-   than one territory: the opening was 5 holdings / 14 banners against 4 / 10. */
+   than one territory: the opening was 5 holdings / 14 ranks against 4 / 10. */
 check('ten holdings', G.LAND.length === 10, G.LAND.length + ' on the map');
-const own = G.START_OWN, ban = G.START_BAN;
+const own = G.START_OWN, rk = G.START_RANKS;
 const mine = own.filter((o) => o === 'm').length, theirs = own.filter((o) => o === 't').length;
 check('five holdings each', mine === 5 && theirs === 5, mine + ' yours · ' + theirs + ' theirs');
-const bMine = ban.reduce((s, v, i) => s + (own[i] === 'm' ? v : 0), 0);
-const bTheirs = ban.reduce((s, v, i) => s + (own[i] === 't' ? v : 0), 0);
-check('…and the same number of banners', bMine === 15 && bTheirs === 15,
+const bMine = rk.reduce((s, v, i) => s + (own[i] === 'm' ? v : 0), 0);
+const bTheirs = rk.reduce((s, v, i) => s + (own[i] === 't' ? v : 0), 0);
+check('…and the same number of ranks', bMine === 15 && bTheirs === 15,
       bMine + ' yours · ' + bTheirs + ' theirs');
-/* ⭐ AND MIRRORED, NOT MERELY EQUAL. Two sides can hold fifteen banners each and still have
+/* ⭐ AND MIRRORED, NOT MERELY EQUAL. Two sides can hold fifteen ranks each and still have
    completely different shapes — one 11-stack against five 3s is "even" and unplayable. */
-const shape = (side) => ban.filter((_, i) => own[i] === side).slice().sort((a, b) => a - b).join(',');
+const shape = (side) => rk.filter((_, i) => own[i] === side).slice().sort((a, b) => a - b).join(',');
 check('…in the same shape on both sides', shape('m') === shape('t'),
       'yours ' + shape('m') + ' · theirs ' + shape('t'));
 
@@ -110,17 +111,17 @@ const banned = ['The Sea', 'Mystery City', 'Chess City Elementary'];
 check('no slow-rolled location appears on the map',
       !G.LAND.some((L) => banned.indexOf(L.nm) >= 0), '[[slow-roll-cast]]');
 
-/* ══ 2. BANNERS ARE DICE ════════════════════════════════════════════════════════════
+/* ══ 2. RANKS ARE DICE ════════════════════════════════════════════════════════════
    ⚑ His: "Currently, the amount of troops on a territory don't seem to matter much." */
-check('two banners is one die', G.poolFor(2, false) === 1);
-check('four banners is two', G.poolFor(4, false) === 2);
-check('eight banners is four', G.poolFor(8, false) === 4);
+check('two ranks is one die', G.poolFor(2, false) === 1);
+check('four ranks is two', G.poolFor(4, false) === 2);
+check('eight ranks is four', G.poolFor(8, false) === 4);
 check('the pool is capped, so a huge stack is not a certainty',
       G.poolFor(40, false) === G.DICE_CAP, 'cap ' + G.DICE_CAP);
-check('a lone banner still rolls something', G.poolFor(1, false) === 1 && G.poolFor(1, true) === 1);
+check('a lone rank still rolls something', G.poolFor(1, false) === 1 && G.poolFor(1, true) === 1);
 check('the defender rounds UP where the attacker rounds down — nobody stays home on defense',
-      G.poolFor(3, true) === 2 && G.poolFor(3, false) === 1, '3 banners: 2 dice defending, 1 attacking');
-check('more banners is never fewer dice',
+      G.poolFor(3, true) === 2 && G.poolFor(3, false) === 1, '3 ranks: 2 dice defending, 1 attacking');
+check('more ranks is never fewer dice',
       [1,2,3,4,5,6,7,8,9,10].every((b, i, a) => i === 0 || G.poolFor(b, false) >= G.poolFor(a[i-1], false)));
 check('bestOf keeps the largest face', G.bestOf([3, 19, 7, 11]) === 19);
 check('the ring goes on the FIRST maximum, so two 20s do not both light up',
@@ -134,8 +135,8 @@ check('every face 1-20 lands in exactly one of four bands',
    ⚠⚠ MUTATION-TESTED ON PURPOSE. `capsFor(2).q === 0` alone would still pass if muster()
    ignored the caps object entirely — so the real check is BEHAVIORAL: hand a thin holding
    an enormous budget and prove no queen comes out. [[green-must-name-what-ran]] */
-check('under three banners the cap says no queen', G.capsFor(2).q === 0);
-check('three banners unlocks one', G.capsFor(3).q === 1 && G.capsFor(9).q === 1);
+check('under three ranks the cap says no queen', G.capsFor(2).q === 0);
+check('three ranks unlocks one', G.capsFor(3).q === 1 && G.capsFor(9).q === 1);
 let thinQueens = 0, fatQueens = 0;
 for (let i = 0; i < 400; i++) {
   if (G.muster(40, G.capsFor(2)).indexOf('q') >= 0) thinQueens++;
@@ -165,6 +166,34 @@ check('two neighbors of your own is a chain', G.CHAIN_MIN === 2);
   const o3 = own.slice();
   check('the chain reads the OWNER array it is handed, not a global',
         G.chained(o3, 5) === true && G.chained(['t','t','t','t','t','t','t','t','t','t'], 5) === true);
+  /* the map header prints this, so it has to count holdings and not links */
+  const o4 = ['m','m','m','t','t','t','t','t','t','t'];
+  check('the chain COUNT counts chained holdings of one side',
+        G.chainCount(o4, 'm') === 1 && G.chainCount(o4, 't') === 6,
+        'of the three, only Sand Mines has two friendly neighbors — and Sea-Board, ' +
+        'alone on two borders, is the one holding of theirs that is not chained');
+}
+
+/* ══ 4b. THREE ATTACKS A ROUND ══════════════════════════════════════════════════════
+   His, 2026-08-25: "User should be able to do up to 3 attacks per phase." Phase 2 proves
+   the budget actually falls as you spend it; these are the source-level companions. */
+check('the attack budget is three', G.ATTACK_CAP === 3);
+check('⚠ the machine cannot out-attack the player',
+      Object.keys(G.LEVELS).every(k => Math.min(G.LEVELS[k].maxAtk, G.ATTACK_CAP) <= G.ATTACK_CAP) &&
+      /Math\.min\(L\.maxAtk, ATTACK_CAP\)/.test(src),
+      'Hard already plays 3; the clamp is what keeps that true after the next edit');
+check('…and the budget is spent when an attack is COMMITTED, not when it is won',
+      /G\.atks--;\s*\n\s*beginBattle\(G\.sel, id, true\)/.test(src),
+      'an attack you lose is still one of your three');
+{
+  /* ⚠ MUTATION-MINDED: three separate places have to agree, so each gets its own check
+     rather than one regex that a single surviving site would satisfy. */
+  const resetFn = slice('function startYourTurn()', 'function campaignCheck');
+  check('a new round hands the budget back', /G\.atks = ATTACK_CAP;/.test(resetFn));
+  const contFn = slice("$('cont').addEventListener", "newCampaign('medium')");
+  check('spending the last attack moves you on rather than stranding you',
+        /G\.atks <= 0[\s\S]{0,120}setPhase\('fortify'\)/.test(contFn),
+        'the map still opens first, so you see what you took');
 }
 
 /* ══ 5. THE POSITION DIE — "within two of max" vs "within four or three of max" ══════ */
@@ -262,13 +291,56 @@ check('the how-it-works screen states BOTH castling bands',
       /<b>16 or better<\/b> tucks your\s+king into the corner/.test(howScreen) &&
       /<b>18 or better<\/b> brings his rook around/.test(howScreen),
       'the page and the rule agree, on both halves of it');
-check('…and it explains that banners are dice',
-      /keep the best/i.test(howScreen) && /one die per two banners/i.test(howScreen));
+check('…and it explains that ranks are dice',
+      /keep the best/i.test(howScreen) && /one die per two ranks/i.test(howScreen));
 check('…and that your own flag is your own loss',
       /Run your own clock out and you lose/i.test(howScreen),
       'the rule that replaced "either flag goes to the defender"');
 check('…and what a chain is',
       /chained/i.test(howScreen) && /extra die/i.test(howScreen));
+check('…and that you only get three attacks',
+      /three attacks a round/i.test(howScreen), 'his 2026-08-25 rule, stated on the screen');
+
+/* ══ 8b. HIS VOCABULARY, 2026-08-25 ═════════════════════════════════════════════════
+   "change Levy phase to deployment phase… change March phase to attack phase, and night
+   march phase to fortify phase… let's go with Ranks instead of Garrisons or banners."
+   ⚠ THE PHASE STRIP IS THE ONLY PLACE A PLAYER READS A PHASE NAME, so it is the region
+   this slices — not the whole file, where a comment would happily satisfy the regex. */
+const phaseBar = slice('<div class="phasebar" id="phasebar">', '</div>');
+check('the phase strip reads Deploy, Attack, Fortify, Theirs',
+      /data-p="deploy">Deploy</.test(phaseBar) && /data-p="attack">Attack</.test(phaseBar) &&
+      /data-p="fortify">Fortify</.test(phaseBar) && /data-p="theirs"/.test(phaseBar),
+      phaseBar.replace(/\s+/g, ' ').trim().slice(0, 90));
+{
+  /* ⚠ TWO CHECKS, BECAUSE THE WORDS LIVE IN TWO PLACES: static markup on the screens, and
+     string literals the script prints at runtime. Neither region includes comments, so a
+     note that explains the old vocabulary cannot fail this and — more to the point —
+     cannot satisfy it either. */
+  const RETIRED = /\b(levy|levies|garrison|garrisons|banner|banners)\b/i;
+  const markup = slice('<!-- ══ HOME', '<script>').replace(/<!--[\s\S]*?-->/g, '');
+  check('⚠ no screen still says levy, garrison or banner', !RETIRED.test(markup),
+        'the words he retired, across every screen at once');
+  const printable = (src.match(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g) || [])
+    .filter((s) => RETIRED.test(s));
+  check('…and nothing the script can print says them either', printable.length === 0,
+        printable.slice(0, 3).join(' | ') || 'no string literal carries the old words');
+}
+
+/* ══ 8c. THE CHAIN IS PROMOTED, IN FOUR PLACES ══════════════════════════════════════
+   His: "The chain is great - let's do it and promote it in-game." A bonus nobody can see
+   is a bonus nobody plays for, so each surface gets its own check — one regex over the
+   file would stay green with three of the four deleted. */
+check('the map header counts your chained holdings',
+      /id="t-chain"/.test(slice('<div class="tally">', '</div>')) &&
+      /\$\('t-chain'\)\.textContent = chainCount\(G\.own, 'm'\)/.test(src));
+check('a chained holding is marked on the map itself',
+      /if \(chained\(G\.own, L\.id\)\) cls \+= ' chained';/.test(slice('function drawMap()', 'function tapLand')) &&
+      /\.node\.chained \.disc \{/.test(slice('<style>', '</style>')),
+      'a double ring, because .sel/.can/.tgt already own the disc box-shadow');
+check('the roll screen says the extra die out loud, not in the fine print',
+      /chainchip/.test(slice('function beginBattle(', '/* ── THE ROLL, AS FOUR BEATS')) &&
+      /\.chainchip \{/.test(slice('<style>', '</style>')),
+      'it used to appear only as ", +1 chained" behind a tap');
 
 /* ⚠⚠ SPLIT PER CHAIR, AND A MUTATION TEST IS WHY. This was ONE check over the whole of
    posVerdict() — and the phrase it looked for appears in BOTH branches, so deleting it from
@@ -294,6 +366,39 @@ check('DEFENDING, it tells your own full castle from your own bare king',
 check('…and it names the no-rook case honestly',
       /no rook to bring/.test(defChair),
       'a roll cannot conjure a rook the muster never bought');
+
+/* ══ 9b. THE VERDICT REPORTS THE BOARD, NOT THE DIE ═════════════════════════════════
+   ⛑⛑ 2026-08-25, found by LOOKING at a render. `applyAttackerPos` has always returned how
+   many pawns it really advanced, and beginBattle discarded it — so posVerdict re-derived
+   the number from the die and announced "PAWNS UP 2" over a board with no pawns, every
+   time the muster spent its whole budget on pieces. RE-MEASURE, NEVER RECOMPUTE.
+   [[audit-numbers-can-be-wrong]] */
+check('the pawns that moved are KEPT, not re-derived',
+      /var aMoved = applyAttackerPos\(/.test(src) && /aMoved:aMoved/.test(src),
+      'the truth was already being computed and thrown away');
+check('ATTACKING, the headline counts what MOVED',
+      /var st = p\.aMoved/.test(attChair) && !/var st = posSteps/.test(attChair),
+      'not what the die promised');
+check('…and a wasted die is said out loud rather than dressed up',
+      /NO PAWNS TO PUSH/.test(attChair) && /no pawns to push/.test(attChair),
+      'the headline and the second clause both stop claiming pawns you do not have');
+check('DEFENDING, the chain counts pawns that really dug in',
+      /p\.dInfo\.chain \+ ' pawns dug in/.test(defChair) &&
+      /NO PAWNS TO DIG IN/.test(defChair),
+      'dInfo.chain is the measurement; posSteps is the promise');
+{
+  /* and prove the premise in the vm: an all-pieces muster cannot advance a pawn, so the
+     die really is wasted and the old headline really was describing nothing. */
+  const noPawns = new Array(64).fill('');
+  'RNBQKBNR'.split('').forEach((c, f) => { noPawns[56 + f] = c; });
+  check('an all-pieces muster really does advance zero pawns',
+        G.applyAttackerPos(noPawns, 'w', 20) === 0,
+        'a 20 on the position die and nothing to spend it on — this is the board that lied');
+  const withPawns = new Array(64).fill('');
+  [48, 49, 50, 51].forEach((i) => { withPawns[i] = 'P'; });
+  check('…while a muster with pawns advances them',
+        G.applyAttackerPos(withPawns, 'w', 20) > 0);
+}
 const matFn = slice('function matVerdict()', 'function posVerdict');
 check('the material verdict is one bold word plus one clause, not a sum',
       /<b>' \+ word \+ '<\/b><i>' \+ clause \+ '<\/i>/.test(matFn),
@@ -336,7 +441,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
           Object.keys(d.levels).length + ' levels');
     check('...including every balance dial, so nothing has to be retyped',
           d.balance.attEdge === G.ATT_EDGE && d.balance.clockAtt === G.CLOCK_ATT &&
-          d.balance.moveDelay === G.MOVE_DELAY && d.balance.queenBanners === G.QUEEN_BANNERS,
+          d.balance.moveDelay === G.MOVE_DELAY && d.balance.queenRanks === G.QUEEN_RANKS,
           'ATT_EDGE ' + d.balance.attEdge + ' - clocks ' + d.balance.clockAtt + '/' +
           d.balance.clockDef + ' - delay ' + d.balance.moveDelay + 's');
   }
@@ -394,8 +499,8 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
     page.on('pageerror', (e) => errs.push(e.message));
     await page.goto(`http://127.0.0.1:${port}/assets/games/pjcc_marchland.html`, { waitUntil: 'load' });
 
-    /* get into a defense: skip the levy by placing everything, skip the march, skip the
-       night march, and let them come */
+    /* place everything, spend all three attacks, then let them come — the run doubles as
+       the attack-budget probe and as the way into a defense */
     await page.click('#go');
     await page.waitForFunction(isOn('screen-map'));
     for (let i = 0; i < 8; i++) {
@@ -404,9 +509,63 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
       await page.click('.node.mine.can');
       await new Promise((r) => setTimeout(r, 90));
     }
-    await page.click('#endturn');      // levy → march
-    await page.click('#endturn');      // march → night
-    await page.click('#endturn');      // night → theirs
+    /* ── THREE ATTACKS AND NOT A FOURTH ──
+       ⚠⚠ THE ONLY HONEST WAY TO CHECK A BUDGET IS TO SPEND IT. Each attack is opened for
+       real and then withdrawn from, which is instant and still costs one of the three —
+       an attack you lose is one of your three, which is the rule that makes choosing
+       matter. Reading the counter after each one proves it falls on COMMIT, not on a win. */
+    await page.click('#endturn');      // deploy → attack
+    const atkSeen = [await page.$eval('#t-atk', (e) => e.textContent)];
+    /* ⚠ EVERY CLICK GOES THROUGH evaluate, NOT AN ELEMENT HANDLE. drawMap() removes and
+       rebuilds every node on each tap, so a handle taken one line earlier is detached by
+       the time it is used — which is exactly how this first crashed. */
+    const tapNth = (sel, i) => page.evaluate((s, n) => {
+      const el = document.querySelectorAll(s)[n];
+      if (el) el.click();
+      return !!el;
+    }, sel, i);
+    for (let a = 0; a < 3; a++) {
+      let opened = false;
+      const sources = await page.evaluate(() => document.querySelectorAll('.node.mine.can').length);
+      for (let s = 0; s < sources && !opened; s++) {
+        if (!(await tapNth('.node.mine.can', s))) break;
+        await new Promise((r) => setTimeout(r, 120));
+        if (await page.evaluate(() => document.querySelectorAll('.node.tgt').length)) {
+          await tapNth('.node.tgt', 0); opened = true;
+        } else {
+          await tapNth('.node.sel', 0);            // that source borders nobody — put it back
+          await new Promise((r) => setTimeout(r, 80));
+        }
+      }
+      if (!opened) break;
+      await page.waitForFunction(isOn('screen-roll'), { timeout: 9000 });
+      await page.click('#screen-roll');                         // skip the flourish
+      await page.waitForFunction(() => !document.getElementById('tobattle').disabled, { timeout: 9000 });
+      await page.click('#tobattle');
+      await page.waitForFunction(isOn('screen-battle'), { timeout: 9000 });
+      await page.click('#resign');
+      await page.waitForFunction(isOn('screen-result'), { timeout: 9000 });
+      await page.click('#cont');
+      await page.waitForFunction(isOn('screen-map'), { timeout: 9000 });
+      atkSeen.push(await page.$eval('#t-atk', (e) => e.textContent));
+    }
+    check('⚑ three attacks a round, counted down as you spend them',
+          atkSeen.join(',') === '3,2,1,0', 'the counter read ' + atkSeen.join(' → '));
+    const spent = await page.evaluate(() => ({
+      phase: (document.querySelector('.phasebar span.on') || {}).textContent,
+      targets: document.querySelectorAll('.node.tgt').length
+    }));
+    check('…and the fourth is not on offer — spending the last one moves you to Fortify',
+          spent.phase === 'Fortify' && spent.targets === 0,
+          'the strip reads ' + spent.phase + ', ' + spent.targets + ' enemy holdings offered');
+
+    /* whatever phase the run above left us in, walk it to theirs */
+    for (let i = 0; i < 3; i++) {
+      const p = await page.evaluate(() => (document.querySelector('.phasebar span.on') || {}).textContent);
+      if (p === 'Theirs') break;
+      await page.click('#endturn');
+      await new Promise((r) => setTimeout(r, 120));
+    }
 
     const gotRoll = await page.waitForFunction(isOn('screen-roll'), { timeout: 20000 })
       .then(() => true).catch(() => false);
@@ -485,4 +644,13 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
   console.log('\nRESULT: ' + (failed ? 'FAIL (' + failed + ')' : 'PASS (' + results.length + ' checks)') +
               '   ·   phase 1 in a vm, phase 2 in a browser\n');
   process.exit(failed ? 1 : 0);
-})().catch((e) => { console.error('CHECK CRASHED:', e); process.exit(1); });
+})().catch((e) => {
+  /* ⚠⚠ PRINT PHASE 1 BEFORE DYING (2026-08-25). Phase 1 holds its results until the very end,
+     so a phase-2 crash used to swallow them whole — a mutation that broke a rule AND broke the
+     page reported "TimeoutError: Waiting failed" and never named the rule it had broken. Green
+     must name what ran; RED MUST NAME WHAT FAILED. Found by mutation-testing, not by reading. */
+  console.error('\nCHECK CRASHED IN PHASE 2: ' + (e && e.message ? e.message.split('\n')[0] : e));
+  console.error('  (the page itself may be throwing — phase 1 below still ran in full)');
+  report('CHESSWILD: CAMPAIGN — PHASE 1 ONLY, PHASE 2 DID NOT FINISH');
+  process.exit(1);
+});

@@ -146,7 +146,12 @@
   .node.tgt .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.5); animation: pulse 1s infinite; }
   .node.can .disc { box-shadow: 0 0 0 3px rgba(107,255,184,.4); }
   .node.dim { opacity: .34; }
-  /* a banner landing, or a holding under an announced attack — both want a beat you can see */
+  /* ⚑ A CHAINED HOLDING WEARS A DOUBLE RING. ⚠ IT HAD TO BE THE BORDER, NOT A BOX-SHADOW —
+     .sel, .can and .tgt all own the disc's box-shadow, so a fourth state there would have
+     flickered in and out depending on what was selected. Everything is border-box, so the
+     disc stays exactly 38px and the map does not shift when a chain forms. */
+  .node.chained .disc { border-width: 5px; border-style: double; }
+  /* a rank landing, or a holding under an announced attack — both want a beat you can see */
   .node.flash .disc { animation: land .42s ease; }
   .node.doom .disc  { animation: doom .55s ease infinite; }
   @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(255,110,138,0); } }
@@ -165,9 +170,11 @@
 
   .status { text-align: center; font-size: 13px; color: var(--ink-2); min-height: 34px;
     line-height: 1.45; padding: 0 4px; }
-  .tally { display: flex; justify-content: center; gap: 14px; font-size: 12px; margin: 2px 0 3px;
-    color: var(--ink-3); }
+  /* ⚠ FOUR COUNTS NOW, AND 320px IS THE FLOOR — wrap rather than slide sideways. */
+  .tally { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px;
+    font-size: 12px; margin: 2px 0 3px; color: var(--ink-3); }
   .tally b.m { color: var(--mine); } .tally b.t { color: var(--theirs); }
+  .tally span.spent b { color: var(--ink-3); }
   /* THE PHASE STRIP — the round has five parts now and three of them are yours. Without
      this the player has to remember which one they are in, which is a thing a screen
      should never ask. */
@@ -185,6 +192,9 @@
   .rlab { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 5px;
     font-weight: 700; }
   .rlab.att { color: var(--mine); } .rlab.def { color: var(--theirs); }
+  /* the chain's payout, said where the extra die appears rather than in the fine print */
+  .chainchip { display: block; margin-top: 3px; font-style: normal; font-size: 9px;
+    letter-spacing: .8px; text-transform: uppercase; color: #ffd76e; }
   .rowhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
   .dice { display: flex; gap: 5px; min-height: 38px; align-items: center; flex-wrap: wrap; }
@@ -323,7 +333,7 @@
     letter-spacing: .4px; }
 
   /* ⚠ THE WHOLE ROOM RESPECTS reduced motion. The dice tumble, the pieces slide and the
-     banners land — three separate animations, and a player who has asked the OS for
+     ranks land — three separate animations, and a player who has asked the OS for
      stillness should get the same information without any of them. */
   @media (prefers-reduced-motion: reduce) {
     .die.roll, .die.kept::after, .node.flash .disc, .node.doom .disc, .pc.arrive { animation: none; }
@@ -359,29 +369,32 @@
   <section class="screen" id="screen-how">
     <h2>How it works</h2>
     <p class="sub" style="text-align:left;line-height:1.7">
-      <b>1. A round has five parts.</b> You get a <i>levy</i> (place your new banners), a
-      <i>march</i> (attack as often as you like) and a <i>night march</i> (one free move of
-      banners between two holdings you own). Then they take theirs, and you watch every step
-      of it.<br><br>
-      <b>2. Pick a fight.</b> Tap one of your holdings, then a bordering enemy one. You need
-      two banners or more to attack.<br><br>
-      <b>3. Banners are dice.</b> One die per two banners, up to four &mdash; and you
+      <b>1. Your round has three parts.</b> <i>Deployment</i> &mdash; place every new rank
+      yourself, one tap each. <i>Attack</i> &mdash; up to three a round. <i>Fortify</i>
+      &mdash; one free move of ranks between two holdings you hold. Then they take theirs,
+      and you watch every step of it.<br><br>
+      <b>2. Three attacks a round.</b> Tap one of your holdings, then a bordering enemy one.
+      You need two ranks or more to attack &mdash; and because you only get three,
+      <b>which three</b> is the whole decision.<br><br>
+      <b>3. Hold together &mdash; the Chain.</b> A holding with two or more neighbors of your
+      own is <i>chained</i>. The borders between them light up in your color, its marker wears
+      a double ring, and it rolls an <b>extra die every time it defends</b>. Spread thin and
+      every holding stands on its own.<br><br>
+      <b>4. Ranks are dice.</b> One die per two ranks, up to four &mdash; and you
       <b>keep the best</b>. A big stack is not a slightly better roll, it is a much smaller
-      chance of a bad one. Under three banners you cannot field a queen at all.<br><br>
-      <b>4. Both sides roll for material and for position.</b> Nothing is compared &mdash; the
+      chance of a bad one. Under three ranks you cannot field a queen at all.<br><br>
+      <b>5. Both sides roll for material and for position.</b> Nothing is compared &mdash; the
       dice are spent. Material buys chess material at its real value: queen 9, rook 5, bishop
       or knight 3, pawn 1. Kings are free.<br><br>
-      <b>5. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs
+      <b>6. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs
       the defender's into a chain their neighbors defend. On defense, <b>16 or better</b> tucks your
       king into the corner &mdash; and <b>18 or better</b> brings his rook around and three pawns
       with him.<br><br>
-      <b>6. Twenty seconds each, with a second back a move.</b> Only the side to move
+      <b>7. Twenty seconds each, with a second back a move.</b> Only the side to move
       burns clock, and every move gives back up to one second of what that move cost &mdash; so
       moving quickly costs you nothing. <b>Run your own clock out and you lose:</b> the attack
       failed, or the defense was overrun. Checkmate takes the ground outright. A draw goes to
       the defender.<br><br>
-      <b>7. Hold together.</b> A holding with two or more neighbors of your own is
-      <i>chained</i>, and it rolls an extra die when it defends.<br><br>
       <b>8. The winner takes the holding.</b> Lose them all and the campaign is over.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -390,21 +403,26 @@
   <!-- ══ MAP ════════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-map">
     <div class="phasebar" id="phasebar">
-      <span data-p="levy">Levy</span>
-      <span data-p="march">March</span>
-      <span data-p="night">Night</span>
+      <span data-p="deploy">Deploy</span>
+      <span data-p="attack">Attack</span>
+      <span data-p="fortify">Fortify</span>
       <span data-p="theirs" class="them">Theirs</span>
     </div>
     <div class="tally">
       <span>Yours <b class="m" id="t-mine">0</b></span>
       <span>Theirs <b class="t" id="t-theirs">0</b></span>
+      <!-- ⚑ THE CHAIN, COUNTED. His: "The chain is great - let's do it and promote it
+           in-game." It is promoted in four places and this is the quietest of them: a
+           number you watch go up as you play, which is what turns a rule into a goal. -->
+      <span class="chaintally" id="t-chain-wrap">Chained <b class="m" id="t-chain">0</b></span>
+      <span>Attacks <b class="m" id="t-atk">3</b></span>
       <span>Round <b id="t-round">1</b></span>
     </div>
     <div class="mapbox" id="mapbox">
       <svg id="links" viewBox="0 0 100 112" preserveAspectRatio="none"></svg>
     </div>
     <p class="status" id="map-say">Choose a holding to attack from.</p>
-    <button class="btn" id="endturn">End the march</button>
+    <button class="btn" id="endturn">End your attacks</button>
   </section>
 
   <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
@@ -489,13 +507,22 @@
 
    ⚑⚑ THE RISK QUESTION, ANSWERED ONCE SO NOBODY HAS TO ASK AGAIN (2026-08-24). Game rules
    and mechanics are not copyrightable — Baker v. Selden, 17 U.S.C. §102(b), and DaVinci v.
-   Ziko where the rules-holder lost. A levy/attack/fortify round, a garrison count and a
+   Ziko where the rules-holder lost. A deploy/attack/fortify round, a troop count and a
    region bonus are all methods of play. What IS protected is the NAME (a live Hasbro
    trademark), Risk's specific 42-territory map of Earth with its continents and their
    values, its art and trade dress, and its rulebook TEXT. This map is a fictional world,
-   the phases are renamed, and the one thing that is Risk's actual signature — COMPARING
-   the dice, highest against highest — is the one thing this game deliberately does not do.
+   and the one thing that is Risk's actual signature — COMPARING the dice, highest against
+   highest — is the one thing this game deliberately does not do.
    Full write-up: private/docs/marchland-rewrite.html.
+
+   ⚑ HE ASKED FOR "ATTACK" AND "FORTIFY" BY NAME (2026-08-25), and the earlier note here
+   said the phases were deliberately named around them. That note was a DESIGN caution, not
+   a legal one, and it is his call: a phase name cannot infringe, and "fortify" is a plain
+   English verb a dozen strategy games use. ⚠ THE COST IS REAL BUT IT IS ORIGINALITY, NOT
+   LIABILITY — borrowed vocabulary is most of what makes a game READ as a clone even when
+   it legally is not one. DEPLOYMENT is his own word and does the balancing work, and what
+   actually separates this game is one layer down: the dice are spent, never compared, and
+   the fight they buy is real chess.
 
    WHAT IS REAL AND WHAT IS INVENTED:
      REAL   — every move, capture, check, mate and stalemate (window.PJCCChess, the
@@ -525,8 +552,8 @@ var $ = function (id) { return document.getElementById(id); };
 
    ⚑⚑ A TENTH HOLDING, AND AN EVEN START (2026-08-24, his: "let's add another territory so
    they are even"). He was right and it was worse than he thought: the opening position was
-   FIVE holdings and FOURTEEN banners for them against FOUR and TEN for the player — a 40%
-   troop deficit before the first die. It is 5 holdings and 15 banners each now, mirrored:
+   FIVE holdings and FOURTEEN ranks for them against FOUR and TEN for the player — a 40%
+   troop deficit before the first die. It is 5 holdings and 15 ranks each now, mirrored:
    one 4-stack (your hub), one 2-stack (your corner), three 3s. Provably fair, which it
    had never been.
 
@@ -570,9 +597,9 @@ var LAND = [
 ];
 var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,5],[3,6],[5,6],[5,7],[5,8],[6,8],[7,8],
              [4,9],[6,9],[8,9]];
-/* the opening position: five holdings and fifteen banners a side, mirrored */
+/* the opening position: five holdings and fifteen ranks a side, mirrored */
 var START_OWN = ['t','t','m','t','t','m','t','m','m','m'];
-var START_BAN = [ 3 , 3 , 3 , 4 , 2 , 4 , 3 , 2 , 3 , 3 ];
+var START_RANKS = [ 3 , 3 , 3 , 4 , 2 , 4 , 3 , 2 , 3 , 3 ];
 
 var ADJ = (function () {
   var a = [], i;
@@ -600,12 +627,25 @@ function chained(own, id) {
   for (var i = 0; i < ns.length; i++) if (own[ns[i]] === side) n++;
   return n >= CHAIN_MIN;
 }
+/* how many of your holdings are chained right now — the map header prints it, because a
+   bonus nobody can see is a bonus nobody plays for */
+function chainCount(own, side) {
+  var n = 0;
+  for (var i = 0; i < own.length; i++) if (own[i] === side && chained(own, i)) n++;
+  return n;
+}
+
+/* ⚑⚑ THE ATTACK BUDGET (2026-08-25), his: "User should be able to do up to 3 attacks per
+   phase." Read the round comment further down for why this makes the phase better rather
+   than smaller. ⚠ IT IS DELIBERATELY THE SAME NUMBER AS LEVELS.hard.maxAtk — the hardest
+   machine and the player now attack under one shared ceiling. */
+var ATTACK_CAP = 3;
 
 /* ── DIFFICULTY ─────────────────────────────────────────────────────────────────
    ⚑ 2026-08-24, his: "There should be easy/medium/hard levels for the AI."
 
    ⚠⚠ THERE ARE TWO AIs IN THIS GAME AND ONLY ONE OF THEM WAS EVER BUILT. The BATTLE ai is
-   the alpha-beta below. The CAMPAIGN ai — which holding to hit, where the banners go,
+   the alpha-beta below. The CAMPAIGN ai — which holding to hit, where the ranks go,
    when to decline — was ONE LINE (strongest stack against the weakest neighbor, one
    attack a round, forever) and it is a bigger reason the game felt shallow than the chess
    ever was. Both move with the dial now.
@@ -633,11 +673,11 @@ var G = null;          // campaign state
 var B = null;          // battle state
 
 function newCampaign(diff) {
-  G = { own: START_OWN.slice(), ban: START_BAN.slice(), round: 1, sel: -1, busy: false,
-        diff: diff || 'medium', phase: 'levy', toPlace: 0,
-        nightFrom: -1, nightTo: -1, nightMoved: 0, nightDone: false,
+  G = { own: START_OWN.slice(), ranks: START_RANKS.slice(), round: 1, sel: -1, busy: false,
+        diff: diff || 'medium', phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
+        fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
         flash: -1, hot: null, q: [] };
-  G.toPlace = levyFor('m');
+  G.toPlace = deployFor('m');
 }
 
 /* ── DICE ──────────────────────────────────────────────────────────────────────────
@@ -660,18 +700,18 @@ function newCampaign(diff) {
    plays engine-vs-engine battles and prints the rate. Move one number here and re-run it. */
 function d20() { return 1 + Math.floor(Math.random() * 20); }
 
-/* ── BANNERS ARE DICE ──────────────────────────────────────────────────────────────
+/* ── RANKS ARE DICE ──────────────────────────────────────────────────────────────
    ⚑⚑ 2026-08-24, and this is the answer to the sharpest thing he has said about this
    game: "Currently, the amount of troops on a territory don't seem to matter much. How
    can we fix that?"
 
    ⚠ HE WAS RIGHT AND THE RATIO IS FIVE TO ONE. The material budget was
-   `round(d20 x 0.75) + floor(banners/2) + edge`. The DIE swings fifteen points. The whole
-   GARRISON swings three. A ten-stack and a three-stack fielded nearly the same army, so
+   `round(d20 x 0.75) + floor(ranks/2) + edge`. The DIE swings fifteen points. The whole
+   STACK swings three. A ten-stack and a three-stack fielded nearly the same army, so
    stacking was almost never worth doing.
 
-   The fix is not a bigger multiplier — it is giving banners a job the die cannot do.
-   ONE DIE PER TWO BANNERS, KEEP THE BEST. The attacker rounds down (somebody stays home);
+   The fix is not a bigger multiplier — it is giving ranks a job the die cannot do.
+   ONE DIE PER TWO RANKS, KEEP THE BEST. The attacker rounds down (somebody stays home);
    the defender rounds up (nobody does).
 
    ⭐ AND THE REASON THIS IS THE RIGHT LEVER RATHER THAN A LOUDER ONE: on the MATERIAL die
@@ -685,8 +725,8 @@ function d20() { return 1 + Math.floor(Math.random() * 20); }
    "one dice at a time … they roll, then lock in with a colored outline". You cannot lock
    one in unless there is more than one. */
 var DICE_CAP = 4;
-function poolFor(banners, isDefender) {
-  var n = isDefender ? Math.ceil(banners / 2) : Math.floor(banners / 2);
+function poolFor(ranks, isDefender) {
+  var n = isDefender ? Math.ceil(ranks / 2) : Math.floor(ranks / 2);
   return Math.max(1, Math.min(DICE_CAP, n));
 }
 function rollPool(k) {
@@ -708,9 +748,9 @@ function keptIndex(arr) {
 function dieBand(v) { return v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4; }
 
 /* ── THE MATERIAL DIE ──────────────────────────────────────────────────────────────
-   d20 → points, plus half the garrison, plus a flat edge. 0.75 puts a d20 in the 1..15
+   d20 → points, plus half the ranks standing there, plus a flat edge. 0.75 puts a d20 in the 1..15
    band, which on real chess values is "a pawn" at the bottom and "a queen and change" at
-   the top. The banner term stays as the smooth part of the curve — the dice pool above is
+   the top. The rank term stays as the smooth part of the curve — the dice pool above is
    the part with teeth. */
 /* ⚑ THE EDGE MOVED FROM THE DEFENDER TO THE ATTACKER (2026-08-08, after measuring), and
    the reason was the win condition: the attacker could only win by CHECKMATE, inside
@@ -738,8 +778,8 @@ function dieBand(v) { return v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4; }
 var MAT_SCALE = 0.75;
 var ATT_EDGE = 12;
 var DEF_EDGE = 0;
-function matBudget(die, gar, isDefender) {
-  var v = Math.round(die * MAT_SCALE) + Math.floor(gar / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
+function matBudget(die, rk, isDefender) {
+  var v = Math.round(die * MAT_SCALE) + Math.floor(rk / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
   /* ⚠ FLOOR AT ONE. The sweep drives ATT_EDGE negative to find the band, and a negative
      budget musters an empty army — a king alone on an empty board, which is a stalemate
      machine rather than a battle. One point is one pawn, which is a real if hopeless army. */
@@ -800,16 +840,16 @@ function posCastleFull(die) { return die >= POS_TOP; }         // …with his ro
    and always present — you cannot roll badly enough to lose your king before a shot
    is fired. Caps stop a big roll turning into four queens, which stops being chess.
 
-   ⚑ THE CAPS ARE A FUNCTION OF THE BANNERS NOW (2026-08-24) — the second of the three
-   ways banners were given teeth. UNDER THREE BANNERS YOU CANNOT FIELD A QUEEN, whatever
+   ⚑ THE CAPS ARE A FUNCTION OF THE RANKS NOW (2026-08-24) — the second of the three
+   ways ranks were given teeth. UNDER THREE RANKS YOU CANNOT FIELD A QUEEN, whatever
    you roll, and the rook cap climbs with the stack too. A thin holding is thin. It is a
    hard, legible rule rather than a curve, which is what makes stacking a decision instead
    of an optimisation. */
 var VAL = { q:9, r:5, b:3, n:3, p:1 };
-var QUEEN_BANNERS = 3;
-function capsFor(banners) {
-  return { q: banners >= QUEEN_BANNERS ? 1 : 0,
-           r: Math.min(2, Math.max(1, banners - 1)),
+var QUEEN_RANKS = 3;
+function capsFor(ranks) {
+  return { q: ranks >= QUEEN_RANKS ? 1 : 0,
+           r: Math.min(2, Math.max(1, ranks - 1)),
            b: 2, n: 2, p: 8 };
 }
 var CAP = capsFor(99);          /* the old unconditional caps, kept as the default */
@@ -1081,18 +1121,25 @@ function say(t) { $('map-say').innerHTML = t; }
    RANDOM across both sides while the screen sat still. Three of those five words were the
    problem — random, both, still. Now:
 
-     LEVY    you place every banner yourself, one tap each
-     MARCH   attack as often as you like
-     NIGHT   one free move of banners between two holdings you own that touch
-     THEIRS  their levy, their attacks and their night march, narrated step by step on
-             the map with a beat between each — and every attack ANNOUNCED before the
-             roll screen opens, so you see it coming
+     DEPLOY   you place every rank yourself, one tap each
+     ATTACK   up to ATTACK_CAP attacks, and choosing which is the whole decision
+     FORTIFY  one free move of ranks between two holdings you own that touch
+     THEIRS   their deployment, their attacks and their fortify, narrated step by step on
+              the map with a beat between each — and every attack ANNOUNCED before the
+              roll screen opens, so you see it coming
 
-   ⚠ THE PHASE NAMES ARE DELIBERATELY NOT "reinforce / attack / fortify". That vocabulary
-   is not infringing — rules are not copyrightable — but borrowed vocabulary is most of
-   what makes a game read as a clone even when it is not one. These are his world's words.
-   Still his to veto. */
-function levyFor(side) {
+   ⚑ HE NAMED THEM HIMSELF (2026-08-25): "change Levy phase to deployment phase… change
+   March phase to attack phase, and night march phase to fortify phase." The note that used
+   to sit here argued for keeping invented words; see the copyright block at the top of the
+   file for why that argument was about ORIGINALITY and never about liability.
+
+   ⚑⚑ THREE ATTACKS A ROUND (2026-08-25), his: "User should be able to do up to 3 attacks
+   per phase." ⚠ THIS IS NOT A NERF, IT IS THE DECISION THE PHASE WAS MISSING. Unlimited
+   attacks meant the only strategy was "throw everything at everything until it stops
+   working" — a budget of three turns each attack into a choice with a cost, and it is the
+   same number Hard already plays with (LEVELS.hard.maxAtk), so both chairs now share a
+   constraint instead of the machine alone wearing one. */
+function deployFor(side) {
   var n = 0;
   for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) n++;
   return Math.max(1, Math.floor(n / 3));
@@ -1109,13 +1156,14 @@ function setPhase(p) {
     el.classList.toggle('on', el.getAttribute('data-p') === p);
   });
   var btn = $('endturn');
-  if (p === 'levy') {
+  if (p === 'deploy') {
     btn.textContent = 'Place them all first';
     btn.disabled = G.toPlace > 0;
-    if (!G.toPlace) btn.textContent = 'Begin the march →';
-  } else if (p === 'march') {
-    btn.textContent = 'End the march →'; btn.disabled = false;
-  } else if (p === 'night') {
+    if (!G.toPlace) btn.textContent = 'Begin your attacks →';
+  } else if (p === 'attack') {
+    btn.textContent = G.atks > 0 ? 'End your attacks →' : 'No attacks left →';
+    btn.disabled = false;
+  } else if (p === 'fortify') {
     btn.textContent = 'End your turn →'; btn.disabled = false;
   } else {
     btn.textContent = 'Their turn…'; btn.disabled = true;
@@ -1151,24 +1199,26 @@ function drawMap() {
     if (G.flash === L.id) cls += ' flash';
     if (G.hot && G.hot.to === L.id) cls += ' doom';
 
-    if (G.phase === 'levy' && mine && G.toPlace > 0) cls += ' can';
-    if (G.phase === 'march') {
-      var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.ban[G.sel] >= 2;
+    if (chained(G.own, L.id)) cls += ' chained';
+
+    if (G.phase === 'deploy' && mine && G.toPlace > 0) cls += ' can';
+    if (G.phase === 'attack' && G.atks > 0) {
+      var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.ranks[G.sel] >= 2;
       if (isTgt) cls += ' tgt';
       if (G.sel >= 0 && !isSel && !isTgt) cls += ' dim';
-      if (G.sel < 0 && mine && G.ban[L.id] >= 2) cls += ' can';
+      if (G.sel < 0 && mine && G.ranks[L.id] >= 2) cls += ' can';
     }
-    if (G.phase === 'night' && !G.nightDone) {
-      if (G.nightFrom < 0) { if (mine && G.ban[L.id] >= 2) cls += ' can'; }
-      else if (L.id === G.nightFrom) cls += ' sel';
-      else if (mine && adj(G.nightFrom, L.id) && (G.nightTo < 0 || G.nightTo === L.id)) cls += ' can';
+    if (G.phase === 'fortify' && !G.fortDone) {
+      if (G.fortFrom < 0) { if (mine && G.ranks[L.id] >= 2) cls += ' can'; }
+      else if (L.id === G.fortFrom) cls += ' sel';
+      else if (mine && adj(G.fortFrom, L.id) && (G.fortTo < 0 || G.fortTo === L.id)) cls += ' can';
       else cls += ' dim';
     }
 
     var el = document.createElement('div');
     el.className = cls;
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
-    el.innerHTML = '<div class="disc">' + G.ban[L.id] + '</div><span class="nm">' + L.nm + '</span>';
+    el.innerHTML = '<div class="disc">' + G.ranks[L.id] + '</div><span class="nm">' + L.nm + '</span>';
     el.addEventListener('click', function () { tapLand(L.id); });
     box.appendChild(el);
   });
@@ -1176,63 +1226,77 @@ function drawMap() {
   var m = 0, t = 0;
   for (var i = 0; i < LAND.length; i++) { if (G.own[i] === 'm') m++; else t++; }
   $('t-mine').textContent = m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
+  $('t-chain').textContent = chainCount(G.own, 'm');
+  $('t-atk').textContent = G.atks;
+  $('t-atk').parentNode.className = G.atks ? '' : 'spent';
 }
 
 function tapLand(id) {
   if (G.busy) return;
 
-  /* ── LEVY: one tap, one banner ── */
-  if (G.phase === 'levy') {
+  /* ── DEPLOYMENT: one tap, one rank ── */
+  if (G.phase === 'deploy') {
     if (G.own[id] !== 'm') { say('You can only reinforce ground you hold.'); return; }
     if (G.toPlace <= 0) return;
-    G.ban[id]++; G.toPlace--;
+    G.ranks[id]++; G.toPlace--;
     G.flash = id;
-    say(G.toPlace ? '<b>' + G.toPlace + '</b> banner' + (G.toPlace > 1 ? 's' : '') + ' left to place.'
-                  : 'All placed. Now choose a holding to attack from.');
-    setPhase('levy'); drawMap();
+    say(G.toPlace ? '<b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + ' left to place.'
+                  : 'All placed. You have <b>' + G.atks + '</b> attacks this round.');
+    setPhase('deploy'); drawMap();
     setTimeout(function () { G.flash = -1; drawMap(); }, 420);
     return;
   }
 
-  /* ── NIGHT MARCH: pick a source, then tap the destination once per banner ── */
-  if (G.phase === 'night') {
-    if (G.nightDone) { say('The night march is spent for this round.'); return; }
-    if (G.nightFrom < 0) {
-      if (G.own[id] !== 'm') { say('Move banners between your own holdings.'); return; }
-      if (G.ban[id] < 2) { say(LAND[id].nm + ' has one banner — it cannot spare it.'); return; }
-      G.nightFrom = id;
-      say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per banner.');
+  /* ── FORTIFY: pick a source, then tap the destination once per rank ── */
+  if (G.phase === 'fortify') {
+    if (G.fortDone) { say('You have already fortified this round.'); return; }
+    if (G.fortFrom < 0) {
+      if (G.own[id] !== 'm') { say('Move ranks between your own holdings.'); return; }
+      if (G.ranks[id] < 2) { say(LAND[id].nm + ' has one rank — it cannot spare it.'); return; }
+      G.fortFrom = id;
+      say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per rank.');
       drawMap(); return;
     }
-    if (id === G.nightFrom) { G.nightFrom = -1; G.nightTo = -1; G.nightMoved = 0;
-      say('Pick a holding to move banners from.'); drawMap(); return; }
-    if (G.own[id] !== 'm' || !adj(G.nightFrom, id)) {
+    if (id === G.fortFrom) { G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0;
+      say('Pick a holding to move ranks from.'); drawMap(); return; }
+    if (G.own[id] !== 'm' || !adj(G.fortFrom, id)) {
       say(LAND[id].nm + ' is not a neighbor you hold.'); return;
     }
-    if (G.nightTo >= 0 && G.nightTo !== id) {
-      say('One move a night. ' + LAND[G.nightTo].nm + ' is where these are going.'); return;
+    if (G.fortTo >= 0 && G.fortTo !== id) {
+      say('One move a round. ' + LAND[G.fortTo].nm + ' is where these are going.'); return;
     }
-    if (G.ban[G.nightFrom] < 2) { say('One has to stay behind. Done.'); G.nightDone = true; drawMap(); return; }
-    G.nightTo = id; G.ban[G.nightFrom]--; G.ban[id]++; G.nightMoved++;
+    if (G.ranks[G.fortFrom] < 2) { say('One has to stay behind. Done.'); G.fortDone = true; drawMap(); return; }
+    G.fortTo = id; G.ranks[G.fortFrom]--; G.ranks[id]++; G.fortMoved++;
     G.flash = id;
-    say('<b>' + G.nightMoved + '</b> moved to ' + LAND[id].nm + '. Tap again for another.');
+    say('<b>' + G.fortMoved + '</b> moved to ' + LAND[id].nm + '. Tap again for another.');
     drawMap();
     setTimeout(function () { G.flash = -1; drawMap(); }, 420);
     return;
   }
 
-  /* ── MARCH ── */
-  if (G.phase !== 'march') return;
+  /* ── ATTACK ── */
+  if (G.phase !== 'attack') return;
+  if (G.atks <= 0) { say(atksLine()); return; }
   if (G.own[id] === 'm') {
-    if (G.ban[id] < 2) { say(LAND[id].nm + ' has only one banner — it cannot attack.'); drawMap(); return; }
+    if (G.ranks[id] < 2) { say(LAND[id].nm + ' has only one rank — it cannot attack.'); drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
-    say(G.sel < 0 ? 'Choose a holding to attack from.'
-      : 'From ' + LAND[id].nm + ' &mdash; ' + poolFor(G.ban[id], false) + ' dice. Choose a neighbor to take.');
+    say(G.sel < 0 ? atksLine()
+      : 'From ' + LAND[id].nm + ' &mdash; ' + poolFor(G.ranks[id], false) + ' dice. Choose a neighbor to take.');
     drawMap(); return;
   }
   if (G.sel < 0) { say('Start from one of your own holdings.'); return; }
   if (!adj(G.sel, id)) { say(LAND[id].nm + ' does not border ' + LAND[G.sel].nm + '.'); return; }
+  /* ⚠ THE BUDGET IS SPENT HERE, WHEN THE ATTACK IS COMMITTED — not when it is won. An
+     attack you lose is still one of your three; that is what makes choosing them matter. */
+  G.atks--;
   beginBattle(G.sel, id, true);
+}
+
+/* the one line that says how many attacks are left, in the same words everywhere */
+function atksLine() {
+  if (G.atks <= 0) return '<b>No attacks left</b> this round. Fortify, or end your turn.';
+  return '<b>' + G.atks + '</b> attack' + (G.atks > 1 ? 's' : '') +
+         ' left. Choose a holding to attack from.';
 }
 
 /* ── ROLL SCREEN ───────────────────────────────────────────────────────────────── */
@@ -1243,36 +1307,42 @@ function clearRollTimers() { rollTimers.forEach(clearTimeout); rollTimers = []; 
 
 function beginBattle(from, to, playerAttacks) {
   G.busy = true;
-  var aBan = G.ban[from], dBan = G.ban[to];
+  var aRanks = G.ranks[from], dRanks = G.ranks[to];
 
   /* ── THE POOLS ──
      ⚠ THE CHAIN IS A DEFENDER'S DIE AND ONLY A DEFENDER'S DIE. It is a bonus for holding
      together, and holding is what a defender does. Giving it to the attacker would have
      made a compact position better at everything, which is not a trade-off. */
-  var aMatPool = rollPool(poolFor(aBan, false));
-  var aPosPool = rollPool(poolFor(aBan, false));
+  var aMatPool = rollPool(poolFor(aRanks, false));
+  var aPosPool = rollPool(poolFor(aRanks, false));
   var dChain = chained(G.own, to);
-  var dDice = Math.min(DICE_CAP + 1, poolFor(dBan, true) + (dChain ? 1 : 0));
+  var dDice = Math.min(DICE_CAP + 1, poolFor(dRanks, true) + (dChain ? 1 : 0));
   var dMatPool = rollPool(dDice);
   var dPosPool = rollPool(dDice);
 
   var aMat = bestOf(aMatPool), aPos = bestOf(aPosPool);
   var dMat = bestOf(dMatPool), dPos = bestOf(dPosPool);
-  var aBud = matBudget(aMat, aBan, false);
-  var dBud = matBudget(dMat, dBan, true);
-  var aArmy = muster(aBud, capsFor(aBan)), dArmy = muster(dBud, capsFor(dBan));
+  var aBud = matBudget(aMat, aRanks, false);
+  var dBud = matBudget(dMat, dRanks, true);
+  var aArmy = muster(aBud, capsFor(aRanks)), dArmy = muster(dBud, capsFor(dRanks));
 
   /* ⚑ THE BOARD IS BUILT HERE, NOT AT THE START OF THE BATTLE (2026-08-24). It has to be,
      because the roll screen now SHOWS it — and a preview that re-rolled on the way to the
      board would be a lie told in a helpful voice. One board object, previewed then played. */
   var attWhite = playerAttacks;
   var board = buildBoard(attWhite ? aArmy : dArmy, attWhite ? dArmy : aArmy);
-  applyAttackerPos(board, attWhite ? 'w' : 'b', aPos);
+  /* ⚠⚠ KEEP WHAT ACTUALLY MOVED (2026-08-25). applyAttackerPos has always RETURNED the
+     number of pawns it really advanced, and this line threw it away — so the roll screen
+     re-derived the figure from the die and announced "PAWNS UP 2" over a board with no
+     pawns on it, whenever the muster spent its whole budget on pieces. Caught by looking
+     at a render, not by reading the code. RE-MEASURE, NEVER RECOMPUTE — the same rule the
+     defender's chair already followed with "no rook to bring". */
+  var aMoved = applyAttackerPos(board, attWhite ? 'w' : 'b', aPos);
   var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', dPos);
 
-  PEND = { from:from, to:to, playerAttacks:playerAttacks, aBan:aBan, dBan:dBan,
+  PEND = { from:from, to:to, playerAttacks:playerAttacks, aRanks:aRanks, dRanks:dRanks,
            aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos, aMat:aMat, dMat:dMat,
-           aBud:aBud, dBud:dBud, board:board, dInfo:dInfo, attWhite:attWhite,
+           aBud:aBud, dBud:dBud, board:board, dInfo:dInfo, aMoved:aMoved, attWhite:attWhite,
            aMatPool:aMatPool, aPosPool:aPosPool, dMatPool:dMatPool, dPosPool:dPosPool,
            dChain:dChain };
 
@@ -1280,7 +1350,11 @@ function beginBattle(from, to, playerAttacks) {
     ? 'You march on ' + LAND[to].nm
     : LAND[from].nm + ' marches on ' + LAND[to].nm;
   $('att-label').textContent = (playerAttacks ? 'You attack' : 'They attack') + ' · ' + LAND[from].nm;
-  $('def-label').textContent = (playerAttacks ? 'They defend' : 'You defend') + ' · ' + LAND[to].nm;
+  /* ⚑ THE CHAIN GETS ITS OWN CHIP, ABOVE THE DICE IT IS ABOUT. It used to appear only as
+     ", +1 chained" inside the fine print behind a tap — which is to say the one bonus in
+     the game that rewards how you hold the map was invisible at the moment it paid out. */
+  $('def-label').innerHTML = (playerAttacks ? 'They defend' : 'You defend') + ' · ' + LAND[to].nm +
+    (dChain ? '<em class="chainchip">chained &middot; +1 die</em>' : '');
 
   ['att-mat','att-pos','def-mat','def-pos'].forEach(function (k) { $(k).innerHTML = ''; });
   $('v-mat').innerHTML = '&nbsp;'; $('v-mat').className = 'vline';
@@ -1370,7 +1444,7 @@ function matVerdict() {
   else              { word = 'OUTNUMBERED'; clause = 'brace for something big'; cls = 'bad'; }
   var maths = '<span class="maths">you <b>' + mine + '</b> pts · them <b>' + theirs + '</b> pts' +
     ' &mdash; ' + (p.playerAttacks ? p.aMatPool.length : p.dMatPool.length) + ' dice from ' +
-    (p.playerAttacks ? p.aBan : p.dBan) + ' banners' + (!p.playerAttacks && p.dChain ? ', +1 chained' : '') + '</span>';
+    (p.playerAttacks ? p.aRanks : p.dRanks) + ' ranks' + (!p.playerAttacks && p.dChain ? ', +1 chained' : '') + '</span>';
   var el = $('v-mat');
   el.className = 'vline ' + cls;
   el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
@@ -1379,17 +1453,22 @@ function posVerdict() {
   var p = PEND, word, clause, cls;
   var dHasRook = p.dArmy.indexOf('r') >= 0;
   if (p.playerAttacks) {
-    /* your position die is the attacker's; theirs is the castle */
-    var st = posSteps(p.aPos);
-    if (posTop(p.aPos))   { word = 'PAWNS UP ' + st; clause = 'space, and one is nearly through'; cls = 'hot'; }
+    /* your position die is the attacker's; theirs is the castle.
+       ⚠ `st` IS WHAT MOVED, NOT WHAT THE DIE PROMISED — a 20 buys nothing when the muster
+       left you no pawns, and a screen that says otherwise is lying about the board you are
+       about to play. `promised` separates "the die was low" from "there was nothing to push". */
+    var st = p.aMoved, promised = posSteps(p.aPos);
+    if (posTop(p.aPos) && st) { word = 'PAWNS UP ' + st; clause = 'space, and one is nearly through'; cls = 'hot'; }
     else if (st >= 2)     { word = 'PAWNS UP ' + st; clause = 'you have room to work'; cls = 'good'; }
     else if (st === 1)    { word = 'ONE PAWN UP'; clause = 'not much, but it is something'; cls = 'flat'; }
+    else if (promised)    { word = 'NO PAWNS TO PUSH'; clause = 'the muster spent it all on pieces — the die is wasted'; cls = 'bad'; }
     else                  { word = 'NOTHING GAINED'; clause = 'your pawns are still at home'; cls = 'bad'; }
     /* ⚠ THEIR CASTLE IS THE BIGGER NEWS AND TAKES THE HEADLINE — but it must not SWALLOW your
        own roll. A 17 on the attacker's die is three pawns up and one of them a rank further,
        and a screen that answers a great roll with a sentence about the enemy has thrown the
        information away. The word is theirs; the clause carries both halves. */
-    var yours = st ? 'your pawns are up ' + st : 'your pawns are still home';
+    var yours = st ? 'your pawns are up ' + st
+                   : promised ? 'you have no pawns to push' : 'your pawns are still home';
     if (posCastleFull(p.dPos) && dHasRook) { word = 'THEY CASTLE FULLY'; clause = 'king, rook and three pawns · ' + yours; cls = 'bad'; }
     else if (posCastles(p.dPos))           { word = 'THEIR KING TUCKS IN'; clause = 'no rook, no shield · ' + yours; cls = 'flat'; }
   } else {
@@ -1399,7 +1478,10 @@ function posVerdict() {
       clause = dHasRook ? 'king, rook and three pawns' : 'king and a pawn shield — no rook to bring';
       cls = 'hot';
     } else if (posCastles(p.dPos)) { word = 'KING IN THE CORNER'; clause = 'no rook, no shield'; cls = 'good'; }
-    else if (posSteps(p.dPos))     { word = 'A CHAIN HOLDS'; clause = posSteps(p.dPos) + ' pawns dug in and guarded'; cls = 'flat'; }
+    /* ⚠ SAME RULE ON THIS CHAIR: `dInfo.chain` is how many pawns really dug in. Reading
+       posSteps() again would announce a chain the muster never had pawns to build. */
+    else if (p.dInfo.chain)        { word = 'A CHAIN HOLDS'; clause = p.dInfo.chain + ' pawns dug in and guarded'; cls = 'flat'; }
+    else if (posSteps(p.dPos))     { word = 'NO PAWNS TO DIG IN'; clause = 'the muster bought pieces, not a shield'; cls = 'bad'; }
     else                           { word = 'FLAT LINE'; clause = 'nobody dug in — your king is loose'; cls = 'bad'; }
   }
   var maths = '<span class="maths">attacker <b>' + p.aPos + '</b> · defender <b>' + p.dPos + '</b>' +
@@ -1537,7 +1619,7 @@ function startBattle() {
   paint();
   updateClock();
   $('say').innerHTML = p.playerAttacks
-    ? 'You attack. <b>Force it, or the march stalls.</b>'
+    ? 'You attack. <b>Force it, or the attack stalls.</b>'
     : 'You defend. <b>Outlast their twenty seconds.</b>' +
       (p.dInfo.castled ? ' Your king is castled.' : '');
   $('ready').textContent = 'READY…';
@@ -1703,8 +1785,8 @@ function applyMove(m) {
   // not stop a twenty-second battle to ask.
   var p = B.S.b[m.from];
   if (p && p.toLowerCase() === 'p') {
-    var rank = (m.to / 8) | 0;
-    if (rank === 0 || rank === 7) m = { from:m.from, to:m.to, promo:(p === 'P' ? 'Q' : 'q') };
+    var row = (m.to / 8) | 0;
+    if (row === 0 || row === 7) m = { from:m.from, to:m.to, promo:(p === 'P' ? 'Q' : 'q') };
   }
   var mover = B.S.turn;
   B.S = C.makeMove(B.S, m);
@@ -1811,13 +1893,13 @@ function finish(how) {
 
 function resolveLand(p, attackerWon) {
   if (attackerWon) {
-    var moved = Math.max(1, p.aBan - 1);
+    var moved = Math.max(1, p.aRanks - 1);
     G.own[p.to] = G.own[p.from];
-    G.ban[p.to] = moved;
-    G.ban[p.from] = p.aBan - moved;
-    if (G.ban[p.from] < 1) G.ban[p.from] = 1;
+    G.ranks[p.to] = moved;
+    G.ranks[p.from] = p.aRanks - moved;
+    if (G.ranks[p.from] < 1) G.ranks[p.from] = 1;
   } else {
-    G.ban[p.from] = 1;
+    G.ranks[p.from] = 1;
   }
 }
 
@@ -1830,11 +1912,11 @@ function resolveLand(p, attackerWon) {
    ⚠ AN ATTACK STEP SUSPENDS THE QUEUE. beginBattle changes screens, so `pump` returns and
    the Continue button resumes it. Every attack is re-validated when it comes up, because
    an earlier battle in the same turn may have moved the ground under it. */
-function srcScore(id, ban) {
+function srcScore(id, rk) {
   var ns = nbrs(id), best = -99;
   for (var i = 0; i < ns.length; i++) {
     if (G.own[ns[i]] !== 'm') continue;
-    var s = ban[id] - ban[ns[i]];
+    var s = rk[id] - rk[ns[i]];
     if (LEVELS[G.diff].chainAware && chained(G.own, ns[i])) s += 2;   // break their chain
     if (s > best) best = s;
   }
@@ -1843,60 +1925,64 @@ function srcScore(id, ban) {
 function rivalPlan() {
   var L = LEVELS[G.diff] || LEVELS.medium;
   var theirs = idsOf('t');
-  if (!theirs.length) return { levy: [], attacks: [], move: null };
-  var add = levyFor('t');
-  var ban = G.ban.slice();
+  if (!theirs.length) return { deploy: [], attacks: [], move: null };
+  var add = deployFor('t');
+  var rk = G.ranks.slice();
   var front = theirs.filter(function (id) {
     return nbrs(id).some(function (j) { return G.own[j] === 'm'; });
   });
 
-  /* ── the levy ──
+  /* ── the deployment ──
      Easy scatters it, which is exactly the mistake a beginner makes. The other two stack
      it where they mean to attack from, which is exactly why they are harder. */
-  var levy = [], i;
+  var deploy = [], i;
   if (L.smart && front.length) {
-    var ranked = front.slice().sort(function (a, b) { return srcScore(b, ban) - srcScore(a, ban); });
+    var order = front.slice().sort(function (a, b) { return srcScore(b, rk) - srcScore(a, rk); });
     for (i = 0; i < add; i++) {
-      var pickId = (i === 0 || Math.random() < 0.7) ? ranked[0] : ranked[Math.min(ranked.length - 1, 1 + ((Math.random() * 2) | 0))];
-      levy.push(pickId); ban[pickId]++;
+      var pickId = (i === 0 || Math.random() < 0.7) ? order[0] : order[Math.min(order.length - 1, 1 + ((Math.random() * 2) | 0))];
+      deploy.push(pickId); rk[pickId]++;
     }
   } else {
     for (i = 0; i < add; i++) {
       var r = theirs[(Math.random() * theirs.length) | 0];
-      levy.push(r); ban[r]++;
+      deploy.push(r); rk[r]++;
     }
   }
 
-  /* ── the attacks, planned against the POST-levy banners ── */
+  /* ── the attacks, planned against the POST-deployment ranks ── */
   var cand = [];
   theirs.forEach(function (from) {
-    if (ban[from] < 2) return;
+    if (rk[from] < 2) return;
     nbrs(from).forEach(function (to) {
       if (G.own[to] !== 'm') return;
-      var s = ban[from] - ban[to];
+      var s = rk[from] - rk[to];
       if (L.chainAware && chained(G.own, to)) s += 2;
-      if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing banners at it
+      if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing ranks at it
       cand.push({ from:from, to:to, s:s });
     });
   });
   cand.sort(function (a, b) { return b.s - a.s; });
+  /* ⚠ THE MACHINE IS HELD TO THE SAME CEILING AS THE PLAYER. Hard's maxAtk is already 3,
+     so this clamp changes nothing today — it is here so raising one number cannot quietly
+     give the machine a round the player can never have. */
+  var cap = Math.min(L.maxAtk, ATTACK_CAP);
   var attacks = [], used = {};
-  for (i = 0; i < cand.length && attacks.length < L.maxAtk; i++) {
-    if (used[cand[i].from]) continue;            // one march per holding a round
+  for (i = 0; i < cand.length && attacks.length < cap; i++) {
+    if (used[cand[i].from]) continue;            // one attack per holding a round
     used[cand[i].from] = 1;
     attacks.push({ from:cand[i].from, to:cand[i].to });
   }
 
-  /* ── the night march: rear to front, and only if it has a rear ── */
+  /* ── the fortify move: rear to front, and only if it has a rear ── */
   var move = null;
   if (L.smart && front.length) {
-    var rear = theirs.filter(function (id) { return front.indexOf(id) < 0 && ban[id] >= 2; });
+    var rear = theirs.filter(function (id) { return front.indexOf(id) < 0 && rk[id] >= 2; });
     for (i = 0; i < rear.length && !move; i++) {
       var ns = nbrs(rear[i]).filter(function (j) { return G.own[j] === 't' && front.indexOf(j) >= 0; });
-      if (ns.length) move = { from: rear[i], to: ns[0], n: ban[rear[i]] - 1 };
+      if (ns.length) move = { from: rear[i], to: ns[0], n: rk[rear[i]] - 1 };
     }
   }
-  return { levy: levy, attacks: attacks, move: move };
+  return { deploy: deploy, attacks: attacks, move: move };
 }
 
 function theirTurn() {
@@ -1904,7 +1990,7 @@ function theirTurn() {
   G.sel = -1; G.busy = true;
   var plan = rivalPlan();
   G.q = [{ t:'say', s:'Their turn.' }];
-  plan.levy.forEach(function (id) { G.q.push({ t:'levy', id:id }); });
+  plan.deploy.forEach(function (id) { G.q.push({ t:'deploy', id:id }); });
   plan.attacks.forEach(function (a) {
     G.q.push({ t:'declare', from:a.from, to:a.to });
     G.q.push({ t:'attack', from:a.from, to:a.to });
@@ -1918,15 +2004,15 @@ function pump() {
   if (!G.q.length) { startYourTurn(); return; }
   var s = G.q.shift();
   if (s.t === 'say') { say(s.s); drawMap(); setTimeout(pump, 650); return; }
-  if (s.t === 'levy') {
-    G.ban[s.id]++; G.flash = s.id;
-    say('Banners reach <b>' + LAND[s.id].nm + '</b>.');
+  if (s.t === 'deploy') {
+    G.ranks[s.id]++; G.flash = s.id;
+    say('Ranks reach <b>' + LAND[s.id].nm + '</b>.');
     drawMap();
     setTimeout(function () { G.flash = -1; drawMap(); pump(); }, 480);
     return;
   }
   if (s.t === 'declare') {
-    if (G.own[s.from] !== 't' || G.ban[s.from] < 2 || G.own[s.to] !== 'm') { pump(); return; }
+    if (G.own[s.from] !== 't' || G.ranks[s.from] < 2 || G.own[s.to] !== 'm') { pump(); return; }
     G.hot = { from:s.from, to:s.to };
     say('<b>' + LAND[s.from].nm + '</b> marches on <b>' + LAND[s.to].nm + '</b>.');
     drawMap();
@@ -1935,14 +2021,14 @@ function pump() {
   }
   if (s.t === 'attack') {
     G.hot = null;
-    if (G.own[s.from] !== 't' || G.ban[s.from] < 2 || G.own[s.to] !== 'm') { drawMap(); pump(); return; }
+    if (G.own[s.from] !== 't' || G.ranks[s.from] < 2 || G.own[s.to] !== 'm') { drawMap(); pump(); return; }
     beginBattle(s.from, s.to, false);            // resumes from the Continue button
     return;
   }
   if (s.t === 'move') {
-    var n = Math.min(s.n, Math.max(0, G.ban[s.from] - 1));
+    var n = Math.min(s.n, Math.max(0, G.ranks[s.from] - 1));
     if (G.own[s.from] !== 't' || G.own[s.to] !== 't' || n < 1) { pump(); return; }
-    G.ban[s.from] -= n; G.ban[s.to] += n; G.flash = s.to;
+    G.ranks[s.from] -= n; G.ranks[s.to] += n; G.flash = s.to;
     say('They move <b>' + n + '</b> to ' + LAND[s.to].nm + ' under the dark.');
     drawMap();
     setTimeout(function () { G.flash = -1; drawMap(); pump(); }, 900);
@@ -1955,10 +2041,11 @@ function startYourTurn() {
   if (campaignCheck()) return;
   G.round++;
   G.sel = -1; G.busy = false; G.hot = null; G.flash = -1;
-  G.nightFrom = -1; G.nightTo = -1; G.nightMoved = 0; G.nightDone = false;
-  G.toPlace = levyFor('m');
-  setPhase('levy');
-  say('The levy — place <b>' + G.toPlace + '</b> banner' + (G.toPlace > 1 ? 's' : '') + '.');
+  G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0; G.fortDone = false;
+  G.atks = ATTACK_CAP;
+  G.toPlace = deployFor('m');
+  setPhase('deploy');
+  say('Deployment — place <b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + '.');
   drawMap(); show('screen-map');
 }
 function campaignCheck() {
@@ -1969,7 +2056,7 @@ function campaignCheck() {
 }
 
 function campaignOver(won) {
-  $('verdict').textContent = won ? 'THE MARCH IS YOURS' : 'THE MARCH IS LOST';
+  $('verdict').textContent = won ? 'THE CAMPAIGN IS YOURS' : 'THE CAMPAIGN IS LOST';
   $('verdict').className = 'verdict ' + (won ? 'win' : 'lose');
   $('result-say').textContent = won
     ? 'Ten holdings, all of them flying your colors. Round ' + G.round + '.'
@@ -1989,25 +2076,25 @@ Array.prototype.forEach.call($('levels').children, function (b) {
 });
 $('go').addEventListener('click', function () {
   newCampaign(chosenLevel);
-  setPhase('levy');
-  say('The levy — place <b>' + G.toPlace + '</b> banner' + (G.toPlace > 1 ? 's' : '') + '.');
+  setPhase('deploy');
+  say('Deployment — place <b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + '.');
   drawMap(); show('screen-map');
 });
 $('how').addEventListener('click', function () { show('screen-how'); });
 $('back').addEventListener('click', function () { show('screen-home'); });
 $('endturn').addEventListener('click', function () {
   if (G.busy) return;
-  if (G.phase === 'levy') {
+  if (G.phase === 'deploy') {
     if (G.toPlace > 0) return;
-    setPhase('march'); G.sel = -1;
-    say('Choose a holding to attack from.'); drawMap(); return;
+    setPhase('attack'); G.sel = -1;
+    say(atksLine()); drawMap(); return;
   }
-  if (G.phase === 'march') {
-    setPhase('night'); G.sel = -1;
-    say('The night march — one move of banners between two holdings you hold.');
+  if (G.phase === 'attack') {
+    setPhase('fortify'); G.sel = -1;
+    say('Fortify — one free move of ranks between two holdings you hold.');
     drawMap(); return;
   }
-  if (G.phase === 'night') { theirTurn(); return; }
+  if (G.phase === 'fortify') { theirTurn(); return; }
 });
 $('tobattle').addEventListener('click', startBattle);
 /* tapping the roll screen skips the flourish straight to the end of it; once the roll has
@@ -2025,10 +2112,17 @@ $('cont').addEventListener('click', function () {
   PEND = null;
   if (campaignCheck()) return;
   if (wasPlayerAttack) {
-    /* your march continues — attack again, or end it */
+    /* your attacks continue — spend another, or move on */
     G.busy = false; G.sel = -1;
-    setPhase('march');
-    say('Choose a holding to attack from, or end the march.');
+    /* ⚠ SPENDING THE LAST ATTACK MOVES YOU ON RATHER THAN STRANDING YOU on a phase with
+       nothing left to do in it. The map still opens first, so you see what you took. */
+    if (G.atks <= 0) {
+      setPhase('fortify');
+      say('<b>Attacks spent.</b> Fortify — one free move of ranks between two holdings you hold.');
+    } else {
+      setPhase('attack');
+      say(atksLine());
+    }
     drawMap(); show('screen-map');
   } else {
     show('screen-map'); pump();                  // back into their turn where it left off

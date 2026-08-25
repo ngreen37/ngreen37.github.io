@@ -17,8 +17,8 @@
  * how the game musters anybody. A calibration instrument that plays a DIFFERENT game than
  * the one shipping does not report a wrong number, it reports a number about nothing. Four
  * things moved and all four are modeled here now:
- *   · BANNERS ARE DICE — one d20 per two banners, keep the best (poolFor / rollPool / bestOf)
- *   · THE CAPS DEPEND ON THE BANNERS — under three, no queen (capsFor)
+ *   · RANKS ARE DICE — one d20 per two ranks, keep the best (poolFor / rollPool / bestOf)
+ *   · THE CAPS DEPEND ON THE RANKS — under three, no queen (capsFor)
  *   · THE CHAIN gives a defending holding one extra die
  *   · ⚠⚠ THE WIN CONDITION FLIPPED. It used to be that EITHER flag went to the defender.
  *     That rule handed a defending player a guaranteed win for never touching the board —
@@ -94,7 +94,7 @@ window.__ML = { d20:d20, matBudget:matBudget, muster:muster, buildBoard:buildBoa
   applyAttackerPos:applyAttackerPos, applyDefenderPos:applyDefenderPos, bestMove:bestMove,
   poolFor:poolFor, rollPool:rollPool, bestOf:bestOf, capsFor:capsFor,
   CLOCK_ATT:CLOCK_ATT, CLOCK_DEF:CLOCK_DEF, MAT_SCALE:MAT_SCALE, MOVE_DELAY:MOVE_DELAY,
-  DICE_CAP:DICE_CAP, QUEEN_BANNERS:QUEEN_BANNERS,
+  DICE_CAP:DICE_CAP, QUEEN_RANKS:QUEEN_RANKS,
   edge: function () { return ATT_EDGE; },
   setEdge: function (v) { ATT_EDGE = v; } };
 `;
@@ -170,21 +170,21 @@ function serve(html) {
                              CLOCK_DEF: CLOCK_DEF, MOVE_DELAY: MOVE_DELAY, DICE_CAP: DICE_CAP } };
 
       for (let g = 0; g < N; g++) {
-        /* banners in the range real play actually produces */
-        const aBan = 2 + ((Math.random() * 4) | 0);       // 2..5
-        const dBan = 1 + ((Math.random() * 4) | 0);       // 1..4
+        /* ranks in the range real play actually produces */
+        const aRanks = 2 + ((Math.random() * 4) | 0);       // 2..5
+        const dRanks = 1 + ((Math.random() * 4) | 0);       // 1..4
         const dChain = Math.random() < CHAIN_RATE;
 
         /* ⚑ THE POOLS, exactly as beginBattle() builds them: one pool for material and a
            SEPARATE pool for position, each rolled fresh, each keeping its best. */
-        const aDice = poolFor(aBan, false);
-        const dDice = Math.min(DICE_CAP + 1, poolFor(dBan, true) + (dChain ? 1 : 0));
-        const aBud = matBudget(bestOf(rollPool(aDice)), aBan, false);
-        const dBud = matBudget(bestOf(rollPool(dDice)), dBan, true);
+        const aDice = poolFor(aRanks, false);
+        const dDice = Math.min(DICE_CAP + 1, poolFor(dRanks, true) + (dChain ? 1 : 0));
+        const aBud = matBudget(bestOf(rollPool(aDice)), aRanks, false);
+        const dBud = matBudget(bestOf(rollPool(dDice)), dRanks, true);
         res.budgets.att.push(aBud); res.budgets.def.push(dBud);
 
-        const aArmy = muster(aBud, capsFor(aBan));
-        const dArmy = muster(dBud, capsFor(dBan));
+        const aArmy = muster(aBud, capsFor(aRanks));
+        const dArmy = muster(dBud, capsFor(dRanks));
         if (aArmy.indexOf('q') >= 0) res.queens.att++;
         if (dArmy.indexOf('q') >= 0) res.queens.def++;
 

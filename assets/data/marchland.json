@@ -148,7 +148,7 @@
       "m",
       "m"
     ],
-    "banners": [
+    "ranks": [
       3,
       3,
       3,
@@ -166,8 +166,9 @@
     "attEdge": 12,
     "defEdge": 0,
     "diceCap": 4,
-    "queenBanners": 3,
+    "queenRanks": 3,
     "chainMin": 2,
+    "attackCap": 3,
     "posCastle": 16,
     "posTop": 18,
     "clockAtt": 20,

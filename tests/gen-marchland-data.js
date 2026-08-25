@@ -41,7 +41,7 @@ function build() {
   const src = fs.readFileSync(GAME, 'utf8');
   const code =
     slice(src, 'var LAND = [',     '/* ── THE CHAIN') +
-    slice(src, 'var CHAIN_MIN',    'function chained') +
+    slice(src, 'var CHAIN_MIN',    '/* ── DIFFICULTY') +
     slice(src, 'var LEVELS = {',   'var G = null;') +
     slice(src, 'var DICE_CAP',     'function rollPool') +
     slice(src, 'var MAT_SCALE',    'function matBudget') +
@@ -61,14 +61,15 @@ function build() {
     version: '0.2',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
-    start: { owner: G.START_OWN.slice(), banners: G.START_BAN.slice() },
+    start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice() },
     balance: {
       matScale: G.MAT_SCALE,
       attEdge: G.ATT_EDGE,
       defEdge: G.DEF_EDGE,
       diceCap: G.DICE_CAP,
-      queenBanners: G.QUEEN_BANNERS,
+      queenRanks: G.QUEEN_RANKS,
       chainMin: G.CHAIN_MIN,
+      attackCap: G.ATTACK_CAP,
       posCastle: G.POS_CASTLE,
       posTop: G.POS_TOP,
       clockAtt: G.CLOCK_ATT,
@@ -98,7 +99,7 @@ if (require.main === module) {
   console.log('\n  ' + (prev === json ? 'unchanged' : prev === null ? 'created' : 'UPDATED') +
               ': assets/data/marchland.json');
   console.log('    ' + d.holdings.length + ' holdings · ' + d.edges.length + ' borders · ' +
-              d.start.banners.reduce((s, v) => s + v, 0) + ' banners · ' +
+              d.start.ranks.reduce((s, v) => s + v, 0) + ' ranks · ' +
               Object.keys(d.levels).length + ' difficulty levels');
   console.log('    ATT_EDGE ' + d.balance.attEdge + ' · clocks ' + d.balance.clockAtt + '/' +
               d.balance.clockDef + ' · delay ' + d.balance.moveDelay + 's\n');
