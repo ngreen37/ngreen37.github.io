@@ -27,7 +27,23 @@
             <span class="nav-toggle-bar"></span>
           </button>
         </div>
-        {%- comment -%} ── THE THREE FRONT DOORS (2026-08-09) ──────────────────────────────
+        {%- comment -%} ── THE FRONT DOORS: THREE, THEN TWO (2026-08-09 → 2026-08-25) ──────
+
+             ⛑⛑ THE P&JCC MARK CAME OUT 2026-08-25 — Nate: *"Let's remove the P&JCC link from
+             the top but SAVE IT FOR EASTER EGGS LATER."* It was the third of the three doors
+             described below, and the loudest one still standing: dead center, every page. The
+             two that remain are cW.com and the McPuppy badge.
+
+             ⚠ SAVED, NOT RETIRED. When an egg reveals the world, the mark comes back HERE, in
+             this slot, between cW.com and the badge — gold (`#F5C518`, the world's, worn since
+             the first hero), `.site-mark site-mark--word site-mark--pjcc`, title "P&JCC — The
+             World", `aria-current` on `/pjcc/`, and the shrunken `&`. Its three CSS rules came
+             out of _pjcc-01-core.scss the same day and the note there says which.
+             ⚠⚠ IT CANNOT COME BACK AS A FOURTH THING. Whoever restores it restores THESE
+             lines from git, or the site ends up describing its own brand a fifth way
+             ([[front-door-decision]] — already named in three files that don't read each other).
+
+             ── THE ORIGINAL, 2026-08-09, and still the reason the row exists ─────────────────────
              Nate: "let's make that a link to the Projects page, let's add a P&JCC symbol to
              the left of that and a ChessWild.com symbol to the left of that (like a CW? The
              C is white and the W is coral) … then re-center them. When on the ChessWild.com
@@ -81,17 +97,19 @@
              {% if page.url == '/' %}aria-current="page"{% endif %}>
             <span class="mk-c">c</span><span class="mk-w">W</span><span class="wm-tld">.com</span>
           </a>
-          {%- comment -%} 2026-08-09 (Nate: "make the '&' in 'P&JCC' significantly smaller").
-               ⚠ THE SPAN CHANGES THE PICTURE, NOT THE STRING. textContent is still exactly
-               "P&JCC" — so a copy-paste, the accessible name and every crawler read the brand
-               the way [[site-two-brand-split]] requires, and this does not become a fifth
-               place the name is spelled. Still a plain `&`, never `&amp;`.
-               0.56em / weight 600 / raised 0.05em, picked from a rendered grid at three sizes:
-               at weight 800 the small `&` reads as a blob, on the baseline it hangs like a
-               subscript, and below 0.50em it thins out at the 11px phone size. {%- endcomment -%}
-          <a class="site-mark site-mark--word site-mark--pjcc"
-             href="{{ '/pjcc/' | relative_url }}" title="P&JCC — The World"
-             {% if page.url == '/pjcc/' %}aria-current="page"{% endif %}>P<span class="mk-amp">&</span>JCC</a>
+          {%- comment -%} ⛑ THE P&JCC MARK STOOD HERE UNTIL 2026-08-25 (see the note at the top
+               of this row). One anchor, gold, with a `.mk-amp` span shrinking the ampersand —
+               2026-08-09, Nate: "make the '&' in 'P&JCC' significantly smaller".
+
+               ⭐ THE `.mk-amp` RULE DID NOT GO WITH IT, AND MUST NOT. Since 2026-08-10 that class
+               is the WHOLE SITE's ampersand: `assets/js/pjcc-amp.js` wraps every rendered
+               "P&JCC" in it, in all ~206 places the name is typed. The mark was where the
+               treatment was DESIGNED, not where it is used. Only the mark's own color rules
+               came out; the shared 0.56em / raised 0.05em stayed.
+               ⚠ The span always changed the PICTURE, never the STRING — textContent stayed
+               exactly "P&JCC" so a copy-paste, the accessible name and every crawler read the
+               brand the way [[site-two-brand-split]] requires. Keep that if it returns.
+               {%- endcomment -%}
           <a class="site-mark site-mark--mcp"
              href="{{ '/projects/' | relative_url }}" title="McPuppy Studios — Home"
              {% if page.url == '/projects/' %}aria-current="page"{% endif %}>

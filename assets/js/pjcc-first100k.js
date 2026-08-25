@@ -114,7 +114,16 @@
       '<span class="f100k-mark" aria-hidden="true">◈</span>' +
       '<p class="f100k-t"><b>The first ' + nfmt(TARGET) + '.</b> ' +
         'You would be <b class="f100k-n">#' + nfmt(n + 1) + '</b>.</p>' +
-      '<a class="f100k-go" href="/pjcc/">Claim your number</a>' +
+      /* ⛑ WAS href="/pjcc/" UNTIL 2026-08-25, AND IT WAS A DEAD END EITHER WAY.
+         Nate: *"'Claim Your Number' let's switch that over to ChessWild."* Two things were
+         wrong with the old target and only one of them was about hiding P&JCC: /pjcc/ is the
+         world LANDING — a hero and doors to Characters and Locations — and it has never
+         carried a signup. So the one button on a bar that floats over every page of the site
+         sent a stranger to a page with nothing on it to claim.
+         ⭐ THE COUNT IS `count(profiles) + 1`, so the claim IS an account, and /dossier/ is
+         where an account gets made or opened — the same place the header's own profile pill
+         goes. The destination now matches the sentence above it. */
+      '<a class="f100k-go" href="/dossier/">Claim your number</a>' +
       '<button class="f100k-x" type="button" aria-label="Dismiss">✕</button>';
     document.body.appendChild(bar);
     // the class lands on the next frame so the transition has two states to move between

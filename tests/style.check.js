@@ -707,13 +707,13 @@ console.log('\n── HOUSE RULES ───────────────�
      brand. The width is `calc(100% + 5px)` on purpose, so the pair tiles the gap. */
   const markBlock = (taps.match(/\.site-mark::after\s*\{[\s\S]*?\}/) || [''])[0];
   const why = !markBlock
-    ? 'no .site-mark::after rule at all — the three marks have no hit box'
+    ? 'no .site-mark::after rule at all — the marks have no hit box'
     : markBlock.includes('min-width')
       ? 'min-width is back on .site-mark::after — the marks now overlap'
       : !markBlock.includes('min-height')
         ? '.site-mark::after has no min-height — the marks are still 12px tall'
         : 'height grows to 44, width absorbs exactly the 5px gap';
-  check('…and the three marks tile the gap instead of overlapping it',
+  check('…and the marks tile the gap instead of overlapping it',
     !!markBlock && markBlock.includes('min-height') && !markBlock.includes('min-width'), why);
 }
 

@@ -16,7 +16,10 @@
     // Destinations (b = brand tag for the little pill).
     var DEST = [
       { t: 'Home',             s: 'ChessWild.com — play, solve, learn',   u: '/',                        ic: '♔', b: 'pjcc',    k: 'home chesswild chess wild front door start play free mcpuppy' },
-      { t: 'PJCC',             s: 'The world — cast and places',          u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing series show' },
+      // ⛑⛑ SLOW-ROLLED 2026-08-25 (Nate: "we are going to hide it — slow reveal it with
+      //    easter eggs"). COMMENTED OUT, NOT DELETED — same shape as Fan Art below, and
+      //    restoring the world is uncommenting one line. /pjcc/ still answers by direct URL.
+      // { t: 'PJCC',             s: 'The world — cast and places',          u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing series show' },
       { t: 'Play Now',         s: 'Sit at the Park Tables',               u: '/games/park-tables/',      ic: '▶', b: 'pjcc',    k: 'play now park tables live game match rated correspondence' },
       { t: 'The Gauntlet',     s: 'Climb the tower of ten',               u: '/games/the-gauntlet/',     ic: '♛', b: 'pjcc',    k: 'gauntlet tower climb ladder ten floors bosses' },
       { t: 'Puzzles',          s: 'Fork in the Road',                     u: '/games/fork-in-the-road/', ic: '♞', b: 'pjcc',    k: 'puzzles fork in the road tactics only move solve' },

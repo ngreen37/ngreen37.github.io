@@ -1,7 +1,7 @@
 ---
 layout: character
 title: The Dad
-full_name: The Dad
+full_name: Kedar
 role: Family
 permalink: /characters/father/
 order: 4

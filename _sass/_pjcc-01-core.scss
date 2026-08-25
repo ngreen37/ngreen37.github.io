@@ -391,7 +391,11 @@ ul, ol {
 .site-mark--cw { color: #f2f4f7; align-items: baseline; }
 .mk-c { color: #f2f4f7; }
 .mk-w { color: #ffa07a; }               /* the same coral as `Wild` in the wordmark */
-.site-mark--pjcc { color: #F5C518; }    /* the world's gold, worn since the first hero */
+/* (⛑ `.site-mark--pjcc { color: #F5C518; }` — the world's gold, worn since the first hero —
+   came out 2026-08-25 with its mark, which Nate pulled from the header to save for an easter
+   egg. THREE rules went: this color, the `.mk-amp` weight step below, and the ≤349px
+   `display:none` further down. Restoring the mark means restoring all three; `npm run sweep`
+   is what will tell you if you missed one, because a class with no markup reads as dead.) */
 
 /* The ampersand is a JOINT, not a letter (2026-08-09) — so it reads at about half the cap
    height and steps back a weight. Sized in `em` so it tracks the mark down through every
@@ -419,7 +423,7 @@ ul, ol {
 }
 /* …and it steps back a weight only where the type around it is heavy enough to carry it:
    the header marks, and any display heading. Below 700 there is nothing to step back from. */
-.site-mark--pjcc .mk-amp,
+/* (`.site-mark--pjcc .mk-amp` led this list until 2026-08-25 — see the note above.) */
 h1 .mk-amp, h2 .mk-amp, h3 .mk-amp,
 .page-title .mk-amp, .big-title .mk-amp, .eyebrow .mk-amp {
   font-weight: 600;
@@ -1478,10 +1482,11 @@ pre code {
   .site-mark--word { font-size: 11px; }
 }
 /* ⚠ At 320 the controls alone (⌕ + 日本語 + Sign in = 192) plus the hamburger leave 26px,
-   which is one mark, not two. This is the floor of the design, not a tuning knob. */
-@media (max-width: 349px) {
-  .site-mark--pjcc { display: none; }
-}
+   which is one mark, not two. This is the floor of the design, not a tuning knob.
+   ⛑ 2026-08-25: the ≤349px block that hid `.site-mark--pjcc` came out with the mark itself.
+   The row is already down to ONE mark by 429px (the badge hides there), so the floor above is
+   now reached a breakpoint earlier and nothing has to hide at 349. Restore the block WITH the
+   mark, or 320px goes back to being two marks in 26px. */
 
 /* ═══ THE CHESSWILD WORDMARK — SHARED INK (2026-08-08) ════════════════════════
    `_includes/wordmark.html` emits these three spans, and as of today TWO places render

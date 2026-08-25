@@ -51,10 +51,15 @@
    short does not miss — it opens the wrong room. Each expander is only as wide as its own
    word (55px, already over the 44 floor), so growing them vertically cannot make two
    neighbors overlap. */
-/* ⚑ ROUND FOUR — THE THREE FRONT DOORS (2026-08-13, found by a four-lens sweep).
-   `.site-mark` is the header's own navigation between cW.com, P&JCC and McPuppy Studios
-   ([[header-three-marks]]) — and it had never been in this file at all. Measured live with
-   the finger emulated:
+/* ⚑ ROUND FOUR — THE FRONT DOORS (2026-08-13, found by a four-lens sweep).
+   `.site-mark` is the header's own navigation between cW.com and McPuppy Studios
+   ([[header-three-marks]]) — and it had never been in this file at all.
+   ⛑ IT WAS THREE MARKS WHEN THIS WAS MEASURED. P&JCC came out 2026-08-25 (saved for an egg),
+   so the 390px row below is now ONE mark with no neighbor — which makes the overlap this block
+   exists to prevent impossible at that width, not merely unlikely. THE RULE STAYS AS WRITTEN:
+   `min-width` must remain absent, because restoring the mark restores the neighbor, and the
+   measurements below are what made the case. Measured live with the finger emulated, when all
+   three still stood:
 
        390px    cW.com  35.6 x 12      P&JCC  37.5 x 12      McPuppy  display:none
        320px    cW.com  32.6 x 11      (the other two are hidden at this width)
