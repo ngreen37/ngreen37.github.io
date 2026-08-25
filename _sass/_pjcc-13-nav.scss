@@ -370,7 +370,10 @@ a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
 .dl-ico--play     { color: #7fd4ff; }   /* Park Tables — outdoors, open air */
 .dl-ico--gauntlet { color: #ffc94d; }   /* the tower — the crown you climb toward */
 .dl-ico--puzzles  { color: #ff8fd0; }   /* Fork in the Road (its own green is spoken for) */
-.dl-ico--world    { color: #c9a7ff; }   /* P&JCC — the world's lilac */
+/* (THE WORLD ROW'S LILAC CAME OFF WITH ITS ROW — 2026-08-25. It was `#c9a7ff` on the ◆.
+   DELETED rather than left standing: tests/style.check.js gates the per-room icon classes
+   declared here against the ones used in _includes/site-header.html, and a rule whose row is
+   gone turns that gate red. Restoring the P&JCC row means restoring this line too.) */
 .dl-ico--arcade   { filter: brightness(1.45) saturate(1.15); }        /* 🎮 takes no ink */
 .dl-ico--studio   { filter: brightness(0) invert(1) sepia(1) saturate(0.55) hue-rotate(-8deg) brightness(1.06); }  /* 🐾 → bone */
 /* ⚑ THE NINTH ROW (2026-08-18, Nate: "can we add a Follow button on the left-hand side bar?").
@@ -545,12 +548,18 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      default this was a latent edge (the expanded rail has `overflow-y: auto` and scrolls
      fine); collapsed-by-default put every desktop visitor on the state that can't.
 
-     ⭐ 862 IS MEASURED, NOT DERIVED — re-measure rather than recompute if the roster or the
+     ⭐ 784 IS MEASURED, NOT DERIVED — re-measure rather than recompute if the roster or the
      row height changes: render `body.nav-collapsed` at a viewport tall enough not to clamp
      it, read the last `.drawer-link`'s `getBoundingClientRect().bottom`, add the 8px foot.
-     Today: 78px header clearance + 66px drawer head + 9 rows × 72px + gaps = 854, so a
-     viewport under 862 cannot show the whole column. */
-  @media (max-height: 861px) {
+     ⚑ 2026-08-25, AND IT PROVED THE RULE AGAIN. The P&JCC row came off the rail (P&JCC is
+     hidden while it is slow-revealed), leaving EIGHT rows. Recomputing would have said
+     854 − 72 = 782 and set the cut at 789; the real render says the eight-row rail ends at
+     **776**, so the cut is 783. The 6px is the row gap, which no formula here has ever had
+     right — the same 6px the ⚠⚠ note above is about. The instrument was proved first: the
+     nine-row header measured 854 on the nose before the row came out.
+     Today: 66px drawer head + 8 rows + gaps + the header clearance = 776, so a viewport
+     under 784 cannot show the whole column. */
+  @media (max-height: 783px) {
     body.nav-collapsed .site-header .site-nav.drawer { overflow: hidden auto; }
   }
   body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }

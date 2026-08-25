@@ -596,6 +596,10 @@ body.theme-chess {
      the desk lamp were both computing #a78bfa, invisible only because the <b> and <small>
      inside them happened to set their own color. One un-styled child would have shown it.
      These anchors are CARDS, not links, so they set the color for their whole subtree. */
+  /* ⚑ `.mc-world` KEPT AFTER ITS CARD CAME OFF (2026-08-25 — the world door was removed
+     from the front door while P&JCC is hidden). One selector, and it is the guard above:
+     a restored card would otherwise come back with purple inherited into its subtree,
+     which is the exact bug this rule was written for. index.md's note says so too. */
   .mc-world, .mc-door, .mcb-next { color: var(--fd-ink); }
 
   /* (THE PAPER-LAMP OVERRIDES CAME OUT 2026-08-04 — "take the working lamp off the main

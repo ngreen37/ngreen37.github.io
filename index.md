@@ -55,7 +55,8 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
      THE BRAND STACK, his call the same day: **McPuppy Studios makes ChessWild, which is
      set in PJCC.** Studio → site → world. That is why the eyebrow above the title still
-     reads "From McPuppy Studios" and why the world card near the foot still opens /pjcc/.
+     reads "From McPuppy Studios". (The third name used to appear down at the foot too, in a
+     card that opened /pjcc/ — that came off 2026-08-25; see the note where it stood.)
      Three names, one hierarchy, each appearing exactly where it means something.
      ──────────────────────────────────────────────────────────────────────────────
      THE ORIGINAL BRIEF (2026-07-28, Nate: "we're switching gears… rename the home page
@@ -661,26 +662,29 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      and it has been shipping since 2026-08-04. The GAMES HALL still does not say it.)
      {%- endcomment -%}
 
-{%- comment -%} ONE door to the world — the show is the point of all of this, but it is not
-     what a stranger came here to DO. One card, warm, at the foot.
-     ⚑ It carries a visually-hidden heading as of 2026-08-13 (see the coverage note at the top
-     of this file). This card is the only route from the chess site to the SHOW, so of all the
-     unnamed regions on this page it was the worst one to leave off a heading skim.
-     ⚠ THE HEADING STANDS ALONE — no `aria-labelledby`/`aria-describedby` pointing at it from
-     the card. `.mc-world` is a single ANCHOR, not a region, and its own first line already
-     reads "There is a whole world behind this board"; wiring the heading to it as a
-     description makes a screen reader announce the same sentence twice. A heading before a
-     link is all a skim needs. (The `aria-labelledby` pattern above is right for `.mc-table`
-     because that IS a region with many children.) {%- endcomment -%}
-<h2 id="h-world" class="sr-only">The World Behind the Board</h2>
-<a class="mc-world" href="{{ '/pjcc/' | relative_url }}">
-  <span class="mc-world-glyph" aria-hidden="true">&#9819;</span>
-  <span class="mc-world-txt">
-    <b>There is a whole world behind this board</b>
-    <small><i>Princess and the Journey to Chess City</i> — an animated series in the making.</small>
-  </span>
-  <span class="mc-world-arw" aria-hidden="true">&rarr;</span>
-</a>
+{% comment %} ══ THE WORLD DOOR CAME OFF THE FRONT DOOR (2026-08-25) ══════════════════
+     Nate: "P&JCC is moving too slow compared to the website. We are going to hide it — slow
+     reveal it with easter eggs … Remove the 'whole world behind the games' box on the cw home
+     page. Keep the link intact."
+
+     What stood here: a visually-hidden `<h2 id="h-world">The World Behind the Board</h2>` and
+     under it the `.mc-world` card — a queen glyph, "There is a whole world behind this board",
+     the series name in italics, and an arrow, all of it opening /pjcc/.
+
+     ⭐ THE HEADING CAME OFF WITH THE CARD, AND HAD TO. It was added 2026-08-13 so the heading
+     skim named this region; a screen-reader-only heading standing over nothing is worse than
+     no heading at all — it announces a region and then hands the reader an empty one. Half
+     this removal would have been the accessibility bug, not the fix.
+
+     ⚠ THE ROOM IS STILL THERE. /pjcc/ builds, returns 200 and stays in the sw.js precache (a
+     404 there fails SILENTLY), and the PWA `id` is `/pjcc/` and can never change. The card was
+     the only route from the chess site to the SHOW — that is the point of taking it down, not
+     an oversight. The world gets revealed again through the eggs, on his timing.
+
+     ⚠ THIS COMMENT CARRIES NO WHITESPACE-CONTROL HYPHENS, exactly like the blog band's below
+     it, and for the same kramdown reason spelled out there: a hyphenated delimiter eats the
+     blank line that lets a raw HTML block start, and the tags then ship as VISIBLE TEXT on the
+     front door. `npm run test:tags` is the gate that catches it. {% endcomment %}
 
 {%- comment -%} The quiet one. See `.mc-support` in the stylesheet at the foot of this file for
      why it is a sentence and not a button, and why it is last. {%- endcomment -%}
@@ -1796,28 +1800,17 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
   transition: opacity 0.55s var(--ease-out, ease); }
 .mc-true.is-rotating li.is-on { opacity: 1; }
 
-/* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
-   aesthetic — leave that with P&JCC page").
-
-   This used to be the page's one deliberate purple: the single card that opens the world,
-   so that purple meant something instead of being wallpaper. That idea was good and it is
-   GONE ANYWAY, because he asked for no purple on the front door and a single exception is
-   how a rule dies. The card is warm paper now and carries its weight by being the only
-   thing on the page with a wood-toned wash instead of a flat panel.
-   The purple all still lives one click away, on /pjcc/, where it belongs. */
-.mc-world { display: flex; align-items: center; gap: 16px; text-decoration: none;
-  padding: 18px 20px; border-radius: var(--r-lg, 16px); margin: 0 0 var(--space-6, 32px);
-  background: linear-gradient(100deg, rgba(185,139,87,0.13), rgba(240,237,229,0.6));
-  border: 1px solid var(--fd-grain);
-  transition: border-color .14s ease, transform .14s ease, background .14s ease; }
-.mc-world:hover { border-color: var(--fd-wood); transform: translateY(-2px);
-  background: linear-gradient(100deg, rgba(185,139,87,0.2), rgba(240,237,229,0.75)); text-decoration: none; }
-.mc-world-glyph { font-size: 34px; line-height: 1; color: var(--fd-wood); flex: 0 0 auto; }
-.mc-world-txt { flex: 1; min-width: 0; }
-.mc-world-txt b { display: block; color: var(--fd-ink); font-size: 1rem; margin-bottom: 3px; }
-.mc-world-txt small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
-.mc-world-arw { color: var(--fd-wood); font-size: 1.2rem; flex: 0 0 auto; }
-@media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
+/* (THE WORLD DOOR'S CSS WENT WITH ITS MARKUP — 2026-08-25, "we are going to hide it — slow
+   reveal it with easter eggs." `.mc-world`, its glyph, its text column and its arrow were a
+   warm wood-toned card — the page's one de-purpled panel (2026-08-04, "completely get rid of
+   the purple and gold aesthetic — leave that with P&JCC page"), which is why it carried a
+   `--fd-wood` wash instead of the flat panel every other box on this page wears. All of it
+   came out in the same commit as the card, the way the studio band did on 2026-08-04.
+   Restore the whole block from git if the door returns.
+   ⚠ `.mc-world` IS STILL NAMED IN _sass/_pjcc-25-front-door.scss ON PURPOSE — it sits in the
+   anti-purple guard there, which exists because a CLASSED anchor inherits the global link
+   purple into its whole subtree. Leaving it costs one selector and means a restored card
+   cannot come back purple; see the note beside it.) */
 
 /* (THE STUDIO BAND'S CSS WENT WITH ITS MARKUP — 2026-08-04, "take the working lamp off the
    main page and leave it on the P&JCC page." `.mc-studio`, `.mc-lamp`, their placement block,
@@ -1827,7 +1820,7 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
    so /pjcc/ gets the base he asked for. Restore the whole band from git if it returns.) */
 
 @media (prefers-reduced-motion: reduce) {
-  .mc-door, .mc-world { transition: none; }
+  .mc-door { transition: none; }
 }
 </style>
 

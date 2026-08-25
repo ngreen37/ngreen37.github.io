@@ -129,17 +129,19 @@
            lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
            shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
            closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
-           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. NINE links
-           as of 2026-08-18 (eight since 2026-07-28, when the gears switched — the site's
-           front door is a chess site now, the world is a tab): Home→/ · Play Now→Park Tables ·
-           The Gauntlet · Games→the arcade hub · Puzzles→Fork in the Road · Academy ·
-           P&JCC→the world · McPuppy Studios→the studio · Follow→Twitch + the socials. The
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. EIGHT links
+           as of 2026-08-25, when the P&JCC row came off (nine from 2026-08-18 — see the note
+           where that row stood): Home→/ · Play Now→Park Tables · The Gauntlet · Games→the
+           arcade hub · Puzzles→Fork in the Road · Academy · McPuppy Studios→the studio ·
+           Follow→Twitch + the socials. The
            gold `--home` highlight marks whichever link IS home; order is MARKUP order (no
            nth-child depends on it). ⌘K still reaches everything else. Drawer look lives in
            _sass/_pjcc-13-nav.scss.
            ⚠ THE COUNT IN THIS SENTENCE IS LOAD-BEARING AND HAS BEEN WRONG BEFORE — the
            collapsed rail's short-window guard is sized to it. Change the list, re-measure
-           the guard.
+           the guard. (Done 2026-08-25: nine rows ended at 854, eight end at 776, so the
+           guard moved 861 → 783 — measured in a real render, not recomputed. Subtracting a
+           row height would have said 782/789 and been 6px of row gap wrong.)
 
            ⚠⚠ EVERY MONOCHROME ICON CARRIES `&#xFE0E;` AND MUST KEEP IT (2026-08-08, when he
            asked for "subtle, on theme color" on the white symbols). U+FE0E is VARIATION
@@ -200,7 +202,10 @@
              drops to seventh, under Academy, as the door to the WORLD rather than the site's
              home. The `--pjcc` gold highlight moved with the anchor role, not with the name.
              The header logo is a watermark, not a link, so this row is the only home link on
-             the site: don't remove it. {%- endcomment -%}
+             the site: don't remove it.
+             ⚑ 2026-08-25 — THE ORDER ABOVE IS HISTORY, NOT THE CURRENT LIST. P&JCC no longer
+             sits seventh under Academy; the row came off entirely. See the note where it
+             stood, four rows down. {%- endcomment -%}
         <a class="page-link drawer-link drawer-link--home" href="{{ '/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9812;&#xFE0E;</span>
           {%- comment -%} the sub said "ChessWild" directly under the drawer's own
@@ -236,10 +241,28 @@
           <span class="dl-ico" aria-hidden="true">&#128214;</span>
           <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
         </a>
-        <a class="page-link drawer-link" href="{{ '/pjcc/' | relative_url }}">
-          <span class="dl-ico dl-ico--world" aria-hidden="true">&#9670;&#xFE0E;</span>
-          <span class="dl-txt"><b>P&JCC</b><small>The world — cast and places</small></span>
-        </a>
+        {%- comment -%} ── THE P&JCC ROW CAME OFF THE RAIL (2026-08-25) ─────────────────
+             Nate: "P&JCC is moving too slow compared to the website. We are going to hide it —
+             slow reveal it with easter eggs … Remove the nav link to PJCC on the left … Keep the
+             link intact, and keep all the characters like Auston who teaches in the academy,
+             and the bot names." The world is not canceled; it stops being advertised.
+
+             It stood HERE, seventh, between Academy and McPuppy Studios: a `.drawer-link` with
+             a ◆ in the world's lilac and the sub "The world — cast and places".
+
+             ⚠ THE PAGE IS NOT GONE AND MUST NOT BE. /pjcc/ still builds and still returns 200:
+             it is in the sw.js precache (where a 404 fails SILENTLY) and the PWA `id` is
+             literally `/pjcc/`, which can never change. What came off is the DOOR, not the room.
+             ⚠⚠ DO NOT NAME THE ICON CLASS ANYWHERE IN THIS FILE, not even in a comment.
+             tests/style.check.js gates the per-room icon classes DECLARED in
+             _sass/_pjcc-13-nav.scss against the ones USED in this file, and it matches this
+             file with a plain regex — a class name inside a comment counts as "used" and turns
+             the gate red. Its rule came out with this row; the note there says so.
+             ⚠⚠ AND IT IS 78px OF COLLAPSED RAIL, NOT 72. The short-window guard in
+             _pjcc-13-nav.scss moved 861 → 783 with this row — a measured 854 down to a measured
+             776, because a row costs its 72px height PLUS the 6px gap above it. Putting the row
+             back means moving the guard back by MEASURING it, the way the note there says.
+             {%- endcomment -%}
         <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">
           <span class="dl-ico dl-ico--studio" aria-hidden="true">&#128062;</span>
           {%- comment -%} 2026-08-10 (Nate: "Projects page → McPuppy Studios … and edit the nav
