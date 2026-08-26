@@ -38,9 +38,23 @@
 {%- comment -%} ⚠ IT WAITS FOR THE LEDGER ANYWAY. DOMContentLoaded costs nothing and keeps
      this block correct if the tag above is ever moved into head.html with a `defer` on it.
      {%- endcomment -%}
+{%- comment -%} ⛑⛑ AND IT SAYS SO NOW — 2026-08-26. Nate: "There should be a pop-up (like the
+     sacrificial altar result) that excitedly shows that the user found a fragment… for
+     example, the first time they go to the Alpine Files secret page."
+
+     This minted in COMPLETE SILENCE for a day: you found the hidden door, walked through it,
+     and the page did not acknowledge it at all. `mint()` returns true only on the transition,
+     so the "only the first time" half needs no state of its own — the second visit mints
+     nothing and therefore celebrates nothing.
+     ⚠ THE LINE IS PER-PAGE, from `fragment_line` in the page's front matter, so a future
+     secret page can have its own words without touching this layout. {%- endcomment -%}
 {% if page.fragment_slot %}<script>
 document.addEventListener('DOMContentLoaded', function () {
-  try { if (window.PJCCFrag) PJCCFrag.mint('{{ page.fragment_slot }}'); } catch (e) {}
+  try {
+    if (window.PJCCFrag && PJCCFrag.mint('{{ page.fragment_slot }}')) {
+      PJCCFrag.celebrate('{{ page.fragment_slot }}', {{ page.fragment_line | default: "You found a door that was never advertised." | jsonify }});
+    }
+  } catch (e) {}
 });
 </script>{% endif %}
 {% if page.fragment_key %}<script>try{localStorage.setItem('{{ page.fragment_key }}','1');}catch(e){}</script>{% endif %}

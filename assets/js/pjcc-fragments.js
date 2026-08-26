@@ -100,8 +100,159 @@
       set(s.flag);
       check();
       return true;
+    },
+
+    /* ══ THE FIND IS AN EVENT NOW — 2026-08-26 ═══════════════════════════════════════
+       Nate: *"There should be a pop-up (like the sacrificial altar result) that excitedly
+       shows that the user found a fragment. This should occur only the first time they find
+       it."*
+
+       Before this, finding a fragment felt like nothing. `alpine` minted from the
+       easter-eggs layout in COMPLETE SILENCE — you walked into the Alpine File and the page
+       just sat there. `sky` got a 4.5-second toast in the corner. `road` got a sentence in a
+       summary. Three discoveries, three different amounts of nothing much, for the thing the
+       whole slow-reveal is built on.
+
+       ⭐ CALLING IT IS ONE LINE AND IT CANNOT DOUBLE-FIRE: `mint()` already returns true only
+       on the transition, so `if (PJCCFrag.mint(id)) PJCCFrag.celebrate(id, line)` is the
+       whole contract and "only the first time" is inherited rather than re-implemented at
+       three call sites. Calling `celebrate` on its own is allowed (the road summary does it,
+       one leg after the mint) — it never writes, so it cannot manufacture a fragment.
+
+       ⚠⚠ THE STYLES ARE INJECTED ON FIRST USE, NOT AT LOAD. THIS FILE IS ON EVERY PAGE OF THE
+       SITE and virtually every page view never finds a fragment. A stylesheet shipped to
+       everyone for a moment almost nobody reaches is the wrong trade — so nothing is added to
+       the document until the first celebration actually happens.
+       ⚠ NO PAGE CSS IS ASSUMED. This has to look right inside the Fork game's IFRAME, on the
+       classified page's black sheet and on the town sky, so every value it needs is its own.
+       ⚠ REDUCED MOTION IS HONORED and the dialog still appears — it just arrives without the
+       rise and without the shimmer. A celebration nobody asked to be still for is fine; one
+       that moves when they asked it not to is not.
+       ⚠ IT NEVER THROWS. Same rule as every read and write above: a fragment that breaks the
+       page it was found on is worse than one that stays quiet. */
+    celebrate: function (id, line) {
+      try { return showFound(id, line); } catch (e) { return false; }
     }
   };
+
+  var styled = false;
+  function injectCSS() {
+    if (styled) return;
+    styled = true;
+    var css =
+      '.pjfx{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;' +
+        'justify-content:center;padding:20px;background:rgba(6,6,10,.78);' +
+        '-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}' +
+      '.pjfx-card{position:relative;max-width:392px;width:100%;box-sizing:border-box;' +
+        'background:#12111a;border:1px solid #3a3550;border-radius:14px;padding:26px 24px 20px;' +
+        'text-align:center;color:#e8e4f2;font-family:Poppins,system-ui,sans-serif;' +
+        'box-shadow:0 24px 70px rgba(0,0,0,.6);}' +
+      '.pjfx-glyph{font-size:38px;line-height:1;color:#F5C518;' +
+        'text-shadow:0 0 22px rgba(245,197,24,.55);}' +
+      '.pjfx-kicker{margin:12px 0 0;font-family:"Share Tech Mono",ui-monospace,monospace;' +
+        'font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#F5C518;}' +
+      '.pjfx-name{margin:6px 0 0;font-size:1.32rem;font-weight:800;line-height:1.2;color:#fff;}' +
+      '.pjfx-line{margin:10px 0 0;font-size:.92rem;line-height:1.55;color:#b8b2cc;}' +
+      '.pjfx-count{margin:16px 0 0;font-family:"Share Tech Mono",ui-monospace,monospace;' +
+        'font-size:11px;letter-spacing:.14em;color:#8a8598;}' +
+      '.pjfx-pips{margin:8px 0 0;display:flex;gap:6px;justify-content:center;}' +
+      '.pjfx-pip{width:9px;height:9px;border-radius:50%;background:#2c2840;}' +
+      '.pjfx-pip.on{background:#F5C518;box-shadow:0 0 10px rgba(245,197,24,.6);}' +
+      '.pjfx-btn{margin:18px 0 0;background:#F5C518;color:#1a1608;border:0;border-radius:8px;' +
+        'padding:11px 26px;min-height:44px;font-family:inherit;font-size:.9rem;font-weight:800;' +
+        'cursor:pointer;}' +
+      '.pjfx-btn:hover{background:#ffd63a;}' +
+      '.pjfx-btn:focus-visible{outline:2px solid #fff;outline-offset:2px;}' +
+      '@media (prefers-reduced-motion:no-preference){' +
+        '.pjfx{animation:pjfx-in .22s ease-out both;}' +
+        '.pjfx-card{animation:pjfx-rise .34s cubic-bezier(.2,1,.3,1) both;}' +
+        '.pjfx-glyph{animation:pjfx-pulse 2.6s ease-in-out infinite;}}' +
+      '@keyframes pjfx-in{from{opacity:0}to{opacity:1}}' +
+      '@keyframes pjfx-rise{from{opacity:0;transform:translateY(14px) scale(.97)}' +
+        'to{opacity:1;transform:none}}' +
+      '@keyframes pjfx-pulse{0%,100%{text-shadow:0 0 22px rgba(245,197,24,.55)}' +
+        '50%{text-shadow:0 0 34px rgba(245,197,24,.95)}}';
+    var el = document.createElement('style');
+    el.setAttribute('data-pjfx', '1');
+    el.appendChild(document.createTextNode(css));
+    (document.head || document.documentElement).appendChild(el);
+  }
+
+  /* ⚠ EVERY STRING THAT REACHES THE DOM GOES IN AS textContent, NEVER innerHTML. `line` is
+     passed in by a caller and the slot names are literals in this file, but the rule is the
+     rule — a celebration is not a place to start trusting input. */
+  function showFound(id, line) {
+    if (typeof document === 'undefined' || !document.body) return false;
+    if (document.querySelector('.pjfx')) return false;      // one at a time
+    var s = null, i;
+    for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].id === id) s = SLOTS[i];
+    if (!s) return false;
+
+    injectCSS();
+    var held = API.count(), all = held >= TARGET;
+    var wrap = document.createElement('div');
+    wrap.className = 'pjfx';
+
+    var card = document.createElement('div');
+    card.className = 'pjfx-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'pjfx-name');
+
+    function add(tag, cls, txt, id2) {
+      var e = document.createElement(tag);
+      e.className = cls;
+      if (txt != null) e.textContent = txt;
+      if (id2) e.id = id2;
+      card.appendChild(e);
+      return e;
+    }
+    add('div', 'pjfx-glyph', '✦').setAttribute('aria-hidden', 'true');
+    add('p', 'pjfx-kicker', 'A fragment is yours');
+    add('h2', 'pjfx-name', s.nm, 'pjfx-name');
+    if (line) add('p', 'pjfx-line', line);
+
+    /* ⚠ THE COUNT NAMES THE JOURNEY, NOT THE SHORTFALL. "3 of 6" is a true, quiet fact;
+       "3 more to go" would be a to-do list, and the ledger deliberately never names a
+       fragment nobody has found yet. Same reason `nm` is only read for HELD slots. */
+    add('p', 'pjfx-count', all
+      ? 'Six of six — the world is open.'
+      : held + ' of ' + TARGET + ' found');
+
+    var pips = add('div', 'pjfx-pips');
+    pips.setAttribute('aria-hidden', 'true');
+    for (i = 0; i < TARGET; i++) {
+      var pip = document.createElement('span');
+      pip.className = 'pjfx-pip' + (i < held ? ' on' : '');
+      pips.appendChild(pip);
+    }
+
+    var btn = add('button', 'pjfx-btn', all ? 'See what opened' : 'Keep looking');
+    btn.type = 'button';
+
+    wrap.appendChild(card);
+    document.body.appendChild(wrap);
+
+    /* ⚠ FOCUS IS TAKEN AND GIVEN BACK. A modal that does not move focus is invisible to a
+       screen reader and untabbable; one that does not restore it drops a keyboard user at
+       the top of the document. */
+    var prev = null;
+    try { prev = document.activeElement; } catch (e) {}
+    try { btn.focus(); } catch (e) {}
+
+    function close() {
+      try { wrap.parentNode && wrap.parentNode.removeChild(wrap); } catch (e) {}
+      try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
+      try { prev && prev.focus && prev.focus(); } catch (e) {}
+    }
+    function onKey(e) {
+      if (e.key === 'Escape' || e.keyCode === 27) { e.preventDefault(); close(); }
+    }
+    btn.addEventListener('click', close);
+    wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
+    document.addEventListener('keydown', onKey, true);
+    return true;
+  }
 
   /* ⚠ THE UNLOCK IS STICKY. Once six have been held at the same time the flag is written and
      never re-derived from the count — otherwise clearing one egg's flag would silently take

@@ -221,8 +221,14 @@ function showTxToast(msg, duration) {
     var door = document.getElementById(id);
     if (!door) return;
     door.addEventListener('click', function () {
-      var isNew = window.PJCCFrag && PJCCFrag.mint('sky');
-      if (isNew) showTxToast(line);
+      /* ⛑ THE TOAST BECAME A POP-UP — 2026-08-26 (Nate: "a pop-up… that excitedly shows that
+         the user found a fragment… the first time they catch the weather event"). A rare sky
+         is a once-a-month event at best; a 4.5-second corner toast was the same acknowledgement
+         a copied link gets. The flavor line is unchanged and now sits INSIDE the celebration
+         instead of scrolling past in the corner.
+         ⚠ STILL ONLY ON THE TRANSITION, and still for the same reason — `mint()` answers that
+         question, so the second tap of a pretty sky says nothing rather than nagging. */
+      if (window.PJCCFrag && PJCCFrag.mint('sky')) PJCCFrag.celebrate('sky', line);
     });
   }
   wire('ts-eclipse-door', 'TOTALITY — the whole town stopped to look up. A fragment is yours.');

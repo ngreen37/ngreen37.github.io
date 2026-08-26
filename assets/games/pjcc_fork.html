@@ -2352,11 +2352,27 @@ function showSummary(){
       const crossed = run.step >= HALF_STEP && run.legStartStep < HALF_STEP;
       const body = beat || swing || (run.step + ' puzzles solved on the road so far.');
       const msgEl = document.getElementById('sum-msg');
+      msgEl.textContent = body;
+      /* ⛑⛑ THE HALFWAY FRAGMENT IS A POP-UP NOW — 2026-08-26, so all three fragments are
+         found the same way (Nate: "a pop-up… that excitedly shows that the user found a
+         fragment"). It used to be two sentences appended to the summary body, which made the
+         biggest of the three discoveries — five hundred clean solves, months of them — the
+         quietest thing on the screen.
+
+         ⭐ THE MOMENT IS UNCHANGED AND THAT IS THE CAREFUL PART. This still fires on the
+         SUMMARY, not at the mint: `mintHalfway` runs inside saveProg mid-solve, where a
+         dialog would land on top of a live board and be dismissed as an interruption. The
+         `crossed` test is still asked of the RUN — "did this leg carry you past 500" — so
+         somebody already past 500 when the egg shipped is never congratulated for a milestone
+         they passed in July. HIS WORDS ARE KEPT VERBATIM, they just moved onto the card.
+         ⚠ `celebrate` WITHOUT `mint` IS DELIBERATE HERE. The transition happened several
+         puzzles ago inside saveProg; celebrate only draws and never writes, so it cannot
+         invent a fragment — the run condition is what earns the card. */
       if (crossed) {
-        msgEl.innerHTML = body + '<br><br>✦ <b>Five hundred puzzles — half the road.</b> ' +
-          'Something was waiting out here on the water. A fragment is yours.';
-      } else {
-        msgEl.textContent = body;
+        try {
+          if (window.PJCCFrag) PJCCFrag.celebrate('road',
+            'Five hundred puzzles — half the road. Something was waiting out here on the water.');
+        } catch (e) {}
       }
       document.getElementById('sum-again').textContent = 'Continue';
     }
