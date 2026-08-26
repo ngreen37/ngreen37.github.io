@@ -66,6 +66,37 @@ permalink: /dossier/
 (function () {
   var mount = document.getElementById('frag-mount');
   if (!mount) return;
+
+  /* ⛑⛑⛑ THE SHELF NEVER DREW, AND THE REASON IS THE LOAD ORDER — FIXED 2026-08-26.
+     Nate: *"I don't see the ledger or the moonrock fragments."* He was carrying a fragment;
+     the shelf was drawing nothing, and had been since the day it shipped.
+
+     `_layouts/default.html` loads `pjcc-fragments.js` at line 223 WITH `defer`, and the
+     layout's content — this script — is emitted at line 85. So this runs at parse time with
+     `window.PJCCFrag` UNDEFINED, hits the guard below, and returns. Measured on the live page:
+     `typeof PJCCFrag` is "undefined" when parsing ends and "object" after load.
+
+     ⚠⚠ THE COMMENT ABOVE THIS BLOCK SAID "loaded site-wide by _layouts/default.html" AND THAT
+     IS TRUE — it is just not loaded YET. "The site loads it" and "it is available here" are
+     different claims, and only one of them is checkable from where you are standing.
+
+     ⭐ THIS IS THE SAME DEFECT AS THE FRONT DOOR'S `PJCC` GUARD, ONE GLOBAL OVER. I fixed that
+     one on 08-26 and wrote the memory, then left its twin standing here — the fix belonged to
+     the CLASS, not the instance. Any page-level script reading a global that
+     `_layouts/default.html` loads after the content must wait for it.
+     [[pjcc-loads-after-content]] · [[one-fix-every-instance]]
+
+     ⚠ DEFERRED SCRIPTS RUN BEFORE THE DOMContentLoaded EVENT, so waiting for that event is
+     enough — no polling, no timers. */
+  function whenLedger(fn) {
+    if (window.PJCCFrag) { fn(); return; }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { if (window.PJCCFrag) fn(); });
+    }
+  }
+  whenLedger(draw);
+
+  function draw() {
   /* ⚠ A MISSING LEDGER DRAWS NOTHING, NOT AN EMPTY SHELF. Six blank sockets on a page whose
      script failed is indistinguishable from six blank sockets on a page belonging to someone
      who has found nothing — and one of those is a bug. [[down-never-stuck]] */
@@ -120,6 +151,7 @@ permalink: /dossier/
          : '<b>' + n + ' of ' + target + '.</b> Keep looking. There are more out there.') +
        '</p>';
   mount.innerHTML = h;
+  }
 })();
 </script>
 

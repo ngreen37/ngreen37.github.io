@@ -401,12 +401,20 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
-    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Josh &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Dominic &middot; Ryan Neuharth</p>
+    {%- comment -%} 2026-08-26 (Nate: "move Mom to last position, and Chels to 2nd to last.
+         Remove Dominic and Ryan Neuharth"). Eight names now, and the ORDER carries the
+         weight: the last name on a credit roll is the one it lands on. Do not "tidy" this
+         into alphabetical order — the sequence is his and it is the whole point.
+         {%- endcomment -%}
+    <p class="mcp-thanks-names">Josh &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Chels &middot; Mom</p>
   </div>
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
-    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; Joey Cape &middot; The Lawrence Arms &middot; Jim Croce &middot; Tim Dillon &middot; Trey Parker and Matt Stone &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
+    {%- comment -%} 2026-08-26 (Nate: "Remove Jim Croce and move Norm to 2nd to last"). Nine
+         now, and Jesse Green still closes the roll. Same rule as the names above — the order
+         is his. {%- endcomment -%}
+    <p class="mcp-thanks-muses">The Meadowlands &middot; Joey Cape &middot; The Lawrence Arms &middot; Tim Dillon &middot; Trey Parker and Matt Stone &middot; John Steakley &middot; Neville Goddard &middot; Norm Macdonald &middot; Jesse Green</p>
   </div>
 </section>
 

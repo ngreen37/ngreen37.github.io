@@ -48,14 +48,42 @@
      nothing and therefore celebrates nothing.
      ⚠ THE LINE IS PER-PAGE, from `fragment_line` in the page's front matter, so a future
      secret page can have its own words without touching this layout. {%- endcomment -%}
+{%- comment -%} ⛑⛑⛑ THE LEGACY KEY WAS EATING THE CELEBRATION — FIXED 2026-08-26.
+
+     Nate: *"I tested the Alpine 'i' and it did appear like a window tried to pop but then
+     instantly vanished."* The fragment was minting correctly — `frag_classified` was in his
+     storage, the count was 1 — and the card had NEVER been drawn.
+
+     WHY: `classified.md` carries BOTH `fragment_key: frag_classified` (the pre-overhaul flag,
+     kept for compatibility) AND `fragment_slot: alpine` — and the `alpine` SLOT'S FLAG *IS*
+     `frag_classified`. They are the same key. The legacy line below used to sit AFTER this
+     block but ran FIRST, because it is a parser-time script and the mint was inside a
+     DOMContentLoaded callback. So the flag was already set by the time `mint()` looked, `mint()`
+     correctly returned false — nothing new — and the celebration could never fire. Not once,
+     for anybody, ever.
+
+     ⭐ THE MINT RUNS SYNCHRONOUSLY NOW, BEFORE THE LEGACY WRITE. `pjcc-fragments.js` is loaded
+     by the non-deferred tag directly above, so `PJCCFrag` exists here — the DOMContentLoaded
+     wrapper was never buying anything and it cost the whole feature. Only the DRAWING waits,
+     and only if the body is not ready yet.
+     ⚠⚠ ORDER IS THE WHOLE FIX. If you ever move the legacy line above this block, you restore
+     the bug exactly. A compatibility shim must never run before the thing it is shimming.
+     ⚠ THE LEGACY WRITE IS STILL HARMLESS TO KEEP: after the mint it is a no-op on this page
+     (same key, already set), and it still covers a page that has a `fragment_key` and no slot.
+     {%- endcomment -%}
 {% if page.fragment_slot %}<script>
-document.addEventListener('DOMContentLoaded', function () {
+(function () {
   try {
-    if (window.PJCCFrag && PJCCFrag.mint('{{ page.fragment_slot }}')) {
-      PJCCFrag.celebrate('{{ page.fragment_slot }}', {{ page.fragment_line | default: "You found a door that was never advertised." | jsonify }});
-    }
+    if (!window.PJCCFrag) return;
+    if (!PJCCFrag.mint('{{ page.fragment_slot }}')) return;   // already held → say nothing
+    var line = {{ page.fragment_line | default: "You found a door that was never advertised." | jsonify }};
+    var show = function () {
+      try { PJCCFrag.celebrate('{{ page.fragment_slot }}', line); } catch (e) {}
+    };
+    if (document.body) show();
+    else document.addEventListener('DOMContentLoaded', show);
   } catch (e) {}
-});
+})();
 </script>{% endif %}
 {% if page.fragment_key %}<script>try{localStorage.setItem('{{ page.fragment_key }}','1');}catch(e){}</script>{% endif %}
 </body>
