@@ -164,7 +164,15 @@
         'text-shadow:0 0 22px rgba(245,197,24,.55);}' +
       '.pjfx-kicker{margin:12px 0 0;font-family:"Share Tech Mono",ui-monospace,monospace;' +
         'font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#F5C518;}' +
-      '.pjfx-name{margin:6px 0 0;font-size:1.32rem;font-weight:800;line-height:1.2;color:#fff;}' +
+      /* ⛑ THE HEADING HAD TO BE DISARMED — 2026-08-26, caught on the live Alpine File.
+         `_pjcc-01-core.scss` gives every `h2` on the site `border-bottom: 2px solid #3d2b8a`
+         plus its own margins and gold color. This card is an `h2`, so it wore a purple rule
+         across it — on the one page that is meant to look like nothing else on the site.
+         ⭐ THE COMMENT ABOVE CLAIMS THIS CARD "ASSUMES NO PAGE CSS", AND THAT WAS ONLY TRUE OF
+         THE PROPERTIES I REMEMBERED TO SET. Self-contained means overriding what the page
+         gives you for free, not just declining to ask for anything. */
+      '.pjfx-name{margin:6px 0 0;font-size:1.32rem;font-weight:800;line-height:1.2;color:#fff;' +
+        'border:0;padding:0;text-align:center;font-family:inherit;letter-spacing:normal;}' +
       '.pjfx-line{margin:10px 0 0;font-size:.92rem;line-height:1.55;color:#b8b2cc;}' +
       '.pjfx-count{margin:16px 0 0;font-family:"Share Tech Mono",ui-monospace,monospace;' +
         'font-size:11px;letter-spacing:.14em;color:#8a8598;}' +
