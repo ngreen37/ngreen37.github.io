@@ -501,17 +501,58 @@
    ⚠ THE FOUND ONES CARRY THE ONE PIECE OF GOLD ON THIS PAGE, on purpose: a fragment is the
    rarest thing on the site, and gold is what the dossier already spends on your codename. */
 .frag-shelf {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-  gap: 8px; margin: 4px 0 10px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px; margin: 4px 0 10px;
 }
+/* ⛑⛑ THEY ARE MOONROCKS NOW, AND NO TWO THE SAME — 2026-08-26. Nate: "They should be
+   slightly different moonrock-shapes."
+
+   Six identical rounded rectangles read as UI — a form with six inputs. A fragment is
+   supposed to be a found OBJECT, and objects are not identical. Each socket gets its own
+   asymmetric radius, so the shelf reads as six pieces of the same broken thing rather than
+   six slots in a widget.
+
+   ⭐ THE SHAPE IS THE SOCKET, NOT THE STATE. The rock is the same shape whether it is found
+   or empty — an empty socket is that fragment's OUTLINE waiting to be filled, which is what
+   makes a full shelf feel assembled. Change the radius on `.got` and the shelf reshuffles
+   itself as you collect, which reads as a bug.
+   ⛑⛑ THE FIRST ATTEMPT USED PERCENTAGE RADII AND DREW SIX ELLIPSES. Percentages resolve
+   against the box, so on a socket twice as wide as it is tall every corner becomes a quarter
+   of the same wide oval — the six "different" shapes were indistinguishable ovals, and the
+   deed text ran straight out through the curve on both sides. Caught in a render; the values
+   looked convincingly irregular in the stylesheet. [[pick-visual-values-from-a-render]]
+
+   ⭐ PIXELS, NOT PERCENTAGES — a moonrock is BLOCKY with knocked-about corners, not a blob.
+   Absolute radii keep the body of the tile rectangular (so the type has full width) while the
+   corners disagree with each other enough to read as chipped stone.
+   ⚠ EIGHT VALUES, `/` SEPARATED. Four gives every corner an arc of the same circle and the
+   eye reads "rounded box"; the horizontal and vertical radii have to disagree.
+   ⚠ NOT `clip-path`. A polygon cannot take a border and would cut the deed text off at the
+   edges; a radius keeps the box a box for layout and type. */
 .frag-slot {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; min-height: 76px; padding: 10px 6px; text-align: center;
-  border: 1px dashed #3d2b8a; border-radius: 12px; background: #1c1443;
+  gap: 4px; min-height: 92px; padding: 14px 14px; text-align: center;
+  border: 1px dashed #3d2b8a; background: #1c1443;
+  /* ⭐ THE 4–40px RANGE IS THE PICK, off a three-intensity grid rendered side by side.
+     7–27px was so subtle every socket read as the same rounded rectangle — "different
+     shapes" nobody could see. 3–52px went the other way: the big corners start eating the
+     deed text and the tiles read as lozenges rather than stone. 4–40 is the band where the
+     corners visibly disagree and the body of the tile is still square enough to set type in. */
+  border-radius: 38px 6px 30px 10px / 20px 34px 7px 26px;
 }
+.frag-slot:nth-child(2) { border-radius: 7px 36px 9px 40px / 30px 8px 34px 12px; }
+.frag-slot:nth-child(3) { border-radius: 40px 12px 5px 32px / 8px 38px 16px 30px; }
+.frag-slot:nth-child(4) { border-radius: 10px 34px 38px 6px / 36px 12px 28px 9px; }
+.frag-slot:nth-child(5) { border-radius: 32px 8px 14px 40px / 9px 30px 10px 36px; }
+.frag-slot:nth-child(6) { border-radius: 6px 30px 40px 11px / 34px 10px 32px 7px; }
 .frag-slot .frag-mark { font-size: 20px; line-height: 1; color: #4a3a86; }
 .frag-slot .frag-name {
   font-size: 0.7rem; letter-spacing: 0.04em; color: #6f5fa8; line-height: 1.25;
+}
+/* the deed. Quiet — the name is the object, this is the caption under it. */
+.frag-slot .frag-how {
+  font-size: 0.62rem; line-height: 1.35; color: #9b8fc4;
+  max-width: 15em; text-wrap: balance;
 }
 .frag-slot.got {
   border-style: solid; border-color: #F5C518; background: #2a1f52;

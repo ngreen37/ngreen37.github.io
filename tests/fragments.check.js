@@ -57,9 +57,29 @@ ok(target === '6', 'TARGET is 6 — six fragments open the world', 'found: ' + t
    a DOM shim, and a shim is a second implementation of the thing being tested. */
 const slotBlock = src.slice(src.indexOf('var SLOTS = ['), src.indexOf('var TARGET'));
 const SLOTS = [];
-const slotRe = /\{\s*id:\s*'([a-z0-9_]+)',\s*flag:\s*'([a-z0-9_]+)',\s*nm:\s*'([^']+)'\s*\}/g;
+/* ⚠⚠ THIS USED TO REQUIRE THE ENTRY TO END RIGHT AFTER `nm`, and it silently found ZERO
+   slots the moment a `how:` field was added on 2026-08-26 — which failed FOUR checks at once
+   (the slot count, both mint cross-references, and the front-matter one) and pointed at none
+   of the real cause. A parser that matches a whole literal shape breaks on every field anyone
+   adds; match the FIELDS instead, and let the entry carry whatever else it needs.
+   ⭐ `how` IS ASSERTED SEPARATELY BELOW rather than baked in here, so adding the NEXT field
+   costs nothing again. */
+const slotRe = /\{\s*id:\s*'([a-z0-9_]+)',\s*flag:\s*'([a-z0-9_]+)',[\s\S]*?nm:\s*'([^']+)'/g;
 let m;
 while ((m = slotRe.exec(slotBlock)) !== null) SLOTS.push({ id: m[1], flag: m[2], nm: m[3] });
+
+/* ⛑ EVERY SLOT SAYS WHAT YOU DID — 2026-08-26 (Nate: "Make sure the fragments display what
+   they did to unlock them on the ledger"). A slot with no `how` renders a nameless rock on
+   the shelf, which is the one thing the shelf is not for. */
+const hows = (slotBlock.match(/how:\s*'[^']+'/g) || []);
+ok(hows.length === SLOTS.length,
+   'every filled slot carries a `how` — the deed, not just the name',
+   hows.length + ' deeds for ' + SLOTS.length + ' slots');
+/* ⚠ PAST TENSE, NOT AN INSTRUCTION. "Walked through…" is a record of something you did;
+   "Walk through…" is a task list, and the ledger refuses to be a checklist. */
+ok(hows.every((h) => !/^how:\s*'(Find|Go|Visit|Solve|Look|Walk|Catch|Get|Click|Tap)\b/.test(h)),
+   '…and no deed is phrased as an instruction',
+   'a deed is something you already did');
 
 ok(SLOTS.length === 3, 'three slots are filled — alpine · sky · road',
    'found ' + SLOTS.length + ': ' + SLOTS.map(s => s.id).join(' · '));

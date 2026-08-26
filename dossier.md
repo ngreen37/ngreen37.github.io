@@ -94,10 +94,24 @@ permalink: /dossier/
   for (var i = 0; i < target; i++) {
     var s = slots[i] || null;
     var got = s && held[s.id];
-    h += '<div class="frag-slot' + (got ? ' got' : '') + '"' +
-         (got ? ' title="' + s.nm.replace(/"/g, '&quot;') + '"' : '') + '>' +
+    /* ⛑ THE DEED IS PRINTED UNDER THE NAME — 2026-08-26 (Nate: "Make sure the fragments
+       display what they did to unlock them on the ledger"). It replaces the `title=`
+       tooltip, which was hover-only and therefore invisible to him: he is on iOS, and a
+       tooltip is not a thing you can read on a phone ([[hover-is-three-inputs]]).
+       ⚠ `how` IS ONLY READ WHEN `got`, exactly like `nm`. An unfound fragment's deed is a
+       walkthrough — printing it turns the shelf into the checklist the ledger refuses to be.
+       ⚠ ESCAPED, because these strings end up in innerHTML. They are literals in
+       pjcc-fragments.js today and nothing here has been near a text field, but the shelf
+       should not be the place that assumption first gets tested. */
+    var esc = function (t) {
+      return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    };
+    h += '<div class="frag-slot' + (got ? ' got' : '') + '">' +
          '<span class="frag-mark" aria-hidden="true">' + (got ? '✦' : '') + '</span>' +
-         '<span class="frag-name">' + (got ? s.nm : '—') + '</span></div>';
+         '<span class="frag-name">' + (got ? esc(s.nm) : '—') + '</span>' +
+         (got && s.how ? '<span class="frag-how">' + esc(s.how) + '</span>' : '') +
+         '</div>';
   }
   h += '</div>';
   h += '<p class="frag-line">' +

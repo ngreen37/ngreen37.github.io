@@ -40,13 +40,26 @@
      Order is display order and nothing depends on it. `nm` is what a found fragment is
      called; an unfound one is never named anywhere in the DOM, so the ledger cannot be
      read as a checklist of things to go looking for. */
+  /* ⛑ `how` IS THE DEED, ADDED 2026-08-26 (Nate: "Make sure the fragments display what they
+     did to unlock them on the ledger"). A shelf of six names is a trophy case; a shelf that
+     says what you DID is a record of a journey, and it is the only place the site ever
+     explains an egg.
+     ⚠⚠ IT IS ONLY EVER READ FOR A HELD SLOT — same rule as `nm`, and for the same reason. An
+     unfound fragment's deed is a walkthrough: printing it would turn the ledger into the
+     checklist the whole slow-reveal is built to avoid. Both fields stay out of the DOM until
+     the flag is set. [[fragment-ledger]]
+     ⚠ PAST TENSE, AND NO SECOND-PERSON INSTRUCTION. "Walked through a hidden door" reads as
+     something you did; "Walk through the hidden door" reads as a task list. */
   var SLOTS = [
     { id: 'alpine', flag: 'frag_classified',
-      nm: 'The Alpine File' },
+      nm: 'The Alpine File',
+      how: 'Walked through a door that was never advertised.' },
     { id: 'sky',    flag: 'frag_sky',
-      nm: 'A Rare Sky' },
+      nm: 'A Rare Sky',
+      how: 'Looked up on a night the sky was doing something rare.' },
     { id: 'road',   flag: 'frag_road',
-      nm: 'Halfway to Chess City' }
+      nm: 'Halfway to Chess City',
+      how: 'Solved five hundred puzzles on the road. No hints.' }
     /* ⛑⛑ `road` IS THE ONLY ONE OF THE THREE YOU CAN EARN BY PLAYING WELL — 2026-08-25.
        Nate: *"Let's make another egg be successfully completing half of the puzzles on Fork
        in the Road."* Five hundred CLEAN solves on the journey; the room's own `earned` rule
