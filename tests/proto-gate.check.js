@@ -1,9 +1,10 @@
-/* proto-gate.check.js — the four unfinished games are shut the SAME way.
+/* proto-gate.check.js — the shelved games are all shut the SAME way.
  *
  *   Run: npm run test:proto      Exits non-zero on any failure.
  *
- * WHY THIS FILE EXISTS. Four prototypes (Duel, MARCHLAND, Follow the Dog, Chess City) are
- * kept off the games hall and opened by one key in the URL. That arrangement is two halves
+ * WHY THIS FILE EXISTS. The prototypes below (Duel, MARCHLAND, Follow the Dog, Chess City,
+ * and since 2026-08-26 the Murphy's Law scroller) are kept off the games hall and opened by
+ * one key in the URL. That arrangement is two halves
  * in two different files — `playable:false` in the registry takes the card off the grid, and
  * an inline script on the page reveals the frame — and NEITHER HALF KNOWS ABOUT THE OTHER.
  * Which means each one can be half-done, silently:
@@ -16,9 +17,9 @@
  * a test and not a comment. ⚠ The gate is a SOFT gate — it is a "don't stumble in here" sign,
  * not access control, and this file must never be read as proving otherwise.
  *
- * ⭐ AND THE FOUR COPIES MUST STAY ONE COPY. They were four hand-written variants with four
+ * ⭐ AND EVERY COPY MUST STAY ONE COPY. They were four hand-written variants with four
  * different localStorage keys until 2026-08-10, which meant the key had to be typed once per
- * GAME. Now the block is byte-identical everywhere and one key opens all four; this file
+ * GAME. Now the block is byte-identical everywhere and one key opens all of them; this file
  * fails the moment somebody edits one of them and not the rest.
  */
 'use strict';
@@ -33,19 +34,28 @@ function ok(cond, msg) {
   else { FAIL++; fails.push(msg); console.log('  ✗ ' + msg); }
 }
 
-/* The four, and the pages they are served from. `slug` is the registry key; `page` is the
-   source file, which is NOT always named after the slug — Follow the Dog still builds out
-   of games/space_run/ because it used to be Space Run. */
+/* The shelved ones, and the pages they are served from. `slug` is the registry key; `page` is
+   the source file, which is NOT always named after the slug — Follow the Dog still builds out
+   of games/space_run/ because it used to be Space Run.
+
+   ⚠ THIS TABLE IS THE ONE HAND-TYPED THING IN THE FILE, and it has to be: the page path is
+   not derivable from the slug, as Follow the Dog proves. Everything else — the count in the
+   banner, the delisted set in §3 — is read out of the repo, so the only way to strand a game
+   is to delist it and not add a row here, which is exactly what §3 fails on. */
 const PROTOS = [
   { slug: 'duel',           name: 'Duel Mode',      page: 'games/duel/index.html' },
   { slug: 'marchland',      name: 'MARCHLAND',      page: 'games/campaign/index.html' },
   { slug: 'follow-the-dog', name: 'Follow the Dog', page: 'games/space_run/index.html' },
-  { slug: 'chess-city',     name: 'Chess City',     page: 'games/chess-city/index.html' }
+  { slug: 'chess-city',     name: 'Chess City',     page: 'games/chess-city/index.html' },
+  /* The scroller. Not unfinished — SUPERSEDED: the name went to the Godot survivors run on
+     2026-08-26 and the game came off the hall rather than being deleted. Same door either
+     way, which is the point of there being only one door. */
+  { slug: 'murphys-law',    name: "Murphy's Law",   page: 'games/murphys-law/index.html' }
 ];
 
 const REGISTRY = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
 
-console.log('\n=== THE PROTOTYPE SOFT GATE — four doors, one key ===\n');
+console.log('\n=== THE PROTOTYPE SOFT GATE — ' + PROTOS.length + ' doors, one key ===\n');
 
 /* ── 1 · both halves, on every prototype ───────────────────────────────────────── */
 const blocks = [];
@@ -73,7 +83,7 @@ for (const p of PROTOS) {
      p.name + ': sitemap: false — an unfinished game does not belong in a search result');
 }
 
-/* ── 2 · the four copies are ONE copy ──────────────────────────────────────────── */
+/* ── 2 · every copy is ONE copy ─────────────────────────────────────────────────── */
 if (blocks.length) {
   const first = blocks[0];
   const drifted = blocks.filter(b => b.body !== first.body).map(b => b.name);

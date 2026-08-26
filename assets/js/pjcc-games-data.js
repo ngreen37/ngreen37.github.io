@@ -27,7 +27,16 @@ window.PJCC_GAMES = [
   { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back",         icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','points'] },
   { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates. Tower Defense',  icon:'🏰', accent:'#ff77a8', cat:'arcade', score:['tower-defense','score'] },
   { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic',           icon:'♟', accent:'#ff77a8', cat:'dev', score:['dungeon','floors'], neu:'2026-06-22' },
-  { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right',          icon:'☹', accent:'#3cbcfc', cat:'dev', score:['murphys-law','score'], neu:'2026-06-25' },
+  // ⚑ THE NAME MOVED TO GODOT 2026-08-26 (Nate: "We're going to make murphy's law. It'll be
+  // based on vampire survivor and Murph will be the main character with guns and chess pieces
+  // are going to come at him" — then chose the Godot project, and "replace it" for this one).
+  // *Murphy's Law* is now the survivors run in private/docs/godot/murphys_law/; this Mega Man
+  // scroller keeps the character and the premise but loses the marquee, so it goes behind the
+  // same soft gate as the other shelved prototypes. `score:` stays — a run banked in June is
+  // still banked and still counts; only the card is gone. Reopen by deleting `playable:false`
+  // here AND the gate script in games/murphys-law/index.html. Both, or the card leads to a
+  // shut door.
+  { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right',          icon:'☹', accent:'#3cbcfc', cat:'dev', score:['murphys-law','score'], neu:'2026-06-25', playable:false },
   // The Battle Room — TERMINATED 2026-07-14 (Nate: "make it unplayable. We'll keep
   // working on it."). Asset kept dark at assets/games/pjcc_battle_room.html; page deleted.
   { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence',      icon:'⚔', accent:'#56d0ff', cat:'terminated', playable:false },
