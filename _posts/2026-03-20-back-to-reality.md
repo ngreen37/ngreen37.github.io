@@ -12,7 +12,7 @@ tags: [home, vinyl, lisa, reality, lifestyle]
 
 -	I feel like the only way to execute this in any sort of realistic timeline is to eventually get myself down to one job or 40 hours a week.  I'm doing maybe 60 now, which is do-able but it takes all day and can be hard to be productive during breaks.  I DO get Saturday PM to Monday PM off usually, however, which is a full weekend that I can take advantage of!  But to really put it in full-gear I'd love to whittle it down some.  I am a ways from that, though, lol
 
-- Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can (and should) also be on the to-do list for PJCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
+- Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can (and should) also be on the to-do list for P&JCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
 
 
 ### What I worked on: 

@@ -16,11 +16,10 @@ I think I need to stop and go for a run.  I haven't ran in months, although I do
   -
   ---
   -
-  But, I must say that this is really the most effective way to get better at things.  I probably spent eighteen hours over the last three days simply trying to get Princess to jump on a chair, and still didn't get there.  But weight paints are fascinating, and they make sense, and next time it will be easier!  If I had instead played around in tutorials, I still would have to go through those same growing pains I just mentioned.  You can barely remember what you do in tutorials, when you are simply copying steps.  the PROBLEM-SOLVING of doing it on your own is the ticket.
+  <THIS SECTION HAS BEEN REDACTED>
 
 ### What's next:
-  - I will try and complete, in the next few days, a very basic scene, three seconds long, of Princess jumping up to a chair.  It will probably look like garbage, but the point is to get through the steps.  I need SOME SORT OF proof of concept.
-  - I need to make a Princess v_02.  I do like how she looks in v_01, honestly, but there are a few obvious issues and probably many more that I am unaware of.  
+  <THIS SECTION HAS BEEN REDACTED> 
 
 
   This weekend was tough, and I thought I did not expect the obstacles to be so high, but I feel empowered and ready for more. The process is slowly coming together.  Stay tuned!

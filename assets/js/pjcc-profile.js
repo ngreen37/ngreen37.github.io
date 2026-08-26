@@ -619,11 +619,26 @@
              card, a game page), where `pjcc.identity.v1` may be a stale copy from a device
              that has not synced yet. The profile is the shared truth; local is what a
              signed-out visitor has instead. */
-          var pl = null;
-          try { pl = c.petLook || (JSON.parse(localStorage.getItem('pjcc.identity.v1') || '{}') || {}).pet; }
-          catch (e) {}
-          var pet = c.pet ? {
-            species: c.pet,
+          var pl = null, ls = {};
+          try { ls = JSON.parse(localStorage.getItem('pjcc.identity.v1') || '{}') || {}; } catch (e) {}
+          try { pl = c.petLook || ls.pet; } catch (e) {}
+          /* ⛑⛑ THE SPECIES IS RESOLVED, NOT READ — 2026-08-25. `c.pet` is written ONLY by
+             `PJCC.setPet()`, which fires from the Den's species PICKER — so anybody who never
+             opened that picker had no `companion.pet` at all, and this returned null and drew
+             no dog. The local save file has had a default of `dog` since the Den shipped; the
+             account simply never heard about it. **A default that lives on only one side of a
+             sync is not a default.**
+             ⚠ ACCOUNT → LOCAL → 'dog', in that order, so a device that has never opened the
+             Den still shows the companion the account chose. */
+          var showPet = c.petOnAvatar !== false;
+          var species = c.pet || (petLocal() || {}).pet || 'dog';
+          /* ⭐ AND OFF IS A REAL CHOICE (his: "You can choose NO COMPANION too"). It is a
+             separate flag rather than a `none` species on purpose: the Den is a whole feature
+             — bond, feeding, cosmetics — and hiding the dog from your avatar must not delete
+             the dog. `!== false` so the default is SHOWN and an old profile with no flag is
+             not silently opted out. */
+          var pet = showPet ? {
+            species: species,
             coat: (pl && pl.coat) || 'natural',
             eye:  (pl && pl.eye)  || 'brown',
             nose: (pl && pl.nose) || 'black'
@@ -1123,6 +1138,16 @@
   }
   PJCC.mergeAuston = mergeAuston;
   PJCC.setAuston = async function (state) { return updateCompanion({ auston: state || {} }); };
+  /* the Den's own save file, read WITHOUT loading the Den — avatarMarkup runs on surfaces
+     pjcc-companion.js was never on, and the species default lives in there. */
+  function petLocal() {
+    try { return JSON.parse(localStorage.getItem('pjcc.pet.v3') || 'null'); } catch (e) { return null; }
+  }
+  PJCC.setPetOnAvatar = async function (on) { return updateCompanion({ petOnAvatar: !!on }); };
+  PJCC.petOnAvatar = function () {
+    try { var p = PJCC.getProfile(); return !(p && p.companion && p.companion.petOnAvatar === false); }
+    catch (e) { return true; }
+  };
   PJCC.getAuston = function () {
     try { var p = PJCC.getProfile(); return (p && p.companion && p.companion.auston) || null; }
     catch (e) { return null; }

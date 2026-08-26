@@ -18,6 +18,6 @@ Last ten days have been busy, but the first week of chess lessons is finished an
 
 ### What's next:
   - My weekend is pretty wide open!  I'm off to a good start with this blog post, and I am working on minor fixes of the website (the navigation buttons should look like little pills, my background picture isn't loading, etc.)  
-    - Honestly, my mathematics degree is really paying off.  I always said it was more of a degree in "problem solving" and that has been put to the test lately with P&JCC!
+    - Honestly, my mathematics degree is really paying off.  I always said it was more of a degree in "problem solving" and that has been put to the test lately!
 
 

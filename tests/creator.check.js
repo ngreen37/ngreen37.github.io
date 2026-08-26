@@ -104,15 +104,51 @@ console.log('\n── THE IDENTITY FORGE ─────────────
   };
   /* ⚠ the TAG, not the filename — both names appear in comments explaining this rule */
   const tag = (src, f) => new RegExp('<script[^>]*' + f.replace(/\./g, '\\.')).test(src);
+  /* ⛑⛑ TWO DEPENDENCIES NOW, NOT ONE — 2026-08-25, THE DAY AFTER. Nate: *"The companion is
+     still not showing on the shoulder… Anywhere there is an avatar."*
+     `PJCCFaceArt.avatar()` draws the dog only `if (pet && window.PJCCPetArt)`, and
+     pjcc-pet-art.js was loaded by exactly THREE pages. Everywhere else the guard was false
+     and the shoulder was silently empty.
+     ⭐⭐ I SHIPPED IT KNOWING ABOUT THE TRAP. I fixed the identical bug for pjcc-face-art.js
+     the day before, wrote this very check to derive root layouts — and then added a NEW
+     optional dependency without asking my own gate about it. **Deriving the PAGES is only
+     half of it; the list of DEPENDENCIES was still hand-typed, and the typed half is the half
+     that rots** (the same shape as the fragment ledger's host table).
+     So the list lives here, once, and every root layout is asked about every entry. */
+  const AVATAR_DEPS = [
+    ['pjcc-face-art.js', 'avatarMarkup() falls back to a plain emoji — no hat, no eye color'],
+    ['pjcc-pet-art.js',  'avatar() skips the companion silently — an empty shoulder']
+  ];
   let asked = 0;
   for (const r of roots) {
     const src = resolve(r, 0);
     if (!tag(src, 'pjcc-profile-bar.js') && !tag(src, 'pjcc-profile.js')) continue;
     asked++;
-    check(r + ' loads pjcc-face-art.js beside the profile', tag(src, 'pjcc-face-art.js'),
-      'without it avatarMarkup() silently falls back to an emoji — no hat, no eye color');
+    for (const [dep, why] of AVATAR_DEPS) {
+      check(r + ' loads ' + dep, tag(src, dep), 'without it, ' + why);
+    }
   }
   check('every root layout that shows an avatar was asked', asked >= 2, asked + ' of ' + roots.length);
+  check('…about every optional dependency the compositor guards on',
+    AVATAR_DEPS.length === (read('assets/js/pjcc-face-art.js').match(/window\.PJCCPetArt/g) || []).length + 1,
+    'one entry per `window.PJCCxxx &&` guard in avatar() — add a guard, add a row');
+
+  /* ⭐ THE SPECIES IS RESOLVED, NOT READ. `companion.pet` is written only by the Den's
+     picker, so anybody who never opened it had no field at all and drew no dog — while the
+     local save file has defaulted to `dog` since the Den shipped. A default that lives on
+     only one side of a sync is not a default. */
+  check('the species falls back account → local → dog',
+    /var species = c\.pet \|\| \(petLocal\(\) \|\| \{\}\)\.pet \|\| 'dog';/.test(read('assets/js/pjcc-profile.js')),
+    'setPet() fires only from the picker — most profiles have never had the field');
+  check('⚠ and OFF is a separate flag, not a `none` species',
+    /var showPet = c\.petOnAvatar !== false;/.test(read('assets/js/pjcc-profile.js')),
+    'hiding the dog from your avatar must not delete the Den');
+  check('…defaulting to SHOWN, so an old profile is not silently opted out',
+    /!== false/.test(read('assets/js/pjcc-profile.js')));
+  check('the Forge offers the choice in the Companion tab',
+    /data-avpet="1"/.test(read('assets/js/pjcc-creator.js')) &&
+    /data-avpet="0"/.test(read('assets/js/pjcc-creator.js')),
+    'beside the thing it is about, not in a settings list nobody opens');
 }
 
 /* ══ ONE SHAPE, AND IT SIZES ITSELF ═══════════════════════════════════════

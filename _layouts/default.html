@@ -166,6 +166,18 @@
        the nav, every leaderboard, the profile bar. NOT deferred: PJCC.avatarMarkup()
        falls back to the old emoji when PJCCFaceArt is missing, which means a late load
        would paint the emoji first and never correct itself. {%- endcomment -%}
+  {%- comment -%} ⛑⛑ THE PET ART — ADDED 2026-08-25, AND THIS IS THE FIFTH TIME.
+       Nate: *"The companion is still not showing on the shoulder… Anywhere there is an
+       avatar."* He was right and the compositor was innocent: `PJCCFaceArt.avatar()` draws the
+       dog only `if (pet && window.PJCCPetArt)`, and pjcc-pet-art.js was loaded by exactly
+       THREE pages — dossier, leaderboards and the Park Tables. Everywhere else the guard was
+       false and the shoulder was silently empty.
+       ⭐⭐ I SHIPPED THIS KNOWING ABOUT THE TRAP. Yesterday I fixed the identical bug for
+       pjcc-face-art.js, wrote the gate that derives root layouts, and then added a NEW
+       optional dependency the next day without asking the gate about it. The gate now checks
+       both, so a sixth is asked about automatically. [[feature-shipped-but-never-loaded]]
+       ⚠ BEFORE the face art, which composites it. {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-pet-art.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-face-art.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>

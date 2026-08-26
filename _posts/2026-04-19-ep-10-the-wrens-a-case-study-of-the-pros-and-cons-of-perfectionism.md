@@ -20,9 +20,9 @@ The Meadowlands (2003) is one of my all-time favorite albums, and the story of i
 ### What's next:
   - The next four weeks will be work-heavy.  Three jobs most workdays, with half of weekends free.  So, realistically:
     - tracking down an old microphone I have somewhere
-    - finishing the first build of Princess, Nate, and maybe a side character or two
+    - finishing the first build of Princess
     - keeping up the blog, and
-    - improving the website gradually
+    - improving the website
 
   would feel like a major accomplishment.  We'll see.  It's playoff hockey time, which makes it easier to sit on my computer, but harder to stay focused.  
   

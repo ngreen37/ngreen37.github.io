@@ -293,6 +293,11 @@
    than swatches: it is not choosing a color, and a fourth circle in a row of circles would
    read as one. Sits tight against the row below (margin-bottom 8) so the two read as one
    control rather than as two sections that happen to be adjacent. */
+/* ⚠ THE HINT UNDER THE AVATAR TOGGLE — 2026-08-25. A new class rather than a reused one
+   because nothing in this panel had a sub-line before; `npm run sweep` flags it the day
+   the markup goes, which is the point of not borrowing an unrelated selector. */
+.forge-avpet-hint { margin: 6px 0 0; font-size: 0.76rem; color: #9a8bc4; line-height: 1.4; }
+
 .forge-seg {
   display: inline-flex; margin: 0 0 8px; padding: 2px; gap: 2px; border-radius: 999px;
   background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.10);

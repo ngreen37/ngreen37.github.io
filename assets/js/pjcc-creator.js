@@ -359,6 +359,17 @@
      nothing would ever read it, and the Forge believed the active pet was always
      `dog-1`. Everything now goes through PJCCPet, which is the single owner. Each call is
      guarded because the Forge can render on a page where the Den script isn't loaded. */
+  /* Shown by default, and tested with `!== false` rather than truthily, so a profile saved
+     before this flag existed is never silently opted out of its own companion. Local mirrors
+     the account so the toggle is instant offline and still correct on a new device. */
+  function petOnAvatar() {
+    try { if (window.PJCC && PJCC.petOnAvatar) return PJCC.petOnAvatar(); } catch (e) {}
+    try { return localStorage.getItem('pjcc.pet.onavatar') !== '0'; } catch (e) { return true; }
+  }
+  function setPetOnAvatar(on) {
+    try { localStorage.setItem('pjcc.pet.onavatar', on ? '1' : '0'); } catch (e) {}
+    try { if (window.PJCC && PJCC.setPetOnAvatar) PJCC.setPetOnAvatar(on).catch(function () {}); } catch (e) {}
+  }
   function petDefs() { return (window.PJCCPet && PJCCPet.PETS) || {}; }
   function activePetKey() { return (window.PJCCPet && PJCCPet.activeKey) ? PJCCPet.activeKey() : 'dog'; }
   function petBaseEmoji() { return (window.PJCCPet && PJCCPet.petEmoji) ? PJCCPet.petEmoji() : '🐕'; }
@@ -878,6 +889,23 @@
         ? 'Your companion doesn\'t have a name yet — that\'s yours to give, down below.'
         : 'Styling <b style="color:#f0e6ff">' + esc(petName()) + '</b>.') +
       '</p>';
+    /* ⛑ ON YOUR AVATAR, OR NOT — 2026-08-25. Nate, adding the shoulder companion: *"You
+       can choose NO COMPANION too."*
+       ⭐⭐ A SEPARATE FLAG, NOT A `none` SPECIES, and the difference matters. The Den is a
+       whole feature — bond, feeding, walks, cosmetics that unlock as it grows — and "I do
+       not want a dog on my nav pill" must not delete the dog. This hides the PICTURE;
+       everything about the companion keeps running.
+       ⚠ IT LIVES IN THE COMPANION TAB, beside the thing it is about, rather than in a
+       settings list nobody opens. */
+    h += '<div class="forge-section"><h3>On Your Avatar</h3>' +
+      '<div class="forge-seg" role="group" aria-label="Show the companion on your avatar">' +
+        '<button type="button" class="forge-seg-b' + (petOnAvatar() ? ' on' : '') +
+          '" data-avpet="1" aria-pressed="' + (petOnAvatar() ? 'true' : 'false') + '">Shown</button>' +
+        '<button type="button" class="forge-seg-b' + (petOnAvatar() ? '' : ' on') +
+          '" data-avpet="0" aria-pressed="' + (petOnAvatar() ? 'false' : 'true') + '">Hidden</button>' +
+      '</div>' +
+      '<p class="forge-avpet-hint">They ride on your shoulder everywhere your face appears.</p></div>';
+
     /* ── THREE COLORS, THREE PARTS (2026-07-28) ────────────────────────────────
        This is what the whole "draw the companion as parts" job was for. Until today
        there was ONE control here — Coat — and it was a filter smeared across an emoji,
@@ -1004,6 +1032,12 @@
     });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hat]'), function (c) { c.onclick = function () { patchOp({ hat: c.getAttribute('data-hat') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-emblem]'), function (c) { c.onclick = function () { patchOp({ emblem: c.getAttribute('data-emblem') }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-avpet]'), function (c) {
+      c.onclick = function () {
+        setPetOnAvatar(c.getAttribute('data-avpet') === '1');
+        renderForge(true); emit();
+      };
+    });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-coat]'), function (c) { c.onclick = function () { patchPet({ coat: c.getAttribute('data-coat') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-eye]'),  function (c) { c.onclick = function () { patchPet({ eye:  c.getAttribute('data-eye')  }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-nose]'), function (c) { c.onclick = function () { patchPet({ nose: c.getAttribute('data-nose') }); }; });

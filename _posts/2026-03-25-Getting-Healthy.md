@@ -12,9 +12,9 @@ tags: [ratatat, time-off, belief]
 
 ### What I worked on since last post: 
   - Successfully rested and recovered from the trip, the drive-home-then-straight-to-work, and the fear of not having enough money
-  - Poking around more with Blender.  It's fascinating.  I have started working on a basic Donut shape and Coffee mug thanks to BlenderGuru, who has some great tutorials to get started.  
+  - Poking around more with website development, 3d animation, and video-game creation.  It's fascinating.  I have started working on a basic Donut shape and Coffee mug in Blender thanks to BlenderGuru, who has some great tutorials to get started.  
 
 ### What's next:
-  - I have a chunk of time-off coming up soon and I am preparing my mind and body to be ready for it.  Blender, Github, and whatever else I can get to.  I am so excited; I truly believe in this project, and my unique experience and skill will make it something special.  I know it.  
+  - I have a chunk of time-off coming up soon and I am preparing my mind and body to be ready for it. I truly believe in this project, and my unique experience and skill will make it something special.  I know it.  Not sure what the end result will be, though...
 
 

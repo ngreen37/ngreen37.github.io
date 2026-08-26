@@ -9,11 +9,5 @@ tags: [Vision, Workflow, Storyline]
 
 My new glasses arrived!  Very exciting.  No excuses, but my vision has been compromised for a minute, so P&JCC took a hit.  Movin' past it!  You learn some things when you can't see well out in public, though, lol.  
 
-Speaking of vision, I don't think I have even shared it yet:  the idea is to create a world based on PJCC.  It started with my chess lessons, and I thought "oh, how do I promote this?" and, like a shock to my system, P&JCC came into my head.  My dog is named Princess, and what do Princesses get promoted to?  Uh huh, uh huh, uh HUH.
-- There are so many avenues to take, and I will likely choose two or three to focus on; one of them being a cartoon series
 
-### What I worked on:
-  - I've got my sea scene and dog-chess-board for May done.  They are very basic, but are supposed to be.  
-
-### What's next:
-  - I am looking forward to a day and a half off to get some more Blender time in!  The Journey to Chess City continues
+<THIS POST CONTAINED TOO MANY SPOILERS AND HAS BEEN COMPLETELY REDACTED>
