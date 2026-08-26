@@ -2280,59 +2280,131 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
    deleting both leaves the page exactly as it was.)
 
    WHAT IT SAYS, in priority order, and it says only ONE of them:
-     1. a puzzle rating, if this browser has one — the most specific thing we know;
+     1. a puzzle rating, if we know one — the most specific thing we know;
      2. otherwise how far along the road to Chess City they are;
      3. otherwise nothing at all, and the element stays hidden.
 
-   ⚠ IT READS localStorage DIRECTLY, not through PJCC. The front door loads no profile
-   script, and pulling one in just to print a number would cost every first-time visitor a
-   request to tell them something only a returning one can see. Signed in, `pjcc-profile.js`
-   mirrors the server's values into these same two keys on the rooms that do load it, so a
-   player with an account still sees their real number here the moment they have opened a
-   room once. That is the honest limit of it: this line reports what THIS BROWSER knows.
+   ⚑ WHERE THE NUMBERS COME FROM, in two passes: this browser paints instantly, and then the
+   ACCOUNT is allowed to raise what it painted. Signed out, only the first pass ever happens
+   and it costs nothing. The long note down at pass 2 has the whole story — including the
+   claim that used to live here ("the front door loads no profile script") and why it was
+   false. [[one-fix-every-instance]]
 
    ⚠ THE WHOLE THING IS IN A try/catch. Safari in private mode throws on localStorage access
    rather than returning null, and a front door that dies on its own welcome-back line would
    take the puzzle and the gauntlet door down with it ([[down-never-stuck]]).
 
-   ⚠ NOTHING IS WRITTEN. This only reads. A visitor's progress is not the front door's to
-   touch, and a bug here can therefore cost a rating but never corrupt one. */
+   ⚠ THIS PAGE WRITES NOTHING OF ITS OWN — but it is no longer true that nothing is written
+   at all: `PJCC.puzzleRating()` caches the higher of (local, profile) as part of answering.
+   That is the profile module's own reconcile, the same one every room triggers, and it can
+   only ever raise a number. A bug here can still cost a rating but never corrupt one. */
 (function () {
   var el = document.getElementById('mc-resume');
   if (!el) return;
-  try {
-    var read = function (k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } };
-    var pz = read('pjcc.puzzle.rating.v1');
-    var jr = read('pjcc.fork.journey.v2');
 
-    /* ⚠ THE NUMBERS ARE WRAPPED, NOT JUST PRINTED. `.rs-num` is what makes his rating and his
-       count the loud things in this block — the CSS cannot find them without the span, and a
-       bold applied to the whole sentence would just be a bold sentence. */
-    var num = function (n) { return '<span class="rs-num">' + n + '</span>'; };
+  /* ⚠ THE URL COMES FROM A data- ATTRIBUTE, NOT FROM LIQUID IN THIS SCRIPT. A `{{ ... }}`
+     tag written inside a single-quoted JS string leaves the RAW file unparseable, and the
+     raw file is what `style.check.js` parses to prove every inline script on the site is
+     valid JavaScript. Liquid belongs in the markup, where it has somewhere to stand. */
+  var href = el.getAttribute('data-href') || '/games/fork-in-the-road/';
+  var read = function (k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } };
+  /* ⚠ THE NUMBERS ARE WRAPPED, NOT JUST PRINTED. `.rs-num` is what makes his rating and his
+     count the loud things in this block — the CSS cannot find them without the span, and a
+     bold applied to the whole sentence would just be a bold sentence. */
+  var num = function (n) { return '<span class="rs-num">' + n + '</span>'; };
+
+  /* what the line is REPORTING right now, so the account can only ever raise these */
+  var rating = 0, solved = 0, step = 0;
+
+  function paint() {
     var html = '';
-    if (pz && typeof pz.rating === 'number' && pz.rating > 0) {
-      var solved = (typeof pz.solved === 'number' && pz.solved > 0) ? pz.solved : 0;
+    if (rating > 0) {
       /* ⚑ "solved" → "SOLVED CORRECTLY" (his words, 2026-08-11). It is not a flourish: the
          Puzzle Room only counts a CLEAN solve — no hint, no wrong first move — so "26 solved"
          was quietly under-describing what he had done. The stricter word is the true one. */
-      html = '<b>Welcome back!</b> Your puzzle rating is ' + num(Math.round(pz.rating)) +
+      html = '<b>Welcome back!</b> Your puzzle rating is ' + num(Math.round(rating)) +
              (solved ? ' after ' + num(solved) + ' solved correctly' : '') + '.';
-    } else if (jr && typeof jr.step === 'number' && jr.step > 0) {
-      html = '<b>Welcome back!</b> You are ' + num(jr.step) + ' puzzle' + (jr.step === 1 ? '' : 's') +
+    } else if (step > 0) {
+      html = '<b>Welcome back!</b> You are ' + num(step) + ' puzzle' + (step === 1 ? '' : 's') +
              ' along the road to Chess City.';
     }
     if (!html) return;                       /* a stranger sees nothing, and nothing moves */
-
-    /* ⚠ THE URL COMES FROM A data- ATTRIBUTE, NOT FROM LIQUID IN THIS SCRIPT. A `{{ ... }}`
-       tag written inside a single-quoted JS string leaves the RAW file unparseable, and the
-       raw file is what `style.check.js` parses to prove every inline script on the site is
-       valid JavaScript. Liquid belongs in the markup, where it has somewhere to stand. */
-    var href = el.getAttribute('data-href') || '/games/fork-in-the-road/';
     /* ⚠ class="rs-go" IS NOT DECORATION. The theme's `a:not([class])` rule out-specifies this
        page's own link color, so an anchor with no class paints dark ink no matter what the
        page asks for. The class is what opts this link out of that rule. */
     el.innerHTML = html + ' <a class="rs-go" href="' + href + '">Keep going &rarr;</a>';
     el.hidden = false;
+  }
+
+  /* 1. THIS BROWSER PAINTS FIRST — instant, and it is all a signed-out visitor ever gets. */
+  try {
+    var pz = read('pjcc.puzzle.rating.v1');
+    var jr = read('pjcc.fork.journey.v2');
+    if (pz && typeof pz.rating === 'number' && pz.rating > 0) rating = pz.rating;
+    if (pz && typeof pz.solved === 'number' && pz.solved > 0) solved = pz.solved;
+    if (jr && typeof jr.step === 'number' && jr.step > 0) step = jr.step;
+    paint();
   } catch (e) { /* storage denied — the page is unchanged, which is the correct outcome */ }
+
+  /* 2. …THEN THE ACCOUNT GETS A SAY — 2026-08-26 ─────────────────────────
+     Nate: "the cw page shows a certain puzzle counter, but on my mobile device it shows
+     another. It should be uniform."
+
+     He is describing localStorage. This line used to read the two progress keys RAW, so it
+     reported what THIS BROWSER had seen — his desktop and his phone are two browsers, so one
+     number each, both of them honest and neither of them his. The server has known the real
+     figures all along: `profiles.puzzle_rating` / `puzzle_solved`, and the `fork-in-the-road`
+     stat row for the road.
+
+     ⚠⚠ THE OLD COMMENT HERE SAID "the front door loads no profile script", AND THAT WAS
+     FALSE — it is the premise the raw read was justified with. `_layouts/default.html` loads
+     `pjcc-profile.js` on EVERY page (line 163). What is true is that it loads it AFTER
+     `{{ content }}` (line 85), so `window.PJCC` does not exist yet at parse time and a bare
+     `if (window.PJCC && …)` here is silently false forever. Measured, not assumed: `typeof
+     window.PJCC` is "undefined" when this script runs and "object" after that tag.
+
+     ⭐ SO WAIT FOR IT — DO NOT LOAD A SECOND COPY. `pjcc-profile.js` is an IIFE ending in
+     `window.PJCC = PJCC`; a second tag builds a second object over the first, orphans every
+     `onChange` registered against the original, and stands up a second Supabase auth client
+     on the same storage key. That is a documented way to lose a session mid-refresh, and it
+     was removed from `_layouts/home.html` (2026-07-21) and `puzzle-reports.md` for exactly
+     that reason. DOMContentLoaded is the house pattern and it costs nothing.
+
+     ⚠ THE ACCOUNT ONLY EVER RAISES. Win a puzzle on this phone while the write is still in
+     flight and the local number is the fresher one; taking the max is the only direction that
+     can never walk a rating backwards. Same rule as the gauntlet door beside it.
+     ⚠ `PJCC.puzzleRating()` DOES CACHE what it reconciles, so this block no longer honors the
+     old "nothing is written" note. That is the point: the merge it performs is the same one
+     every room performs, and caching the higher number is what makes the NEXT visit agree
+     with this one. This page still writes nothing of its own. */
+  function whenPJCC(fn) {
+    if (window.PJCC) { fn(); return; }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { if (window.PJCC) fn(); });
+    }
+  }
+
+  try {
+    whenPJCC(function () {
+      if (!PJCC.ready) return;
+      PJCC.ready.then(function () {
+        /* already merges the profile row in and keeps the higher of the two */
+        if (PJCC.puzzleRating) {
+          var o = PJCC.puzzleRating();
+          if (o && o.rating > rating) { rating = o.rating; }
+          if (o && o.solved > solved) { solved = o.solved; }
+        }
+        paint();
+        return PJCC.myStats ? PJCC.myStats() : null;
+      }).then(function (st) {
+        var i, row = null;
+        for (i = 0; st && i < st.length; i++) {
+          if (st[i].game === 'fork-in-the-road') { row = st[i]; break; }
+        }
+        var srv = (row && row.data && parseInt(row.data.step, 10)) || 0;
+        if (srv > step) { step = srv; paint(); }
+      })['catch'](function () {});   /* a welcome line that throws on a slow network is worse than a local one */
+    });
+  } catch (e) {}
 })();
 </script>

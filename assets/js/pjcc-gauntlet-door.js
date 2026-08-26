@@ -147,8 +147,35 @@
      ⚠ IT DOES NOT WRITE. The door reports a climb; it does not own one. The game itself
      reconstitutes its local progress from the same row on the way in (see the profile
      restore at the foot of pjcc_gauntlet.html), which is where progress belongs. */
+  /* ⛑⛑ AND IT NEVER FIRED ON THE FRONT DOOR OR THE HALL — FIXED 2026-08-26.
+     The guard below used to be a bare `if (window.PJCC && …)`, and on every page that
+     loads this file `window.PJCC` DOES NOT EXIST YET when it runs. `_layouts/default.html`
+     puts `{{ content }}` at line 85 and `pjcc-profile.js` at line 163 — so a parser-time
+     script inside the content is 78 lines EARLY, the `if` is false, and the whole
+     account-raise above quietly does nothing. The door kept opening at the local floor,
+     which is the exact bug the 2026-08-19 request was about. Nothing threw and no test
+     failed: a guard that is false is indistinguishable from a guard that is not needed.
+
+     ⭐ THE FIX IS TO WAIT, NOT TO LOAD A SECOND COPY. Adding a `pjcc-profile.js` tag to
+     the page would make `window.PJCC` exist here — and would also build a SECOND PJCC
+     object over the first, orphaning every `onChange` registered against the original and
+     standing up a second Supabase auth client on the same storage key (a documented way to
+     lose a session mid-refresh). That mistake was removed from `_layouts/home.html` on
+     2026-07-21 and from `puzzle-reports.md` after it; the house pattern is to wait for
+     DOMContentLoaded, by which point the layout's own copy has run. Proven, not assumed:
+     `typeof window.PJCC` is "undefined" at parse time and "object" after that tag.
+     ⚠ IT STILL RUNS IMMEDIATELY WHERE PJCC IS ALREADY UP (a page that legitimately loads
+     it earlier), so this is a wait, never a delay. */
+  function whenPJCC(fn) {
+    if (window.PJCC) { fn(); return; }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { if (window.PJCC) fn(); });
+    }
+  }
+
   try {
-    if (window.PJCC && PJCC.ready && PJCC.myStats) {
+    whenPJCC(function () {
+      if (!PJCC.ready || !PJCC.myStats) return;
       PJCC.ready.then(function () {
         return PJCC.myStats();
       }).then(function (st) {
@@ -161,6 +188,6 @@
                            (row.data && parseInt(row.data.cleared, 10)) || 0);
         if (srv > shown) { shown = srv; publish(srv); paint(srv); }
       })['catch'](function () {});   // a door that throws on a slow network is worse than a stale door
-    }
+    });
   } catch (e) {}
 })();
