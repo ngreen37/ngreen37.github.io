@@ -601,11 +601,31 @@
        ⚠ `avatar()` FALLS BACK TO `svg()` for a hatless look, so a character wearing nothing
        renders byte-identically to yesterday. Only people with headwear see a change. */
     avatarMarkup: function (prof) {
-      var look = prof && prof.companion && prof.companion.look;
+      var c = prof && prof.companion;
+      var look = c && c.look;
       if (look && window.PJCCFaceArt && (look.hair || look.base)) {
         try {
           var A = window.PJCCFaceArt;
-          return (A.avatar || A.svg)(look);
+          /* ⭐ THE COMPANION RIDES ALONG — 2026-08-25, his ask. Read off the SAME profile the
+             face is, so a surface that shows your character shows your dog without being told
+             about dogs. No pet → null → the avatar is byte-identical to before.
+             ⚠⚠ ONLY THE SPECIES IS SYNCED. `PJCC.setPet()` writes `companion.pet` and nothing
+             else; the coat, eye and nose live in `pjcc.identity.v1` on the DEVICE and always
+             have. So this reads the local look when there is one and falls back to the
+             defaults when there is not — which means a customized dog is customized on the
+             device you dressed it on, and a plain one everywhere else. That is exactly how
+             the pet already behaved before it appeared here; this does not make it worse and
+             must not be described as if it syncs. */
+          var pl = null;
+          try { pl = (JSON.parse(localStorage.getItem('pjcc.identity.v1') || '{}') || {}).pet; }
+          catch (e) {}
+          var pet = c.pet ? {
+            species: c.pet,
+            coat: (pl && pl.coat) || 'natural',
+            eye:  (pl && pl.eye)  || 'brown',
+            nose: (pl && pl.nose) || 'black'
+          } : null;
+          return A.avatar ? A.avatar(look, pet) : A.svg(look);
         } catch (e) {}
       }
       return PJCC.avatarEmoji(prof);

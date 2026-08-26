@@ -58,11 +58,37 @@
    ⚠ THE FRAME MUST NOT CLIP. The hat sits ABOVE the portrait on purpose, so any container
    with `overflow: hidden` decapitates it — the same trap `.idn-av` documents above, which is
    why the face rounds itself instead of the frame rounding it. */
+/* ⛑⛑ IT SIZES ITSELF NOW — 2026-08-25, and the version this replaces was measured wrong
+   in the one place it mattered most. It said `width: 100%; height: 100%`, which I described
+   in the comment above as "self-contained". **A percentage is not self-contained. It is a
+   demand on the parent** — and `#nav-operative`, the header pill, is an inline-flex control
+   built for a text emoji, with no size to give. Measured there: **0×0 without a hat, 300×300
+   with one, inside a 411px pill.** Two shapes, two different failures, one container.
+
+   ⭐⭐ `em`, BECAUSE FONT-SIZE IS THE ONE THING EVERY ONE OF THESE CONTAINERS ALREADY SETS.
+   They all used to hold an emoji, and an emoji is sized by font-size — so the containers were
+   already carrying exactly the number this needs, and none of them had to be edited to learn
+   about avatars. The pill is 0.82rem → ~22px; a board row at 15px → ~24px; `.pjcc-avatar`
+   overrides to a flat 40px because it is a fixed circle.
+   ⚠ A container that wants a specific size sets `--av-size`. It must never go back to a
+   percentage: the next container to be handed this will be the next one with no size. */
 .av-mini {
+  --av-size: 1.68em;
   position: relative; display: inline-flex; align-items: center; justify-content: center;
-  width: 100%; height: 100%; line-height: 1;
+  width: var(--av-size); height: var(--av-size); flex: 0 0 auto; line-height: 1;
 }
 .av-mini .fa-svg { width: 100%; height: 100%; display: block; border-radius: 50%; }
+
+/* ⚠ THE COMPANION SITS OUT OF FLOW, ON PURPOSE. Nate: *"The size shouldn't affect the
+   header size."* Absolute positioning means the pill measures identically with a dog on the
+   shoulder and without one — which is the whole reason this could be added to a header that
+   is already tight on a phone. */
+.av-mini .av-pet {
+  position: absolute; left: -18%; bottom: -6%; width: 52%; height: 52%;
+  pointer-events: none; line-height: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+.av-mini .av-pet .pa-svg { width: 100%; height: 100%; display: block; }
 .av-mini .idn-hat {
   position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
   font-size: 0.56em; line-height: 1; pointer-events: none;

@@ -45,6 +45,10 @@
 .pjcc-bar-quiet .pjcc-btn-ghost:hover { border-color: #F5C518; color: #F5C518; }
 
 /* Logged-in identity block */
+/* ⚠ A FIXED CIRCLE OVERRIDES THE em DEFAULT. `.av-mini` sizes itself off font-size, which
+   is right for the pill and the board rows; this one is a 44px disc and wants a flat 40px
+   inside it regardless of the 26px font it inherited for the old emoji. */
+.pjcc-avatar .av-mini { --av-size: 40px; }
 .pjcc-avatar {
   width: 44px; height: 44px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;

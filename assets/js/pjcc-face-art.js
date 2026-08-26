@@ -359,18 +359,36 @@
   }
 
   /* ⭐ THE WHOLE CHARACTER, IN ONE SELF-CONTAINED BLOCK — 2026-08-25.
-     `svg()` is the face; this is the face wearing what you chose. It brings its OWN
-     positioning context (`.av-mini`), so it drops into a 44px nav circle, a leaderboard row
-     or a gift card **without the container knowing anything about hats**. That mattered:
-     every surface that calls this was written before headwear existed and none of them has
-     a rule for an absolutely-positioned crown. A composite that depends on its container is
-     one that breaks on the next surface.
-     ⚠ NO WRAPPER WHEN THERE IS NOTHING TO WRAP — a bare head returns the same string it
-     always did, so nothing that renders a hatless character changes by a pixel. */
-  function avatar(look) {
-    var c = chrome(look);
-    if (!c) return svg(look);
-    return '<span class="av-mini">' + svg(look) + c + '</span>';
+     `svg()` is the face; this is the face wearing what you chose, with the companion on its
+     shoulder if one is passed.
+
+     ⛑⛑ IT ALWAYS WRAPS NOW, AND THE FIRST VERSION'S "OPTIMIZATION" IS THE BUG IT CAUSED.
+     This used to return the bare `<svg>` for a hatless look — my reasoning was *"then nothing
+     changes for anyone who wears nothing."* What it actually did was give one function TWO
+     DOM SHAPES, so every container had to be correct for both. They were not, and the two
+     shapes failed in two DIFFERENT ways in the same place: measured in the header pill, the
+     hatless SVG came out **0×0 (invisible)** and the wrapped one came out **300×300, in a
+     411px pill**. Nate saw the second and reported it as "way too big"; nobody ever saw the
+     first, because an invisible avatar just reads as a header that has no avatar.
+     ⭐⭐ **ONE FUNCTION, ONE SHAPE.** A caller cannot get the styling right for a shape it
+     does not know it is going to receive.
+
+     ⚠⚠ AND THE SIZE IS INTRINSIC, NOT A PERCENTAGE — see `.av-mini` in the stylesheet.
+     `width: 100%` is not "self-contained": it is a DEMAND ON THE PARENT, and the header pill
+     is an inline-flex control built for a text emoji that has no size to give. */
+  function avatar(look, pet) {
+    var extra = chrome(look);
+    /* ⚠ THE COMPANION IS ABSOLUTELY POSITIONED AND MUST STAY THAT WAY. Nate: *"can we add
+       the companion on one shoulder? The size shouldn't affect the header size."* Out of
+       flow means the pill measures the same with a dog on it as without one. */
+    if (pet && window.PJCCPetArt) {
+      try {
+        extra += '<span class="av-pet" aria-hidden="true">' +
+                 PJCCPetArt.svg({ species: pet.species || 'dog', stage: 1,
+                                  coat: pet.coat, eye: pet.eye, nose: pet.nose }) + '</span>';
+      } catch (e) {}
+    }
+    return '<span class="av-mini">' + svg(look) + extra + '</span>';
   }
 
   window.PJCCFaceArt = {

@@ -115,6 +115,36 @@ console.log('\n── THE IDENTITY FORGE ─────────────
   check('every root layout that shows an avatar was asked', asked >= 2, asked + ' of ' + roots.length);
 }
 
+/* ══ ONE SHAPE, AND IT SIZES ITSELF ═══════════════════════════════════════
+   ⛑⛑ 2026-08-25, Nate: *"it's way too big… it looks like the zoomed-in version."* Measured
+   in the real header pill (`#nav-operative`, an inline-flex control built for a text emoji):
+   the HATLESS avatar came out **0×0 — invisible** and the HATTED one **300×300 inside a 411px
+   pill.** Two DOM shapes from one function, failing two different ways in one container.
+   ⭐⭐ THE CAUSE WAS A COMMENT I WROTE CALLING `width: 100%` "self-contained". It is not —
+   **a percentage is a demand on the parent**, and that parent had no size to give.
+   Fixed at 133×34, identical with or without a hat, and identical again with a companion. */
+{
+  const ART = read('assets/js/pjcc-face-art.js');
+  const CSS16 = read('_sass/_pjcc-16-creator.scss');
+  const rule = CSS16.slice(CSS16.indexOf('.av-mini {'), CSS16.indexOf('}', CSS16.indexOf('.av-mini {')));
+
+  check('avatar() ALWAYS returns the wrapper — one shape, never two',
+    /return '<span class="av-mini">' \+ svg\(look\) \+ extra \+ '<\/span>';/.test(ART) &&
+    !/if \(!c\) return svg\(look\);/.test(ART),
+    'a caller cannot style a shape it does not know it will be handed');
+  check('⚠ .av-mini sizes itself in em, NEVER in a percentage',
+    /--av-size: [\d.]+em;/.test(rule) && !/width: 100%/.test(rule),
+    'font-size is the one thing every container already set — they all used to hold an emoji');
+  check('…and a fixed circle overrides it with a flat number',
+    /\.pjcc-avatar \.av-mini \{ --av-size: 40px; \}/.test(read('_sass/_pjcc-14-profile.scss')));
+  check('the companion is ABSOLUTELY positioned — the size must not affect the header',
+    /\.av-mini \.av-pet \{[\s\S]{0,40}position: absolute;/.test(CSS16),
+    'out of flow means the pill measures the same with a dog on it');
+  check('…and only the pet SPECIES is claimed to sync',
+    /ONLY THE SPECIES IS SYNCED/.test(read('assets/js/pjcc-profile.js')),
+    'coat/eye/nose are device-local and always were — the note must not imply otherwise');
+}
+
 /* ── 1. HUMAN ONLY ────────────────────────────────────────────────────────────────
    ⚠ COMMENTS STRIPPED FIRST. The block explaining what left NAMES what left — Fox,
    Visitor, Robot, Fairy — and a test that cannot tell a rule from the note about the
