@@ -4,7 +4,7 @@ title: McPuppy Studios
 permalink: /projects/
 body_class: theme-studio
 tab_title: McPuppy Studios — The Studio Behind ChessWild
-description: McPuppy Studios — the independent studio behind ChessWild and the P&JCC universe. The animated series, the Academy, the games and the blog, and how far along each one is.
+description: McPuppy Studios — the independent studio behind ChessWild. The Academy, the games and the build log, and how far along each one is.
 ---
 
 {% comment %} ── THE PAGE IS CALLED McPUPPY STUDIOS NOW (2026-08-10) ────────────────
@@ -58,7 +58,12 @@ description: McPuppy Studios — the independent studio behind ChessWild and the
      assets/js/pjcc-nav.js and tests/perf.js. The identity changes; the URL never does.
      Restore the bar: git show <this commit>^ -- projects.md {% endcomment %}
 
-<p class="projects-intro">McPuppy is an independent studio created in March 2026, with the main goal of showing the world the beauty and value of the P&JCC universe.</p>
+{% comment %} 2026-08-25 (Nate: "Remove the text after 'March 2026' because it refers to
+     PJCC"). The clause was "…with the main goal of showing the world the beauty and value
+     of the P&JCC universe" — the studio's stated PURPOSE, named after the property it is
+     now hiding. What is left is a fact with no claim attached, which is the correct thing
+     to say about a studio whose flagship is under wraps. [[slow-roll-cast]] {% endcomment %}
+<p class="projects-intro">McPuppy is an independent studio created in March 2026.</p>
 
 {% comment %} DEAD CSS REMOVED 2026-07-13 (dead-code audit). ~65 lines of page-local styles for
      TWO CARDS THAT NO LONGER EXIST on this page: the gold "featured / playable now" treatment
@@ -129,23 +134,6 @@ description: McPuppy Studios — the independent studio behind ChessWild and the
 }
 @media (prefers-reduced-motion: reduce){ .pj-clock-dot { animation: none; } }
 
-/* ── the flagship's render ──────────────────────────────────────────────────────
-   Side by side on desktop, stacked on a phone. The image is deliberately given a
-   frame and a caption rather than being bled to the card edge: it is a Blender
-   VIEWPORT GRAB (gray background, grid, 3D cursor), and a viewport grab presented as
-   finished art looks like a mistake, while the same grab presented as a work in
-   progress looks like proof. `aspect-ratio` + explicit width/height keep the card
-   from jumping when it loads. */
-.pj-flag-grid { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-4) 22px;
-  align-items: center; }
-.pj-shot { margin: 0; }
-.pj-shot img { display: block; width: 100%; height: auto; aspect-ratio: 699 / 486;
-  border: 1px solid #2a2830; border-radius: var(--r-sm); background: #3b3b3b; }
-.pj-shot figcaption { margin-top: 7px; font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.06em; color: #8a8592; line-height: 1.5; }
-.pj-flag-body { min-width: 0; }
-@media (max-width: 620px) { .pj-flag-grid { grid-template-columns: 1fr; } }
-
 /* ── "Also on the board" — the four not-started things, at the weight they deserve ── */
 .pj-also { margin: var(--space-5) 0 var(--space-4); }
 .pj-also-h { font-family: 'Share Tech Mono', monospace; font-size: 10px;
@@ -184,105 +172,38 @@ description: McPuppy Studios — the independent studio behind ChessWild and the
    the styles went with it rather than sitting here waiting, because dead CSS fails the
    sweep and, worse, quietly rots. FUTURE-IDEAS holds the spec for when it comes back.) */
 </style>
-{% comment %} ── REBUILT 2026-07-28, from the deep-dive skeptic pass ──────────────────
-     Two findings drove this, and both were about what a stranger CONCLUDES:
+{% comment %} ── THE P&JCC CARD CAME OFF — 2026-08-25 ───────────────────────────────
+     Nate: *"remove PJCC box from McPuppy Studios … The idea is we are going to shock the
+     world with PJCC once it is closer to fruition — currently we have a long ways to go."*
 
-     1. "FOUR OF SIX CARDS SAY NEXT UP." Six equal cards, four of them not started, so
-        the page's dominant visual message was *four things haven't started* — on the
-        page whose whole job is to say the studio is real. The two things actually being
-        BUILT now own the page; the four that aren't share one quiet row underneath.
-        (Nate picked this as idea #5 of ten.)
+     ⚑ THIS IS THE LAST STEP OF THE SLOW-ROLL, not a demotion of the series. Every public
+     door to /pjcc/ closed earlier the same day (the rail row, the front door's world card,
+     the header's center mark, the ⌘K entry, then this card's LINK). What was left was a
+     card that still ANNOUNCED the flagship by name on the studio's own front page — which
+     is the one thing the slow-roll is for. The name, the logline, the Princess render and
+     the Blender caption all went with it. [[slow-roll-cast]]
 
-     2. "THERE IS NOT ONE IMAGE ON THIS PAGE." An animation studio's public face had
-        zero art — not a render, not a frame. Chess glyphs are typography, not art. The
-        flagship card now carries the actual Blender render of Princess. It is a
-        VIEWPORT GRAB, gray background and all, and it is captioned as one on purpose:
-        an honest work-in-progress reads as a receipt, a fake-polished one reads as a
-        stock image. (A transparent-film render would let this float free of its box —
-        that's an action item in FUTURE-IDEAS.)
+     ⚠⚠ THE FLICKERING "i" DOOR TO /classified/ WENT WITH THIS CARD, and it was the LAST
+     ONE. It moved here from /pjcc/'s hero only hours earlier (see git history); the ✦ night
+     star had already been demoted from <a> to <b>, so /classified/ → /archive/ → /recovery/
+     → /dispatch/ now has NO entrance at all. That wing is unreachable, not deleted. Restore
+     the door — anywhere, any host sentence — and the whole wing lights back up. Flagged to
+     Nate the same day; awaiting his call on where it should live.
+
+     ⚠ WHAT WENT WITH IT so nothing is left rotting: the `.pj-flag-grid` / `.pj-shot` /
+     `.pj-flag-body` styles up in the style block, and the page-local `.project-desc .tg-x`
+     flicker rules that drove the "i" (`@keyframes tgx-radio` is global — leave it alone,
+     other flair uses it). Restore all of it together:
+     `git show <this commit>^ -- projects.md`
+
+     ⚠ THE HISTORY OF THIS BLOCK, from the 2026-07-28 skeptic pass, still applies to what
+     remains: six equal cards, four of them saying NEXT UP, made the page read as *four
+     things haven’t started*. The two BUILDING cards owned the page and the four not-started
+     ones share the quiet row below. With P&JCC gone the Academy is the only card left — and
+     the "there is not one image on this page" finding is now open again, because the render
+     that answered it was P&JCC’s. FUTURE-IDEAS carries it.
      ─────────────────────────────────────────────────────────────────────── {% endcomment %}
 <div class="projects-list">
-
-  <div class="project-card project-card-active pj-flagship">
-    <div class="project-card-corner-piece" aria-hidden="true">♛</div>
-    <div class="pj-flag-grid">
-      <figure class="pj-shot">
-        <img src="{{ '/assets/images/Princess_Color_v01.jpg' | relative_url }}"
-             alt="An early Blender render of Princess: a small black-and-tan dog, modeled in low
-                  polygons, standing in the gray Blender viewport."
-             width="699" height="486" loading="lazy" decoding="async">
-        <figcaption>Princess &middot; first color pass, April 2026 &middot; straight out of Blender</figcaption>
-      </figure>
-      <div class="pj-flag-body">
-        <div class="project-card-header">
-          <span class="project-status project-status-active">
-            <span class="project-status-dot"></span>
-            Building
-          </span>
-          <h2 class="project-title">Princess and the Journey to Chess City</h2>
-        </div>
-        {% comment %} Idea #4 of ten, in Nate's own words (2026-07-28). The old line was
-             "The flagship project. An animated series." — which describes its POSITION in
-             the studio, not the story. This one tells you what it's about in nine words,
-             and "a dog who can learn anything" is the actual hook of the whole universe. {% endcomment %}
-        {% comment %} ⛑⛑ THE FLICKERING "i" MOVED HERE — 2026-08-25. Nate: *"Move the 'i' to a
-             public page (same concept, though)."*
-
-             It was in "an animated series in the mak_i_ng" on /pjcc/'s hero, and /pjcc/ stopped
-             being linked that morning — so the door to the Alpine File was standing behind the
-             door the Alpine File is meant to open. The ✦ night star was the only way in, twelve
-             hours a day, and he has now retired that too.
-
-             ⭐ THIS SENTENCE IS THE RIGHT HOST, not just a public one. It is the one place left
-             on the site that describes the series in plain words, and it is the card whose LINK
-             we removed an hour earlier — so the card still says what P&JCC is, and the way in is
-             hidden inside its own description instead of announced under it. Same concept, same
-             technique, better sentence.
-
-             ⚠ THE GLYPH IS THE `i` IN "animated", and the letter is NOT LOST to a screen reader:
-             the visible one is `aria-hidden` and an `.sr-only` twin carries it, so the accessible
-             name still reads "An animated series about a dog who can learn anything." Exactly the
-             pattern the original used — copy it if this ever moves again.
-             ⚠ IT REUSES `.tg-x` AND `@keyframes tgx-radio`, which already exist site-wide. A
-             second flicker implementation would be a second thing to keep in sync, and the
-             reduced-motion and night guards are already written for this one. {% endcomment %}
-        <p class="project-desc">An an<a class="tg-x" href="/classified/" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>mated series about a dog who can learn anything.</p>
-
-<style>
-/* ⛑ THE FLICKER, SCOPED TO THIS PAGE (2026-08-25). `@keyframes tgx-radio` is GLOBAL
-   (_pjcc-04-flair.scss) and is reused as-is; what was NOT global is the rule that DRIVES it —
-   the original lived as `.hero-lede .tg-x*` inside _layouts/home.html, so moving the
-   markup alone would have shipped a plain, permanently visible "i" and no door at all. Caught
-   by grepping for the keyframes, not by assuming the class carried its own styling.
-   ⚠ THE THREE ESCAPE HATCHES COME WITH IT and are not optional: night, reduced-motion and
-   `reduce-flourish` all park the glyph VISIBLE. A door that is invisible to someone who has
-   asked the site to hold still is not a secret, it is an exclusion — the letter must never go
-   missing from the sentence for those visitors. */
-.project-desc .tg-x, .project-desc .tg-x-glyph { text-decoration:none; color:inherit; -webkit-text-fill-color:inherit; font-style:inherit; }
-.project-desc .tg-x-glyph { animation:tgx-radio 7.5s steps(1, end) infinite; }
-html.sky-night .project-desc .tg-x-glyph { animation:none; visibility:visible; }
-.project-desc .tg-x:hover .tg-x-glyph, .project-desc .tg-x:focus .tg-x-glyph { animation:none; visibility:visible; }
-html.reduce-flourish .project-desc .tg-x-glyph { animation:none; visibility:visible; }
-@media (prefers-reduced-motion: reduce) { .project-desc .tg-x-glyph { animation:none; visibility:visible; } }
-</style>
-        {% comment %} ⛑⛑ THE LAST PUBLIC P&JCC DOOR CLOSED HERE — 2026-08-25.
-             Nate: *"delete the link on the projects page for PJCC as well."* This was the
-             fourth and final one, after the rail row, the front door's world card, the
-             header's center mark and the ⌘K entry. The CARD STAYS: the studio page's whole
-             job is to say what the studio is building, and the series is the flagship. What
-             came off is the LINK OUT of it, so the card describes the work without handing
-             over a door to it.
-
-             ⚠ THE `.project-links` DIV WENT WITH THE ANCHOR, not just its contents. An empty
-             flex row still costs its `gap` and its margin, so leaving it would have left a
-             ragged hole under the description that looks like a CSS bug rather than a
-             deliberate absence — and the next person would have "fixed" it by putting a link
-             back. Restore both together from `git show <this commit>^ -- projects.md`.
-             ⚠ IT IS NOT A DEAD END NOW, it is a statement. The card says what the series is;
-             /pjcc/ is reached by finding it. [[slow-roll-cast]] {% endcomment %}
-      </div>
-    </div>
-  </div>
 
   <div class="project-card project-card-active">
     <div class="project-card-corner-piece" aria-hidden="true">♟</div>
@@ -293,7 +214,14 @@ html.reduce-flourish .project-desc .tg-x-glyph { animation:none; visibility:visi
       </span>
       <h2 class="project-title">ChessWild Chess Academy</h2>
     </div>
-    <p class="project-desc">An All-Ages online Chess Academy, taught by Auston and Crockett from the P&JCC universe. Free, and open now.</p>
+    {% comment %} 2026-08-25 (Nate: "Change the Academy description to read 'from the
+         Chesswild site' instead of PJCC characters"). Auston and Crockett stay — they are
+         the teachers and they are named on the Academy itself. What changed is where they
+         are said to come FROM: sourcing them to the P&JCC universe on the one page a
+         stranger reads first is the announcement the slow-roll is avoiding. "the ChessWild
+         site" is true, checkable in one click, and says nothing about the series.
+         ⚠ HOUSE SPELLING IS `ChessWild`, camel-cased — 81 occurrences to 4. {% endcomment %}
+    <p class="project-desc">An All-Ages online Chess Academy, taught by Auston and Crockett from the ChessWild site. Free, and open now.</p>
     <div class="project-links">
       <a href="/academy/" class="project-link">Visit the Academy &rarr;</a>
     </div>
@@ -312,9 +240,17 @@ html.reduce-flourish .project-desc .tg-x-glyph { animation:none; visibility:visi
 <section class="pj-also" aria-labelledby="pj-also-h">
   <h2 class="pj-also-h" id="pj-also-h">Also on the Board</h2>
   <ul class="pj-also-list">
-    <li><b aria-hidden="true">♞</b><span><strong>Blender Animations</strong> — the first rendered scenes from the series.</span></li>
-    <li><b aria-hidden="true">♝</b><span><strong>McPuppy</strong> — the studio podcast. Winter 2026.</span></li>
+    {% comment %} 2026-08-25 (Nate: "Remove Blender animation completely from the page" /
+         "move code and tools to first position"). Blender Animations was "the first rendered
+         scenes from the series" — it named the series' production pipeline, so it was a
+         P&JCC announcement wearing a tools label, and it went out with the card and the
+         Princess render. Code &amp; Tools leads now because it is the only line here that
+         promises something a visitor could USE, and this row's first slot is the one that
+         gets read. ⚠ THE GLYPHS ARE POSITIONAL, not per-item: ♜ ♝ ♛ reading down the row.
+         Reordering the items means reordering the pieces too, or the row loses its rank.
+         {% endcomment %}
     <li><b aria-hidden="true">♜</b><span><strong>Code &amp; Tools</strong> — the pieces of this site worth handing to someone else.</span></li>
+    <li><b aria-hidden="true">♝</b><span><strong>McPuppy</strong> — the studio podcast. Winter 2026.</span></li>
     {% comment %} The Merch "Take a look →" link out to /goods/ was removed 2026-07-12 (Nate).
          The PAGE is deliberately kept and still builds; it just isn't linked. {% endcomment %}
     <li><b aria-hidden="true">♛</b><span><strong>Merch</strong> — goal cards and stationery. The designs come first.</span></li>
@@ -356,24 +292,27 @@ html.reduce-flourish .project-desc .tg-x-glyph { animation:none; visibility:visi
                        can never be stale. (The old DAY 47 ticker taught us the other
                        half of that rule: Liquid can't count TIME, because the clock
                        keeps moving between deploys. Time is the one thing left in JS.)
-       · characters  — the cast collection minus site.hidden_character_urls, so the
-                       slow-rolled seven stay uncounted until Nate reveals them.
-       · locations   — same, minus hidden_location_urls.
        · games       — counted at runtime from window.PJCC_GAMES, the registry that is
                        already the single source of truth for the hall (cat learn/arcade
                        = playable; dev/vault/terminated are not). NEVER retype this list.
        · puzzles     — the length of the road to Chess City, which is a design constant,
                        so it is the one number written by hand. It is marked as a goal
                        ("to Chess City"), not as work already done.
+
+     ⛑⛑ TWO RECEIPTS CAME OUT 2026-08-25 (Nate: "Remove the characters and places on the
+     map counters"). They were `{{ vis_chars }} characters written` and `{{ vis_locs }}
+     places on the map`, and they were the last P&JCC numbers on the page: a cast size and
+     a map size are a scoreboard for a FICTIONAL WORLD, which is precisely what is being
+     held back until it can land all at once. The two `{%- assign -%}` loops that fed them
+     went with the cells — a derived value with no reader is just build time — along with
+     their entries in the derivation list above.
+
+     ⚠ THE HIDDEN-URL LOGIC LIVES ON ELSEWHERE. `site.hidden_character_urls` and
+     `site.hidden_location_urls` are still the slow-roll's real gate; this page was only a
+     CONSUMER of them. Do not "clean them up" from _config.yml on the strength of this
+     removal — grep first. [[slow-roll-cast]]
+     Restore both cells and both loops: `git show <this commit>^ -- projects.md`
      ─────────────────────────────────────────────────────────────────────── {% endcomment %}
-{%- assign vis_chars = 0 -%}
-{%- for c in site.characters -%}
-  {%- unless site.hidden_character_urls contains c.url -%}{%- assign vis_chars = vis_chars | plus: 1 -%}{%- endunless -%}
-{%- endfor -%}
-{%- assign vis_locs = 0 -%}
-{%- for l in site.locations -%}
-  {%- unless site.hidden_location_urls contains l.url -%}{%- assign vis_locs = vis_locs | plus: 1 -%}{%- endunless -%}
-{%- endfor -%}
 <div class="pj-clocks">
   <div class="pj-clock">
     <span class="pj-clock-dot" aria-hidden="true"></span>
@@ -389,8 +328,6 @@ html.reduce-flourish .project-desc .tg-x-glyph { animation:none; visibility:visi
     <li><b>{{ site.posts | size }}</b><span>build&nbsp;log posts</span></li>
     <li id="pj-r-games" hidden><b>—</b><span>games you can play</span></li>
     <li><b>1,000</b><span>puzzles to Chess&nbsp;City</span></li>
-    <li><b>{{ vis_chars }}</b><span>characters written</span></li>
-    <li><b>{{ vis_locs }}</b><span>places on the map</span></li>
   </ul>
 </section>
 
