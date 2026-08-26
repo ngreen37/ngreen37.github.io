@@ -236,11 +236,47 @@ const SKY = read('_sass/_pjcc-20-town-sky.scss');
 const doorRule = SKY.slice(SKY.indexOf('.ts-sky-door {'), SKY.indexOf('}', SKY.indexOf('.ts-sky-door {')));
 ok(/pointer-events:\s*none/.test(doorRule),
    '⚠ .ts-sky-door defaults to pointer-events:none — invert this and a rare fragment is free forever');
-const arming = (SKY.match(/^html\.[^\n]*\.ts-sky-door[^\n]*pointer-events:\s*auto/gm) || []);
-const armingBlock = SKY.match(/html\.sky-night\.meteor-night \.ts-sky-door,\s*\nhtml\.sky-night\.aurora-night \.ts-sky-door,\s*\nhtml\.eclipse-total\.sky-day\s+\.ts-sky-door \{ pointer-events: auto; \}/);
-ok(!!armingBlock,
+/* ⛑ THE DOOR IS VISIBLE NOW (2026-08-26), so the default has a SECOND half to guard: it must
+   also start at `opacity: 0`. Before it became a lit doorway on the horizon this was a fully
+   transparent button and only `pointer-events` mattered; now a slip in either declaration
+   shows a door on an ordinary night, and a door you can see is a door people will press. */
+ok(/opacity:\s*0\s*;/.test(doorRule),
+   '…and to opacity:0 — the door does not exist on an ordinary night');
+
+/* ⚠⚠ THIS USED TO MATCH THE ARMING BLOCK AS ONE EXACT STRING, whitespace and all, and it
+   broke the moment `opacity: 1` joined `pointer-events: auto` in it — a true failure about
+   nothing, on a rule whose SUBSTANCE had not changed. Rewritten to check what actually
+   matters and nothing else: exactly three selectors arm the door, and they are these three.
+   ⭐ A GUARD THAT FAILS ON REFORMATTING TRAINS PEOPLE TO EDIT THE TEST. The count is the real
+   safety here — a FOURTH arming rule is how a rare fragment quietly becomes free. */
+/* ⚠ MENTIONING THE DOOR IS NOT ARMING IT. A first cut at this counted every `html.*` rule
+   that named `.ts-sky-door` and reported FOUR — the fourth being
+   `html.reduce-flourish .ts-sky-door { animation: none !important; }`, which is an
+   accessibility guard that grants nothing. Only a block that hands back `pointer-events:
+   auto` can arm the door, so only those blocks are read. */
+const armed = [];
+{
+  const re = /([^{}]+)\{([^}]*)\}/g;
+  let m;
+  while ((m = re.exec(SKY)) !== null) {
+    if (!/\.ts-sky-door/.test(m[1])) continue;
+    if (!/pointer-events:\s*auto/.test(m[2])) continue;
+    m[1].split(',').forEach((sel) => {
+      const s = sel.replace(/\s+/g, ' ').replace(/\s*\.ts-sky-door.*/, '').trim();
+      if (s && armed.indexOf(s) === -1) armed.push(s);
+    });
+  }
+}
+const WANT = ['html.sky-night.meteor-night', 'html.sky-night.aurora-night', 'html.eclipse-total.sky-day'];
+ok(WANT.every((w) => armed.indexOf(w) !== -1) && armed.length === WANT.length,
    'exactly three states arm it — meteor night · aurora night · totality',
-   'arming rules found: ' + arming.length);
+   'states that arm the door: ' + (armed.join(' · ') || 'none'));
+
+/* ⚠ AND THE MOTION HAS AN OFF SWITCH. The door breathes now; `reduce-flourish` is the
+   site-wide "hold still" class and it must reach this animation, exactly like the flickering
+   "i" and the ✦ before it. A flourish somebody asked not to see is not a flourish. */
+ok(/html\.reduce-flourish \.ts-sky-door \{[^}]*animation:\s*none/.test(SKY),
+   'reduce-flourish parks the door’s breath — the same off switch every other flourish has');
 
 /* ── 9 · the retired ✦ star stays retired ──────────────────────────────────────── */
 const TOWN = read('_includes/town-sky.html');

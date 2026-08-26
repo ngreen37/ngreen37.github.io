@@ -661,23 +661,87 @@ html.eclipse-total.sky-day .ts-eclipse-door { pointer-events: auto; }
    safety: on 96% of nights this button is an unclickable 1px in the corner of the page, and
    the three rules below are the only things that arm it. Invert this and a fragment meant to
    be rare becomes free on every page load, forever, for everyone.
-   ⚠ IT IS NOT INVISIBLE, IT IS UNREMARKABLE. `opacity: 0` on an armed door would be a
-   pixel-hunt; these events are already the loudest thing in the sky when they happen, so the
-   door sits ON the event's own corner and the event is the hint. Sized 44px for a finger
-   ([[tap-targets-and-audit-numbers]]) — a secret still has to be tappable once you find it. */
-.ts-sky-door-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+   ⛑⛑ IT IS A DOOR YOU CAN SEE NOW — 2026-08-26. Nate: *"can there be an obvious door to step
+   through? It could look like a mystical door, you know?"*, and he picked the horizon for it.
+
+   WHAT IT USED TO BE, and why he was right: a fully transparent 44px button pinned at
+   `top: 8vh; right: 6vw`. The comment here argued "it is not invisible, it is unremarkable —
+   the event is the hint", and that reasoning holds for the ECLIPSE (the black sun is one
+   object and its door sits on it). It does not hold for the other two. An aurora is a band
+   across the whole sky and a meteor is gone in a second, so a fixed corner has NOTHING to do
+   with where either event is — it was a pixel-hunt in an arbitrary spot, and the odds of
+   anybody ever finding it on their own were close to zero.
+
+   ⭐ THE HORIZON IS THE ANSWER BECAUSE IT IS LEARNABLE. The rare sky above is what makes you
+   look; the door is always in the same place when you do. It only ever exists on the three
+   nights, so it cannot become furniture.
+
+   ⚠⚠ THE DEFAULT IS INERT AND MUST STAY THAT WAY. `pointer-events: none` AND `opacity: 0`
+   are both the safety: on 96% of nights this is an unclickable, invisible box, and the three
+   rules below are the only things that arm it. Invert either and a fragment meant to be rare
+   becomes free on every page load, forever, for everyone.
+   ⚠ THE ECLIPSE DOOR ON THE SUN IS UNTOUCHED and both still mint the same `sky` slot — during
+   totality there are two ways in, and the second one does nothing because `mint()` returns
+   false once the slot is held.
+   ⚠ 56x84 CLEARS THE 44px FINGER MINIMUM on its own ([[tap-targets-and-audit-numbers]]).
+   ⚠ NO `filter` ANYWHERE IN HERE — a filter re-rasters its whole subtree, and this sits over
+   the sky ([[ambient-layer-cost]]). The glow is box-shadow and a gradient, which composite. */
+.ts-sky-door-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+/* ⚠⚠ THE SAME RAIL INSET THE ECLIPSE WRAP CARRIES, AND FOR THE SAME REASON. Above 901px the
+   sky starts at the rail's edge (`left: var(--rail-w)`), so a door placed at a percentage of
+   the VIEWPORT drifts left of the horizon it is supposed to be standing on — at 1280px,
+   `left: 11%` is 141px, which is inside a 246px rail. Percentages here must be percentages of
+   the SKY's box, and this is what makes them that. Caught in a desktop render, not by reading. */
+@media (min-width: 901px) {
+  .ts-sky-door-wrap { left: var(--rail-w, 246px); }
+}
 .ts-sky-door {
-  position: absolute; top: 8vh; right: 6vw;
-  width: 44px; height: 44px;
-  padding: 0; border: 0; background: transparent; cursor: pointer;
+  /* ⭐ 28vh IS MEASURED, NOT GUESSED. `.ts-horizon` is the bottom 32% of the sky, so its TOP
+     edge is the horizon LINE; at 28vh the door's FOOT meets that line and it reads as standing
+     on it. Picked off a four-candidate grid (14 / 21 / 28 / 33vh) rendered at 390 and 1280 —
+     below that it floats in the ground, above it hovers off the line. [[pick-visual-values-from-a-render]] */
+  position: absolute; left: 11%; bottom: 28vh;
+  width: 56px; height: 84px;
+  padding: 0; border: 0; cursor: pointer;
   pointer-events: none;                 /* ← the safety. Three rules below lift it. */
+  opacity: 0;                           /* ← the other half of it. */
   -webkit-tap-highlight-color: transparent;
+  /* the doorway: an arch, dark at the foot and lit at the head, standing in its own frame */
+  border-radius: 28px 28px 3px 3px;
+  background:
+    linear-gradient(180deg, rgba(255,233,176,.95) 0%, rgba(245,197,24,.72) 42%,
+                            rgba(150,104,20,.42) 78%, rgba(40,28,8,.30) 100%);
+  box-shadow:
+    0 0 0 2px rgba(28,22,10,.85),                    /* the frame */
+    0 0 18px 4px rgba(245,197,24,.42),               /* the spill */
+    0 0 54px 14px rgba(245,197,24,.20);              /* the far glow */
+  transition: opacity .8s ease;
 }
 html.sky-night.meteor-night .ts-sky-door,
 html.sky-night.aurora-night .ts-sky-door,
-html.eclipse-total.sky-day  .ts-sky-door { pointer-events: auto; }
+html.eclipse-total.sky-day  .ts-sky-door { pointer-events: auto; opacity: 1; }
+/* the threshold — a sill of light on the ground the door is standing on */
+.ts-sky-door::after {
+  content: ''; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+  width: 128%; height: 10px; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(245,197,24,.42), transparent 70%);
+}
+/* ⚠ THE BREATH IS THE ONLY MOTION, and it is opacity on ONE small box — the cheapest thing
+   that still reads as alive. Parked for anyone who asked the site to hold still. */
+@media (prefers-reduced-motion: no-preference) {
+  html.sky-night.meteor-night .ts-sky-door,
+  html.sky-night.aurora-night .ts-sky-door,
+  html.eclipse-total.sky-day  .ts-sky-door { animation: ts-door-breathe 5.2s ease-in-out infinite; }
+}
+@keyframes ts-door-breathe {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(28,22,10,.85), 0 0 18px 4px rgba(245,197,24,.42),
+                         0 0 54px 14px rgba(245,197,24,.20); }
+  50%      { box-shadow: 0 0 0 2px rgba(28,22,10,.85), 0 0 26px 6px rgba(245,197,24,.60),
+                         0 0 74px 20px rgba(245,197,24,.30); }
+}
 /* a focus ring so a keyboard can find it once it is armed — and only then */
-.ts-sky-door:focus-visible { outline: 2px solid rgba(255,255,255,.55); outline-offset: 2px; }
+.ts-sky-door:focus-visible { outline: 2px solid rgba(255,255,255,.55); outline-offset: 3px; }
+html.reduce-flourish .ts-sky-door { animation: none !important; }
 html.sky-night .ts-horizon {
   background: linear-gradient(180deg, transparent, rgba(120, 100, 220, 0.10));
 }
