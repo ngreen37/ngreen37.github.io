@@ -332,9 +332,46 @@
     } catch (e) { return fallback; }
   }
   function writeJSON(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
-    catch (e) { return false; }        // private mode / full quota — she just forgets
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { return false; }
+    bank();                            // private mode / full quota — she just forgets
+    return true;
   }
+
+  /* ══ SHE REMEMBERS YOU ON EVERY DEVICE — 2026-08-25 ════════════════════════
+     Found auditing Nate's rule that everything earned should sync. Her ledger and her game
+     log were device-local with no mirror at all, which meant **the site's one real
+     differentiator only worked on the phone you happened to be holding.** A character who
+     forgets you when you switch devices has no episode two either.
+     ⚠ DEBOUNCED AND FIRE-AND-FORGET, like every other mirror here: she writes on a lot of
+     small events, and a failed write must cost the mirror and never the local memory. */
+  var bankT = null;
+  function bank() {
+    clearTimeout(bankT);
+    bankT = setTimeout(function () {
+      try {
+        if (window.PJCC && PJCC.setAuston && PJCC.currentUser && PJCC.currentUser()) {
+          PJCC.setAuston({ ledger: readJSON(LEDGER_KEY, null), log: log() }).catch(function () {});
+        }
+      } catch (e) {}
+    }, 1200);
+  }
+
+  /* ⚠ THE PULL RUNS WHEN THE ACCOUNT ARRIVES, ONCE — the account is how her memory reaches a
+     NEW device, never a second opinion about the game you just finished. */
+  function pullOnce() {
+    try {
+      if (!window.PJCC || !PJCC.getAuston || !PJCC.mergeAuston) return;
+      var remote = PJCC.getAuston();
+      if (!remote) return;
+      var merged = PJCC.mergeAuston({ ledger: readJSON(LEDGER_KEY, null), log: log() }, remote);
+      if (merged.ledger) localStorage.setItem(LEDGER_KEY, JSON.stringify(merged.ledger));
+      if (merged.log) localStorage.setItem(LOG_KEY, JSON.stringify(merged.log));
+    } catch (e) {}
+  }
+  try {
+    if (window.PJCC && PJCC.onChange) PJCC.onChange(pullOnce);
+    if (window.PJCC && PJCC.ready) PJCC.ready.then(pullOnce).catch(function () {});
+  } catch (e) {}
 
   /* ── THE GAME LOG ────────────────────────────────────────────────────────────────
      Every finished bot game against ANY regular, because "it knows what happened in

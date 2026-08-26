@@ -515,5 +515,46 @@ console.log('\n── AUSTON ─────────────────
     'per-move would let an abandoned losing game re-seed her low forever');
 }
 
+/* ══ SHE REMEMBERS YOU ON EVERY DEVICE ══════════════════════════════════
+   ⛑⛑ 2026-08-25. Her ledger and her forty-game log were device-local with NO mirror — found
+   auditing Nate's rule that *"every feature, stat, progress, and collectable is meant to be
+   synced."*
+   ⭐⭐ THIS IS THE ONE THAT MATTERED MOST, AND NOT FOR THE OBVIOUS REASON. Her continuity is
+   the thing this site has that Chess.com does not: *"Mittens has no episode two."* **A
+   character who forgets you the moment you pick up a different phone does not have episode
+   two either.** It was never a data-loss bug; it was the differentiator being device-local. */
+{
+  const PSRC = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+  const a = PSRC.indexOf('function mergeAuston(local, remote) {');
+  const z = PSRC.indexOf('PJCC.mergeAuston = mergeAuston;');
+  check('mergeAuston can be sliced out of pjcc-profile.js', a > -1 && z > a);
+  const ctx = { Math, Object, String, Number };
+  require('vm').createContext(ctx);
+  require('vm').runInContext(PSRC.slice(a, z), ctx);
+  const M = ctx.mergeAuston;
+
+  const phone  = { ledger: { at: 500, v: 1 }, log: [{ t: 40, b: 'nate', r: 'w' }, { t: 20, b: 'argus', r: 'l' }] };
+  const laptop = { ledger: { at: 100, v: 1 }, log: [{ t: 30, b: 'robert', r: 'l' }, { t: 20, b: 'argus', r: 'l' }] };
+
+  const m = M(phone, laptop);
+  check('⚠⚠ the log is the UNION of both devices — not whichever wrote last',
+    m.log.length === 3, 'got ' + m.log.length + ' of 3 — two partial histories of one person');
+  check('…deduped, so a game seen on both devices is one game',
+    m.log.filter((r) => r.b === 'argus').length === 1);
+  check('…and re-sorted newest first, the order she reads it in',
+    m.log.map((r) => r.t).join() === '40,30,20', m.log.map((r) => r.t).join());
+  check('⚠ the LEDGER takes the fresher stamp — she must never repeat a greeting',
+    m.ledger.at === 500);
+
+  const rev = M(laptop, phone);
+  check('⭐ and the union is direction-INDEPENDENT',
+    rev.log.length === 3 && rev.ledger.at === 500,
+    'a merge that only works one way loses history on the other device');
+  check('a device with nothing takes the account wholesale', M(null, laptop).log.length === 2);
+  check('every write banks to the account',
+    /PJCC\.setAuston\(\{ ledger:/.test(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-auston.js'), 'utf8')),
+    'writeJSON() is the one door her memory leaves by — hooking it means nothing is missed');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

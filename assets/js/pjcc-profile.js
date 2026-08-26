@@ -1085,6 +1085,49 @@
      chose. Same object, same call, same merge rules — one fewer thing to remember. */
   PJCC.setPetLook = async function (look) { return updateCompanion({ petLook: look || {} }); };
 
+  /* ══ AUSTON REMEMBERS YOU ON EVERY DEVICE ═══════════════════════════════
+     ⛑⛑ 2026-08-25, found auditing Nate's rule that *"every feature, stat, progress, and
+     collectable is meant to be synced."* `pjcc.auston.v1` (what she knew when you last sat
+     down) and `pjcc.pt.log.v1` (your last forty games) were **device-local with zero mirror**.
+
+     ⭐⭐ THIS IS THE ONE THAT MATTERED MOST, AND NOT FOR THE OBVIOUS REASON. Auston's
+     continuity is the thing this site has that Chess.com does not — the whole argument in
+     `ten-chesswild-ideas.md` is *"Mittens has no episode two."* A character who forgets you
+     the moment you pick up a different phone **does not have episode two either.** It was not
+     a data-loss bug; it was the differentiator being device-local.
+
+     ⚠ THE LOG MERGES BY UNION, NOT BY RECENCY, and the records make that free: every one
+     carries `t`. Two devices hold two partial histories of the same person, so the true
+     history is both of them, deduped and re-sorted — not whichever phone wrote last. The
+     LEDGER is a snapshot of what she had already said, so there the fresher stamp wins:
+     replaying a greeting she has already given you is the one failure she must not have. */
+  function mergeAuston(local, remote) {
+    if (!remote || typeof remote !== 'object') return local;
+    if (!local || typeof local !== 'object') return remote;
+    var out = {};
+    var lAt = +(local.ledger && local.ledger.at) || 0;
+    var rAt = +(remote.ledger && remote.ledger.at) || 0;
+    out.ledger = rAt > lAt ? remote.ledger : local.ledger;
+    /* the union of two partial histories, newest first, capped the way the room caps it */
+    var seen = {}, all = (local.log || []).concat(remote.log || []), keep = [];
+    all.sort(function (a, b) { return (+b.t || 0) - (+a.t || 0); });
+    for (var i = 0; i < all.length; i++) {
+      var r = all[i]; if (!r) continue;
+      var id = String(r.t) + '|' + String(r.b) + '|' + String(r.r);
+      if (seen[id]) continue;
+      seen[id] = 1; keep.push(r);
+    }
+    if (keep.length > 40) keep.length = 40;
+    out.log = keep;
+    return out;
+  }
+  PJCC.mergeAuston = mergeAuston;
+  PJCC.setAuston = async function (state) { return updateCompanion({ auston: state || {} }); };
+  PJCC.getAuston = function () {
+    try { var p = PJCC.getProfile(); return (p && p.companion && p.companion.auston) || null; }
+    catch (e) { return null; }
+  };
+
   // Persist the full operative look built in the Identity Forge (pjcc-creator.js).
   // Stored as companion.look = { base, tone, glyph, aura, hat, emblem, name, role, bio }.
   // glyph is the resolved emoji so avatarEmoji() can render it without the catalog.
