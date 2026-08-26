@@ -24,7 +24,32 @@ tagline_outside: Play. Solve. Learn.
 # ...and the three facts close the page from OUTSIDE it (same batch: "put free · no account ·
 # works offline below the white box and into the blue"). Printed by _layouts/page.html after
 # the card — see the note there for why it can't be done from inside the page.
-sky_note: Free · No Account Required · Works Offline
+# ⛑⛑ THE FLICKERING "i" LIVES IN "OFFLINE" NOW — 2026-08-26. Nate: "let's move it to the cw
+# main page at the bottom. Works Offline. Use the 'i' in that."
+#
+# It had been homeless since 2026-08-25, when the P&JCC card came off /projects/ and took its
+# host sentence with it. That left /classified/ → /archive/ → /recovery/ → /dispatch/ with NO
+# entrance at all — the ✦ night star had been demoted from <a> to <b> hours earlier, on the
+# reasoning that "the i moved to a public page and the star stands down". Then the public page
+# lost the i. This closes that loop.
+#
+# ⭐ IT IS A BETTER HOST THAN THE ONE IT LEFT. This is the last line on the front door, standing
+# on the sky under the card, and it is the site's plainest promise — so the door is hidden
+# inside the sentence a stranger is most likely to actually read, on the page everyone lands on.
+#
+# ⚠⚠ THE MARKUP LIVES IN THE FRONT MATTER because `sky_note` is printed by _layouts/page.html
+# as `{{ page.sky_note }}` — Liquid does not escape, so HTML here renders as HTML. Front matter
+# is YAML, not markdown, so kramdown never touches it ([[markdown-eats-scripts]] does not apply).
+# SINGLE-QUOTED on purpose: the value carries double quotes, and a plain scalar that happens to
+# parse today is one edit away from not parsing. `sky_note` is used by this page and no other.
+#
+# ⚠ THE LETTER IS NOT LOST TO A SCREEN READER: the visible "i" is inside an `aria-hidden`
+# anchor and an `.sr-only` twin carries it, so the line still reads "Works Offline". Same
+# pattern the original used — copy it if this ever moves again.
+# ⚠ THE RULES THAT DRIVE IT ARE AT THE FOOT OF THIS FILE, next to `.page-note-out`. Moving this
+# markup WITHOUT them ships a plain, permanently visible "i" and no door — that is exactly how
+# the 08-25 move broke, and it broke silently.
+sky_note: 'Free · No Account Required · Works Offl<a class="tg-x" href="/classified/" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>ne'
 body_class: theme-chess
 tab_title: ChessWild.com — free chess for everyone
 description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
@@ -852,6 +877,42 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .page-note-out { margin: 16px 0 0; color: rgba(255, 255, 255, 0.92); font-size: 0.84rem;
   font-weight: 600; letter-spacing: 0.06em; text-align: center;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.6); }
+
+/* ⛑⛑ THE FLICKERING "i" — THE ONLY DOOR TO /classified/ (2026-08-26) ──────────────
+   The markup is up in this file's front matter, inside `sky_note`; the long note is there.
+   These are the rules that make it a door instead of a letter.
+
+   ⚠⚠ `@keyframes tgx-radio` IS GLOBAL (_pjcc-04-flair.scss) BUT THE DRIVING RULE IS NOT.
+   The original lived as `.hero-lede .tg-x*` in _layouts/home.html and the 08-25 move
+   re-scoped it to `.project-desc`; moving the markup alone both times would have shipped a
+   plain, permanently visible "i" and no door at all. If this ever moves again, MOVE THIS
+   BLOCK WITH IT and re-scope the selector to the new host. [[text-clip-glyph-technique]]
+
+   ⚠ `font-style: inherit` IS LOAD-BEARING, not tidiness — the glyph is an `<i>`, and an
+   italic letter inside this upright line is a letter that points at itself.
+   ⚠ `color`/`-webkit-text-fill-color: inherit` keep it from painting as a link.
+
+   ⚑⚑ IT FLICKERS AT NIGHT TOO, AND THAT REVERSES HIS OWN 2026-07-16 LINE ("at night the 'i'
+   secret doesn't flicker" / "the secret star only floats at night"). That split was correct
+   when the two doors worked opposite shifts — the ✦ held the night. The ✦ was demoted from
+   <a> to <b> on 2026-08-25 and opens nothing now, so keeping the night rule would leave the
+   whole classified → archive → recovery → dispatch wing dark for twelve hours a day. One
+   door cannot work a half shift. Restore the split the moment the star is armed again:
+   `html.sky-night .page-note-out .tg-x-glyph { animation: none; visibility: visible; }`
+
+   ⚠⚠ THE THREE ESCAPE HATCHES ARE NOT OPTIONAL. Hover, `reduce-flourish` and
+   `prefers-reduced-motion` all park the glyph VISIBLE. A door that is invisible to somebody
+   who asked the site to hold still is not a secret, it is an exclusion — the letter must
+   never go missing from the word for those visitors. */
+.page-note-out .tg-x, .page-note-out .tg-x-glyph { text-decoration: none; color: inherit;
+  -webkit-text-fill-color: inherit; font-style: inherit; }
+.page-note-out .tg-x-glyph { animation: tgx-radio 7.5s steps(1, end) infinite; }
+.page-note-out .tg-x:hover .tg-x-glyph,
+.page-note-out .tg-x:focus .tg-x-glyph { animation: none; visibility: visible; }
+html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; visibility: visible; }
+@media (prefers-reduced-motion: reduce) {
+  .page-note-out .tg-x-glyph { animation: none; visibility: visible; }
+}
 
 
 /* ── THE LIVE BOARD — PARK-TABLE-STANDARD ──────────────────────────────────────────
