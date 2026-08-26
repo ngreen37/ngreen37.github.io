@@ -327,6 +327,57 @@ console.log('\n── HOUSE RULES ───────────────�
     bad.length ? '\n      ' + bad.join('\n      ')
                  + '\n      ← this FAILS THE PAGES BUILD; describe a delimiter in words, never type one'
                : rendered.length + ' rendered files parse');
+
+  /* ── …AND EVERY TERMINATED TAG STILL HAS TO MEAN SOMETHING ────────────────────────
+     ⛑⛑ ADDED 2026-08-26, AFTER FIVE FAILED BUILDS. The rule above only asks whether a tag
+     CLOSES. I wrote `assign` WITH ITS BRACES and no arguments inside a comment in
+     projects.md — perfectly terminated, and a hard `Liquid::SyntaxError` that killed the
+     Pages build for five pushes (two of them Nate's, stuck behind mine) while the live site
+     served the old copy and looked merely stale.
+
+     Same root cause as the rule above and worth restating: LIQUID TOKENIZES THE INSIDE OF A
+     COMMENT BLOCK. Prose in a comment is not inert. The instinct to write a tag name with
+     its delimiters "so the reader knows what I mean" is the thing that breaks the build —
+     name it in backticks with no braces instead.
+
+     ⚠ THIS IS ARGUMENT-SHAPE ONLY, NOT A LIQUID PARSER. It asks the question that actually
+     fires: does a tag that REQUIRES arguments have any? `npm test` cannot do better —
+     nothing on this machine parses Liquid — and a shallow check that catches the real
+     failure beats a deep one nobody writes. Unknown tag names are left alone on purpose:
+     Jekyll plugins add their own, and guessing at a whitelist would fail honest pages.
+     ⚠ NO `raw` HANDLING, because the site has none. If a `raw` block is ever added, its
+     body must be skipped here — inside `raw`, Liquid parses nothing and prose is safe. */
+  const NEEDS_ARGS = {
+    assign:    (a) => a.includes('='),
+    for:       (a) => / in /.test(a),
+    if:        (a) => a.length > 0,
+    unless:    (a) => a.length > 0,
+    elsif:     (a) => a.length > 0,
+    case:      (a) => a.length > 0,
+    when:      (a) => a.length > 0,
+    include:   (a) => a.length > 0,
+    capture:   (a) => a.length > 0,
+    cycle:     (a) => a.length > 0,
+    increment: (a) => a.length > 0,
+    decrement: (a) => a.length > 0,
+  };
+  const wrong = [];
+  for (const f of rendered) {
+    const src = fs.readFileSync(f, 'utf8');
+    const re = /\{%-?\s*([a-z_]+)([\s\S]*?)-?%\}/g;
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      const rule = NEEDS_ARGS[m[1]];
+      if (!rule) continue;
+      if (rule(m[2].trim())) continue;
+      wrong.push(rel(f) + ':' + src.slice(0, m.index).split('\n').length +
+                 ' — ' + JSON.stringify(m[0].slice(0, 40)));
+    }
+  }
+  check('…and every Liquid tag that needs arguments has them', wrong.length === 0,
+    wrong.length ? '\n      ' + wrong.join('\n      ')
+                   + '\n      ← this FAILS THE PAGES BUILD; write the tag name WITHOUT braces in prose'
+                 : 'argument-taking tags all carry arguments');
 }
 
 /* ── 8. NO BUTTON LABEL STARTS WITH A LOWERCASE WORD ──────────────────────────────

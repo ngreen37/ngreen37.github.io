@@ -303,9 +303,20 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
      map counters"). They were `{{ vis_chars }} characters written` and `{{ vis_locs }}
      places on the map`, and they were the last P&JCC numbers on the page: a cast size and
      a map size are a scoreboard for a FICTIONAL WORLD, which is precisely what is being
-     held back until it can land all at once. The two `{%- assign -%}` loops that fed them
-     went with the cells — a derived value with no reader is just build time — along with
-     their entries in the derivation list above.
+     held back until it can land all at once. The two `assign` loops that fed them went with
+     the cells — a derived value with no reader is just build time — along with their entries
+     in the derivation list above.
+
+     ⛑⛑⛑ AND THE FIRST VERSION OF THIS COMMENT BROKE THE BUILD FOR FIVE PUSHES. It wrote
+     that tag name WITH ITS BRACES, and **Liquid still parses tags inside a `comment` block** —
+     an argument-less assign is a hard `Liquid::SyntaxError`, so Jekyll never built, `deploy`
+     was SKIPPED, and the live site quietly served the old copy while four more pushes (two of
+     them Nate's, through no fault of his) piled up behind it. The file already warned about
+     exactly this a hundred lines up — "do NOT write the literal tag name in a comment like
+     this one" — about `style` tags, and I wrote a Liquid one anyway.
+     ⭐ NEVER PUT LIQUID DELIMITERS IN PROSE. Name the tag in backticks with no braces, or
+     wrap the example in `raw`. `npm test` cannot catch it — nothing on this machine parses
+     Liquid — so `tests/style.check.js` now has a rule that does. [[pages-deploy-flaky]]
 
      ⚠ THE HIDDEN-URL LOGIC LIVES ON ELSEWHERE. `site.hidden_character_urls` and
      `site.hidden_location_urls` are still the slow-roll's real gate; this page was only a
