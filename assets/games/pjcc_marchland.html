@@ -508,12 +508,12 @@
          it is how a player finds the thing they half-remember. -->
     <h2>How it works</h2>
     <p class="sub" style="text-align:left;line-height:1.7">
-      <b>1. Three parts to your round.</b> <i>Deploy</i> every new rank, <i>attack</i> up to
+      <b>1. Three parts to your round.</b> <i>Deploy</i> every new troop, <i>attack</i> up to
       three times, <i>fortify</i> once. Then you watch theirs.<br><br>
       <b>2. Three attacks a round.</b> Tap your holding, then a bordering enemy one — you
-      need two ranks. <b>Which three</b> is the whole decision.<br><br>
-      <b>3. Ranks are dice.</b> One die per two ranks, up to four, and you <b>keep the
-      best</b>. Under three ranks you cannot field a queen.<br><br>
+      need two troops. <b>Which three</b> is the whole decision.<br><br>
+      <b>3. Troops are dice.</b> One die per two troops, up to four, and you <b>keep the
+      best</b>. Under three troops you cannot field a queen.<br><br>
       <b>4. Chain your holdings.</b> Two or more neighbors of your own and it is
       <i>chained</i> &mdash; an <b>extra die every time it defends</b>.<br><br>
       <b>5. Two dice a battle: material, then position.</b> Material buys your army at real
@@ -865,6 +865,24 @@ function newCampaign(diff) {
 var FACES = 8;
 function d20() { return 1 + Math.floor(Math.random() * FACES); }
 
+/* ══ THEY ARE **TROOPS**, AND ONLY IN THE DISPLAY ═══════════════════════════
+   2026-08-25, Nate: *"Let's brainstorm another name for Ranks. That is still a bit
+   confusing."* → **Troops.**
+
+   ⭐⭐ IT WAS NEVER GOING TO SETTLE, BECAUSE "RANK" ALREADY MEANT TWO OTHER THINGS HERE.
+   In a chess game a rank is a ROW — every player reading this screen already owns that word
+   — and `pjcc-profile.js` has its own `RANKS` table for the CREDIT ladder (Recruit,
+   Operative, Field Agent…). Three meanings, one word, on one site.
+   ⭐ AND HE PICKED IT HIMSELF WITHOUT NOTICING. On 2026-08-24, describing the problem this
+   game had: *"the amount of TROOPS on a territory don't seem to matter much."* When somebody
+   reaches for a word unprompted while explaining their own game, that is the word.
+
+   ⚠⚠ THE IDENTIFIER STAYS `ranks`, EVERYWHERE. `G.ranks[]`, `aRanks`, `START_RANKS`,
+   `QUEEN_RANKS`, `poolFor(ranks)`, `capsFor(ranks)`, the `ranks` key in
+   assets/data/marchland.json, and every check label in tests/marchland.check.js. This is a
+   DISPLAY rename — renaming the identifier to match would turn a word change into a data
+   migration, and that JSON is read by a build that does not exist yet
+   ([[site-two-brand-split]] · [[marchland-game]]). */
 /* ── RANKS ARE DICE ──────────────────────────────────────────────────────────────
    ⚑⚑ 2026-08-24, and this is the answer to the sharpest thing he has said about this
    game: "Currently, the amount of troops on a territory don't seem to matter much. How
@@ -1525,7 +1543,7 @@ function tapLand(id) {
        it "End your attacks →", which is a real choice (leave attacks unspent and fortify),
        so nothing was removed — one forced press was. */
     var last = G.toPlace <= 0;
-    say(G.toPlace ? '<b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + ' left to place.'
+    say(G.toPlace ? '<b>' + G.toPlace + '</b> troop' + (G.toPlace > 1 ? 's' : '') + ' left to place.'
                   : 'All placed. <b>' + G.atks + '</b> attacks available this round.');
     setPhase(last ? 'attack' : 'deploy'); drawMap();
     setTimeout(function () {
@@ -1539,14 +1557,14 @@ function tapLand(id) {
   if (G.phase === 'fortify') {
     if (G.fortDone) { say('You have already fortified this round.'); return; }
     if (G.fortFrom < 0) {
-      if (G.own[id] !== 'm') { say('Move ranks between your own holdings.'); return; }
-      if (G.ranks[id] < 2) { say(LAND[id].nm + ' has one rank — it cannot spare it.'); return; }
+      if (G.own[id] !== 'm') { say('Move troops between your own holdings.'); return; }
+      if (G.ranks[id] < 2) { say(LAND[id].nm + ' has one troop — it cannot spare it.'); return; }
       G.fortFrom = id;
-      say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per rank.');
+      say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per troop.');
       drawMap(); return;
     }
     if (id === G.fortFrom) { G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0;
-      say('Pick a holding to move ranks from.'); drawMap(); return; }
+      say('Pick a holding to move troops from.'); drawMap(); return; }
     if (G.own[id] !== 'm' || !adj(G.fortFrom, id)) {
       say(LAND[id].nm + ' is not a neighbor you hold.'); return;
     }
@@ -1566,7 +1584,7 @@ function tapLand(id) {
   if (G.phase !== 'attack') return;
   if (G.atks <= 0) { say(atksLine()); return; }
   if (G.own[id] === 'm') {
-    if (G.ranks[id] < 2) { say(LAND[id].nm + ' has only one rank — it cannot attack.'); drawMap(); return; }
+    if (G.ranks[id] < 2) { say(LAND[id].nm + ' has only one troop — it cannot attack.'); drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
     say(G.sel < 0 ? atksLine()
       : 'From ' + LAND[id].nm + ' &mdash; ' + poolFor(G.ranks[id], false) + ' dice. Choose a neighbor to take.');
@@ -1753,7 +1771,7 @@ function matVerdict() {
   else              { word = 'OUTNUMBERED'; clause = 'brace for something big'; cls = 'bad'; }
   var maths = '<span class="maths">you <b>' + mine + '</b> pts · them <b>' + theirs + '</b> pts' +
     ' &mdash; ' + (p.playerAttacks ? p.aMatPool.length : p.dMatPool.length) + ' dice from ' +
-    (p.playerAttacks ? p.aRanks : p.dRanks) + ' ranks' + (!p.playerAttacks && p.dChain ? ', +1 chained' : '') + '</span>';
+    (p.playerAttacks ? p.aRanks : p.dRanks) + ' troops' + (!p.playerAttacks && p.dChain ? ', +1 chained' : '') + '</span>';
   var el = $('v-mat');
   el.className = 'vline ' + cls;
   el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
@@ -2503,7 +2521,7 @@ function pump() {
   if (s.t === 'say') { say(s.s); drawMap(); setTimeout(pump, 650); return; }
   if (s.t === 'deploy') {
     G.ranks[s.id]++; G.flash = s.id;
-    say('Ranks reach <b>' + LAND[s.id].nm + '</b>.');
+    say('Troops reach <b>' + LAND[s.id].nm + '</b>.');
     drawMap();
     setTimeout(function () { G.flash = -1; drawMap(); pump(); }, 480);
     return;
@@ -2542,7 +2560,7 @@ function startYourTurn() {
   G.atks = ATTACK_CAP;
   G.toPlace = deployFor('m');
   setPhase('deploy');
-  say('Deployment — place <b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + '.');
+  say('Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace > 1 ? 's' : '') + '.');
   drawMap(); show('screen-map');
 }
 function campaignCheck() {
@@ -2574,7 +2592,7 @@ Array.prototype.forEach.call($('levels').children, function (b) {
 $('go').addEventListener('click', function () {
   newCampaign(chosenLevel);
   setPhase('deploy');
-  say('Deployment — place <b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + '.');
+  say('Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace > 1 ? 's' : '') + '.');
   drawMap(); show('screen-map');
 });
 $('how').addEventListener('click', function () { show('screen-how'); });
@@ -2588,7 +2606,7 @@ $('endturn').addEventListener('click', function () {
   }
   if (G.phase === 'attack') {
     setPhase('fortify'); G.sel = -1;
-    say('Fortify — one free move of ranks between two holdings you hold.');
+    say('Fortify — one free move of troops between two holdings you hold.');
     drawMap(); return;
   }
   if (G.phase === 'fortify') { theirTurn(); return; }
@@ -2619,7 +2637,7 @@ function continueOn() {
        nothing left to do in it. The map still opens first, so you see what you took. */
     if (G.atks <= 0) {
       setPhase('fortify');
-      say('<b>Attacks spent.</b> Fortify — one free move of ranks between two holdings you hold.');
+      say('<b>Attacks spent.</b> Fortify — one free move of troops between two holdings you hold.');
     } else {
       setPhase('attack');
       say(atksLine());

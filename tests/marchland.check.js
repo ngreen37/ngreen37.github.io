@@ -490,9 +490,19 @@ check('…and that the lower band brings a pawn',
    three of these checks went red on the 2026-08-25 trim for exactly that, reporting missing
    RULES when nothing but the wrapping had moved. A gate that cannot survive a reflow makes
    editing copy scarier than it should be. */
-const flat = howScreen.replace(/\s+/g, ' ');
-check('…and it explains that ranks are dice',
-      /keep the best/i.test(flat) && /one die per two ranks/i.test(flat));
+/* ⚠⚠ COMMENTS STRIPPED FIRST, AND THE FILE HEADER ALREADY WARNED ABOUT THIS. These checks
+   ask what the PLAYER reads; an HTML comment is not on the screen. The 2026-08-25 rename
+   proved it immediately — "the word rank is gone" went red on the note I had just written
+   explaining that the rename happened. Same trap the header describes from the other
+   direction (a check PASSING on a comment); this is one FAILING on one. */
+const flat = howScreen.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\s+/g, ' ');
+/* ⛑ "ranks" → "troops" ON SCREEN, 2026-08-25. The identifier is untouched, which is why
+   every check LABEL in this file still says ranks and only the copy regexes moved. */
+check('…and it explains that troops are dice',
+      /keep the best/i.test(flat) && /one die per two troops/i.test(flat));
+check('…and the word "rank" is gone from the player-facing screen',
+      !/\brank(s)?\b/i.test(flat),
+      'a rank is a ROW in chess, and pjcc-profile.js already owns RANKS for the credit ladder');
 check('…and that your own flag is your own loss',
       /Run your own clock out and you lose/i.test(flat),
       'the rule that replaced "either flag goes to the defender"');
