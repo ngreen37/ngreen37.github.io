@@ -378,6 +378,86 @@ console.log('\n── HOUSE RULES ───────────────�
     wrong.length ? '\n      ' + wrong.join('\n      ')
                    + '\n      ← this FAILS THE PAGES BUILD; write the tag name WITHOUT braces in prose'
                  : 'argument-taking tags all carry arguments');
+
+  /* ── ⛑⛑⛑ AND NOT IN A JS COMMENT EITHER — 2026-08-26, THE DAY AFTER ────────────────
+     The rule above was written for a Liquid tag typed inside a LIQUID comment. It understands
+     `{%` and nothing else, so it sailed straight past the same mistake wearing a different
+     hat: a Liquid OUTPUT tag typed inside a JS comment, in index.md's front-door script, in
+     the very comment that was explaining Jekyll's load order.
+
+     WHAT THAT DOES IS WORSE THAN A FAILED BUILD, because it BUILDS. Liquid does not know it
+     is inside a JS comment — it expanded the layout's content tag, injected the page's own
+     rendered body into the middle of the script, and the first `</script>` that arrived with
+     it closed the block early. Everything after was handed to kramdown, which set the comment
+     prose as paragraphs and highlighted code blocks. The front door shipped with my source
+     code printed on it, all gates green, and Nate found it before I did.
+
+     ⭐ SO THE RULE IS NOT "AVOID LIQUID IN LIQUID COMMENTS", IT IS: NEVER TYPE LIQUID
+     DELIMITERS IN PROSE, IN ANY COMMENT SYNTAX. This checks the one place prose and Liquid
+     share a file and the build cannot warn you.
+
+     ⚠ ONLY COMMENTS, NEVER CODE. Liquid inside script BODIES is legitimate and common —
+     `var u = {{ '/x' | relative_url | jsonify }};` is how a page hands a URL to JS, and there
+     are ~28 of those. The comment is the only place a delimiter is decoration rather than
+     intent, so only comment text is read. Both `/* … *\/` and `//` are covered.
+     ⚠ SCRIPTS WITH `src=` ARE SKIPPED — they have no body, and their attribute is exactly the
+     legitimate use above. */
+  /* ⚠⚠ THE FIRST VERSION OF THIS CHECK WAS GREEN AND MEASURED NOTHING. It sliced script
+     bodies with a `<script>…</script>` regex — but the very bug it was hunting BREAKS that
+     slicing, because a stray closing tag inside a comment makes the tags unbalanced (index.md
+     had 3 openers and 4 closers) and every body after it is mis-cut. A detector that depends
+     on the file being well-formed cannot detect the thing that malforms it.
+
+     ⭐ SO IT READS LINES, NOT STRUCTURE. Walk the file tracking whether we are inside a script
+     and inside a comment, and judge each line on its own. Nothing here can be thrown off by
+     the damage it is looking for. Mutation-tested against all three variants below.
+
+     THE THREE WAYS I DID THIS IN ONE SESSION, all the same instinct — typing a delimiter to
+     show a reader what I meant:
+       1. a Liquid TAG in a Liquid comment      → hard build failure (5 pushes)
+       2. a Liquid OUTPUT tag in a JS comment   → BUILT FINE and printed the page's own source
+                                                  on the live front door
+       3. a closing script tag in a JS comment  → HTML ends the block; JS comments mean nothing
+                                                  to the HTML parser
+     Only #1 fails the build. #2 and #3 ship. */
+  const inProse = [];
+  for (const f of rendered) {
+    const lines = fs.readFileSync(f, 'utf8').split('\n');
+    let inScript = false, inBlock = false;
+    for (let i = 0; i < lines.length; i++) {
+      const L = lines[i];
+      const report = (what, frag) =>
+        inProse.push(rel(f) + ':' + (i + 1) + ' — ' + what + '  ' + JSON.stringify(frag.slice(0, 30)));
+
+      if (inScript) {
+        // judge the COMMENT text on this line: a whole block-comment line, or after //
+        let prose = null;
+        if (inBlock) prose = L;
+        else {
+          const c = L.indexOf('/*');
+          const s2 = L.indexOf('//');
+          if (c !== -1) prose = L.slice(c);
+          else if (s2 !== -1 && !/[:'"`]\s*\/\//.test(L)) prose = L.slice(s2);
+        }
+        if (prose) {
+          const liq = /\{\{|\{%/.exec(prose);
+          if (liq) report('Liquid delimiter in a JS comment', prose.slice(liq.index));
+          const tag = prose.indexOf('</scr' + 'ipt>');
+          if (tag !== -1) report('a closing script tag in a JS comment', prose.slice(tag));
+        }
+        if (inBlock) { if (L.indexOf('*/') !== -1) inBlock = false; }
+        else if (L.indexOf('/*') !== -1 && L.indexOf('*/') < L.indexOf('/*')) inBlock = true;
+        else if (L.indexOf('/*') !== -1 && L.indexOf('*/') === -1) inBlock = true;
+        if (/<\/scr/.test(L) && !prose) { inScript = false; inBlock = false; }
+      } else if (/<script(?![^>]*\bsrc=)[^>]*>/.test(L)) {
+        inScript = true; inBlock = false;
+      }
+    }
+  }
+  check('…and no delimiter is typed inside a JS comment', inProse.length === 0,
+    inProse.length ? '\n      ' + inProse.join('\n      ')
+                     + '\n      ← this SHIPS: Liquid expands it / HTML ends the block. Name the tag in words.'
+                   : 'script comments are prose all the way down');
 }
 
 /* ── 8. NO BUTTON LABEL STARTS WITH A LOWERCASE WORD ──────────────────────────────

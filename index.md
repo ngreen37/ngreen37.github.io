@@ -2363,7 +2363,7 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
   var el = document.getElementById('mc-resume');
   if (!el) return;
 
-  /* ⚠ THE URL COMES FROM A data- ATTRIBUTE, NOT FROM LIQUID IN THIS SCRIPT. A `{{ ... }}`
+  /* ⚠ THE URL COMES FROM A data- ATTRIBUTE, NOT FROM LIQUID IN THIS SCRIPT. A Liquid output
      tag written inside a single-quoted JS string leaves the RAW file unparseable, and the
      raw file is what `style.check.js` parses to prove every inline script on the site is
      valid JavaScript. Liquid belongs in the markup, where it has somewhere to stand. */
@@ -2419,10 +2419,25 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
 
      ⚠⚠ THE OLD COMMENT HERE SAID "the front door loads no profile script", AND THAT WAS
      FALSE — it is the premise the raw read was justified with. `_layouts/default.html` loads
-     `pjcc-profile.js` on EVERY page (line 163). What is true is that it loads it AFTER
-     `{{ content }}` (line 85), so `window.PJCC` does not exist yet at parse time and a bare
-     `if (window.PJCC && …)` here is silently false forever. Measured, not assumed: `typeof
-     window.PJCC` is "undefined" when this script runs and "object" after that tag.
+     `pjcc-profile.js` on EVERY page (line 163). What is true is that it loads it AFTER the
+     layout's content tag (line 85), so `window.PJCC` does not exist yet at parse time and a
+     bare `if (window.PJCC && …)` here is silently false forever. Measured, not assumed:
+     `typeof window.PJCC` is "undefined" when this script runs and "object" after that tag.
+
+     ⛑⛑⛑ AND NAMING THAT TAG WITH ITS BRACES PUT THE WHOLE PAGE ON THE SCREEN — 2026-08-26.
+     This comment originally wrote the layout's content tag out in full, as an example. Liquid
+     does not know it is inside a JS comment: it EXPANDED it, injected the page's own rendered
+     body into the middle of this script, and the first closing script tag that came along
+     with it ended this block early. Everything after that was handed to kramdown, which set my
+     comment prose as paragraphs and code blocks on the live front door. Nate saw it before I
+     did — *"looks like some code got pasted accidentally."*
+
+     ⭐ THIS IS THE SAME MISTAKE AS THE `assign` ONE THE DAY BEFORE, ONE LAYER OVER. That was
+     a Liquid TAG in a Liquid comment; this is a Liquid OUTPUT tag in a JS comment. The gate I
+     added for the first one only understood tag-delimiters and sailed past output ones. A comment is
+     prose to a human and source to Liquid, in every comment syntax there is — so the rule is
+     not "avoid it in Liquid comments", it is NEVER TYPE LIQUID DELIMITERS IN PROSE, anywhere.
+     `tests/style.check.js` now checks JS comments inside script bodies too. [[markdown-eats-scripts]]
 
      ⭐ SO WAIT FOR IT — DO NOT LOAD A SECOND COPY. `pjcc-profile.js` is an IIFE ending in
      `window.PJCC = PJCC`; a second tag builds a second object over the first, orphans every
