@@ -2521,6 +2521,25 @@ body_class: theme-hall
 
   /* ── LOBBY ─────────────────────────────────────────────────────────────── */
   function lobby(){
+    /* ⛑⛑⛑ THE LOBBY MAY NEVER PAINT OVER A TABLE — 2026-08-26. Nate: "The play now with a
+       bullet clock let me do four moves, then the screen blinked and went back to the park
+       tables… when it was refresh-time it went back to the game but I was timed out and lost."
+
+       He lost a real game to this. `lobby()` writes `app.innerHTML` unconditionally, and the
+       five-call `Promise.all` below is easily slower than a person clicking a seat — so sit
+       down while it is in flight and the stale resolve repaints the LOBBY over your board.
+       The `done` flag never caught it: it only stops ONE call resolving twice, and it has
+       nothing to say about whether we are still in the lobby at all.
+
+       ⚠⚠ AND THE CLOCK NEVER STOPPED. `clockTick` reads `botCur` out of memory, not the DOM
+       (clockSync/setInterval, ~line 1300), so a bullet clock goes right on burning behind the
+       lobby markup and can `clockFlag()` you while you are looking at a list of tables. That
+       is the whole reported bug: the board vanished, the clock did not.
+
+       ⭐ THE GUARD IS `inRoom`, NOT `botCur`, ON PURPOSE — it covers a live human table the
+       same way. Anything that renders the park has to ask whether the player is sitting at a
+       table first. [[one-fix-every-instance]] */
+    if (inRoom) return;
     stopPolling();
     app.innerHTML = '<p class="lb-empty">Walking to the park…</p>';
     // First-load resilience (2026-07-25 Nate: "hitting play now the first time … it says
@@ -2532,6 +2551,7 @@ body_class: theme-hall
     var done = false;
     function lobbyRetry(){
       if (done) return; done = true; clearTimeout(guard);
+      if (inRoom) return;                    // sat down while we were retrying — leave the board alone
       if (lobbyTries < 3) { lobbyTries++; timer = setTimeout(lobby, 700 * lobbyTries); return; }
       app.innerHTML = '<p class="lb-empty">The park didn’t load. <button class="pjcc-btn-ghost" id="pt-retry">Try again</button></p>';
       var rb = document.getElementById('pt-retry'); if (rb) rb.onclick = function(){ lobbyTries = 0; lobby(); };
@@ -2540,6 +2560,11 @@ body_class: theme-hall
     Promise.all([M.openTables(), M.myTables(uid()), M.creatorId(), M.myFinished(uid()), M.myRating(uid())])
       .then(function (r) {
         if (done) return; done = true; clearTimeout(guard); lobbyTries = 0;
+        /* ⚠ THE SECOND HALF OF THE GUARD AT THE TOP, AND THE ONE THAT ACTUALLY FIRED. The
+           check up there stops a NEW call; this stops the call that was ALREADY in flight
+           when the player sat down. Both are needed — dropping either one puts the lobby
+           back over the board on a slow network. */
+        if (inRoom) return;
         var open = r[0], mine = r[1]; creatorId = r[2]; myRate = r[4];
         if (open.missing || mine.missing) {
           app.innerHTML = '<p class="lb-empty">The tables are being set up — check back soon.</p>'; return;
@@ -2669,7 +2694,27 @@ body_class: theme-hall
               subtitle: m.white_name + ' vs ' + m.black_name + ' · ' + (m.result || '') });
           };
         });
-        timer = setTimeout(lobby, 20000);          // quiet lobby refresh
+        /* ⛑⛑ THE 20-SECOND LOBBY REFRESH IS GONE — 2026-08-26. Nate: "Do we even need the
+           refresh feature on Park Tables screen? It's not doing much currently."
+
+           He is right, and it was not a close call. EVERY TABLE HERE IS CORRESPONDENCE — the
+           Study Table is 3 days a move and the Arena is 1 day a move. Re-fetching five
+           queries every twenty seconds to watch numbers that move on a scale of DAYS is a
+           poll that can only ever find nothing, for every visitor sitting on this page. The
+           Quick Bench was cut on 2026-08-20 for the mirror-image reason — "an hour a move on
+           a board that polls every four seconds" — so this is the same mismatch, the other
+           way round.
+
+           ⭐ AND IT WAS THE ENGINE OF THE BUG ABOVE. The guards now stop the lobby painting
+           over a table, but a repeating timer is a repeating chance to be wrong; the honest
+           fix for a poll nobody needs is to delete it, not to guard it. What is left is the
+           lobby rendering when you ARRIVE, when you LEAVE a table, and on tab focus — all
+           three are moments a person actually did something.
+
+           ⚠ `schedulePoll()` IS UNTOUCHED AND MUST STAY. That is the poll on an OPEN live
+           table, and it is how your opponent's move lands on your screen — a real event on a
+           real timescale. Deleting a poll that finds nothing is not an argument against the
+           one that finds something. */
       })
       .catch(function () { lobbyRetry(); });
   }
