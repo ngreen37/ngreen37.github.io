@@ -75,6 +75,18 @@ permalink: /dossier/
   var found = PJCCFrag.found(), n = found.length;
   var held = {}; found.forEach(function (s) { held[s.id] = 1; });
 
+  /* ⛑⛑ NOTHING IS DRAWN AT ZERO — 2026-08-25, found on a skeptic pass hours after shipping
+     this, and the site had already decided it. The puzzle-rating row eleven lines up is
+     "hidden entirely at zero solves: an untouched meter is a chore", and I shipped six empty
+     sockets that every brand-new visitor would meet.
+     ⭐⭐ IT LOOKS LIKE THE COLLECTION'S RULE AND IT IS NOT. A locked COLLECTABLE is shown
+     because you can read what it is and what it costs — that is a reason to keep playing. A
+     fragment is deliberately unnamed and unhinted ([[fragment-ledger]]), so an empty shelf is
+     six blanks with no lead: all of the chore and none of the pull.
+     ⚠ So the shelf appears the moment you hold ONE, which is also the first moment the word
+     "fragment" means anything to you — you just found one, and it told you so. */
+  if (!n) return;
+
   var h = '<h2 class="dsr-h">Fragments</h2><div class="frag-shelf">';
   /* Walk the TARGET, not the slot list: three of the six do not exist yet, and a shelf that
      is six sockets long from the first day tells the truth about the journey. Nate, on the
@@ -91,10 +103,7 @@ permalink: /dossier/
   h += '<p class="frag-line">' +
        (n >= target
          ? '<b>All ' + target + '.</b> The signposts are back — the world shows itself again.'
-         : '<b>' + n + ' of ' + target + '.</b> ' +
-           (n === 0
-             ? 'Nothing yet. They are hidden around the site, and none of them is on this page.'
-             : 'Keep looking. There are more out there.')) +
+         : '<b>' + n + ' of ' + target + '.</b> Keep looking. There are more out there.') +
        '</p>';
   mount.innerHTML = h;
 })();
