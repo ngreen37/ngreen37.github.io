@@ -402,11 +402,13 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
     {%- comment -%} 2026-08-26 (Nate: "move Mom to last position, and Chels to 2nd to last.
-         Remove Dominic and Ryan Neuharth"). Eight names now, and the ORDER carries the
-         weight: the last name on a credit roll is the one it lands on. Do not "tidy" this
-         into alphabetical order — the sequence is his and it is the whole point.
+         Remove Dominic and Ryan Neuharth"), then again the same day: "Add Kim after Josh."
+         Nine names now, and the ORDER carries the weight — the last name on a credit roll is
+         the one it lands on, and "after Josh" was a POSITION, not a suggestion to re-sort.
+         Do not "tidy" this into alphabetical order: the sequence is his and it is the whole
+         point.
          {%- endcomment -%}
-    <p class="mcp-thanks-names">Josh &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Chels &middot; Mom</p>
+    <p class="mcp-thanks-names">Josh &middot; Kim &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Chels &middot; Mom</p>
   </div>
 
   <div class="mcp-thanks-block">
