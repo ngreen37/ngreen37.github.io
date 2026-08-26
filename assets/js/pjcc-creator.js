@@ -255,6 +255,11 @@
        PJCC.setLook, so the two copies can be compared instead of one always winning —
        see adoptAccountLook() below, which is the whole fix for the one-behind bug. */
     state.op.at = Date.now();
+    /* ⛑ THE PET IS STAMPED TOO — 2026-08-25. Nate: *"Of course the companion should sync
+       across all devices."* Only the person carried a timestamp, because only the person
+       synced; the dog's coat, eyes and nose sat on one browser for no reason anybody chose.
+       Same stamp, same comparison, same door. */
+    state.pet.at = Date.now();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
   // has this device ever saved a look, or are we reading pure defaults?
@@ -321,13 +326,26 @@
      It writes through the saved object so loadLocal()'s migrations run on it exactly as they
      do on a local look — an account record can be pre-migration too, and this is now the one
      place that has to know it. */
+  /* The account's copy of the COMPANION's look (coat/eye/nose). A seed for a new device,
+     never a second opinion — exactly like accountLook() above it. */
+  function accountPetLook() {
+    try { var p = window.PJCC && PJCC.getProfile && PJCC.getProfile();
+          return (p && p.companion && p.companion.petLook) || null; } catch (e) { return null; }
+  }
   function adoptAccountLook() {
     var al = accountLook();
     if (!al) return false;
     var s = null; try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
     var mine = (s && s.op && s.op.at) || 0;
     if (hasLocal() && !((al.at || 0) > mine)) return false;
-    var next = { op: Object.assign({}, al), pet: (s && s.pet) || defaults().pet };
+    /* ⛑ THE PET LOOK IS ADOPTED ON ITS OWN CLOCK — 2026-08-25. This line used to read
+       `pet: (s && s.pet) || defaults().pet` — keep whatever is local, always — which was
+       correct while the pet look never left the device and became the bug the moment it did.
+       The two halves are compared SEPARATELY because they are edited separately: dressing
+       your dog on a phone must not drag a stale face down with it. */
+    var ap = accountPetLook(), lp = (s && s.pet) || defaults().pet;
+    var petNext = (ap && (ap.at || 0) > (lp.at || 0)) ? Object.assign({}, ap) : lp;
+    var next = { op: Object.assign({}, al), pet: petNext };
     try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e) {}
     if (ov && !ov.classList.contains('hidden')) renderForge(true);
     emit();
@@ -364,8 +382,12 @@
              harmless only because baseGlyph ignores its first argument. It also has to send
              `at`, which loadLocal returns as saved: that stamp is what lets the next device
              tell this look from its own ([[person-drawn-and-forge-repaint]]). */
-          var op = loadLocal().op; op.glyph = baseGlyph(op.hair, op.tone);
+          var st = loadLocal(), op = st.op; op.glyph = baseGlyph(op.hair, op.tone);
           PJCC.setLook(op).catch(function () {});
+          /* ⛑ AND THE DOG GOES WITH HIM — 2026-08-25. One debounce, two writes, because they
+             are edited in the same panel and there is no reason the person should reach a new
+             device and the companion should not. */
+          if (PJCC.setPetLook) PJCC.setPetLook(st.pet).catch(function () {});
         }
       } catch (e) {}
     }, 600);

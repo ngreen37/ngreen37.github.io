@@ -98,7 +98,53 @@
     }
     return s;
   }
-  function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  /* ⛑⛑ EVERY SAVE STAMPS AND PUSHES — 2026-08-25 (Nate: *"Of course the companion should
+     sync across all devices."*). Until today only the SPECIES reached the account, so bond,
+     the name, the unlocked cosmetics and the max-bond dig lived on one browser and a new
+     phone met a stranger at bond 6.
+
+     ⭐ THE STAMP IS THE WHOLE MECHANISM. `at` is what lets two devices be compared instead of
+     one always winning — the same fix the Forge's look needed ([[person-drawn-and-forge-repaint]]).
+     Without it the only options are "newest write wins" (loses progress) and "never
+     overwrite" (never syncs).
+     ⚠ DEBOUNCED, AND FIRE-AND-FORGET. The den fires `save()` on every tick of a meter; a write
+     per tick would be a request storm. A failed write costs the mirror, never the local state
+     — the same rule bankStars() follows. */
+  var pushT = null;
+  function save(s) {
+    s.at = Date.now();
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+    clearTimeout(pushT);
+    pushT = setTimeout(function () {
+      try {
+        if (window.PJCC && PJCC.setPetState && PJCC.currentUser && PJCC.currentUser()) {
+          PJCC.setPetState(s).catch(function () {});
+        }
+      } catch (e) {}
+    }, 900);
+  }
+
+  /* ⚠⚠ THE PULL RUNS ONCE, WHEN THE ACCOUNT ARRIVES — not on every load. `PJCC.getProfile()`
+     is null until the deferred SDK resolves, so a boot-time read would find nothing and a
+     read on every load would let the account argue with a click you just made. This is the
+     direction that matters: the account is how progress reaches a NEW DEVICE.
+     ⚠ IT MERGES THROUGH PJCC.mergePet — earned fields (bond, cosmetics, the dig) take the
+     best of both; preferences take the fresher stamp. A device can never cost you progress. */
+  function pullOnce() {
+    try {
+      if (!window.PJCC || !PJCC.getPetState || !PJCC.mergePet) return;
+      var remote = PJCC.getPetState();
+      if (!remote) return;
+      var local = null;
+      try { local = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+      var merged = PJCC.mergePet(local, remote);
+      localStorage.setItem(KEY, JSON.stringify(merged));
+    } catch (e) {}
+  }
+  try {
+    if (window.PJCC && PJCC.onChange) PJCC.onChange(pullOnce);
+    if (window.PJCC && PJCC.ready) PJCC.ready.then(pullOnce).catch(function () {});
+  } catch (e) {}
 
   // ---- derived --------------------------------------------------------------
   function bondInfo(s) {

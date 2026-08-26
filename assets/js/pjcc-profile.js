@@ -609,15 +609,18 @@
           /* ⭐ THE COMPANION RIDES ALONG — 2026-08-25, his ask. Read off the SAME profile the
              face is, so a surface that shows your character shows your dog without being told
              about dogs. No pet → null → the avatar is byte-identical to before.
-             ⚠⚠ ONLY THE SPECIES IS SYNCED. `PJCC.setPet()` writes `companion.pet` and nothing
-             else; the coat, eye and nose live in `pjcc.identity.v1` on the DEVICE and always
-             have. So this reads the local look when there is one and falls back to the
-             defaults when there is not — which means a customized dog is customized on the
-             device you dressed it on, and a plain one everywhere else. That is exactly how
-             the pet already behaved before it appeared here; this does not make it worse and
-             must not be described as if it syncs. */
+             ⛑ IT ALL SYNCS NOW (2026-08-25). This note used to say the opposite — only the
+             SPECIES reached the account — and Nate's answer was the right one: *"Of course the
+             companion should sync across all devices… every feature, stat, progress, and
+             collectable is meant to be synced."* `companion.petLook` carries the coat, eye and
+             nose now, written beside the face by the Forge's own debounce.
+             ⚠ THE ACCOUNT IS READ FIRST, LOCAL IS THE FALLBACK, and that order is deliberate:
+             this function runs on surfaces the Forge never loaded (leaderboards, the gift
+             card, a game page), where `pjcc.identity.v1` may be a stale copy from a device
+             that has not synced yet. The profile is the shared truth; local is what a
+             signed-out visitor has instead. */
           var pl = null;
-          try { pl = (JSON.parse(localStorage.getItem('pjcc.identity.v1') || '{}') || {}).pet; }
+          try { pl = c.petLook || (JSON.parse(localStorage.getItem('pjcc.identity.v1') || '{}') || {}).pet; }
           catch (e) {}
           var pet = c.pet ? {
             species: c.pet,
@@ -1023,6 +1026,64 @@
   // Persist the active pet (the full pet experience lives in pjcc-companion.js;
   // here we only store which one follows the operative across devices).
   PJCC.setPet = async function (key) { return updateCompanion({ pet: key }); };
+
+  /* ══ THE WHOLE COMPANION SYNCS, NOT JUST WHICH ANIMAL IT IS ═══════════════════
+     ⛑⛑ 2026-08-25. Nate: *"Of course the companion should sync across all devices… It should
+     be obvious that every feature, stat, progress, and collectable is meant to be synced."*
+
+     He is right, and **this is the THIRD time the same defect has shipped**: the Gauntlet
+     doors (2026-08-19), the Park Tables stars (08-20), and now the companion. Bond, its name,
+     its unlocked cosmetics and the max-bond dig all lived in `pjcc.pet.v3` on ONE BROWSER.
+     Sign in on a new phone and a dog you spent weeks bonding to 100 was a stranger at bond 6.
+     ⭐⭐ [[when-he-repeats-himself]]: A REPEAT MEANS THE DEFECT IS ONE LAYER BEHIND WHAT I
+     FIXED. Twice I patched the feature; the actual defect is that **local-first with a
+     bolt-on mirror per feature makes syncing something you have to REMEMBER**, and three
+     times running nobody did. So this is written as the shape every future one copies, and
+     `tests/economy.check.js` now fails if an earned local store has no mirror at all.
+
+     ⚠⚠ MERGE, NEVER REPLACE — and the merge is per-FIELD, because the fields mean different
+     things. `bond`, `ownedCos` and `dug` are EARNED and monotonic: they take the max / the
+     union / the sticky true, so no device can ever cost you progress. Everything else
+     (needs, names, the active pet) is a preference and the FRESHER stamp wins. Taking the
+     newer object wholesale would let a phone you last opened in July roll back a bond you
+     raised this morning — which is precisely the "restore that is a downgrade wearing the
+     word restore" the stars note warns about.
+     ⚠ IT RIDES IN `profiles.companion`, WHICH ALREADY EXISTS AND IS ALREADY jsonb. No SQL for
+     Nate to run, so this ships today rather than waiting on a migration. */
+  function mergePet(local, remote) {
+    if (!remote || typeof remote !== 'object') return local;
+    if (!local || typeof local !== 'object') return remote;
+    var lAt = +local.at || 0, rAt = +remote.at || 0;
+    var win = rAt > lAt ? remote : local;      // the fresher device wins the preferences
+    var out = {};
+    for (var k in win) out[k] = win[k];
+    /* — and then the earned fields are rescued from BOTH, whichever way that went — */
+    out.bond = Math.max(+local.bond || 0, +remote.bond || 0);
+    out.dug = !!(local.dug || remote.dug);
+    var owned = {}, i, a;
+    a = (local.ownedCos || []).concat(remote.ownedCos || []);
+    for (i = 0; i < a.length; i++) owned[a[i]] = 1;
+    out.ownedCos = Object.keys(owned);
+    /* names are per-species and additive — naming a cat on one device must not un-name the
+       dog you named on another */
+    out.names = Object.assign({}, remote.names || {}, local.names || {});
+    if (rAt > lAt) out.names = Object.assign({}, local.names || {}, remote.names || {});
+    out.at = Math.max(lAt, rAt);
+    return out;
+  }
+  PJCC.mergePet = mergePet;                    // exported so the gate can exercise it
+  PJCC.setPetState = async function (state) { return updateCompanion({ petState: state || {} }); };
+  /* The account's copy, for a device that is reading it in. Null when there is none — which
+     is a brand-new account, not an empty companion, and the caller must tell those apart. */
+  PJCC.getPetState = function () {
+    try { var p = PJCC.getProfile(); return (p && p.companion && p.companion.petState) || null; }
+    catch (e) { return null; }
+  };
+
+  /* ⭐ THE PET'S LOOK RIDES WITH THE PERSON'S. `setLook` has synced the FACE since the Forge
+     shipped; the coat, eye and nose of the dog beside it did not, for no reason anybody
+     chose. Same object, same call, same merge rules — one fewer thing to remember. */
+  PJCC.setPetLook = async function (look) { return updateCompanion({ petLook: look || {} }); };
 
   // Persist the full operative look built in the Identity Forge (pjcc-creator.js).
   // Stored as companion.look = { base, tone, glyph, aura, hat, emblem, name, role, bio }.

@@ -140,9 +140,84 @@ console.log('\n── THE IDENTITY FORGE ─────────────
   check('the companion is ABSOLUTELY positioned — the size must not affect the header',
     /\.av-mini \.av-pet \{[\s\S]{0,40}position: absolute;/.test(CSS16),
     'out of flow means the pill measures the same with a dog on it');
-  check('…and only the pet SPECIES is claimed to sync',
-    /ONLY THE SPECIES IS SYNCED/.test(read('assets/js/pjcc-profile.js')),
-    'coat/eye/nose are device-local and always were — the note must not imply otherwise');
+}
+
+/* ══ THE WHOLE COMPANION SYNCS ═══════════════════════════════════════════
+   ⛑⛑ 2026-08-25. Nate: *"Of course the companion should sync across all devices… It should
+   be obvious that every feature, stat, progress, and collectable is meant to be synced."*
+   Yesterday this block asserted the OPPOSITE — that only the species synced — which was a
+   true description of a defect, pinned as though it were a rule. **A test can hold a mistake
+   in place exactly as firmly as it holds a decision** (the castled king was the same shape
+   the day before).
+
+   ⭐⭐ THIS IS THE THIRD TIME: Gauntlet doors (08-19), Park Tables stars (08-20), the
+   companion (08-25). [[when-he-repeats-himself]] — a repeat means the defect is one layer
+   behind what I fixed. The layer is that local-first with a bolt-on mirror per feature makes
+   syncing something you have to REMEMBER. So the merge is tested as a UNIT here, and the
+   shape is meant to be copied.
+   ⚠ mergePet IS SLICED AND RUN, not grepped for. The merge rules are the part that can be
+   subtly wrong — a grep would prove the words exist. */
+{
+  const PSRC = read('assets/js/pjcc-profile.js');
+  const a = PSRC.indexOf('function mergePet(local, remote) {');
+  const z = PSRC.indexOf('PJCC.mergePet = mergePet;');
+  check('mergePet can be sliced out of pjcc-profile.js', a > -1 && z > a);
+  const ctx = { Math, Object };
+  require('vm').createContext(ctx);
+  require('vm').runInContext(PSRC.slice(a, z), ctx);
+  const M = ctx.mergePet;
+
+  const local  = { at: 200, bond: 90, dug: true,  ownedCos: ['none', 'bow'],  names: { dog: 'Biscuit' }, hunger: 40, pet: 'dog' };
+  const remote = { at: 100, bond: 30, dug: false, ownedCos: ['none', 'hat'],  names: { cat: 'Mittens' }, hunger: 99, pet: 'cat' };
+
+  const fwd = M(local, remote);
+
+  /* ⛑⛑ THE FIXTURE ABOVE CANNOT PROVE "MAX", AND MUTATION-TESTING SAID SO. In it the fresher
+     device also happens to hold the higher bond, so `Math.max(…)` and "the fresher one wins"
+     give the same answer — both mutations passed. **A test that cannot tell two rules apart is
+     testing neither.** The pair below is the case the rule actually exists for: you bonded to
+     90 on a laptop in June, then opened your phone yesterday and it pushed bond 30. The STALE
+     device holds the progress. */
+  const staleHigh = { at: 100, bond: 90, dug: true,  ownedCos: ['none'], names: {}, hunger: 10 };
+  const freshLow  = { at: 900, bond: 30, dug: false, ownedCos: ['none'], names: {}, hunger: 88 };
+  const rescue = M(staleHigh, freshLow);
+  check('⚠⚠ bond takes the MAX even when the STALE device holds it',
+    rescue.bond === 90, 'got ' + rescue.bond + ' — this is the case the rule exists for');
+  check('⚠⚠ …and the dig is STICKY even when the fresher device forgot it',
+    rescue.dug === true);
+  check('…while the fresher device still wins the preference beside it',
+    rescue.hunger === 88, 'earned and preference are decided separately, on the same object');
+
+  check('⚠ bond takes the MAX — no device can cost you progress', fwd.bond === 90, 'got ' + fwd.bond);
+  check('⚠ the max-bond dig is STICKY once it has happened', fwd.dug === true);
+  check('⚠ owned cosmetics UNION — unlocking on one phone keeps the other',
+    ['none', 'bow', 'hat'].every((k) => fwd.ownedCos.indexOf(k) >= 0), fwd.ownedCos.join(','));
+  check('names are additive — naming a cat does not un-name your dog',
+    fwd.names.dog === 'Biscuit' && fwd.names.cat === 'Mittens', JSON.stringify(fwd.names));
+  check('the FRESHER stamp wins the preferences', fwd.hunger === 40 && fwd.pet === 'dog');
+
+  /* the same pair, handed over the other way round: earned fields must not care */
+  const rev = M(remote, local);
+  check('⭐ and the earned fields are direction-INDEPENDENT',
+    rev.bond === 90 && rev.dug === true && rev.ownedCos.length === 3,
+    'a merge that only works one way is a merge that loses data on the other device');
+  check('…while the preferences still follow the stamp', rev.hunger === 40 && rev.pet === 'dog');
+
+  check('a device with nothing local takes the account wholesale', M(null, remote).bond === 30);
+  check('…and an account with nothing keeps local untouched', M(local, null).bond === 90);
+
+  check('every save STAMPS and pushes', /s\.at = Date\.now\(\);/.test(read('assets/js/pjcc-companion.js')) &&
+    /PJCC\.setPetState\(s\)/.test(read('assets/js/pjcc-companion.js')),
+    'without a stamp the only options are "newest wins" (loses progress) and "never overwrite"');
+  check('…and the pull runs when the ACCOUNT arrives, not on every load',
+    /PJCC\.ready\.then\(pullOnce\)/.test(read('assets/js/pjcc-companion.js')),
+    'getProfile() is null until the deferred SDK resolves');
+  check('the pet look rides with the person look',
+    /PJCC\.setPetLook\(st\.pet\)/.test(read('assets/js/pjcc-creator.js')) &&
+    /companion\.petLook/.test(PSRC));
+  check('…and the two looks are adopted on SEPARATE clocks',
+    /accountPetLook\(\), lp = /.test(read('assets/js/pjcc-creator.js')),
+    'dressing the dog on a phone must not drag a stale face down with it');
 }
 
 /* ── 1. HUMAN ONLY ────────────────────────────────────────────────────────────────
