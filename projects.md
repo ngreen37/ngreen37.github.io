@@ -148,6 +148,30 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
 .pj-also-list strong { color: #c9c4d0; font-weight: 600; }
 @media (max-width: 620px) { .pj-also-list { grid-template-columns: 1fr; } }
 
+/* ── "In the Works" — three cryptic boxes under the Academy (2026-08-27) ─────────
+   Lighter than a .project-card by design: no status badge, no link, no corner piece.
+   See the block comment at the markup for why they are not cards.
+   ⚠ The panel colors are the page's own (#131218 on #2a2830), the same pair the clock
+   ribbon at the top uses — so this row reads as belonging to the page rather than as a
+   fourth surface treatment on it. */
+.pj-next { margin: var(--space-4) 0 var(--space-5); }
+.pj-next-h { font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: #8a8592;
+  margin: 0 0 var(--space-3); font-weight: 600; }
+.pj-next-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+.pj-next-box { background: #131218; border: 1px solid #2a2830;
+  border-radius: var(--r-sm); padding: var(--space-4); }
+.pj-next-box b { display: block; color: #4b4753; font-size: 0.95rem; line-height: 1;
+  margin-bottom: var(--space-2); }
+.pj-next-box strong { display: block; font-family: 'Poppins', sans-serif; font-weight: 800;
+  font-size: 0.95rem; color: #c9c4d0; letter-spacing: -0.01em; }
+.pj-next-box span { display: block; margin-top: 5px; font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; color: #8a8592; line-height: 1.5; }
+/* One column below 620, matching .pj-also-list — three boxes at a third of a phone width
+   would set two of the three names on two lines each. */
+@media (max-width: 620px) { .pj-next-grid { grid-template-columns: 1fr; } }
+
+
 /* ── receipts — numbers that only go up ───────────────────────────────────────── */
 .pj-receipts { margin: 0 0 var(--space-5); }
 .pj-receipts-h { font-family: 'Share Tech Mono', monospace; font-size: 10px;
@@ -228,6 +252,51 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
   </div>
 
 </div>
+
+{% comment %} ── THREE BOXES, 2026-08-27 (Nate: "let's make boxes for the tournament board —
+     but call it something generic, Campaign, and Checker Town. Be SUPER cryptic and short,
+     but give them boxes below the academy"). All three are the Godot work.
+
+     ⚠⚠ THEY ARE DELIBERATELY NOT `.project-card`s, AND THAT IS THE WHOLE DESIGN DECISION.
+     The 2026-07-28 skeptic pass found that six equal cards, four of them saying NEXT UP, made
+     this page read as "four things haven't started" — the fix was to demote the not-started
+     ones to one quiet row, and adding three more full cards would rebuild the exact problem
+     that fix removed. So the Academy keeps the only card on the page: it is the one thing
+     open to the public today. These are lighter, smaller, statusless boxes underneath it.
+
+     ⚠ NO LINKS, ON PURPOSE. There is nowhere to send anyone yet, and a box that looks
+     clickable and is not is worse than a box that plainly is not. When one ships it becomes
+     a real `.project-card` with a link and comes OUT of this row.
+
+     ⚠ THE NAMES: "Broadcast" is the generic one he asked for — the tournament board that
+     animates a PGN, and the word gives away neither chess tournaments nor Godot. Campaign and
+     Checker Town are his own names for the other two.
+     ⚠ CHECKER TOWN IS SAFE TO NAME. It is NOT one of the three slow-rolled locations (those
+     are The Sea, Mystery City and Chess-City Elementary) — it has a public page already, and
+     the puzzle road prints it on the front door. Checked, not assumed.
+     ⚠ THE GLYPHS ARE POSITIONAL, like the row below: ♞ ♚ ♟ reading across. Reordering the
+     boxes means reordering the pieces. {% endcomment %}
+<section class="pj-next" aria-labelledby="pj-next-h">
+  <h2 class="pj-next-h" id="pj-next-h">In the Works</h2>
+  <div class="pj-next-grid">
+    <div class="pj-next-box">
+      <b aria-hidden="true">♞</b>
+      <strong>Broadcast</strong>
+      <span>It plays itself.</span>
+    </div>
+    <div class="pj-next-box">
+      <b aria-hidden="true">♚</b>
+      <strong>Campaign</strong>
+      <span>Ground changes hands.</span>
+    </div>
+    <div class="pj-next-box">
+      <b aria-hidden="true">♟</b>
+      <strong>Checker Town</strong>
+      <span>Somewhere to come back to.</span>
+    </div>
+  </div>
+</section>
+
 
 {% comment %} The four that haven't started, in one quiet row instead of four full cards.
      Same information, a quarter of the visual weight — which is the correct weight for

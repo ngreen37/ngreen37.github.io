@@ -291,7 +291,27 @@
    now load-bearing (a classed <a> with no color falls through to the global link purple). The
    hover lifts the whole mark's opacity rather than re-inking it: `Wild` is coral and `.com`
    is white, so any single hover color would flatten a two-tone mark into one. */
-.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; color: #f2f4f7; font-size: 1.05rem; }
+/* ⚑ THE MARK GREW 1.05rem → 1.35rem ON 2026-08-27 — Nate: "make the ChessWild logo larger
+   now that the byline is gone." It is the only thing in the head now, so it gets the room.
+   ⭐⭐ PICKED OFF A RENDER AND A CLIFF, NOT OFF TASTE. Swept 1.05 → 1.80 on the live page
+   with the compiled sheet swapped in and Poppins 800 CONFIRMED LOADED (a size chosen against
+   a fallback font is a size chosen against the wrong glyph widths):
+
+     1.35  head 66.00   brand 36.70   first row top 158     ← shipped
+     1.50  head 66.00   brand 40.80   first row top 158
+     1.52  head 66.00   brand 41.33   first row top 158     ← last good
+     1.55  head 96.39   brand 84.28   first row top 188.39  ← WRAPS
+
+   ⚠⚠ THE CLIFF IS A WRAP, AND IT IS A CLIFF, NOT A SLOPE. At 1.55 "♛ ChessWild.com" no
+   longer fits the 246px rail, the mark goes to two lines, and the head jumps 30px past the
+   66px floor — which shoves every row below it down and breaks the 2026-07-27 rule that
+   collapsing must not move a single row. Nothing looks wrong until it looks very wrong.
+   ⚠ SO 1.50 IS NOT THE ANSWER EVEN THOUGH IT MEASURES CLEAN. It sits 0.03rem from the edge,
+   and a layout that survives only until a font loads a little differently is not a layout —
+   the same finding that stopped the header marks being shrunk to fit. 1.35 keeps 0.17rem.
+   ⚠ ANY FUTURE CHANGE TO THE RAIL WIDTH (--rail-w) OR THIS SIZE MOVES THE CLIFF. Re-sweep;
+   do not reason about it. */
+.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; color: #f2f4f7; font-size: 1.35rem; }
 a.drawer-brand { text-decoration: none; transition: opacity .2s; }
 a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opacity: 0.82; }
 /* the queen stays WHITE (his call) — it is the drawer's ornament, not a letter of the name */
