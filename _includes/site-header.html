@@ -195,6 +195,9 @@
              site that LOOKS most like a home button and was the only brand mark that wasn't
              one — the header's cW, the footer and "by McPuppy Studios" right below it all
              already went somewhere. A logo you can't click is a dead end a visitor tries once.
+             ⛑ 2026-08-26: two of those three witnesses are still standing, but "by McPuppy
+             Studios right below it" is not — it came out this day (see the note in the head
+             below). The ARGUMENT is untouched: the wordmark is a link and stays one.
 
              ⚠ NOT `aria-current`, deliberately. The Home row four lines down carries the
              "you are here" state, and two elements announcing themselves as the current page
@@ -205,12 +208,40 @@
              trap the header's `.com` hit an hour ago. {%- endcomment -%}
         <div class="drawer-head">
           <a class="drawer-brand" href="{{ '/' | relative_url }}"><span class="drawer-queen" aria-hidden="true">&#9819;&#xFE0E;</span> {% include wordmark.html %}</a>
-          {%- comment -%} 2026-08-08 (Nate: "make the 'By McPuppy Studios' a link to the McPuppy
-               Home page, and leave it that color"). /projects/ IS the studio's home — it is the
-               "About The Studio" page and the root of the McPuppy side (see _data/brands.yml).
-               Color deliberately unchanged: it is a credit line that happens to be clickable,
-               not a nav item competing with the eight below it. {%- endcomment -%}
-          <a class="drawer-sub" href="{{ '/projects/' | relative_url }}">by McPuppy Studios</a>
+          {%- comment -%} ⛑⛑ "by McPuppy Studios" STOOD HERE UNTIL 2026-08-26 — Nate: *"Remove
+               the McPuppy Studios from the ChessWild Logo top left — time for it to stand on
+               its own."* One anchor — `a.drawer-sub`, href /projects/ through the usual
+               relative-url filter, text "by McPuppy Studios" — sat directly under the wordmark.
+               ⚠⚠ THE HREF IS DESCRIBED IN WORDS ON PURPOSE. Liquid tokenizes the inside of a
+               comment block, so a delimiter pasted into prose here is a real tag — that is the
+               instinct that killed five builds on 2026-08-26. Name it, never type it.
+               It had been a LINK since 2026-08-08 ("make the 'By McPuppy Studios' a link to the
+               McPuppy Home page, and leave it that color"), and a plain credit line before that.
+
+               ⚠ THE STUDIO IS NOT UNLINKED, AND THAT IS WHY THIS COSTS NOTHING. McPuppy still
+               has a drawer row of its own and still wears the header badge. What came out is the
+               BYLINE under the name — not a door. ChessWild signs its own work now.
+               ⚠ ITS TWO CSS RULES CAME OUT OF _pjcc-13-nav.scss THE SAME DAY (`.drawer-sub` and
+               its hover). Restoring the line means restoring both, and `npm run sweep` is what
+               tells you if you missed one — a class with no markup reads to it as dead.
+               ⭐ THE HEAD'S HEIGHT DID NOT MOVE ON DESKTOP, AND THAT IS MEASURED, NOT ASSUMED.
+               `--drawer-head-h: 66px` is BOTH the `min-height` on `.drawer-head` at ≥901px and
+               the fixed height the collapsed rail hands it, and the head's natural content never
+               reached 66 — so the floor governs in both states. Live page, byline removed in the
+               DOM and re-measured at 1440 and 1024, expanded and collapsed, all four the same:
+
+                 .drawer-head          66.00px → 66.00px
+                 first drawer row top   158px  →  158px      (row height 72 → 72)
+
+               The 2026-07-27 rule ("make the collapsed height the same as the expanded menu")
+               survives this untouched, and survives it BECAUSE the number was pinned as a
+               variable rather than tuned to the markup: content came out, no row moved.
+               ⚠ BELOW 901px IT DOES MOVE, and the honest number is 19.95px. The overlay drawer
+               has no min-height, so at 390 the head goes 65.50 → 45.55 and every row below it
+               rides up with it (first row top 97.50 → 77.55). Nothing overlaps and nothing
+               clips — the rows simply start higher, which is what removing a line SHOULD do to
+               a box that was never pinned. Stated because "it just sits shorter" was my first
+               guess and it was worth 20 pixels. {%- endcomment -%}
         </div>
 
         {%- comment -%} 2026-07-28 (Nate: "move the entire home page to the P&JCC tab, and give

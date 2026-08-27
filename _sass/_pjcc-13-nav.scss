@@ -296,13 +296,21 @@ a.drawer-brand { text-decoration: none; transition: opacity .2s; }
 a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opacity: 0.82; }
 /* the queen stays WHITE (his call) — it is the drawer's ornament, not a letter of the name */
 .drawer-queen { color: #ffffff; }
-/* ⚑ A LINK SINCE 2026-08-08 ("make the 'By McPuppy Studios' a link to the McPuppy Home page,
-   and leave it that color") → /projects/, the studio's own home. The color is unchanged and
-   there is no underline: it is a credit line that happens to be clickable, and giving it link
-   chrome would put an extra destination in a drawer whose row count is deliberate (nine since
-   2026-08-18). It brightens on hover, which is the whole of the affordance it needs. */
-.drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #98a0ad; text-decoration: none; }
-a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
+/* ⛑ `.drawer-sub` CAME OUT 2026-08-26 WITH THE LINE IT DRESSED — Nate: "Remove the McPuppy
+   Studios from the ChessWild Logo top left — time for it to stand on its own." It styled the
+   one element that used it, the "by McPuppy Studios" byline under the wordmark, and nothing
+   else on the site ever wore the class. Both rules went:
+
+     .drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em;
+                   text-transform: uppercase; color: #98a0ad; text-decoration: none; }
+     a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
+
+   ⭐ CONTRAST WITH `.mk-amp` ONE FILE OVER, WHICH STAYED WHEN ITS OWN MARK WAS DELETED. That
+   one had become the whole site's ampersand; this one never left the drawer head. The test is
+   not "did the markup go" but "does anything else reach it" — grep before you cut, and
+   `npm run sweep` reads a class with no markup as dead either way.
+   ⚠ RESTORING THE BYLINE MEANS RESTORING BOTH RULES. The markup note in
+   _includes/site-header.html holds the other half. */
 
 /* the six links — full-width rows (override .site-nav .page-link pills) */
 .site-header .site-nav.drawer .page-link.drawer-link {
@@ -514,8 +522,16 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      (reassigned to 66px on body.nav-collapsed); only the LOOK changes here. ── */
   body.nav-collapsed .drawer-div,
   body.nav-collapsed .drawer-mini { display: none; }
-  /* the head keeps its BOX and loses its words — a fixed height, so "by McPuppy Studios"
-     re-wrapping at 66px can't change what it reserves */
+  /* the head keeps its BOX and loses its words — a fixed height, so nothing inside it can
+     re-wrap at 66px and change what it reserves.
+     ⛑ 2026-08-26: the byline this was written to pin ("by McPuppy Studios") is gone, and the
+     number did NOT move. 66 was always a FLOOR, not a measurement of the content — the head's
+     natural height never reached it in either state — so losing a line changed what the box
+     holds and not what it takes. That is exactly why the 2026-07-27 rule was pinned as a
+     variable instead of tuned to the markup: content came out and no row moved. Measured on
+     the live page at 1440 and 1024, expanded and collapsed — head 66.00 → 66.00, first row
+     top 158 → 158. (Below 901px there is no floor and the head really does shrink, by 19.95px;
+     that is the overlay drawer, and the note in _includes/site-header.html carries it.) */
   body.nav-collapsed .site-header .site-nav.drawer .drawer-head {
     visibility: hidden; height: var(--drawer-head-h); overflow: hidden; }
   /* The hover label (below) is positioned just OUTSIDE the rail's right edge. The rail's
