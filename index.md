@@ -2427,10 +2427,16 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
     if (jr && typeof jr.step === 'number' && jr.step > 0) step = jr.step;
     /* ⭐ THE ROAD IS A FLOOR UNDER THE CLEAN COUNT, and this page can read it before
        pjcc-profile.js has loaded to do its own one-time seed. The road only advances on an
-       earned solve, so `step` clean solves have provably happened. It can understate; it
+       earned solve, so that many clean solves have provably happened. It can understate; it
        cannot overstate. And a clean solve is still a solve, so `solved` is raised with it —
-       "26 puzzles — 30 solved clean" is a sentence that cannot be true. */
-    if (step > clean) clean = step;
+       "26 puzzles — 30 solved clean" is a sentence that cannot be true.
+       ⚠ THE FLOOR IS THE HIGH-WATER MARK, NOT WHERE YOU ARE STANDING TODAY. `step` is the
+       current position and `best` is the furthest reached; seedClean() in pjcc-profile.js
+       takes the max of both, and reading only `step` here would paint a lower number for a
+       moment and then visibly tick UP when the profile module lands. Both halves of a merge
+       have to agree on the arithmetic or the disagreement shows on screen. */
+    var road = Math.max(step, (jr && parseInt(jr.best, 10)) || 0);
+    if (road > clean) clean = road;
     if (clean > solved) solved = clean;
     paint();
   } catch (e) { /* storage denied — the page is unchanged, which is the correct outcome */ }
