@@ -73,13 +73,22 @@ create policy "the creator files reports away" on public.puzzle_reports
 -- number badly enough to forge it could always have edited their own credits.
 alter table public.profiles add column if not exists puzzle_rating integer not null default 700;
 alter table public.profiles add column if not exists puzzle_solved integer not null default 0;
+
+-- ⚑ A THIRD COLUMN, 2026-08-26. `puzzle_solved` counts puzzles FINISHED — a reveal settles
+-- through the same function, so it always has. `puzzle_clean` counts only the ones solved
+-- with no hint, no reveal and no wrong first move, which is the figure the front door was
+-- claiming to show and was not. Both are kept because they answer different questions.
+-- ⚠ SAFE TO RUN LATE. The client reads and writes this column in statements of its OWN, so
+-- an unmigrated database costs the clean count and nothing else — the rating and the played
+-- count keep syncing either way. Until this runs, `clean` is local to each browser.
+alter table public.profiles add column if not exists puzzle_clean integer not null default 0;
 ```
 
 ## Step 2 — check it took
 
 ```sql
 select count(*) from public.puzzle_reports;                        -- 0, and no error
-select puzzle_rating, puzzle_solved from public.profiles limit 1;  -- 700, 0
+select puzzle_rating, puzzle_solved, puzzle_clean from public.profiles limit 1;  -- 700, 0, 0
 ```
 
 ### ⚠ …and check the one that fails silently

@@ -221,6 +221,64 @@ check('…and no two rungs hand out the same one',
       `${first} → ${mid} → ${late}`);
   }
 
+  /* ── THE TWO COUNTERS ─────────────────────────────────────────────────────────────
+     ⚑ 2026-08-26 (Nate: "I feel like it should be solved correctly, the puzzles. Or maybe we
+     have both numbers there."). The front door had been calling `solved` "solved correctly"
+     for sixteen days on the strength of a CODE COMMENT that said the room only counted clean
+     solves. It never did. Nothing measured the claim, so nothing caught it — which is the
+     entire reason these checks exist rather than a comment saying it works now. */
+  {
+    const g = boot().P;
+    g.settlePuzzle(700, 1);
+    g.settlePuzzle(700, 1);
+    g.settlePuzzle(700, 0);        // a reveal, or a miss — the room passes 0 for both
+    const o = g.puzzleRating();
+    check('a reveal COUNTS as a puzzle played', o.solved === 3, `solved ${o.solved}`);
+    check('  …and does NOT count as solved clean', o.clean === 2, `clean ${o.clean}`);
+    check('  …so the two numbers can disagree, which is the whole point', o.solved > o.clean);
+  }
+  {
+    const g = boot().P;
+    g.settlePuzzle(700, 0.6);      // the retired middle tier: a solve after a wrong try
+    check('a PARTIAL score is played but not clean',
+      g.puzzleRating().solved === 1 && g.puzzleRating().clean === 0,
+      `solved ${g.puzzleRating().solved} · clean ${g.puzzleRating().clean}`);
+  }
+
+  /* ⭐ THE ONE-TIME BACKFILL. `clean` is new, so every existing player would start it at zero
+     and be told they have solved one puzzle cleanly. The road is the recovery: it only ever
+     advances on an earned solve, so its high-water mark is a PROVEN FLOOR measured by a
+     different instrument. It can understate. It must never overstate, and it must never run
+     twice — a re-seed would silently undo a reset. */
+  {
+    const { P: g } = boot({ 'pjcc.fork.journey.v2': JSON.stringify({ step: 12, diff: 4, best: 18 }) });
+    const o = g.puzzleRating();
+    check('a player with a road behind them is seeded from its HIGH-WATER mark', o.clean === 18,
+      `clean ${o.clean} from best 18 / step 12`);
+    check('  …and a clean solve is still a solve, so `solved` is lifted with it', o.solved >= 18,
+      `solved ${o.solved}`);
+  }
+  {
+    const store = { 'pjcc.fork.journey.v2': JSON.stringify({ step: 0, diff: 2, best: 9 }) };
+    const g = boot(store).P;
+    g.puzzleRating();
+    const saved = JSON.parse(store['pjcc.puzzle.rating.v1']);
+    check('the seed is written down, not recomputed every call', saved.clean === 9 && saved.cleanSeeded === true,
+      `clean ${saved.clean} · seeded ${saved.cleanSeeded}`);
+
+    // a reset to zero must STAY at zero — the flag is what makes that possible
+    store['pjcc.puzzle.rating.v1'] = JSON.stringify({ rating: 700, solved: 0, clean: 0, cleanSeeded: true, peak: 700 });
+    const h = boot(store).P;
+    check('  …so a player who resets is not silently re-seeded', h.puzzleRating().clean === 0,
+      'the flag survives the reset, the count does not come back');
+  }
+  {
+    // no road at all: nothing to recover, and nothing invented
+    const g = boot().P;
+    check('a brand-new solver has both counters at zero',
+      g.puzzleRating().clean === 0 && g.puzzleRating().solved === 0);
+  }
+
   // the seed lifts a returning player and never lowers anyone
   {
     const g = boot().P;

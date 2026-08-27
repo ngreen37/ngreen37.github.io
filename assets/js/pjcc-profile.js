@@ -805,6 +805,17 @@
           profile.puzzle_solved = x.data.puzzle_solved;
         }
       } catch (e) { /* migration not run yet — the ladders fall back to local + credits */ }
+      /* ⚠⚠ `puzzle_clean` GETS ITS OWN QUERY, for the same reason the block above has one:
+         Postgrest fails the WHOLE select if any named column is missing, so adding a column
+         that ships ahead of its migration to the query above would cost the rating AND the
+         played count on every database that has not run it. One new column, one new query,
+         one failure that can only ever cost the thing it asked for. */
+      try {
+        var y = await sb.from('profiles').select('puzzle_clean').eq('id', u.id).maybeSingle();
+        if (y && y.data && typeof y.data.puzzle_clean === 'number') {
+          profile.puzzle_clean = y.data.puzzle_clean;
+        }
+      } catch (e) { /* not migrated — the clean count stays local, and syncs the day it is */ }
     }
     return profile;
   }
@@ -1490,22 +1501,62 @@
      +k/2 and a miss is −k/2. This function still accepts any score in [0,1]; the room's
      definition of a win lives in the room. */
   var PZ_KEY = 'pjcc.puzzle.rating.v1';
+  /* ⚠ READ-ONLY, ONCE, AND ONLY BY seedClean() BELOW. This is the Puzzle Room's own key and
+     this file has no other business with it — the coupling is deliberate, one-directional
+     and documented rather than accidental. */
+  var PZ_ROAD_KEY = 'pjcc.fork.journey.v2';
   var PZ_START = 700, PZ_FLOOR = 300, PZ_CEIL = 2600;
   function loadPz() {
     try {
       var o = JSON.parse(localStorage.getItem(PZ_KEY)) || {};
-      return { rating: o.rating || PZ_START, solved: o.solved || 0, peak: o.peak || o.rating || PZ_START };
-    } catch (e) { return { rating: PZ_START, solved: 0, peak: PZ_START }; }
+      return { rating: o.rating || PZ_START, solved: o.solved || 0, clean: o.clean || 0,
+               cleanSeeded: !!o.cleanSeeded, peak: o.peak || o.rating || PZ_START };
+    } catch (e) { return { rating: PZ_START, solved: 0, clean: 0, cleanSeeded: false, peak: PZ_START }; }
   }
   function savePz(o) { try { localStorage.setItem(PZ_KEY, JSON.stringify(o)); } catch (e) {} }
+
+  /* ══ THE ONE-TIME BACKFILL, 2026-08-26 ═══════════════════════════════════════════════
+     `clean` is new and every player who already has a history would start it at zero — so
+     the front door would tell a solver of two hundred puzzles that they have solved one
+     cleanly. That is worse than the wrong label it replaces.
+
+     ⭐ BUT THE NUMBER IS RECOVERABLE, AND NOT BY GUESSING. The road only advances on an
+     `earned` solve — no hint, no wrong first move, no reveal — and `mintHalfway()` in
+     pjcc_fork.html already leans on exactly that: *"500 steps ARE 500 clean solves."* So the
+     road's high-water mark is a PROVEN FLOOR under the clean count, measured by a different
+     instrument that was running the whole time. It can only understate, never overstate.
+
+     ⚠ IT RUNS EXACTLY ONCE, gated on its own flag rather than on `clean === 0` — otherwise a
+     player who legitimately sits at zero re-seeds on every call, and a reset would silently
+     undo itself. Same shape as `seedPuzzleRating()`'s "have I seeded yet" test. */
+  function seedClean(o) {
+    if (o.cleanSeeded) return o;
+    o.cleanSeeded = true;
+    try {
+      var r = JSON.parse(localStorage.getItem(PZ_ROAD_KEY)) || {};
+      var floor = Math.max(parseInt(r.best, 10) || 0, parseInt(r.step, 10) || 0);
+      if (floor > o.clean) o.clean = floor;
+    } catch (e) { /* storage denied — the count simply starts from here, which is honest */ }
+    savePz(o);
+    return o;
+  }
+
   PJCC.PUZZLE_START = PZ_START;
   PJCC.puzzleRating = function () {
-    var o = loadPz();
+    var o = seedClean(loadPz());
     // the profile wins if it is HIGHER — see takeHigher above
     var p = profile && profile.puzzle_rating;
     if (typeof p === 'number' && p > o.rating) { o.rating = p; o.peak = Math.max(o.peak, p); savePz(o); }
     var ps = profile && profile.puzzle_solved;
     if (typeof ps === 'number' && ps > o.solved) { o.solved = ps; savePz(o); }
+    var pc = profile && profile.puzzle_clean;
+    if (typeof pc === 'number' && pc > o.clean) { o.clean = pc; savePz(o); }
+    /* ⚠ A CLEAN SOLVE IS STILL A SOLVE, so `clean` can never exceed `solved` — and it CAN
+       arrive higher, because the two are merged from different places (the road's floor above,
+       a device that solved signed out, an un-migrated column). "26 played · 30 clean" is not a
+       rounding wobble, it is a sentence that cannot be true, and a visitor would read it as the
+       site being broken rather than as two counters disagreeing. */
+    if (o.clean > o.solved) { o.solved = o.clean; savePz(o); }
     return o;
   };
   /* ONE-TIME SEED, for a player who arrives with a road behind them. It SETS the rating
@@ -1532,6 +1583,20 @@
     var before = o.rating;
     var after = Math.max(PZ_FLOOR, Math.min(PZ_CEIL, Math.round(before + k * (s - expected))));
     o.rating = after; o.solved += 1; o.peak = Math.max(o.peak, after);
+    /* ⚑ TWO COUNTERS SINCE 2026-08-26 (Nate: "I feel like it should be solved correctly, the
+       puzzles. Or maybe we have both numbers there.").
+
+       `solved` counts puzzles FINISHED and always did — a reveal routes through
+       revealSolution() → playerCorrect() → puzzleSolved() → settlePuzzle(rating, 0), so it
+       lands here like any other. The front door was calling that figure "solved correctly"
+       on the strength of a code comment that asserted the room only counted clean solves. It
+       did not, nothing measured the claim, and it was wrong for sixteen days.
+
+       ⭐ A FULL SCORE IS THE CLEAN SIGNAL AND IT ALREADY EXISTED. The room computes
+       `earned = clean && !revealed && hintLevel === 0` and passes `earned ? 1 : 0` — so
+       `s >= 1` IS "solved it themselves", with no second definition to drift from the first.
+       That is why this tests the score rather than taking a new argument. */
+    if (s >= 1) o.clean += 1;
     savePz(o);
     // mirror to the account when there is one; a failure here is silent and harmless
     // (the local copy is the source of truth and will re-mirror on the next solve).
@@ -1541,9 +1606,19 @@
           .eq('id', PJCC.currentUser().id).then(function () {
             if (profile) { profile.puzzle_rating = after; profile.puzzle_solved = o.solved; }
           }, function () {});
+        /* ⚠⚠ A SEPARATE STATEMENT, NOT A THIRD KEY IN THE ONE ABOVE. `puzzle_clean` ships
+           ahead of its migration, and Postgrest rejects the WHOLE update if any named column
+           is missing — folding it in would take the rating and the played count down with it
+           on every unmigrated database, silently. Same reason loadProfile() asks for the
+           newest columns in a query of their own. */
+        sb.from('profiles').update({ puzzle_clean: o.clean })
+          .eq('id', PJCC.currentUser().id).then(function () {
+            if (profile) { profile.puzzle_clean = o.clean; }
+          }, function () {});
       } catch (e) {}
     }
-    return { before: before, after: after, delta: after - before, rating: after, solved: o.solved, k: k };
+    return { before: before, after: after, delta: after - before, rating: after,
+             solved: o.solved, clean: o.clean, k: k };
   };
 
   /* ══ REPORT A PUZZLE — a table, not an inbox (2026-08-03) ═════════════════════════

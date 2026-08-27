@@ -2375,16 +2375,36 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
   var num = function (n) { return '<span class="rs-num">' + n + '</span>'; };
 
   /* what the line is REPORTING right now, so the account can only ever raise these */
-  var rating = 0, solved = 0, step = 0;
+  var rating = 0, solved = 0, clean = 0, step = 0;
 
   function paint() {
     var html = '';
     if (rating > 0) {
-      /* ⚑ "solved" → "SOLVED CORRECTLY" (his words, 2026-08-11). It is not a flourish: the
-         Puzzle Room only counts a CLEAN solve — no hint, no wrong first move — so "26 solved"
-         was quietly under-describing what he had done. The stricter word is the true one. */
-      html = '<b>Welcome back!</b> Your puzzle rating is ' + num(Math.round(rating)) +
-             (solved ? ' after ' + num(solved) + ' solved correctly' : '') + '.';
+      /* ⚑⚑ TWO NUMBERS SINCE 2026-08-26 (Nate: "I feel like it should be solved correctly,
+         the puzzles. Or maybe we have both numbers there.").
+
+         ⚠ THE OLD LINE HERE WAS A LIE, AND THE COMMENT BESIDE IT WAS THE REASON IT SURVIVED.
+         It read "N solved correctly" and justified the stricter word by asserting the Puzzle
+         Room only counts a clean solve. It does not — `settlePuzzle()` counts every finished
+         puzzle, and a REVEAL routes straight through it. Nate asked "have I only done 26
+         puzzles correctly?" and the honest answer was that 26 was the wrong figure for the
+         question. Nothing measured the claim, so nothing caught it. [[audit-numbers-can-be-wrong]]
+
+         So the room now keeps both, and the sentence only ever says what it can prove:
+           both, and different →  "…is 812 after 27 puzzles — 19 solved clean."
+           a perfect record    →  "…is 812 after 19 solved clean."   (nothing to contrast)
+           clean not seeded    →  "…is 812 after 27 puzzles."        (the honest half)
+         ⭐ NO PARENTHETICAL, NO PERCENTAGE. "19 of 27 (70%)" turns a welcome into a report
+         card, and the one thing this line has to do is make somebody want to play again. */
+      var tail = '';
+      if (clean > 0 && solved > clean) {
+        tail = ' after ' + num(solved) + ' puzzles \u2014 ' + num(clean) + ' solved clean';
+      } else if (clean > 0) {
+        tail = ' after ' + num(clean) + ' solved clean';
+      } else if (solved > 0) {
+        tail = ' after ' + num(solved) + ' puzzle' + (solved === 1 ? '' : 's');
+      }
+      html = '<b>Welcome back!</b> Your puzzle rating is ' + num(Math.round(rating)) + tail + '.';
     } else if (step > 0) {
       html = '<b>Welcome back!</b> You are ' + num(step) + ' puzzle' + (step === 1 ? '' : 's') +
              ' along the road to Chess City.';
@@ -2403,7 +2423,15 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
     var jr = read('pjcc.fork.journey.v2');
     if (pz && typeof pz.rating === 'number' && pz.rating > 0) rating = pz.rating;
     if (pz && typeof pz.solved === 'number' && pz.solved > 0) solved = pz.solved;
+    if (pz && typeof pz.clean === 'number' && pz.clean > 0) clean = pz.clean;
     if (jr && typeof jr.step === 'number' && jr.step > 0) step = jr.step;
+    /* ⭐ THE ROAD IS A FLOOR UNDER THE CLEAN COUNT, and this page can read it before
+       pjcc-profile.js has loaded to do its own one-time seed. The road only advances on an
+       earned solve, so `step` clean solves have provably happened. It can understate; it
+       cannot overstate. And a clean solve is still a solve, so `solved` is raised with it —
+       "26 puzzles — 30 solved clean" is a sentence that cannot be true. */
+    if (step > clean) clean = step;
+    if (clean > solved) solved = clean;
     paint();
   } catch (e) { /* storage denied — the page is unchanged, which is the correct outcome */ }
 
@@ -2469,6 +2497,8 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
           var o = PJCC.puzzleRating();
           if (o && o.rating > rating) { rating = o.rating; }
           if (o && o.solved > solved) { solved = o.solved; }
+          if (o && o.clean > clean) { clean = o.clean; }
+          if (clean > solved) { solved = clean; }
         }
         paint();
         return PJCC.myStats ? PJCC.myStats() : null;
