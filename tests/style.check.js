@@ -33,7 +33,15 @@ const ROOT = path.join(__dirname, '..');
 /* Third-party source, build output, and Nate's own writing. Lore and blog posts are HIS
    voice ([[text-changes-need-approval]]) — this file does not police how he writes. */
 const SKIP = /(node_modules|[\\/]\.git|[\\/]_site|assets[\\/]vendor|assets[\\/]backups|[\\/]_posts[\\/]|[\\/]_characters[\\/]|[\\/]_locations[\\/]|[\\/]_evolutions[\\/]|[\\/]_pjcc[\\/])/;
-const EXT = /\.(md|html|scss|css|js|yml)$/i;
+/* ⭐⭐ `.gd` IS ON THIS LIST AS OF 2026-08-27, AND IT IS THE EXACT GAP THIS FILE EXISTS TO CLOSE.
+   The header above says the first British-spelling sweep failed because it fixed visitor-facing
+   text and left the CODE COMMENTS alone — every session then read those comments, absorbed the
+   voice, and wrote "Hair colour" into a new UI label. The Godot project in `private/docs/godot/`
+   had grown to ~4,700 lines of heavily-commented GDScript that this checker could not see, and
+   a sweep of it turned up **42** British spellings across eight files. Same failure, same source,
+   one character of regex. ⚠ Those files are gitignored, so this only ever fires locally — which
+   is the point: it fires while somebody is writing them. */
+const EXT = /\.(md|html|scss|css|js|yml|gd)$/i;
 
 const BRITISH = [
   'colour', 'colours', 'coloured', 'colouring', 'colourful', 'colourless',
