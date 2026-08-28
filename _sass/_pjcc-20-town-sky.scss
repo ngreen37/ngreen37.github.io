@@ -1529,10 +1529,18 @@ html.sky-night.cloud-3 .ts-clouds { opacity: 0.44; }
    and never comes back; a visitor who missed it missed it forever.
 
    ⚠ ONE SMALL ELEMENT SLIDING SIDEWAYS, transform and opacity only, like everything else in
-   this sky. At ~330x30 it prices at about 0.03 screens — and only on the handful of days
-   this class is ever stamped. The cost is painted AREA, and this has almost none.  */
+   this sky.
+   ⭐ AND THE COST LINE THAT USED TO STAND HERE WAS A GUESS, NOT A MEASUREMENT. It claimed
+   "~330x30 … about 0.03 screens". `npm run motion` was pointed at the live page on the one
+   morning it has ever flown (2026-08-28) and reported the real thing: **197x36, 0.01
+   screens**. The strip is bigger now — 243x46 at 1280 wide — and still 0.01.
+   ⚑ IT LEAVES THAT BUDGET ALTOGETHER TODAY, though, and for a reason worth knowing: the
+   harness prices INFINITE loops only [[motion-budget-blind-spot]], and NOTHING here loops any
+   more — the crossing runs once and the plane's bob is pinned to the same 18 seconds. On the
+   day it flies it costs one 243x46 layer for 18 seconds; on every other day it costs a
+   `display: none`. The cost is painted AREA, and this has almost none.  */
 .ts-banner { display: none; }
-html.milestone-day .ts-banner {
+html.milestone-day.ms-fly .ts-banner {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1553,7 +1561,19 @@ html.milestone-day .ts-banner {
   z-index: 900;
   white-space: nowrap;
   pointer-events: none;
-  animation: ts-banner-fly 110s linear infinite;
+  /* ⚑⚑ ONE PASS, THEN IT IS GONE — 2026-08-28, Nate: "make it so it only shows Once per
+     page and moves a little faster. Going back to the old page won't send it again."
+     It used to loop forever at 110s, on screen ~24s out of every 110. Two things were
+     wrong with that and they are different problems. The LOOP made an announcement into
+     furniture: a thing that comes back every two minutes is weather, and this is the one
+     day in a year it flies. And the loop is per PAGE — so the old build re-armed itself on
+     every navigation, and the back button was a replay button.
+     `1 both`, not `infinite`: `both` holds the last keyframe, so after the pass the banner
+     stays parked off the right edge at opacity 0 rather than snapping back into view.
+     WHICH pages get the pass is decided before first paint by the head script in
+     _includes/town-weather.html, which stamps `.ms-fly` only the first time a given path is
+     opened in this tab. 18s, down from 25.3s across, is the "a little faster". */
+  animation: ts-banner-fly 18s linear 1 both;
   will-change: transform;
 }
 
@@ -1565,16 +1585,57 @@ html.milestone-day .ts-banner {
   font-family: 'Poppins', sans-serif;   /* the display voice — a milestone is a wordmark
                                            moment, not body copy [[site-type-system]] */
   font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.16em;
+  /* ⚠ BIGGER BY HIS EYE, NOT BY A RULE (2026-08-28, "the six month banner a bit bigger").
+     15 → 19px, and the padding and the swallowtail notch go up with it — a strip that grows
+     its type but keeps a 5px collar reads as crowded rather than as bigger. This is the one
+     set of numbers on the banner that is a matter of taste; the flight timings above are
+     not. It applies to EVERY milestone, not just the half-year: he was looking at the only
+     one that has ever flown, and "1 YEAR" in a smaller strip behind a bigger one would be a
+     shrinking anniversary. */
+  font-size: 19px;
+  letter-spacing: 0.17em;
   color: #1e232c;
   background: #fbf3e0;
-  padding: 5px 16px 5px 26px;
+  padding: 7px 20px 7px 32px;
   border-radius: 2px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 15px 50%);
 }
 .ts-banner-flag::after { content: var(--ms-text, ""); }
+
+/* ══ THE ANNIVERSARY WEARS COLOR ═══════════════════════════════════════════════
+   2026-08-28, Nate: "make the one year one more colorful."
+
+   ⭐ THE TWO MILESTONES ARE NOT THE SAME EVENT, AND THIS IS WHERE THE SITE FINALLY SAYS SO.
+   The half-year is a COUNT — day 180, a number he was watching for. Every mark after it is a
+   BIRTHDAY, and the difference is already written into the dates (see the two rules in
+   _includes/pjcc-time.js: one is arithmetic, the other is a calendar). Until now both flew
+   the identical cream strip, so the only thing that ever changed between them was the
+   spelling. A birthday gets bunting.
+
+   ⚠ IT IS A CLASS OFF THE SAME STRING, NOT A SECOND FEATURE. The head script already has the
+   words before first paint; `.ms-anniversary` is stamped when they end in YEAR or YEARS, so
+   "12 YEARS" in 2038 is festive without anybody remembering to come back here. One test, one
+   place, and no second date rule to keep in step with the first.
+
+   ⚠ LIGHT STOPS ONLY — the ink stays #1e232c and every stop is above 90% lightness, so the
+   worst pairing on the strip still measures 9.7:1. "More colorful" cannot become "less
+   readable" on a thing that crosses a cream card, a green button and a night sky in one pass
+   [[audit-numbers-can-be-wrong]]: the contrast was computed against the most saturated stop,
+   not eyeballed against the average. The gold pinstripes are doing structural work as well as
+   festive — they are what keeps the strip's edge visible when it flies over the parchment
+   board, where the pale end of the gradient is nearly the board's own color. */
+html.ms-anniversary .ts-banner-flag {
+  background: linear-gradient(101deg, #ffeeb8 0%, #ffd39a 18%, #ffb8cd 40%,
+                                      #bcd8ff 62%, #b4ecc9 82%, #ffeeb8 100%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28),
+              inset 0 3px 0 #F5C518, inset 0 -3px 0 #F5C518;
+}
+/* the plane joins in, quietly: the world's gold on the two parts that are already its own
+   shapes. Not a repaint — the body stays the dark-on-cream silhouette that reads over
+   everything, because that is the half of the drawing doing the legibility work. */
+html.ms-anniversary .ts-plane .tp-glass,
+html.ms-anniversary .ts-plane .tp-prop { fill: #F5C518; }
 
 /* ⭐⭐ OUTLINED, NOT TINTED PER SKY — AND THE SKY IS NO LONGER WHAT IT FLIES OVER. Two
    earlier passes both tried to pick a fill from the hour: dark for day, light for the three
@@ -1583,27 +1644,53 @@ html.milestone-day .ts-banner {
    says nothing about what is underneath at any given moment. A dark plane with a cream
    outline reads on every one of them, and needs no rule per phase.
    ⚠ `paint-order` and a stroke, NOT a drop-shadow. A filter re-rasters its whole subtree
-   every frame and this element moves for 26 seconds at a time [[ambient-layer-cost]]; an
-   SVG stroke is part of the same one-time raster as the fill. */
+   every frame and this element is in motion for its whole 18-second pass, then bobbing for
+   as long as the page is open [[ambient-layer-cost]]; an SVG stroke is part of the same
+   one-time raster as the fill. */
 .ts-plane {
-  width: 50px; height: 21px; flex: 0 0 auto;
+  width: 58px; height: 27px; flex: 0 0 auto;
   fill: #1e232c; stroke: #fbf3e0; stroke-width: 2.5;
   paint-order: stroke fill;
   stroke-linejoin: round;
+  /* ⭐ THE BOB IS PART OF THE DRAWING, NOT A SECOND EFFECT. A cartoon plane that holds
+     perfectly level is a decal; 2.5 degrees of roll is what makes it look flown. It rides
+     INSIDE an object that already earns its place [[batch-2026-07-08-polish]] and costs
+     nothing new — the SVG is already its own composited layer for the crossing, so this is
+     a second transform on a layer that exists either way [[ambient-layer-cost]].
+     ⚠ The strip does not bob with it, and that is right: a towed banner trails flat while
+     the aircraft moves. The tail only travels ~1.3px, so the two never visibly part.
+     ⚑⚑ 7.5 ITERATIONS, NOT `infinite`, AND THE NUMBER IS THE FLIGHT: 7.5 x 2.4s = the 18s
+     above, so the bob stops at the exact moment the pass ends. `infinite` was the obvious
+     value and it was wrong — the banner is still `display: flex` after the crossing, parked
+     off the right edge at opacity 0, so an endless bob would keep an animation running on an
+     invisible element for as long as the tab stayed open, and would sit in the always-on
+     column of `npm run motion` forever [[motion-budget-blind-spot]]. ⚠ If the flight time
+     changes, this number has to change with it. */
+  animation: ts-plane-bob 2.4s ease-in-out 7.5;
+  transform-origin: 55% 50%;
 }
+/* the portholes — the ONE part painted in the outline color instead of the fill, which is
+   what stops the body reading as a solid lozenge at 58px. No stroke: a 2.5 stroke on a 2.5
+   radius circle is a cream dot with a cream ring, i.e. a slightly bigger cream dot. */
+.ts-plane .tp-glass { fill: #fbf3e0; stroke: none; }
 
-/* Left to right, the way the words are read. The long tail on the keyframe is the gap, and
-   the gap got LONGER once the banner moved out over the page: at 70s it was on screen 37% of
-   the time, which is fine for something in the far sky and too much for something crossing
-   the board you are trying to read. 110s puts it at ~24s of every 110 — still four passes
-   every ten minutes on the one day it flies, and gone the rest of the time. Same shutter
-   idea as the meteors' three keyframes: the event is the visit, not the loop. */
+/* Left to right, the way the words are read.
+   ⚑ THE LONG DEAD TAIL IS GONE WITH THE LOOP. This keyframe used to run 0%→23% and then hold
+   an empty sky for the remaining 77% — the gap between passes, expressed as four-fifths of an
+   animation that never stopped. With one pass there is no gap to express, so the whole
+   keyframe is the crossing and the duration IS the speed. Nothing here is a shutter any more;
+   the shutter moved to the head script, which decides whether this runs at all.
+   The fades are short and sit at the very ends: the element is fully off-screen at 0% and
+   100%, so they only soften the moment it clears the edge on a narrow window. */
 @keyframes ts-banner-fly {
   0%           { transform: translate3d(-105%, 0, 0); opacity: 0; }
-  2%           { opacity: 1; }
-  20%          { opacity: 1; }
-  23%          { transform: translate3d(100vw, 0, 0); opacity: 0; }
+  6%           { opacity: 1; }
+  94%          { opacity: 1; }
   100%         { transform: translate3d(100vw, 0, 0); opacity: 0; }
+}
+@keyframes ts-plane-bob {
+  0%, 100%     { transform: rotate(-2.5deg); }
+  50%          { transform: rotate(2.5deg); }
 }
 
 /* ⚠ REDUCED MOTION PARKS IT, IT DOES NOT REMOVE IT — the opposite call to the shooting
@@ -1612,19 +1699,21 @@ html.milestone-day .ts-banner {
    on screen. So it stops flying and simply hangs there, centered and readable, which is
    what somebody who asked for less movement still wants to be told. */
 @media (prefers-reduced-motion: reduce) {
-  html.milestone-day .ts-banner {
+  html.milestone-day.ms-fly .ts-banner {
     animation: none;
     left: 50%;
     transform: translate3d(-50%, 0, 0);
     opacity: 1;
   }
+  .ts-plane { animation: none; transform: none; }
 }
-html.reduce-flourish.milestone-day .ts-banner {
+html.reduce-flourish.milestone-day.ms-fly .ts-banner {
   animation: none;
   left: 50%;
   transform: translate3d(-50%, 0, 0);
   opacity: 1;
 }
+html.reduce-flourish .ts-plane { animation: none; transform: none; }
 
 /* ══ CHESS CITY ON THE HORIZON ════════════════════════════════════════
    2026-08-20, Nate: "the bottom of the screen should have a basic chess city feel to it

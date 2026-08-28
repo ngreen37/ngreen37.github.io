@@ -65,6 +65,50 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
      to say about a studio whose flagship is under wraps. [[slow-roll-cast]] {% endcomment %}
 <p class="projects-intro">McPuppy is an independent studio created in March 2026.</p>
 
+{% comment %} ── THE STUDIO IS AWAKE — moved here from /pjcc/ on 2026-08-28 ─────────────
+     Nate: "Can we take the PJCC desk lamp and move it to the McPuppy page somewhere near the
+     top? That's a great feature and also promotes the blog."
+
+     The lamp is LIT when the site last shipped within twelve hours, straight off site.time —
+     a push rebuilds the site, so the build stamp IS the last commit and it cannot drift or
+     lie. Beside it, the newest post and the way in to the rest of them. That pairing is the
+     point: the lamp is the PROOF and the line beside it is the CLAIM, and the two only work
+     together (the front door lost the band on 2026-08-04 for exactly that reason, once the
+     post line had already gone). It stood on /pjcc/ until today, which is a page hidden
+     behind the eggs — a proof-of-life almost nobody could reach. This is the page about the
+     studio, so this is where somebody asks the question it answers.
+
+     ⚠⚠ A BLOCK-LEVEL WRAPPER, AND NOT ONE BLANK LINE INSIDE IT. This is a markdown page and
+     the include carries a script tag, which is the exact pair that broke the front door twice
+     in one day: kramdown HTML-escapes the contents of a SPAN, and it ends a raw HTML block at
+     the first BLANK LINE. `.awake-lamp` is a div here rather than the span /pjcc/ used, and
+     every Liquid tag below opens with the whitespace-stripping hyphen, so the conditional
+     around the post line cannot leave an empty line behind when there are no posts.
+     tests/style.check.js rules 4-6 hold the line; the full write-up is at the top of
+     assets/js/pjcc-desk-lamp.js.
+
+     ⚠ THE WORDS ARE THE ONES IT ARRIVED WITH TOO — a move moves. "Building in the open" is a
+     status line, not a header that names a thing, so the Title Case rule does not reach it and
+     re-capitalizing it here would be a copy change nobody asked for.
+
+     ⚠ THE CLASS NAMES ARE THE ONES IT ARRIVED WITH. `.awake-more` and `.awake-post` are named
+     in _sass/_pjcc-01-core.scss (coarse-pointer tap targets) and _sass/_pjcc-10-a11y.scss
+     (the focus row). Rename them here and both of those quietly stop applying — a 40px thumb
+     target and a focus ring, gone, with nothing red anywhere. Only the PALETTE changed: this
+     page is theme-studio, and the band arrived wearing /pjcc/ purple. {% endcomment %}
+<section class="mcp-awake" aria-labelledby="mcp-awake-h" data-reveal>
+  <h2 id="mcp-awake-h" class="sr-only">From the Studio</h2>
+  <div class="awake-lamp">{% include desk-lamp.html id="studio-lamp" %}</div>
+  <div class="awake-copy">
+    <span class="awake-label">Building in the open</span>
+    {%- if site.posts.first %}
+    <a class="awake-post" href="{{ site.posts.first.url | relative_url }}">{{ site.posts.first.title }}</a>
+    <span class="awake-date">{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
+    {%- endif %}
+    <a class="awake-more" href="{{ '/blog/' | relative_url }}">Read the blog &rarr;</a>
+  </div>
+</section>
+
 {% comment %} DEAD CSS REMOVED 2026-07-13 (dead-code audit). ~65 lines of page-local styles for
      TWO CARDS THAT NO LONGER EXIST on this page: the gold "featured / playable now" treatment
      built for Notation Blitz (.project-card-featured, .featured-ribbon, .project-status-done,
@@ -133,6 +177,58 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
   .pj-clock + .pj-clock { border-left: none; border-top: 1px solid #2a2830; }
 }
 @media (prefers-reduced-motion: reduce){ .pj-clock-dot { animation: none; } }
+
+/* ── THE STUDIO IS AWAKE — the lamp, and the last thing that shipped (moved here 2026-08-28)
+   The drawing is _sass/_pjcc-24-desk-lamp.scss, which sizes the lamp and deliberately never
+   PLACES it — that is the partial's one rule for callers, so the placement is here.
+   ⚠ THE PLANK OFFSETS ARE HIS AND THEY MOVED WITH THE BAND. `.sl-desk` defaults to a slab
+   that runs past the lamp on both sides and reads as a brown bar floating in mid-air; he cut
+   it by exactly a quarter on 2026-07-29 ("reduce the length of the wooden base by 25% and
+   center it") and centered it on the FOOT rather than on the box, because the shade and its
+   cone reach left to about x -3 while the round foot spans x 31-68. This block was the only
+   copy of that tuning on the site. Drop it and the lamp comes back looking broken.
+   ⚑ AND DO NOT HIDE THE PLANK. It was hidden for a week in July because the untuned slab
+   looked like a brown bar floating in mid-air; he reversed that himself on 2026-08-04 ("I
+   want the wooden base to be there like it is on the main page") once the tuning above
+   existed. The plank is wanted; it was the slab it USED to draw that was not.
+   ⚠ 102px TALL FOR A 92px LAMP: the extra 10 is for the plank, which hangs below the lamp's
+   own box. Reserve it or the panel edge slices the front lip off.
+   ⚠ The tooltip is anchored to the lamp's RIGHT edge by the partial. Here the lamp stands at
+   the left of a full-width panel, so `right:0` would hang 224px of tip off the left of the
+   page; it is re-anchored to the panel instead. */
+.mcp-awake { display: flex; align-items: flex-end; gap: 22px;
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + 4px);
+  background: #131218; border: 1px solid #2a2830; border-radius: var(--r-sm); }
+.mcp-awake .awake-lamp { position: relative; display: block; width: 82px; height: 102px; flex: 0 0 auto; }
+.mcp-awake .studio-light { position: absolute; inset: 0 0 10px; }
+.mcp-awake .sl-desk { left: 6px; right: -12px; border-radius: 3px; }
+.mcp-awake .sl-desk::after { border-radius: 0 0 3px 3px; }
+.mcp-awake .sl-tip { right: auto; left: 0; }
+.awake-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  padding-bottom: 6px; min-width: 0; }
+/* the studio's own palette, not the purple this band wore on /pjcc/ [[theme-hall-depurple]].
+   Every pair here is one the page already ships and has already been measured: #8a8592 on
+   #131218 is 5.2:1, the gold is 7.8:1, the link gray is 10.9:1 — all clear of AA at these
+   sizes, which 10px type is not automatically. */
+.awake-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #8a8592; }
+.awake-post { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px;
+  color: #caa24a; text-decoration: none; line-height: 1.3; }
+.awake-post:hover, .awake-post:focus-visible { text-decoration: underline; }
+.awake-date { font-family: 'Share Tech Mono', monospace; font-size: 10.5px; color: #8a8592; }
+.awake-more { margin-top: 5px; font-size: 11.5px; color: #c9c4d0; text-decoration: none;
+  border-bottom: 1px solid #2a2830; padding-bottom: 1px; }
+.awake-more:hover, .awake-more:focus-visible { color: #caa24a; border-color: #caa24a;
+  text-decoration: none; }
+@media (max-width: 600px) {
+  .mcp-awake { gap: var(--space-4); padding: var(--space-3); }
+  /* the height still carries the plank's 10px through the scale-down */
+  .mcp-awake .awake-lamp { transform: scale(0.78); transform-origin: bottom center;
+    width: 64px; height: 80px; }
+  .awake-post { font-size: 13px; }
+  .awake-more { font-size: 10.5px; }
+}
 
 /* ── "Also on the board" — the four not-started things, at the weight they deserve ── */
 .pj-also { margin: var(--space-5) 0 var(--space-4); }

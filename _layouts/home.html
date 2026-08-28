@@ -447,34 +447,25 @@ layout: default
   </a>
 </section>
 
-{% comment %} ── 1c. THE STUDIO IS AWAKE ─────────────────────────────────────────────
-     2026-07-21. Through-line #5 asks for a dated cadence — visible proof that someone is
-     still building this. Until now the front door answered that with fiction: a ticker of
-     invented Checker Town headlines. This answers it with a fact.
+{% comment %} ── 1c. THE STUDIO IS AWAKE — MOVED TO THE STUDIO'S OWN PAGE, 2026-08-28 ──
+     Nate: "Can we take the PJCC desk lamp and move it to the McPuppy page somewhere near the
+     top? That's a great feature and also promotes the blog."
 
-     The lamp is lit when the site last shipped within twelve hours, straight off
-     site.time, so it cannot drift out of date or lie. Beside it: the actual title and
-     date of the newest post, linked.
+     ⭐ IT IS A STUDIO SIGNAL AND IT WAS ON THE WRONG PAGE, which is the whole reason this is
+     a MOVE and not a copy. The band answers one question — is anybody still building this —
+     and it answered it here, on /pjcc/, a page that is itself HIDDEN behind the eggs
+     [[slow-roll-cast]]. A proof-of-life almost nobody can reach is not proof of anything.
+     /projects/ is the page about the studio, it is in the drawer, and it is where somebody
+     wondering whether this thing is alive actually lands.
 
-     This is also the first time the front door has ADMITTED THE BLOG EXISTS. The only
-     route to it from the splash was a drifting ¶ glyph that is display:none on phones —
-     so on a phone there has never been one at all.
-
-     The lamp keeps everything it had: the twelve-hour check, both tooltip strings, the
-     Direct Line link, the phone tap-to-reveal, and the hotter night burn. It is the same
-     include the splash uses; only where it stands is different. {% endcomment %}
-<section class="home-awake" aria-labelledby="h-studio" data-reveal>
-  <h2 id="h-studio" class="sr-only">From the Studio</h2>
-  <span class="awake-lamp">{% include desk-lamp.html id="home-lamp" %}</span>
-  <div class="awake-copy">
-    <span class="awake-label" data-hb>Building in the open</span>
-    {% if site.posts.first %}
-    <a class="awake-post" href="{{ site.posts.first.url | relative_url }}">{{ site.posts.first.title }}</a>
-    <span class="awake-date" data-hb>{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
-    {% endif %}
-    <a class="awake-more" href="{{ '/blog/' | relative_url }}">Read the blog &rarr;</a>
-  </div>
-</section>
+     WHAT WENT: the lamp, "Building in the open", the newest post with its date, and
+     "Read the blog →" — the whole band, for the reason the 2026-08-04 note on index.md
+     gives about the front door's copy: the lamp is the PROOF and the label is the CLAIM, and
+     a claim with its proof taken out is just a claim. This page keeps the world; the studio
+     keeps the desk.
+     ⚠ /pjcc/ HAS NO BLOG LINK OF ITS OWN NOW. That is not an oversight — the drawer carries
+     Blog on every page of the site, and this page's job is the world, not the build log.
+     Restore the band from git: git show <this commit>^ -- _layouts/home.html {% endcomment %}
 <style>
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
 /* Poster-first (2026-07-17 Nate): more sky above, the title low and large over the
@@ -992,70 +983,18 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    block, beside the rehomed classified-"i" egg. Restore the doors + this CSS from git if they
    ever return: git show <prev>^ -- _layouts/home.html) */
 
-/* ── 1c. THE STUDIO IS AWAKE — the lamp beside the last thing that shipped ──────────
-   The lamp's drawing is _sass/_pjcc-24-desk-lamp.scss, which sizes it and deliberately
-   never places it. This is its placement here: standing in the flow of the band rather
-   than pinned to a corner of the window the way the splash stands it. It needs
-   position:relative because every part of the lamp is absolute inside it, and the desk
-   sliver's negative side offsets are re-set so the slab is a short plank under the base
-   instead of running off the edge of the screen. ── */
-.home-awake { display:flex; align-items:flex-end; justify-content:center; gap:26px;
-  margin:0 0 var(--space-6); padding:0 var(--space-2); }  /* section rhythm: bottom 34→32 (--space-6); 8px pad = --space-2 exact. gap:26px (lamp↔copy) stays literal */
-/* ⚠ 92 → 102px TALL. The extra 10px is FOR THE PLANK, not for the lamp. The desk sliver sits
-   at `bottom:-7px` plus a 3px front lip, so it hangs ~10px BELOW the lamp's own box — and the
-   band's edge used to slice that lip clean off. Reserve the space here or the base comes back
-   looking broken instead of missing. */
-.awake-lamp { position:relative; display:block; width:82px; height:102px; flex:0 0 auto; }
-.awake-lamp .studio-light { position:absolute; inset:0 0 10px; }
-/* ⚑ THE DESK IS BACK — 2026-08-04 (Nate: "on the P&JCC there is no wooden base — I want the
-   wooden base to be there like it is on the main page"). This REVERSES his own 2026-07-28
-   call to hide it, and it is his to reverse; what matters is that the plank comes back in the
-   state he approved LATER, not the state he rejected.
-
-   WHY IT WAS HIDDEN, AND WHY THAT REASON NO LONGER HOLDS. In July the partial's default slab
-   ran past the lamp on both sides and read as "a brown bar floating in mid-air" in an open
-   band of night sky. He then tuned that slab twice on the FRONT DOOR — 2026-07-29, "reduce
-   the length of the wooden base by 25% and center it" — and those offsets never made it back
-   here, because this rule was hiding the thing they fixed. So the band was still judged
-   against the old plank. Un-hiding alone would have re-shipped exactly what he objected to.
-
-   THE OFFSETS BELOW ARE THAT TUNING, moved here verbatim as the front door's copy was deleted
-   (this is now the only placement of them on the site, so they are no longer a duplicate).
-   118px → 88px, exactly a quarter off, and centered on the FOOT rather than on the box: the
-   lamp drawing is not centered in its own 82px box — the round foot spans x 31-68 (mid 49.5)
-   while the shade and its cone of light reach LEFT to about x −3, so a slab centered on the
-   box always looked shifted left. Furniture is centered under what STANDS on it, not under a
-   beam of light. */
-.awake-lamp .sl-desk { left:6px; right:-12px; border-radius:3px; }
-.awake-lamp .sl-desk::after { border-radius:0 0 3px 3px; }
-/* the tip is anchored to the lamp's right edge by the partial; in a centered band that
-   would hang off toward the copy, so pull it back over the lamp */
-.awake-lamp .sl-tip { right:auto; left:-52px; }
-
-.awake-copy { display:flex; flex-direction:column; align-items:flex-start; gap:3px;
-  padding-bottom:6px; min-width:0; }
-/* label + date alphas raised 2026-07-28 (four-lens sweep): they measured 3.86 and 3.34
-   against the card, both short of AA for 10px text. 0.5→0.68 and 0.45→0.68. */
-.awake-label { font-family:'Share Tech Mono', monospace; font-size:10px; letter-spacing:0.18em;
-  text-transform:uppercase; color:rgba(214,204,238,0.68); }
-.awake-post { font-family:'Poppins',sans-serif; font-weight:700; font-size:15px; color:#F5C518;
-  text-decoration:none; line-height:1.3; }
-.awake-post:hover, .awake-post:focus-visible { text-decoration:underline; }
-.awake-date { font-family:'Share Tech Mono', monospace; font-size:10.5px;
-  color:rgba(214,204,238,0.68); }
-.awake-more { margin-top:5px; font-size:11.5px; color:#c6b8ec; text-decoration:none;
-  border-bottom:1px solid rgba(198,184,236,0.28); padding-bottom:1px; }
-.awake-more:hover, .awake-more:focus-visible { color:#F5C518; border-color:#F5C518;
-  text-decoration:none; }
-
-@media (max-width: 600px) {
-  .home-awake { gap:var(--space-4); margin-bottom:26px; }  /* 16px = --space-4 exact (adoption) */
-  /* height carries the plank's 10px of reserved space through the phone scale-down too */
-  .awake-lamp { transform:scale(0.78); transform-origin:bottom center; width:64px; height:80px; }
-  .awake-post { font-size:13px; }
-  .awake-more { font-size:10.5px; }
-  /* (.home-cta / .home-gdoor / .home-cta-park phone rules removed 2026-07-24 — CTA demoted.) */
-}
+/* (── 1c. THE STUDIO IS AWAKE — the lamp, the last post and the blog link — LEFT THIS PAGE
+   on 2026-08-28 with its markup. Nate: "Can we take the PJCC desk lamp and move it to the
+   McPuppy page somewhere near the top? That's a great feature and also promotes the blog."
+   The band now stands at the top of projects.md, and its placement + palette live there,
+   in the studio's own gold rather than in this page's purple. `.awake-lamp`, `.awake-copy`,
+   `.awake-label`, `.awake-post`, `.awake-date` and `.awake-more` moved with it; the two
+   SHARED rules that reach them by name — the coarse-pointer tap targets in
+   _sass/_pjcc-01-core.scss and the focus row in _sass/_pjcc-10-a11y.scss — are untouched
+   and still apply, which is exactly why the class names did not change.
+   Restore the band here from git: git show <this commit>^ -- _layouts/home.html)
+   (.home-cta / .home-gdoor / .home-cta-park phone rules were removed 2026-07-24 when the
+   CTA was demoted; that note lived in the media query that just left with the band.) */
 </style>
 
 {% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now

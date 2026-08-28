@@ -484,6 +484,7 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
        includes under their own names rather than shadowing it. */
     const SKY_INC  = fs.readFileSync(path.join(ROOT, '_includes/town-sky.html'), 'utf8');
     const HEAD_INC = fs.readFileSync(path.join(ROOT, '_includes/town-weather.html'), 'utf8');
+    const SKY_CSS  = fs.readFileSync(path.join(ROOT, '_sass/_pjcc-20-town-sky.scss'), 'utf8');
 
     check('day 180 is 2026-08-28, and that is the half-year mark',
       T.milestone('2026-08-28') === '6 MONTHS',
@@ -569,6 +570,125 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
       'set before first paint, so the banner is never briefly wrong');
     check('…with a preview switch, like the other rare skies',
       /qp\.get\('milestone'\)!==null/.test(HEAD_INC), '?milestone=1');
+
+    /* ══ ONCE PER PAGE — 2026-08-28 ═════════════════════════════════════════════════════
+       Nate: "make it so it only shows Once per page … Going back to the old page won't send
+       it again." That is a rule about the SECOND visit, so a regex over the source cannot
+       grade it: the only honest test runs the head script twice and looks at what it stamps
+       the second time.
+
+       ⚠ THE THREE ASSERTIONS GUARD EACH OTHER. The whole head script is wrapped in one
+       `try{}catch(e){}`, so a stub this harness got wrong would fail silently and a lone
+       "the second visit is quiet" check would PASS on a script that did nothing at all.
+       Pairing it with "the first visit flies" and "a different path flies" means a dead run
+       fails the pair, and only a script that really distinguishes them passes all three.
+       (Verified by mutation: dropping the sessionStorage read fails #2, dropping the
+       `!msS` guard fails #2, and forcing msS true fails #1 and #3.) */
+    const HEAD_JS = (HEAD_INC.match(/<script>(try\{var T=window\.PJCC_TIME;[\s\S]*?)<\/script>/) || [])[1];
+    const runHead = (pathname, want, store, search) => {
+      const seen = new Set();
+      const R = { classList: { add(...c) { c.forEach((x) => seen.add(x)); } },
+                  style: { setProperty() {} } };
+      const win = { PJCC_TIME: Object.assign({}, T, { milestone: () => want }) };
+      new Function('window', 'document', 'location', 'sessionStorage', 'URLSearchParams', HEAD_JS)(
+        win,
+        { documentElement: R, getElementById: () => null, addEventListener() {} },
+        { search: search || '', pathname },
+        { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); } },
+        URLSearchParams);
+      return seen;
+    };
+    check('the head script is where the once-per-page decision is made',
+      !!HEAD_JS && /ms-fly/.test(HEAD_JS),
+      'CSS cannot know it has already flown here — nothing in a stylesheet outlives a navigation');
+
+    check('a milestone day flies the first time you open a page', (() => {
+      const st = {};
+      const c = runHead('/', '6 MONTHS', st);
+      return c.has('milestone-day') && c.has('ms-fly');
+    })(), 'both classes, before first paint');
+
+    check('…and going back to that page never sends it again', (() => {
+      const st = {};
+      runHead('/', '6 MONTHS', st);
+      const back = runHead('/', '6 MONTHS', st);
+      return back.has('milestone-day') && !back.has('ms-fly');
+    })(), 'the back button stopped being a replay button');
+
+    /* ⚠ STILL A MILESTONE DAY ON THE RETURN VISIT, and that is not a detail. rareSky() in
+       pjcc-time.js clears the deck on this date; if the revisit dropped `milestone-day` too,
+       the clouds would roll back in behind a sky that is meant to be open. */
+    check('…while a page you have NOT opened yet still gets its pass', (() => {
+      const st = {};
+      runHead('/', '6 MONTHS', st);
+      return runHead('/games/', '6 MONTHS', st).has('ms-fly');
+    })(), 'once per PAGE, which is what he asked for');
+
+    check('…and the words next year are not swallowed by the seen-marks from this one', (() => {
+      const st = {};
+      runHead('/', '6 MONTHS', st);
+      return runHead('/', '1 YEAR', st).has('ms-fly');
+    })(), 'a tab left open across midnight still gets the anniversary');
+
+    check('the preview switch is exempt and flies every time', (() => {
+      const st = {};
+      runHead('/', null, st, '?milestone=1');
+      return runHead('/', null, st, '?milestone=1').has('ms-fly');
+    })(), 'a switch you have to clear storage to use twice is not a preview switch');
+
+    /* ══ THE ANNIVERSARY WEARS COLOR ════════════════════════════════════════════════════
+       Nate: "make the one year one more colorful." Both halves are checked, because a class
+       nobody styles is invisible and a style nothing stamps is dead
+       [[feature-shipped-but-never-loaded]]. */
+    check('a YEAR mark is stamped as an anniversary and the half-year is not',
+      runHead('/', '1 YEAR', {}).has('ms-anniversary') &&
+      runHead('/', '12 YEARS', {}).has('ms-anniversary') &&
+      !runHead('/', '6 MONTHS', {}).has('ms-anniversary'),
+      'one test off the words, so 2038 is festive without anybody coming back');
+    check('…and the stylesheet actually paints that class',
+      /html\.ms-anniversary \.ts-banner-flag \{/.test(SKY_CSS) &&
+      /linear-gradient/.test(SKY_CSS.split('html.ms-anniversary .ts-banner-flag {')[1].split('}')[0]),
+      '_sass/_pjcc-20-town-sky.scss');
+
+    /* ══ THE FLIGHT, AND THE DRAWING ════════════════════════════════════════════════════ */
+    check('the banner crosses once and stops, rather than looping',
+      /animation: ts-banner-fly 18s linear 1 both;/.test(SKY_CSS) &&
+      !/ts-banner-fly[^;]*infinite/.test(SKY_CSS),
+      '`1 both` — 110s of loop is gone, and 25.3s across became 18s');
+    /* ⚠ THE `display` DECLARATION IS THE GATE, so that is what this reads. The first draft
+       matched the SELECTOR anywhere in the file and passed a mutation that removed `.ms-fly`
+       from the real rule — because the reduced-motion copy of the selector further down still
+       carried it. A check that can be satisfied by a different rule than the one it names is
+       not measuring anything [[green-must-name-what-ran]]. */
+    check('…and nothing paints it until the head says this page has not had it',
+      /html[.]milestone-day[.]ms-fly [.]ts-banner \{\s*display: flex;/.test(SKY_CSS) &&
+      /^\s*\.ts-banner \{ display: none; \}/m.test(SKY_CSS),
+      'the markup ships on every page; one class turns it on');
+
+    /* ⚠⚠ TWO NUMBERS THAT HAVE TO AGREE, AND NOTHING ELSE WOULD SAY SO. The plane's bob is
+       `7.5` iterations rather than `infinite` so it stops when the crossing does — the banner
+       is still `display:flex` after the pass, parked off the right edge at opacity 0, and an
+       endless bob would animate an invisible element for the life of the tab. 7.5 x 2.4s IS
+       the flight. Change the flight time and forget this, and the plane either stops bobbing
+       mid-air or carries on after it has gone. So the check does the arithmetic instead of
+       pinning either literal. */
+    check('the plane bobs for exactly as long as it flies', (() => {
+      const fly = SKY_CSS.match(/animation: ts-banner-fly ([\d.]+)s/);
+      const bob = SKY_CSS.match(/animation: ts-plane-bob ([\d.]+)s [a-z-]+ ([\d.]+);/);
+      if (!fly || !bob) return false;
+      return Math.abs(+bob[1] * +bob[2] - +fly[1]) < 0.01;
+    })(), 'iterations x duration = the crossing, so nothing animates off-screen forever');
+
+    /* ⚠ THE PLANE IS CHECKED BY ITS PARTS, NOT BY ITS PATHS. Nobody can grade a bezier in a
+       test, and pinning the `d` strings would fail on any redraw — but the four parts are
+       what make it read as a plane rather than as the fish two rounds of "rounder" produced
+       (2026-08-28). Lose the portholes or the wing and it is a dark lozenge again. */
+    check('the plane is drawn as a cartoon: prop, portholes and a wing clear of the belly',
+      /class="tp-prop"/.test(SKY_INC) &&
+      (SKY_INC.match(/class="tp-glass"/g) || []).length === 3 &&
+      /viewBox="0 0 76 36"/.test(SKY_INC) &&
+      /\.ts-plane \.tp-glass \{ fill: #fbf3e0; stroke: none; \}/.test(SKY_CSS),
+      'the portholes are the one part painted in the outline color');
   }
 
   await browser.close();
