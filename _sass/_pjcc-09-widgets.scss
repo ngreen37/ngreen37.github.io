@@ -807,3 +807,43 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   .cl-endgame-link { display: inline-block; padding: 11px 10px; }
 }
 
+
+/* =============================================================
+   Tournament Board clip  —  rendered by _includes/clip.html
+   A recording out of the Godot board, dropped into a post.
+
+   ⚠ SIZED BY max-width, NOT width:100%. The clip is square (1080x1080) or portrait
+   (1080x1920), and a square video told to fill the column swallows a phone screen whole.
+   A cap plus height:auto lets it be intrinsically sized, which is what an embeddable
+   object owes its parent.
+   ============================================================= */
+.cw-clip {
+  margin: 28px auto;
+  max-width: 520px;
+}
+
+.cw-clip--portrait { max-width: 340px; }
+
+.cw-clip-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--r-sm);
+  background: #2f2440;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.cw-clip-caption {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ink-3, #c9bfe0);
+}
+
+/* The <a> only ever renders in a browser that cannot play the <source> at all — so it is
+   a real download link, not decoration, and it gets a tap target like one. */
+.cw-clip-fallback {
+  display: inline-block;
+  padding: 12px 14px;
+}

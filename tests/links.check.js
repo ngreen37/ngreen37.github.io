@@ -14,10 +14,17 @@ const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
 
+// Replace a matched block with the same number of newlines, so any line number reported
+// downstream still points at the real line in the real file.
+function blank(s) { return s.replace(/[^\n]/g, ' '); }
+
 /* ---- gather every source file ---- */
+// ⚠ `private/` is gitignored and is NEVER published — it holds notes, canon and the Godot
+// docs. A path written down in a design document is an example, not a link the site serves,
+// so scanning it can only ever produce false failures.
 function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (['node_modules', '.git', '_site', 'tests'].includes(e.name)) continue;
+    if (['node_modules', '.git', '_site', 'tests', 'private'].includes(e.name)) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p, acc);
     else acc.push(p);
@@ -104,7 +111,14 @@ for (const f of files) {
   const ext = path.extname(f).toLowerCase();
   if (!['.md', '.html'].includes(ext)) continue;
   const rel = path.relative(ROOT, f).split(path.sep).join('/');
-  const txt = read(f);
+  // ⚠ A URL INSIDE A COMMENT IS NOT A LINK. `_includes/clip.html` documents its own usage in a
+  // Liquid comment, and the example path in it is not something the site publishes. Same trap
+  // already written into style.check.js rule 13 — never trust a tag name found in a comment —
+  // and it cuts both ways: don't spell one, and don't believe one. Newlines are preserved so
+  // nothing downstream shifts.
+  const txt = read(f)
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, blank)
+    .replace(/<!--[\s\S]*?-->/g, blank);
 
   const targets = [];
   let m;

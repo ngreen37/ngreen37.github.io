@@ -1,0 +1,29 @@
+{% comment %}
+  clip.html — one Tournament Board recording, embedded in a post or a page.
+
+  Usage, in any .md or .html:
+
+    {% include clip.html src="/assets/videos/carlsen-ding-r7.mp4"
+                         caption="Ding's 31...Rxf3 — Candidates round 7" %}
+
+  Optional:
+    poster="/assets/images/clips/carlsen-ding-r7.jpg"   first frame while it loads
+    portrait="true"                                     for a 1080x1920 Short
+
+  ⚠⚠ THIS FILE IS USED BY MARKDOWN PAGES, so it obeys the kramdown rules the hard way:
+     a <div> wrapper and never a <span>; NOT ONE BLANK LINE anywhere in the rendered
+     output; no inline <script> of any kind; and a Liquid comment opened WITHOUT the
+     whitespace-stripping hyphens. Miss any one of those and a .md page eats it SILENTLY.
+     See private memory: markdown-eats-scripts. Guards: `npm run test:tags`, `test:style`.
+
+  ⭐ NO AUTOPLAY, AND CONTROLS ON. A forty-second game is the content, not wallpaper —
+     somebody has to be able to pause it and scrub back to the move they missed. It also
+     means there is nothing here for prefers-reduced-motion to have to fight.
+{% endcomment %}
+<div class="cw-clip{% if include.portrait %} cw-clip--portrait{% endif %}">
+  <video class="cw-clip-video" controls playsinline preload="metadata"{% if include.poster %} poster="{{ include.poster | relative_url }}"{% endif %}>
+    <source src="{{ include.src | relative_url }}" type="video/mp4">
+    <a class="cw-clip-fallback" href="{{ include.src | relative_url }}">Download the clip</a>
+  </video>
+  {% if include.caption %}<p class="cw-clip-caption">{{ include.caption }}</p>{% endif %}
+</div>
