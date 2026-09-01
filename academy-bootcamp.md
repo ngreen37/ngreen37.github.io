@@ -56,6 +56,7 @@ body_class: theme-academy
 </div>
 
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-pieces.js' | relative_url }}"></script>
 <script>
 (function () {
   if (!window.PJCCChess) return;                     // no engine → the page just shows the coach line
@@ -80,6 +81,33 @@ body_class: theme-academy
       line: "The king steps one square, any direction. Slow — but he IS the game. Lose him and it's over, so keep him tucked away safe." }
   ];
 
+  /* ⚠ 160px FOR THE REASON THE PARK TABLES WORKED OUT: a canvas stretched over its square
+     by CSS has to cover that square's DEVICE pixels, and 160 covers the widest desktop
+     square at 2× and a phone's at 3×. The ratios are derived from it, so a resize is one
+     number. GLYPH below is now only the fallback's alphabet.
+     ⚠ THE FALLBACK IS NOT DECORATION — pjcc-pieces.js is one <script> among two here, and a
+     drill board that renders 32 empty squares because a decoration failed to load is worse
+     than a plainer set. [[down-never-stuck]] */
+  var PC_PX = 160;
+  function bcPAL() {
+    var s = getComputedStyle(document.documentElement);
+    function v(k, d) { var x = s.getPropertyValue(k).trim(); return x || d; }
+    return { wFill: v('--piece-w-fill', '#ffffff'), wEdge: v('--piece-w-line', '#2f2440'),
+             bFill: v('--piece-b-fill', '#4a3585'), bEdge: v('--piece-b-line', '#f2e9ff') };
+  }
+  function paintPiece(cv, pc) {
+    var ctx = cv.getContext('2d'), mid = PC_PX * 0.5, white = pc <= 'Z';
+    ctx.clearRect(0, 0, PC_PX, PC_PX);
+    if (window.PJCCPieces) {
+      PJCCPieces.draw(ctx, mid, mid, PC_PX * 0.8125, pc.toUpperCase(), white ? 'w' : 'b', bcPAL());
+    } else {
+      var PAL = bcPAL();
+      ctx.fillStyle = white ? PAL.wFill : PAL.bFill;
+      ctx.font = '900 ' + Math.round(PC_PX * 0.75) + 'px "Segoe UI Symbol","Apple Symbols",serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(GLYPH[pc.toUpperCase()], mid, PC_PX * 0.547);
+    }
+  }
   var boardEl = document.getElementById('bc-board');
   var pickerEl = document.getElementById('bc-picker');
   var sayEl = document.getElementById('bc-say');
@@ -136,9 +164,17 @@ body_class: theme-academy
       sq.className = 'bc-sq ' + (((r + f) & 1) ? 'dk' : 'lt');
       var pc = board[idx];
       if (pc) {
-        var sp = document.createElement('span');
+        /* ⚑ THE DRAWN SET, 2026-09-01. This board's SQUARES have matched the Park Tables
+           since July — same woods, same key light, same frame — but its pieces were still
+           text-stroked Unicode, which is the face the rest of the site left behind in
+           2026-07-24. Same renderer, same 160px bitmap, same 0.8125 inset as every other
+           board now. [[chess-visual-canon]]
+           ⚠ THE LANDING ANIMATION SURVIVES UNCHANGED: it is a transform on the element, and
+           a <canvas> transforms exactly as a <span> did. */
+        var sp = document.createElement('canvas');
         sp.className = 'bc-pc ' + (pc <= 'Z' ? 'w' : 'b');
-        sp.textContent = GLYPH[pc.toUpperCase()];
+        sp.width = PC_PX; sp.height = PC_PX;
+        paintPiece(sp, pc);
         if (idx === curSq && moveCount > 0 && !reduce) sp.classList.add('land');
         sq.appendChild(sp);
       }
@@ -289,16 +325,15 @@ body_class: theme-academy
    the same board (Nate 2026-07-16: "always uniform"). The key-light gradient sits
    OVER the grain (same as .pt-sq). */
 .bc-sq.lt { background-color: var(--chess-lt);
-  background-image: linear-gradient(152deg, rgba(255,252,240,.14), rgba(0,0,0,.04) 62%), var(--chess-grain); }
+  background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
 .bc-sq.dk { background-color: var(--chess-dk);
-  background-image: linear-gradient(152deg, rgba(255,240,214,.10), rgba(0,0,0,.10) 62%), var(--chess-grain); }
-.bc-pc { font-size: 34px; font-size: 10.5cqw; line-height: 1; user-select: none; position: relative; z-index: 1; }
-/* paint-order:stroke = outline drawn UNDER the fill — see the chess canon note */
-.bc-pc.w, .bc-pc.b { paint-order: stroke fill; }
-.bc-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.062em var(--piece-w-line);
-  text-shadow: 0 .5px 0 rgba(255,255,255,.35), 0 1.5px 1.5px rgba(0,0,0,.30), 0 3px 5px rgba(0,0,0,.24); }
-.bc-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.062em var(--piece-b-line);
-  text-shadow: 0 .5px 0 rgba(180,160,235,.30), 0 1.5px 1.5px rgba(0,0,0,.36), 0 3px 5px rgba(0,0,0,.30); }
+  background-image: linear-gradient(152deg, rgba(255,240,214,0.10), rgba(0,0,0,0.10) 62%), var(--chess-grain); }
+/* the pieces — the shared DRAWN set, one <canvas> per square painted by PJCCPieces.draw in
+   the canon livery. The renderer insets the piece to ~81% itself, so it sits centered with
+   air around it. Identical to .pt-pc and .ot-pc; the .w/.b classes stay because the landing
+   animation and the fallback both read them. */
+.bc-pc { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  pointer-events: none; z-index: 1; }
 .bc-pc.land { animation: bcLand 0.28s ease; }
 @keyframes bcLand { 0% { transform: translateY(-16%) scale(1.16); } 100% { transform: none; } }
 .bc-sq.from::before { content: ''; position: absolute; inset: 0; background: rgba(224,138,60,0.18); z-index: 0; }

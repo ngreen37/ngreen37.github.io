@@ -391,6 +391,24 @@ section('9 · the board and the pieces are the canon ones');
   ok(OT.indexOf('if (window.PJCCPieces)') > -1,
      'a missing renderer still leaves pieces on the board');
 
+  /* ⚑ THE BOOTCAMP BOARD JOINED THE DRAWN SET 2026-09-01. Its SQUARES had matched since
+     July — same woods, same key light, same frame — and only the pieces were still
+     text-stroked Unicode, which is the half of "uniform" that is hardest to see in a diff
+     and easiest to see on the page. It is checked here rather than in a file of its own
+     because these are the Academy's two boards and this section already owns that claim. */
+  const BC = read('academy-bootcamp.md');
+  ok(/pjcc-pieces\.js/.test(BC), 'the Bootcamp loads the shared renderer too');
+  ok(/PJCCPieces\.draw\(ctx, mid, mid, PC_PX \* 0\.8125/.test(BC),
+     '…and paints with the same call, at the same inset');
+  ok(BC.indexOf('var PC_PX = 160;') > -1, '…onto the same size bitmap');
+  ok(BC.indexOf("createElement('canvas')") > -1 && BC.indexOf("-webkit-text-stroke: 0.062em") === -1,
+     '…and the old text-stroked glyph styling is gone, not overridden');
+  ok(BC.indexOf('if (window.PJCCPieces)') > -1, '…with the same fallback if it fails to load');
+  ok(ruleOf(BC, '.bc-sq.lt') === ruleOf(PT, '.pt-sq.lt') &&
+     ruleOf(BC, '.bc-sq.dk') === ruleOf(PT, '.pt-sq.dk'),
+     '…and its woods are declared exactly as the Park Tables\' are',
+     'the squares matched before the pieces did');
+
   /* and the canon file has to KNOW about this board, or the next person tuning the woods
      has no way to learn it is out here reading them */
   const CANON = read('_sass/_pjcc-22-chess-canon.scss');
