@@ -108,7 +108,7 @@
 # columns, which is arithmetic `test:regulars` checks. Unlock him by deleting his `locked:`
 # in BOTS and this line has to follow, or the gate says so.
 - key: brother
-  name: The Elder Brother
+  name: Vince
   icon: "♕"
   elo: 1150
   open: false

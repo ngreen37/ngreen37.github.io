@@ -17,8 +17,13 @@ last_seen: CHECKER TOWN
 A pair of brothers. Cronies of [Robert](/characters/robert/), the Checker Town rival — and the show's **prodigal sons.** They took their share and ran off to spend it on the wrong things, and learned the hard way that *belief without a heart behind it* spends fast. Their arc is the parable: away, undone, and (eventually) the long road back.
 
 ## The pair
-- **The elder brother** — all swagger, no substance
-- **The younger brother** — softer, more lost than reckless. Follows his brother.
+- **Vince**, the elder — all swagger, no substance
+- **Wes**, the younger — softer, more lost than reckless. Follows his brother.
+
+*(Named by Nate 2026-09-01, when Vince took a seat at the Park Tables as the regular who
+studies your games instead of studying chess. Wes has no seat and is not owed one — a second
+scout would be the same idea twice. The Park Tables key for Vince stays `brother`: an
+identifier, not a name.)*
 
 ## Role in the Story
 Ancillary foils that give Nate a surface-level enemy and also gives Robert's *mindset* a shadow, **even they have redeeming qualities**

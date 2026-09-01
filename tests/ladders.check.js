@@ -407,7 +407,7 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      stops distinguishing them, which is the shape of bug this whole file is about. */
   const bots = [...PT.matchAll(/\{ name: '([^']+)',\s*icon: '.',\s*diff: '([^']+)',\s*elo: (\d+)([^}]*)/g)]
     .map(m => ({ name: m[1], diff: m[2], elo: +m[3], adaptive: /adaptive:\s*true/.test(m[4] || ''),
-                 /* ⚑ A SECOND FLAG SAYS "not a rung" (2026-08-31). The Elder Brother HAS a fixed
+                 /* ⚑ A SECOND FLAG SAYS "not a rung" (2026-08-31). Vince HAS a fixed
                     rating — it is simply not a step on the ladder — so `adaptive` alone stopped
                     describing the seats this climb has to skip, and the climb below read
                     400 → … → 2400 → 1150 and called a correct bench broken. */

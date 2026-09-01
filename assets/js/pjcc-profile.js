@@ -482,10 +482,13 @@
        four and one more color became winnable. That is the direction the miser rule allows:
        loosening later is a gift, tightening is a takeaway — and nobody wearing lime today
        loses it, because auraUnlocked() grandfathers whatever is already on a profile.
-       ⚠⚠ THE WORD IS A PLACEHOLDER AND IT IS HIS TO REPLACE. Every other frequency here is
-       Nate's own; this one is lifted out of the brothers' character file — *"away, undone,
-       and (eventually) the long road back"* — precisely so that it is a quotation rather
-       than an invention. [[text-changes-need-approval]] */
+       ⚑ THE WORD IS HIS, CONFIRMED 2026-09-01. It shipped for one day as a placeholder I had
+       lifted out of the brothers' character file — *"away, undone, and (eventually) the long
+       road back"* — so that it would be a quotation rather than an invention; he was shown
+       three alternatives (swagger · borrowed light · the far country) and kept this one.
+       ⭐ IT IS THE ONLY PHRASE IN THIS TABLE THAT IS HOPEFUL ABOUT SOMEBODY WHO HAS NOT EARNED
+       IT YET, which is the character: the brothers' arc is the parable, and the color points
+       where he is going rather than where he is. [[text-changes-need-approval]] */
     lime:      { word: 'the road back',               from: 'brother'  }
   };
 
