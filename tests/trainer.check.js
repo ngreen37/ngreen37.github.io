@@ -101,7 +101,30 @@ section('3 · the menu');
     ok(!!v.plan && v.plan.length > 80,
        v.name + ': says what Black is actually trying to do once the book runs out');
     ok(!!v.note && !!v.white, v.name + ': names White\'s system and carries a one-line note');
+    /* ⭐ THE ARGUMENT, NOT THE MOVES. `plan` says what to do; `why` says why the line is
+       worth playing at all, and it is the half that makes this somebody's opening rather
+       than a drill. A variation without one is a phone number. */
+    ok(!!v.why && v.why.length > 120,
+       v.name + ': carries the argument for the line, not just the plan');
+    ok(!!v.why && v.why !== v.plan, v.name + ': …and it is not a copy of the plan');
   }
+
+  /* the creed, and the reveal it deliberately does not spend */
+  ok(!!BOOK.CREED && BOOK.CREED.length > 200, 'the repertoire has a creed');
+  /* ⚠⚠ MICHAEL IS DELETED FROM THIS SITE, NOT HIDDEN ON IT — `_characters/Michael.md` and
+     `_evolutions/rival.md` went in 4ce0b46 (2026-07-05); his canon survives only in
+     private/FUTURE-IDEAS.md. He owns this opening in the fiction, so the temptation to sign
+     the creed with his name is permanent and the cost is a reveal only Nate can spend.
+     This fails the moment somebody spends it by accident. [[slow-roll-cast]] */
+  ok(BOOK.TEACHER === null || typeof BOOK.TEACHER === 'string',
+     'the teacher slot is a single switch');
+  const PAGE_SRC = read('academy-opening-trainer.html');
+  const leaked = ['Michael'].filter(function (n) {
+    return BOOK.TEACHER === n || PAGE_SRC.split('pjcc-pirc-book.js')[0].indexOf('>' + n) > -1;
+  });
+  ok(leaked.length === 0,
+     'no deleted character is named in the page the public reads' +
+     (leaked.length ? '  -> ' + leaked.join(', ') + ' (a reveal only Nate can make)' : ''));
 }
 
 /* ── 4 · the six opponents ───────────────────────────────────────────────────────── */
@@ -178,6 +201,10 @@ section('6 · the page loads what it runs on');
   ok(/body_class:\s*theme-academy/.test(src), 'it wears the Academy theme');
   ok(/var USER = 'b'/.test(src), 'the student is hard-wired to Black');
   ok(/ot-devpill[^>]*>In Development</.test(src), 'it says IN DEVELOPMENT on its face');
+  ok(src.indexOf('BOOK.CREED') > -1 && src.indexOf('ot-creed') > -1,
+     'the creed reaches the page');
+  ok(src.indexOf('v.why') > -1 && src.indexOf('ot-why-b') > -1,
+     'and the argument for each line reaches the room');
 
   /* the room must survive its dependencies going missing — a placeholder that cannot be
      reached is the same bug as no placeholder at all. [[down-never-stuck]] */

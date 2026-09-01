@@ -53,6 +53,29 @@
 }(typeof self !== 'undefined' ? self : this, function (C, root) {
   'use strict';
 
+  /* ══ THE IDEA THE WHOLE REPERTOIRE IS AN ARGUMENT FOR ════════════════════════
+     2026-08-31. An opening is not a move list, it is a POSTURE, and a student who can
+     recite fourteen plies without knowing the posture has memorized a phone number. This is
+     the one paragraph that turns the room from a drill into somebody's opening.
+
+     ⛑⛑ THE TEACHER IS UNNAMED ON PURPOSE, AND THIS IS THE ONE LINE THAT CHANGES IT.
+     In canon the Pirc belongs to **Michael** — the Chess City rival, *"acts as God would,
+     always"*, who teaches it to Princess. But Michael has NO FILE AND NO PAGE: Nate deleted
+     `_characters/Michael.md` and `_evolutions/rival.md` in 4ce0b46 (2026-07-05) and he is
+     gone from the whole site, surviving only in `private/FUTURE-IDEAS.md`. Printing his name
+     here would put a deliberately removed character back on the public internet, and that is
+     a reveal only Nate can spend. [[slow-roll-cast]] [[private-by-default]]
+     ⭐ So the creed is written IN HIS VOICE and signed by nobody. Set TEACHER to 'Michael'
+     and the room attributes it; that is the whole switch. */
+  var TEACHER = null;
+  var CREED =
+    'You are going to let him have the middle of the board. Not because you cannot fight ' +
+    'for it — because you are not interested in fighting for it yet. You build behind your ' +
+    'own lines, you finish your house, you put the bishop on the long diagonal where it can ' +
+    'see all the way across. Then, when he has pushed everything forward and there is nothing ' +
+    'left at home, you take the center back. Whoever holds the middle on move six is not the ' +
+    'same person who holds it on move twenty.';
+
   /* ══ THE REPERTOIRE ═══════════════════════════════════════════════════════════════
      Six of White's systems, in the order a Pirc player actually meets them. The first
      three are the lines the Tabiya room already teaches and the accuracy suite already
@@ -72,6 +95,7 @@
       eco: 'B08',
       white: 'Two Knights — 4.Nf3 and 5.Be2',
       line: 'e4 d6 d4 Nf6 Nc3 g6 Nf3 Bg7 Be2 O-O O-O c6 a4 e5',
+      why: 'He builds quietly and asks you no questions, so you are allowed to build too. Nobody is punished for patience in this one — which is exactly why it is the line to know first. Learn what the position WANTS here and the sharp ones stop looking like different openings.',
       plan: 'The main line, and the one to know cold. White builds quietly, so you strike ' +
             'in the center on your own terms: …c6 and …e5 stake out d4, and if the center ' +
             'closes your play is …Nbd7, …Qc7 and a break with …f5. The g7 bishop is your ' +
@@ -84,6 +108,7 @@
       eco: 'B09',
       white: 'The big pawn storm — 4.f4',
       line: 'e4 d6 d4 Nf6 Nc3 g6 f4 Bg7 Nf3 O-O Bd3 Na6 O-O c5',
+      why: 'He throws the whole front of the board at you. Let him. A wall pushed that far forward has nothing standing behind it, and every pawn he advances is one that is never coming back to defend. Your job is not to survive the storm — it is to still be standing when it has spent itself.',
       plan: 'The sharpest thing White has, and the reason people fear the Pirc. White wants ' +
             'e5 and f5 with mate on the h-file; you answer a big center the classical way — ' +
             'by hitting it. …c5 and …Na6 pressure d4 immediately. If White ever plays e5, ' +
@@ -96,6 +121,7 @@
       eco: 'B07',
       white: 'Be3, Qd2, f3 — then castle long',
       line: 'e4 d6 d4 Nf6 Nc3 g6 Be3 Bg7 Qd2 c6 f3 b5 Nge2 Nbd7',
+      why: 'He is coming for your king with a plan he read in a book, and he is going to get there in about nine moves. You are coming for his with the same idea and one extra tempo. This line is not about defending; it is about counting honestly and then racing.',
       plan: "The club player's Pirc-killer: Be3, Qd2, f3, Bh6 to trade your good bishop, then " +
             'h4-h5. It is a race, and you are not behind in it. White castles queenside, so ' +
             'your pawns go there: …c6 and …b5 first, …a5 and …b4 next, and the a- and b-files ' +
@@ -108,6 +134,7 @@
       eco: 'B07',
       white: 'The early pin — 4.Bg5',
       line: 'e4 d6 d4 Nf6 Nc3 g6 Bg5 Bg7 Qd2 h6 Bh4 c6 O-O-O b5',
+      why: 'He pins the knight before you can castle and waits for you to flinch. Ask the bishop what it actually wants — it turns out to want very little, and the moment it retreats it stops being a threat and starts being a target.',
       plan: 'White pins the f6 knight before you can castle and hopes for Bh6 or e5 tricks. ' +
             '…h6 asks the bishop the question at once — it retreats to h4 and stops being a ' +
             'threat and starts being a target. After White castles long you get the same ' +
@@ -120,6 +147,7 @@
       eco: 'B07',
       white: 'Quiet and symmetrical — 4.g3',
       line: 'e4 d6 d4 Nf6 Nc3 g6 g3 Bg7 Bg2 O-O Nge2 e5 O-O Nc6',
+      why: 'He offers you a draw without ever saying the word. Decline it by taking the center he was too polite to claim. The mistake here is impatience: there is nothing to punish yet, so improve a piece and let him be the one who commits.',
       plan: 'White declines the fight and mirrors your bishop. Nothing is going to be handed ' +
             'to you, so take the center: …e5 and …Nc6 hit d4, and the position becomes a ' +
             "King's Indian where White has not committed to c4. Play …exd4 only when it wins " +
@@ -136,6 +164,7 @@
       eco: 'B07',
       white: 'Your OWN setup — 3…Nbd7 and …e5',
       line: 'e4 d6 d4 Nf6 Nc3 Nbd7 Nf3 e5 Bc4 Be7 O-O O-O a4 c6',
+      why: 'You do not answer him at all. You build the same house every single game and dare him to knock it down. It is the least fashionable idea in the repertoire and the hardest to play against, because there is nothing to prepare FOR.',
       plan: 'The Pirc move order without the fianchetto: …Nbd7 supports …e5 straight away, ' +
             'and the pawn on e5 holds the center while you finish developing behind it. Slow, ' +
             'solid and very hard to break down. Your plans are …Qc7, …Re8 and a break with ' +
@@ -235,8 +264,8 @@
         plies[plies.length - 1].fen = C.toFEN(S);
       }
       return {
-        id: v.id, name: v.name, eco: v.eco, white: v.white, plan: v.plan, note: v.note,
-        plies: plies, fen: C.toFEN(S)
+        id: v.id, name: v.name, eco: v.eco, white: v.white, plan: v.plan, why: v.why,
+        note: v.note, plies: plies, fen: C.toFEN(S)
       };
     } catch (e) { return null; }
   }
@@ -251,6 +280,8 @@
   }
 
   return {
+    CREED: CREED,
+    TEACHER: TEACHER,
     VARIATIONS: VARIATIONS,
     LEVELS: LEVELS,
     resolve: resolve,

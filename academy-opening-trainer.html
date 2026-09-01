@@ -65,6 +65,13 @@ White comes at you, pick who you are playing, and go.</p>
 <!-- ══ SCREEN 1 · THE SETUP ══════════════════════════════════════════════════════ -->
 <section class="ot-setup" id="ot-setup">
 
+  {%- comment -%} THE IDEA COMES BEFORE THE MOVES. An opening is a posture, not a move list,
+       and a student who reaches move fourteen without knowing what the position WANTS has
+       memorized a phone number. The text is `PJCCPircBook.CREED`; it is written in the voice
+       of the character who owns this opening in canon and signed by nobody — see the long
+       note over TEACHER in pjcc-pirc-book.js for why the name is not printed. {%- endcomment -%}
+  <blockquote class="ot-creed" id="ot-creed"></blockquote>
+
   <h2 class="ot-h2">Choose Your Variation</h2>
   <p class="ot-sub">Six ways White meets the Pirc. Each one walks you to its main position.</p>
   <div class="ot-cards" id="ot-vars" role="radiogroup" aria-label="Choose a variation"></div>
@@ -108,6 +115,14 @@ White comes at you, pick who you are playing, and go.</p>
 
       <div class="ot-movesbox">
         <div class="ot-moves" id="ot-moves" aria-label="Moves played"></div>
+      </div>
+
+      {%- comment -%} TWO PANELS, AND THE ORDER IS THE LESSON. "Why" is the argument for the
+           line and it is true on every move; "The Plan" is what to do with your hands. A
+           student who reads only the second one has the phone number again. {%- endcomment -%}
+      <div class="ot-why" id="ot-why" hidden>
+        <div class="ot-why-h">Why This Line</div>
+        <p class="ot-why-b" id="ot-why-b"></p>
       </div>
 
       <div class="ot-plan" id="ot-plan" hidden>
@@ -165,6 +180,8 @@ White comes at you, pick who you are playing, and go.</p>
       elThem  = document.getElementById('ot-vs-them'),
       elPlan  = document.getElementById('ot-plan'),
       elPlanB = document.getElementById('ot-plan-b'),
+      elWhy   = document.getElementById('ot-why'),
+      elWhyB  = document.getElementById('ot-why-b'),
       elHint  = document.getElementById('ot-hint'),
       elTake  = document.getElementById('ot-take'),
       elPromo = document.getElementById('ot-promo'),
@@ -192,6 +209,14 @@ White comes at you, pick who you are playing, and go.</p>
   /* The whole game state. `phase` is the state machine: 'book' while the line is being
      walked, 'play' once the engine has White, 'over' when the referee says so. */
   var G = null;
+
+  /* The creed, and the attribution if there is one to make. */
+  (function () {
+    var el = document.getElementById('ot-creed');
+    if (!el || !BOOK.CREED) return;
+    el.innerHTML = '<p>' + esc(BOOK.CREED) + '</p>' +
+      (BOOK.TEACHER ? '<cite>— ' + esc(BOOK.TEACHER) + '</cite>' : '');
+  })();
 
   /* ── the setup screen ──────────────────────────────────────────────────────────── */
   function paintSetup() {
@@ -265,6 +290,11 @@ White comes at you, pick who you are playing, and go.</p>
     elTag.textContent = v.eco + ' · ' + v.name;
     elThem.textContent = G.lvl.name + ' · ' + G.lvl.elo;
     elPlanB.textContent = v.plan;
+    /* ⚠ THE WHY IS UP FROM MOVE ONE, the plan is not. You need the argument WHILE you are
+       walking the line — that is when the moves would otherwise be arbitrary. The plan is
+       about the position the line leaves you in, so it waits for the line to end. */
+    elWhyB.textContent = v.why || '';
+    elWhy.hidden = !v.why;
 
     if (skipBook) {
       /* Walk the whole book instantly. Same moves, same referee, no animation — this is
@@ -687,6 +717,15 @@ White comes at you, pick who you are playing, and go.</p>
 .ot-h2 { color: #ffb347; margin: 26px 0 4px; font-size: 1.12rem; }
 .ot-sub { color: #8fae94; font-size: 0.86rem; margin: 0 0 12px; max-width: 620px; }
 
+/* ── the creed ───────────────────────────────────────────────────
+   It reads as somebody TALKING, which is the whole point of it existing — a rule in a box
+   would be one more instruction on a page that already has enough. */
+.ot-creed { margin: 0 0 24px; padding: 2px 0 2px 18px; max-width: 640px;
+  border-left: 3px solid #e08a3c; }
+.ot-creed p { color: #e9e4d3; font-size: 1rem; line-height: 1.68; margin: 0; font-style: italic; }
+.ot-creed cite { display: block; margin-top: 8px; color: #e08a3c; font-size: 0.85rem;
+  font-style: normal; font-weight: 700; letter-spacing: 0.04em; }
+
 /* ── the variation cards ───────────────────────────────────────────────────────── */
 /* ⚠ THE MAX-WIDTH IS DOING THE LAYOUT, not the minmax. Six cards on a wide screen fell
    into 4 + 2, which reads as "two of these are an afterthought". Capping the track band at
@@ -810,6 +849,14 @@ White comes at you, pick who you are playing, and go.</p>
 .ot-mv i { color: #5d7a63; font-style: normal; margin-right: 3px; }
 .ot-mv b { color: #f2eddd; font-weight: 400; }
 .ot-mv-empty { color: #5d7a63; }
+
+/* the argument for the line — same geometry as the plan so they read as a pair, but quieter
+   and unaccented, because it is context rather than an instruction */
+.ot-why { background: rgba(10,20,14,0.45); border: 1px solid #2c4636;
+  border-radius: var(--r-sm, 8px); padding: 10px 12px; }
+.ot-why-h { font-family: 'Share Tech Mono', monospace; font-size: 0.64rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #8fae94; margin-bottom: 5px; }
+.ot-why-b { color: #cfd8c8; font-size: 0.83rem; line-height: 1.6; margin: 0; font-style: italic; }
 
 .ot-plan { background: rgba(224,138,60,0.08); border: 1px solid rgba(224,138,60,0.32);
   border-radius: var(--r-sm, 8px); padding: 10px 12px; }
