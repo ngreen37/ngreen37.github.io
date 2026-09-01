@@ -1,0 +1,68 @@
+/* =============================================================================
+ * THE ACADEMY THEME — "first light on the training field"
+ * -----------------------------------------------------------------------------
+ * 2026-07-16 (Nate: "a completely different feel than the purple/gold… not too
+ * on-the-nose school"). Deep pine greens, warm paper text, one EMBER-COPPER accent.
+ * Worn by every page carrying `body_class: theme-academy`:
+ *
+ *   · /academy/                    academy.md                    (the landing)
+ *   · /academy/bootcamp/           academy-bootcamp.md           (Lesson 1)
+ *   · /academy/opening-trainer/    academy-opening-trainer.html  (Lesson 3)
+ *
+ * ══ WHY IT LIVES HERE NOW, AND WHY IT COULD NOT LIVE IN ANY EARLIER PARTIAL ══════
+ * It was copied into all three pages' own <style> blocks — byte-identical
+ * declarations, three times — until 2026-08-31 (Nate: "keeping it uniform"). Hoisting
+ * it looks trivial and is not, because of ONE rule:
+ *
+ *     body.theme-academy .page-title   (0,2,1)
+ *     html.sky-night   .page-title     (0,2,1)     ← _pjcc-20-town-sky.scss
+ *
+ * IDENTICAL SPECIFICITY. Nothing but source order decides which one paints the banner,
+ * and a page <style> ships after the linked stylesheet — which is the only reason the
+ * pine tree-line ever beat the sky gradients.
+ *
+ * ⭐ MEASURED, NOT ASSUMED. I first wrote here that a bad position would go purple "at
+ * night and only at night". Then I moved the import above 20 and sampled the computed
+ * background: it loses in ALL FOUR PHASES — dawn, day, dusk and night each have their own
+ * `html.sky-* .page-title` rule, so the Academy banner simply stops existing. Worse than
+ * predicted, and the prediction was a guess written in a comment.
+ * [[audit-numbers-can-be-wrong]]
+ *
+ * ⚠ SO THIS PARTIAL MUST STAY AFTER pjcc-20-town-sky IN assets/css/style.scss.
+ * It is last in the manifest, which satisfies that with room to spare.
+ * ⚠ It declares NO control sizing, so being after pjcc-27-tap-targets takes nothing
+ * away from 27 — the same reason 28 and 29 are allowed to sit there.
+ *
+ * ⭐ The `.ac-*` and `.ot-*` FURNITURE stays page-local. That is not an inconsistency:
+ * furniture belongs to one page and reads from these tokens, exactly the split the
+ * front door uses for `.mc-*` (see _pjcc-25-front-door.scss). What is shared is the
+ * THEME; what is local is the room.
+ * ========================================================================== */
+
+body.theme-academy .page-card {
+  background: linear-gradient(165deg, #101d16 0%, #16281d 52%, #0b1710 100%);
+  border-color: #2c4636;
+  box-shadow: 0 14px 44px rgba(0, 10, 4, 0.6);
+}
+body.theme-academy .page-body { color: #cfd8c8; }
+
+/* the title banner leaves the purple sky for a pine tree-line at first light, and the
+   section rules follow (this is the rule that out-specifies — strictly, OUT-ORDERS —
+   the html.sky-* phase gradients; see the header) */
+body.theme-academy .page-title {
+  color: #f2eddd;
+  background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
+  border-bottom: 2px solid #e08a3c;
+}
+body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
+
+/* the SIDES join the theme too (Nate 2026-07-16: "the green middle clashes with the
+   purple sides") — the fixed town-sky behind the card turns deep pine, and the horizon
+   glow warms to first-light copper. Same trick theme-bw uses; these land after the
+   html.sky-* phase rules so they win every phase. */
+body.theme-academy .town-sky {
+  background: linear-gradient(180deg, #0a130e 0%, #0e1a12 55%, #142016 100%);
+}
+body.theme-academy .ts-horizon {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(224, 138, 60, 0.09) 74%, rgba(224, 138, 60, 0.15));
+}

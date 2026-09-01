@@ -21,7 +21,7 @@
  *  ══ WHAT A "VARIATION" IS HERE ══════════════════════════════════════════════════════
  *  Each entry is one of WHITE'S systems against the Pirc, plus Black's answer to it. The
  *  `line` runs both sides — that is deliberate, and it is the whole difference between
- *  this and The Pirc Protocol. Protocol drills you on the book and STOPS when the book
+ *  this and Tabiya (/games/pirc-protocol/). Tabiya drills you on the book and STOPS when it
  *  stops. The Trainer scripts both sides through the book so you reliably ARRIVE at the
  *  tabiya, then hands White to the engine and makes you play the middlegame you just
  *  set up. Getting into the line is the warm-up; the game after it is the point.
@@ -55,7 +55,7 @@
 
   /* ══ THE REPERTOIRE ═══════════════════════════════════════════════════════════════
      Six of White's systems, in the order a Pirc player actually meets them. The first
-     three are the lines The Pirc Protocol already teaches and the accuracy suite already
+     three are the lines the Tabiya room already teaches and the accuracy suite already
      re-proves (tests/validate-chess.js §4) — they are repeated here rather than imported
      because Protocol stores them as pre-resolved UCI pairs for its canvas, and SAN is the
      form a person can check. The two files agree; tests/trainer.check.js asserts it, so
@@ -128,7 +128,11 @@
     },
     {
       id: 'lion',
-      name: 'The Lion',
+      /* ⛑ HIS NAME FOR IT, 2026-08-31. He was thinking of the Lion's Jaw and confirmed it
+         is this line; "call it the Lion Variation". The id stays `lion` — an id is a key,
+         not a label, and renaming it would orphan nothing but would churn the test output
+         for no gain. [[text-changes-need-approval]] */
+      name: 'The Lion Variation',
       eco: 'B07',
       white: 'Your OWN setup — 3…Nbd7 and …e5',
       line: 'e4 d6 d4 Nf6 Nc3 Nbd7 Nf3 e5 Bc4 Be7 O-O O-O a4 c6',

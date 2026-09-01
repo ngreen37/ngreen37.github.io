@@ -213,6 +213,66 @@ section('7 · the doors');
      'it stays OUT of the games registry, whose cards all resolve to /games/<slug>/');
 }
 
+/* ── 8 · THE ACADEMY THEME IS ONE FILE, AND ITS POSITION IS THE FILE ─────────────
+   Hoisted out of three page <style> blocks on 2026-08-31 (Nate: "keeping it uniform").
+   ⚠⚠ `body.theme-academy .page-title` and `html.sky-* .page-title` are BOTH (0,2,1), so
+   ONLY SOURCE ORDER decides which one paints the banner. Moving the import above
+   20-town-sky was measured, not guessed: all three Academy pages lose the banner in all
+   four sky phases — and the SCSS still compiles, the sweep still passes and every page
+   still renders. No other gate in this repo would notice.
+   ⭐ So this checks the halves that can drift apart: the partial exists and is imported
+   AFTER town-sky, and no page has quietly grown its own copy back.
+   ⚠ Plain indexOf on purpose — these are fixed selector strings, not patterns, and a
+   regex here would only add escaping to get wrong. */
+section('8 · the Academy theme, hoisted and ordered');
+{
+  /* ⚠ THE TRAILING BRACE IS THE WHOLE CHECK. Without it this matched the POINTER COMMENT
+     each page now carries — prose that names the selector to explain where it went — and
+     reported all three as still holding a local copy. A declaration has a `{`; a sentence
+     about a declaration does not. Same false positive a crude grep gave seven times over
+     in [[markdown-eats-scripts]]: matching a name, not a construct. */
+  const TITLE = 'body.theme-academy .page-title {';
+  const CARD  = 'body.theme-academy .page-card {';
+  const PARTIAL = '_sass/_pjcc-30-academy.scss';
+  ok(fs.existsSync(path.join(ROOT, PARTIAL)), 'the theme lives in one partial');
+
+  const MANIFEST = read('assets/css/style.scss');
+  const at30 = MANIFEST.indexOf("@import 'pjcc-30-academy'");
+  const at20 = MANIFEST.indexOf("@import 'pjcc-20-town-sky'");
+  ok(at30 > -1, '…and the manifest imports it');
+  ok(at20 > -1 && at30 > at20,
+     '…AFTER pjcc-20-town-sky, the only reason the banner survives',
+     'town-sky @' + at20 + ', academy @' + at30);
+
+  if (fs.existsSync(path.join(ROOT, PARTIAL))) {
+    const P = read(PARTIAL);
+    ok(P.indexOf(TITLE) > -1 && P.indexOf(CARD) > -1,
+       '…and it actually carries the banner and the card');
+  }
+
+  /* the copies must not come back: a page re-declaring the theme is the drift this hoist
+     removed, and from its own <style> it would silently out-order the partial */
+  const PAGES = ['academy.md', 'academy-bootcamp.md', 'academy-opening-trainer.html'];
+  const copies = PAGES.filter(function (f) {
+    const src = read(f);
+    return src.indexOf(TITLE) > -1 || src.indexOf(CARD) > -1;
+  });
+  ok(copies.length === 0,
+     'no Academy page keeps a local copy of the theme' +
+     (copies.length ? '  -> ' + copies.join(', ') : ''),
+     PAGES.length + ' pages clean');
+
+  /* and all three still ASK for it — a hoisted theme nobody opts into is worse than three
+     copies, because from the stylesheet side it looks perfectly correct */
+  const wearing = PAGES.filter(function (f) {
+    return read(f).indexOf('body_class: theme-academy') > -1;
+  });
+  ok(wearing.length === PAGES.length,
+     'and all three still wear body_class: theme-academy',
+     wearing.length + '/' + PAGES.length);
+}
+
+
 console.log('\n' + (FAIL ? '✗ ' + FAIL + ' FAILED' : '✓ all ' + PASS + ' checks passed'));
 if (FAIL) { console.log('\nFailures:'); fails.forEach((f) => console.log('  · ' + f)); }
 process.exit(FAIL ? 1 : 0);

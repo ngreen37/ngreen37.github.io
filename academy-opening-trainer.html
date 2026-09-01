@@ -15,8 +15,8 @@ description: "Learn the Pirc Defense as Black — walk into the main line and it
      as much as possible, starting with PIRC-ONLY - and ONLY WITH BLACK for the user…
      Do 6 different levels - true beginner opponent all the way to perfect play."
 
-     ⚠⚠ THIS IS NOT THE PIRC PROTOCOL, AND THE DIFFERENCE IS THE WHOLE IDEA.
-     /games/pirc-protocol/ is a BOOK DRILL: it asks for the book move and it ends when the
+     ⚠⚠ THIS IS NOT *TABIYA*, AND THE DIFFERENCE IS THE WHOLE IDEA.
+     /games/pirc-protocol/ (Tabiya) is a BOOK DRILL: it asks for the book move and it ends when the
      book ends. That teaches you a move order. It does not teach you the opening, because
      the opening is the position it leaves you in — and a student who can recite fourteen
      plies and then has no idea what to do on move eight has not learned the Pirc.
@@ -70,8 +70,6 @@ White comes at you, pick who you are playing, and go.</p>
   <div class="ot-cards" id="ot-vars" role="radiogroup" aria-label="Choose a variation"></div>
 
   <h2 class="ot-h2">Choose Your Opponent</h2>
-  <p class="ot-sub">Same opening, six different fights. The rating is what the engine is
-    throttled to — it is the same dial the Gauntlet and the Park Tables use.</p>
   <div class="ot-levels" id="ot-levels" role="radiogroup" aria-label="Choose an opponent"></div>
 
   <div class="ot-go-row">
@@ -137,11 +135,6 @@ White comes at you, pick who you are playing, and go.</p>
   </div>
 
 </section>
-
-<p class="ot-foot">Built on the same referee every board on this site uses, so every legal
-move you are shown is genuinely legal. Nothing here is scored and nothing is timed — lose as
-many games as you like. <a href="{{ '/games/pirc-protocol/' | relative_url }}">The Pirc Protocol</a>
-drills the book itself if you want the moves in your fingers first.</p>
 
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
@@ -666,26 +659,12 @@ drills the book itself if you want the moves in your fingers first.</p>
    totality with every other board on the site and follows any future retint for free.
    [[chess-visual-canon]] [[theme-hall-depurple]] */
 
-/* ── THE ACADEMY THEME — THE THIRD COPY, AND DELIBERATELY SO ──────────────────
-   Byte-identical to the blocks in academy.md and academy-bootcamp.md. ⚠ IT LOOKS LIKE IT
-   BELONGS IN `_sass/`, AND IT CANNOT GO THERE WITHOUT A REORDER: `body.theme-academy
-   .page-title` and `html.sky-night .page-title` have the SAME specificity (0,2,1), so
-   which one paints the banner is decided purely by source order. A page `<style>` ships
-   after the linked stylesheet, which is the only reason the pine tree-line beats the
-   purple night sky today. Move this into a partial numbered below _pjcc-20-town-sky.scss
-   and the Academy silently goes purple at night — and only at night.
-   [[site-architecture-2026-07-12]]: the _sass/ import order is load-bearing.
-   ⚠ If a fourth Academy page ever wants it, hoist all four into ONE partial ordered AFTER
-   town-sky rather than making a fourth copy. That is a deliberate refactor, not a drive-by. */
-body.theme-academy .page-card { background: linear-gradient(165deg, #101d16 0%, #16281d 52%, #0b1710 100%);
-  border-color: #2c4636; box-shadow: 0 14px 44px rgba(0, 10, 4, 0.6); }
-body.theme-academy .page-body { color: #cfd8c8; }
-body.theme-academy .page-title { color: #f2eddd;
-  background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
-  border-bottom: 2px solid #e08a3c; }
-body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
-body.theme-academy .town-sky { background: linear-gradient(180deg, #0a130e 0%, #0e1a12 55%, #142016 100%); }
-body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,0), rgba(224,138,60,0.09) 74%, rgba(224,138,60,0.15)); }
+/* ⛑ THE ACADEMY THEME MOVED OUT 2026-08-31 — it is `_sass/_pjcc-30-academy.scss` now
+   (Nate: "keeping it uniform"). It was copied here, in academy.md and in
+   academy-bootcamp.md, byte for byte. ⚠ THE PARTIAL MUST STAY LAST IN
+   assets/css/style.scss: `body.theme-academy .page-title` ties `html.sky-* .page-title`
+   on specificity, so only source order keeps the banner — moved above 20-town-sky it is
+   lost in every phase. What stays below is this page's own FURNITURE, reading the theme. */
 
 .ot-crumb { font-size: 0.85rem; margin: 0 0 4px; }
 .ot-crumb a { color: #8fae94; text-decoration: none; }
@@ -867,9 +846,6 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
   padding: 8px 10px; cursor: pointer; color: #f2eddd; font-size: 26px; min-width: 56px; min-height: 56px; }
 .ot-promo-btn:hover { border-color: #e08a3c; }
 .ot-promo-btn small { font-size: 0.62rem; color: #8fae94; }
-
-.ot-foot { color: #8fae94; font-size: 0.84rem; line-height: 1.6; margin: 26px 0 0; max-width: 640px; }
-.ot-foot a { color: #e08a3c; }
 
 @media (prefers-reduced-motion: reduce) {
   .ot-card, .ot-go { transition: none; }

@@ -65,3 +65,10 @@
    target explicitly (44px on the dismiss) rather than inheriting one, so nothing in 27
    needs to reach it. It is a fixed overlay owned entirely by one file. */
 @import 'pjcc-29-first100k';
+/* 30 — the Academy theme, hoisted out of three page <style> blocks 2026-08-31 (Nate:
+   "keeping it uniform"). ⚠⚠ IT MUST STAY AFTER 20-town-sky: `body.theme-academy
+   .page-title` and `html.sky-* .page-title` are BOTH (0,2,1), so only source order keeps
+   the pine banner. VERIFIED BY MOVING IT: above 20, all three Academy pages lose the
+   banner in ALL FOUR sky phases. Declares no control sizing, so sitting after 27 costs
+   27 nothing — same argument as 28 and 29. */
+@import 'pjcc-30-academy';

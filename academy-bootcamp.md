@@ -235,18 +235,12 @@ body_class: theme-academy
 </script>
 
 <style>
-/* ══ ACADEMY THEME — "first light on the training field" (2026-07-16; see academy.md).
-   Pine greens + warm paper + ember copper, fresh-leaf green for progress. ══ */
-body.theme-academy .page-card { background: linear-gradient(165deg, #101d16 0%, #16281d 52%, #0b1710 100%);
-  border-color: #2c4636; box-shadow: 0 14px 44px rgba(0, 10, 4, 0.6); }
-body.theme-academy .page-body { color: #cfd8c8; }
-body.theme-academy .page-title { color: #f2eddd;
-  background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
-  border-bottom: 2px solid #e08a3c; }
-body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
-/* the sides join the theme — pine sky + first-light horizon (see academy.md) */
-body.theme-academy .town-sky { background: linear-gradient(180deg, #0a130e 0%, #0e1a12 55%, #142016 100%); }
-body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,0), rgba(224,138,60,0.09) 74%, rgba(224,138,60,0.15)); }
+/* ⛑ THE ACADEMY THEME MOVED OUT 2026-08-31 — it is `_sass/_pjcc-30-academy.scss` now
+   (Nate: "keeping it uniform"). It was copied here, in academy.md and in
+   academy-bootcamp.md, byte for byte. ⚠ THE PARTIAL MUST STAY LAST IN
+   assets/css/style.scss: `body.theme-academy .page-title` ties `html.sky-* .page-title`
+   on specificity, so only source order keeps the banner — moved above 20-town-sky it is
+   lost in every phase. What stays below is this page's own FURNITURE, reading the theme. */
 
 .bc-crumb { font-size: 0.8rem; color: #8fae94; margin: 0 0 4px; }
 .bc-crumb a { color: #b9d0bd; text-decoration: none; }
