@@ -1993,10 +1993,49 @@ body_class: theme-hall
     return (best && best.line.length) ? best : null;
   }
 
+  /* ══ THE PREP THAT DID NOT HOLD (2026-09-01) ═════════════════════════════════════
+     Idea #10, his: *"Lose out of your own preparation at the tables and the desk notices."*
+
+     ⭐ NO NEW STATE AND NO NEW QUESTION. Everything this needs is already on the table when
+     a game ends: `classify()` names the opening and returns `bookPlies`, and the file
+     ([[park-tables-matchmaking]]) already knows which opening is YOURS. A loss is only news
+     if it happened inside your own preparation — losing a game you wandered into is just
+     losing a game.
+
+     ⚠⚠ IT IS ONE RECORD, OVERWRITTEN, NOT A LOG. The desk wants the latest thing that
+     happened, and a growing list of every defeat in your own opening is a monument to
+     losing that nobody asked for. [[positivity-check]]
+     ⚠ THE MOVE NUMBER IS `ceil(bookPlies / 2)` — the last full move theory covered. Seven
+     book plies means White's fourth move was still book, so "theory held to move 4" is the
+     true sentence. This number goes on the public wire; it has to be right.
+     ⚠ ONLY A LOSS. A draw out of your own line is a different and much less interesting
+     story, and `botWon` already knows which side you were.
+     ⚠ AFTER logRepertoire, deliberately: the game that just ended counts toward deciding
+     what your line IS, so the second time you play the Pirc it can already be your prep. */
+  var PREP_KEY = 'pjcc.pt.prep.v1';
+  function logPrepFail(st){
+    try {
+      if (!st || botWon(st) || st.result === '1/2-1/2') return;
+      var O = window.PJCCOpenings, moves = (st.moves || '').trim();
+      if (!O || !O.classify || !moves) return;
+      var c = O.classify(moves);
+      if (!c.name || c.bookPlies < 4) return;
+      var fav = repFavorite(sidePlayed(st));
+      if (!fav || fav.name !== c.name) return;          // not your line — not your prep
+      localStorage.setItem(PREP_KEY, JSON.stringify({
+        name: c.name,
+        bot: (BOTS[st.bot] || {}).name || '',
+        move: Math.ceil(c.bookPlies / 2),
+        at: Date.now()
+      }));
+    } catch (e) {}
+  }
+
   function logFinished(st, plies){
     if (!st || st.logged) return;
     st.logged = 1; botSave(st);
     logRepertoire(st);          // ⚠ before the Auston hook, so one throw cannot eat the other
+    logPrepFail(st);            // …and after it, because it asks what your repertoire IS
     try {
       if (window.PJCCAuston) {
         PJCCAuston.logGame({ bot: st.bot, result: st.result, plies: plies, reason: st.reason });

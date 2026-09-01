@@ -100,7 +100,15 @@ check('the wire carries its own class, so the color rule can find it',
       rankFor: () => ({ name: 'Field Agent' }),
       clearance: () => w.clearanceRung || { level: 1, name: 'Recruit' }
     };
-    try { localStorage.clear(); if (w.codename) localStorage.setItem('pjcc.codename', w.codename); } catch (e) {}
+    try {
+      localStorage.clear();
+      if (w.codename) localStorage.setItem('pjcc.codename', w.codename);
+      /* ⚑ 2026-09-01 — the prep-failure record is the first fact this block reads straight
+         out of localStorage rather than through a PJCC method, because the Park Tables owns
+         it and there is no reader to stub. Seeded here so the digits check below has
+         something real to be about. */
+      if (w.prep) localStorage.setItem('pjcc.pt.prep.v1', JSON.stringify(w.prep));
+    } catch (e) {}
     eval(src);
     return new Promise((res) => setTimeout(() => res(window.__said), 60));
   }, BLOCK, world);
@@ -154,6 +162,62 @@ check('the wire carries its own class, so the color rule can find it',
     invented(day).length === 0, invented(day).join(',') || 'every figure is theirs');
   check('…and neither does the night desk, however bored it sounds',
     invented(night).length === 0, invented(night).join(',') || 'every figure is theirs');
+
+  /* ── §4b. THE PREP THAT DID NOT HOLD (2026-09-01) ───────────────────────────────
+     The one line on this wire that reports something going BADLY, which makes it the one
+     with the most ways to be wrong. Three of them are tested: that it is news at all, that
+     it stops being news, and that its figures are the record's own. */
+  {
+    const PREP = { name: 'Pirc, 150 Attack', bot: 'Robert', move: 4, at: Date.now() };
+    /* ⚠⚠ ON ITS OWN, NOT ON TOP OF PLAYER, AND THE FIRST VERSION GOT THIS WRONG. The wire
+       places LIMIT (3) lines from a seeded rotation, so a sixth fact stacked behind a
+       gauntlet climb, a streak, a puzzle rating and two personal bests simply never gets a
+       slot — and the check reported "(silent)" as though the feature were broken. It is a
+       player who has only played at the tables, which is a real player. */
+    const findLine = (rows) => rows.map((s) => s.text).find((t) => /PREP WATCH|DID NOT HOLD/.test(t)) || '';
+    let pr = await run({ prep: PREP });
+    const pline = findLine(pr);
+    check('a defeat inside your own opening reaches the wire', !!pline, pline || '(silent)');
+    check('…naming the line, the opponent and where theory ran out',
+      !!pline && /150 ATTACK/.test(pline) && /ROBERT/.test(pline) && /\bMOVE 4\b/.test(pline), pline);
+    /* the night shift tells the same fact in its own register */
+    const pnight = findLine(await run({ prep: PREP, night: true }));
+    check('…and the night desk files it too, in its own voice',
+      !!pnight && pnight !== pline, pnight.slice(0, 76) + '…');
+
+    /* ⚠⚠ THE OPENING'S NAME CARRIES A DIGIT, AND THAT IS WHY THIS CASE USES IT. "Pirc, 150
+       Attack" is a real name in pjcc-openings.js, so 150 lands on the wire without being a
+       claim about the player at all — and the blanket rule is "no figure the record did not
+       put there". Rather than bless 150 by hand, the allowed set is DERIVED from the record,
+       which is what the rule actually means. */
+    const allowed = (JSON.stringify(PREP).match(/\d+/g) || [])
+      .concat(TRUE_OF_PLAYER).concat([String(PREP.move)]);
+    /* ⚠ GUARDED ON THE LINE EXISTING. Run against the empty string this passed unanimously
+       and proved nothing — the same shape as the aura check that once reported "1 distinct
+       color ✓" over nine nulls. [[green-must-name-what-ran]] */
+    const stray = ((pline.match(/\d+/g) || []).filter((d) => allowed.indexOf(d) < 0));
+    check('…and every digit on the line came out of the record',
+      !!pline && stray.length === 0,
+      !pline ? 'NOT ASKED — no line to read' :
+        (stray.join(',') || 'the name\'s own 150, the opponent, and move ' + PREP.move));
+
+    /* it is NEWS, and news expires — a fortnight-old defeat on the wire is a grudge */
+    pr = await run({ prep: Object.assign({}, PREP, { at: Date.now() - 14 * 864e5 }) });
+    check('…and a fortnight-old defeat is not news any more', !findLine(pr), '(silent, correctly)');
+
+    /* ⛑⛑ THE FIRST VERSION OF THIS CHECK PASSED FOR THE WRONG REASON, and a mutation said
+       so: dropping the guard in localFacts left it green, because fill() drops any line
+       with an EMPTY placeholder and a record with no bot has one. The guard's real job is
+       the case fill() cannot see: a move number of 0 is not missing, it is a number, and
+       it would print THEORY HELD TO MOVE 0, which is a sentence the player's record does not
+       support. That is the case now tested. [[green-must-name-what-ran]] */
+    pr = await run({ prep: { name: 'Pirc Defense', bot: 'Robert', move: 0, at: Date.now() } });
+    check('…and a move number of ZERO is refused, where a missing one would slip through',
+      !findLine(pr), 'fill() sees 0 as a value; MOVE 0 is not a fact anybody has');
+    pr = await run({ prep: { name: 'Pirc Defense', at: Date.now() } });
+    check('…and a record with no opponent says nothing either',
+      !findLine(pr), 'this one fill() would also catch — both doors shut');
+  }
 
   /* ── §5. AN EMPTY DESK FILES NOTHING ────────────────────────────────────────────── */
   r = await run(Object.assign({ night: true, away: true }, PLAYER));

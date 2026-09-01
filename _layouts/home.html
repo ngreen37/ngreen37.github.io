@@ -1562,6 +1562,18 @@ function ctParts() {
     clearance: {
       day:   'CLEARANCE: {who} IS CLEARED TO {name} — {l} OF {of}',
       night: '{who2} IS CLEARED TO {name}. NOBODY HAS TOLD ME WHAT THAT LETS THEM READ. I AM CLEARED FOR THE CRAWL'
+    },
+    /* ⭐ A LOSS THE DESK TREATS AS NEWS RATHER THAN AS A SCORE (2026-09-01). Every other
+       line here reports something going right; this one reports a defeat, and it only works
+       because of WHICH defeat: you lost inside your own preparation, which means you have
+       preparation worth losing inside. The dignity is the point — the day desk states it as
+       a result and the night desk is impressed rather than amused. [[positivity-check]]
+       ⚠ THE JOKE IS ABOUT THE DESK, NEVER ABOUT THE PLAYER. "FURTHER THAN ANYTHING GETS ME"
+       is the overnight employee at his own expense, which is the only direction the
+       unreliability is allowed to point. [[desk-covers-you]] */
+    prep: {
+      day:   'PREP WATCH: {who} LOST IN THE {opening} AGAINST {bot} — THEORY HELD TO MOVE {n}',
+      night: '{who2} PLAYS THE {opening}. IT DID NOT HOLD AGAINST {bot}. THEORY GOT THEM TO MOVE {n}, WHICH IS FURTHER THAN ANYTHING GETS ME'
     }
   };
   // ── end of the wording ───────────────────────────────────────────────────────────
@@ -1608,6 +1620,19 @@ function ctParts() {
     // pass whenever there is an account to ask; only a signed-out visitor is reported from
     // local alone, and for them the local record IS the whole record.
     if (!codename()) bests(out, function (key) { var v = 0; try { v = P.localBest(key); } catch (e) {} return v; });
+    /* THE PREP THAT DID NOT HOLD — the Park Tables writes one record when you lose inside
+       your own most-played opening; this reports it while it is still news.
+       ⚠⚠ THREE DAYS, AND THE WINDOW IS THE FEATURE. A defeat from a fortnight ago on a wire
+       called the NEWS is not news, it is a grudge — and this is the only line on the desk
+       that reports something going badly, so it is the one that must not linger.
+       ⚠ EVERY FIELD IS REQUIRED. fill() drops a line with an unfilled placeholder, but a
+       record half-written by an older build would still push a real fact off the wire to say
+       nothing, so it is refused here instead. */
+    try {
+      var pf = JSON.parse(localStorage.getItem('pjcc.pt.prep.v1') || 'null');
+      if (pf && pf.name && pf.bot && pf.move > 0 && (Date.now() - (pf.at || 0)) < 3 * 864e5)
+        out.push({ kind: 'prep', opening: up(pf.name), bot: up(pf.bot), n: pf.move });
+    } catch (e) {}
     return out;
   }
 
