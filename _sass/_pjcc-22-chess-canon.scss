@@ -8,6 +8,7 @@
  *     two piece liveries. Every board draws from these:
  *       · Park Tables gameplay board   (games/park-tables/index.html — .pt-sq/.pt-pc)
  *       · Academy drill board          (academy-bootcamp.md — .bc-sq/.bc-pc)
+ *       · Opening Trainer board        (academy-opening-trainer.html — .ot-sq/.ot-pc)
  *       · Game-review board + queued-table minis (inline SVGs — they use var(--…) fills)
  *       · the park-table DRAWING's tabletop below
  *     Change a color here and every board on the site follows. Never fork these
@@ -83,7 +84,11 @@ html.eclipse-total {
   --piece-b-fill: #6a4cb8;      /* the purple lifts, but only as far as the sweep allows */
   --piece-b-line: #f7f1ff;
 }
-html.eclipse-total .pt-sq, html.eclipse-total .bc-sq,
+/* ⚑ .ot-sq JOINED 2026-09-01. The Opening Trainer's board was already reading the
+   tokens, so it went dark under totality either way — it just SNAPPED while every other
+   board on the site eased over 1.2s. A retint that arrives instantly on one board and
+   over a minute on the others is the drift this file exists to prevent. */
+html.eclipse-total .pt-sq, html.eclipse-total .bc-sq, html.eclipse-total .ot-sq,
 html.eclipse-total .pkt-board, html.eclipse-total .mcb-sq {
   transition: background-color 1.2s ease, background 1.2s ease;
 }

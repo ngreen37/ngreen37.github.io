@@ -155,6 +155,16 @@ White comes at you, pick who you are playing, and go.</p>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-pirc-book.js' | relative_url }}"></script>
+{%- comment -%}
+  ⚑ THE DRAWN PIECE SET, 2026-09-01. Nate: *"Fix the colors on the opening trainer board to
+  match the chessboards of the park tables. The shapes of the pieces and board as well."*
+  This room was drawing Unicode glyphs with a CSS text-stroke — the look Park Tables left
+  behind on 2026-07-24 — so it was the one board on the site still wearing the old face.
+  PJCCPieces.draw is the renderer the Gauntlet and the Park Tables share; it reads the same
+  :root livery tokens, so there is still exactly one place a piece's color is decided.
+  [[chess-visual-canon]]
+{%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-pieces.js' | relative_url }}"></script>
 <script>
 /* ══ THE OPENING TRAINER ═══════════════════════════════════════════════════════════════
    Four scripts above, and the ORDER IS LOAD-BEARING: the referee first (everything below
@@ -576,7 +586,61 @@ White comes at you, pick who you are playing, and go.</p>
   });
 
   /* ── render ────────────────────────────────────────────────────────────────────── */
+  /* ══ THE PIECES ARE DRAWN, NOT TYPED (2026-09-01) ═══════════════════════════════════
+     Copied wholesale from the Park Tables, PC_PX and all, because Nate asked for the same
+     pieces and the honest way to get the same pieces is to run the same code. Each square
+     holds a <canvas class="ot-pc"> that PJCCPieces.draw fills with the canon livery — a
+     bold outline and a grounded shadow — read live off the :root tokens, so the eclipse
+     retint reaches this board for free like it reaches every other one.
+
+     ⚠ THE BITMAP IS 160px FOR THE REASON THE PARK TABLES WORKED OUT: a canvas stretched
+     over its square by CSS has to cover that square's DEVICE pixels. This board caps at
+     the stage column (~560px), so a square is ~70 CSS px and 140 device px at 2×; on his
+     phone the bled board is ~390px, 48.75 a square, 146 at 3×. 160 covers both.
+     ⚠ AND THE RATIOS ARE DERIVED FROM IT — center 0.5, piece 0.8125, fallback glyph 0.75
+     with its baseline at 0.547 — so a future resize is one number, not five.
+
+     ⚠ THE FALLBACK IS NOT DECORATION. pjcc-pieces.js is one <script> among five; if it
+     fails to arrive, this paints the filled glyph straight onto the canvas and the room
+     stays playable with a plainer set. A board that renders 32 empty squares because a
+     decoration did not load is the bug [[down-never-stuck]] is about. */
   var GLYPH = { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟' };
+  var PC_PX = 160;
+  function otPAL(){
+    var s = getComputedStyle(document.documentElement);
+    function v(k, d){ var x = s.getPropertyValue(k).trim(); return x || d; }
+    return { wFill: v('--piece-w-fill', '#ffffff'), wEdge: v('--piece-w-line', '#2f2440'),
+             bFill: v('--piece-b-fill', '#4a3585'), bEdge: v('--piece-b-line', '#f2e9ff') };
+  }
+  function pcNode(p){
+    return '<canvas class="ot-pc" width="' + PC_PX + '" height="' + PC_PX + '" data-p="' + p + '"></canvas>';
+  }
+  function paintPieces(){
+    var cs = elBoard.querySelectorAll('canvas.ot-pc[data-p]'), PAL = otPAL(), mid = PC_PX * 0.5;
+    for (var i = 0; i < cs.length; i++){
+      var cv = cs[i], p = cv.getAttribute('data-p');
+      if (!p) continue;
+      var ctx = cv.getContext('2d');
+      ctx.clearRect(0, 0, PC_PX, PC_PX);
+      var white = p === p.toUpperCase();
+      if (window.PJCCPieces) {
+        PJCCPieces.draw(ctx, mid, mid, PC_PX * 0.8125, p.toUpperCase(), white ? 'w' : 'b', PAL);
+      } else {
+        ctx.fillStyle = white ? PAL.wFill : PAL.bFill;
+        ctx.font = '900 ' + Math.round(PC_PX * 0.75) + 'px "Segoe UI Symbol","Apple Symbols",serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(GLYPH[p.toUpperCase()], mid, PC_PX * 0.547);
+      }
+    }
+  }
+  /* A file letter on each bottom-visual square and a rank number on each left-visual one,
+     from the square's TRUE coordinates — same helper as the Park Tables, minus the
+     orientation argument this room does not have (you are always Black, at the bottom). */
+  var FILES = 'abcdefgh';
+  function coCells(bottomRow, leftCol, f, r){
+    return (bottomRow ? '<i class="ot-co ot-co-f">' + FILES[f] + '</i>' : '') +
+           (leftCol   ? '<i class="ot-co ot-co-r">' + (8 - r) + '</i>' : '');
+  }
 
   function render() {
     if (!G) return;
@@ -605,11 +669,15 @@ White comes at you, pick who you are playing, and go.</p>
       if (last && last.mv && (i === last.mv.from || i === last.mv.to)) cls += ' last';
       if (hint && (i === hint.from || i === hint.to)) cls += ' hint';
       var lbl = C.nameFromSq(i) + (p ? ' — ' + (C.colorOf(p) === 'w' ? 'White' : 'Black') + ' ' + pieceName(p) : ' — empty');
+      /* ⚠ THE PIECE FIRST, THE COORDINATE SECOND — the Park Tables order, and it is what
+         puts the letters over the wood instead of under a canvas that fills its square. */
       html += '<button class="' + cls + '" data-i="' + i + '" aria-label="' + lbl + '">' +
-              (p ? '<span class="ot-pc ' + (C.colorOf(p) === 'w' ? 'w' : 'b') + '">' + GLYPH[p.toUpperCase()] + '</span>' : '') +
+              (p ? pcNode(p) : '') +
+              coCells(dr === 7, dc === 0, i % 8, (i / 8) | 0) +
               '</button>';
     }
     elBoard.innerHTML = html;
+    paintPieces();
 
     /* the move list, in pairs */
     var rows = '';
@@ -799,31 +867,69 @@ White comes at you, pick who you are playing, and go.</p>
   .ot-status { padding: 0 20px; }
 }
 
-/* ⭐ THE BOARD READS THE CANON TOKENS, exactly as the Bootcamp drill board does.
-   `container-type: inline-size` is what lets the piece glyph scale with the board instead
-   of with the viewport — a fixed px glyph over a fluid board is a different picture at
-   every width. [[puzzles-is-a-room-not-a-cabinet]] */
+/* ══ THE BOARD IS THE PARK TABLES BOARD ═══════════════════════════════════════════
+   2026-09-01, Nate: *"Fix the colors on the opening trainer board to match the chessboards
+   of the park tables. The shapes of the pieces and board as well."* Every value below is
+   COPIED from .pt-board / .pt-sq / .pt-pc rather than re-tuned, because "close enough" is
+   exactly how two boards drift ([[chess-visual-canon]] — "they should always be uniform,
+   we'll just call it the chessboards, the pieces").
+
+   ⭐ WHAT WAS ACTUALLY WRONG, AND ONLY ONE OF THE FOUR WAS A COLOR:
+     · the squares were FLAT — the canon woods with the grain and nothing else, while every
+       other board on the site lays a soft top-left key light over both tones. Flat wood next
+       to lit wood reads as a different, cheaper board even though the hexes are identical.
+     · the FRAME was a 6px edge at a 10px radius over a plain drop shadow; the canon frame is
+       3px at 6px, and its shadow is a RECESS (two insets) so the board sits in the page
+       rather than floating on it.
+     · the last-move gold was 0.34 here and 0.42 everywhere else.
+     · the legal-move marks were this room's own invention — a small copper dot for a quiet
+       square and a copper ring around a capture. The canon is ONE mark for both, and that is
+       a rule rather than a style: a target is a target whether or not something is standing
+       on it (Nate, 2026-07-16).
+
+   ⚠ container-type: inline-size LEFT WITH THE GLYPHS. It existed for font-size: 10.5cqw, and
+   a canvas piece is sized by its square, not by a font. */
 .ot-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
-  aspect-ratio: 1 / 1; width: 100%; container-type: inline-size;
-  border: 6px solid var(--chess-frame); border-radius: 10px; overflow: hidden;
-  box-shadow: 0 16px 40px -18px rgba(0,0,0,0.8); }
+  aspect-ratio: 1 / 1; width: 100%; position: relative;
+  border: 3px solid var(--chess-frame); border-radius: 6px; overflow: hidden;
+  box-shadow: 0 18px 36px -14px rgba(0,0,0,0.72),
+    inset 0 3px 9px rgba(255,255,255,0.06), inset 0 -12px 22px rgba(0,0,0,0.32);
+  will-change: transform; }
 .ot-sq { position: relative; display: flex; align-items: center; justify-content: center;
   border: none; padding: 0; margin: 0; cursor: default; }
-.ot-sq.lt { background-color: var(--chess-lt); background-image: var(--chess-grain); }
-.ot-sq.dk { background-color: var(--chess-dk); background-image: var(--chess-grain); }
-.ot-sq.last { background-image: linear-gradient(rgba(245,197,24,0.34), rgba(245,197,24,0.34)), var(--chess-grain); }
+/* the woods, the grain AND the key light — all three, or it is not the same board */
+.ot-sq.lt { background-color: var(--chess-lt);
+  background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
+.ot-sq.dk { background-color: var(--chess-dk);
+  background-image: linear-gradient(152deg, rgba(255,240,214,0.10), rgba(0,0,0,0.10) 62%), var(--chess-grain); }
+.ot-sq.last { background-image: linear-gradient(rgba(245,197,24,0.42), rgba(245,197,24,0.42)), var(--chess-grain); }
+/* ⚠ THE TEACHING HIGHLIGHT IS NOT A PARK TABLES MARK AND KEEPS ITS OWN LOOK. It paints the
+   two squares of the move being SHOWN to you, which no other board on the site has to say.
+   It is the one green wash here that is deliberate rather than inherited. */
 .ot-sq.hint { background-image: linear-gradient(rgba(107,255,184,0.42), rgba(107,255,184,0.42)), var(--chess-grain); }
 .ot-sq.sel { box-shadow: inset 0 0 0 3px #6bffb8; }
 .ot-sq.go, .ot-sq.cap { cursor: pointer; }
-.ot-sq.go::after { content: ''; position: absolute; width: 26%; height: 26%; border-radius: 50%;
-  background: rgba(224,138,60,0.55); }
-.ot-sq.cap { box-shadow: inset 0 0 0 4px rgba(224,138,60,0.8); }
+/* the legal-move dot — the SAME dot on an empty square and on a piece you can take, floating
+   above the piece so a capture reads as an option too (copied from .pt-sq.hint::after) */
+.ot-sq.go::after, .ot-sq.cap::after { content: ''; position: absolute; inset: 0; margin: auto;
+  width: 34%; height: 34%; border-radius: 50%; background: rgba(38,25,10,0.30);
+  box-shadow: 0 0 0 2px rgba(107,255,184,0.9); z-index: 2; pointer-events: none; }
 .ot-sq:focus-visible { outline: 2px solid #6bffb8; outline-offset: -2px; }
 
-.ot-pc { font-size: 10.5cqw; line-height: 1; user-select: none; position: relative; z-index: 1;
-  pointer-events: none; paint-order: stroke fill; }
-.ot-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.062em var(--piece-w-line); }
-.ot-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.062em var(--piece-b-line); }
+/* the coordinates — the quiet mark of a real board, painted in the opposite wood tone. This
+   board never turns (you are always Black down here), so the letters and numbers are simply
+   the true file and rank of the edge squares. */
+.ot-co { position: absolute; font: 700 clamp(7px, 1.7vw, 10px)/1 'Share Tech Mono', monospace;
+  opacity: 0.66; pointer-events: none; user-select: none; }
+.ot-co-f { right: 3px; bottom: 2px; }
+.ot-co-r { left: 3px; top: 2px; }
+.ot-sq.lt .ot-co { color: var(--chess-dk); }
+.ot-sq.dk .ot-co { color: var(--chess-lt); }
+
+/* the pieces — the shared DRAWN set, one <canvas> per square painted by PJCCPieces.draw in
+   the canon livery. The renderer already insets the piece to ~81%, so it sits centered with
+   air around it; pointer-events:none keeps every tap on the button underneath. */
+.ot-pc { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 
 .ot-status { margin: 12px 0 0; color: #cfd8c8; font-size: 0.92rem; line-height: 1.55; min-height: 3em; }
 .ot-status b { color: #f2eddd; }

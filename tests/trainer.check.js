@@ -190,7 +190,11 @@ section('6 · the page loads what it runs on');
   ok(fs.existsSync(path.join(ROOT, PAGE)), 'the trainer page exists');
   const src = read(PAGE);
 
-  const NEED = ['pjcc-chess.js', 'pjcc-chess-ai.js', 'pjcc-gauntlet-engine.js', 'pjcc-pirc-book.js'];
+  /* ⚑ pjcc-pieces.js JOINED 2026-09-01 — the shared drawn set. It has no dependency of its
+     own, so it sits last; what matters is that it is ON THE PAGE, because without it every
+     square falls back to a plain glyph and the board quietly stops being the canon board. */
+  const NEED = ['pjcc-chess.js', 'pjcc-chess-ai.js', 'pjcc-gauntlet-engine.js', 'pjcc-pirc-book.js',
+                'pjcc-pieces.js'];
   const at = NEED.map((n) => src.indexOf('/assets/js/' + n));
   NEED.forEach((n, i) => ok(at[i] > -1, 'loads ' + n));
   ok(at.every((x, i) => i === 0 || (x > -1 && x > at[i - 1])),
@@ -297,6 +301,94 @@ section('8 · the Academy theme, hoisted and ordered');
   ok(wearing.length === PAGES.length,
      'and all three still wear body_class: theme-academy',
      wearing.length + '/' + PAGES.length);
+}
+
+
+/* ── 9 · the board is the SAME board as the Park Tables ──────────────────────────
+   2026-09-01, Nate: *"Fix the colors on the opening trainer board to match the chessboards
+   of the park tables. The shapes of the pieces and board as well."*
+
+   ⭐ THIS COMPARES THE TWO FILES AGAINST EACH OTHER RATHER THAN AGAINST TYPED-IN VALUES.
+   A gate that asserted "the light square is #e9d3a4 plus a 152deg key light" would go green
+   forever while somebody retuned the Park Tables and left this room behind — which is
+   precisely the drift that happened, and it survived a hundred and sixteen other checks
+   because every one of them was about this page alone. The canon's own rule is that there
+   is ONE board; the honest way to test that is to read both boards.
+   ⚠ SO A DELIBERATE RETUNE OF THE PARK TABLES WILL FAIL THIS. That is the point: the fix
+   is to move both, and this names the pair that disagreed. [[chess-visual-canon]] */
+section('9 · the board and the pieces are the canon ones');
+{
+  const OT = read('academy-opening-trainer.html');
+  const PT = read('games/park-tables/index.html');
+
+  /* the declarations of one rule, normalized: selector dropped, whitespace collapsed, and
+     the pt-/ot- prefix erased so two rules that differ only by room compare equal */
+  /* ⚠⚠ THE LONGEST BODY, NOT THE FIRST. `.ot-board` is declared twice: the phone bleed
+     (three properties, and it comes FIRST in the file) and then the board itself. A
+     first-match reader compared the canon frame against `border-radius: 0` and reported
+     three failures about a board that was correct — the check was reading the override.
+     ⭐ Longest-wins is not a trick: an override exists to say less than the rule it edits. */
+  function ruleOf(src, sel) {
+    let at = src.indexOf(sel + ' {'), best = null;
+    while (at > -1) {
+      const j = src.indexOf('}', at);
+      if (j > -1) {
+        const body = src.slice(at + sel.length + 2, j).replace(/\s+/g, ' ').trim();
+        if (!best || body.length > best.length) best = body;
+      }
+      at = src.indexOf(sel + ' {', at + 1);
+    }
+    return best;
+  }
+  const PAIRS = [['.pt-sq.lt', '.ot-sq.lt', 'the light wood'],
+                 ['.pt-sq.dk', '.ot-sq.dk', 'the dark wood'],
+                 ['.pt-sq.last', '.ot-sq.last', 'the last-move gold'],
+                 ['.pt-sq.sel', '.ot-sq.sel', 'the selected square'],
+                 ['.pt-co', '.ot-co', 'the coordinate marks'],
+                 ['.pt-pc', '.ot-pc', 'the piece layer']];
+  PAIRS.forEach(function (p) {
+    const a = ruleOf(PT, p[0]), b = ruleOf(OT, p[1]);
+    ok(a !== null && b !== null && a === b, p[2] + ' is declared identically in both rooms',
+       a === null ? 'no ' + p[0] : b === null ? 'no ' + p[1] : (a === b ? 'byte for byte' : p[1] + ': ' + b));
+  });
+
+  /* the frame is not a whole-rule match — the two boards size themselves differently (this
+     one fills its stage column, that one caps at 420px) — so the three values that make it
+     LOOK like the same board are compared on their own. */
+  const otB = ruleOf(OT, '.ot-board') || '', ptB = ruleOf(PT, '.pt-board') || '';
+  [['border: 3px solid var(--chess-frame', 'a 3px timber frame'],
+   ['border-radius: 6px', 'a 6px corner'],
+   ['inset 0 -12px 22px rgba(0,0,0,0.32)', 'the recessed shadow, not a flat drop shadow']]
+    .forEach(function (v) {
+      ok(otB.indexOf(v[0]) > -1 && ptB.indexOf(v[0]) > -1, 'the board wears ' + v[1]);
+    });
+
+  /* ⚠⚠ THE PIECES ARE THE HALF THAT CANNOT BE TESTED BY COLOR. A text-stroked Unicode glyph
+     and a drawn Staunton can both be "purple with a light edge" and look nothing alike — the
+     shapes were what he was looking at. So this asserts the RENDERER and its ratios, and that
+     the old glyph styling is gone rather than merely overridden. */
+  ok(/PJCCPieces\.draw\(ctx, mid, mid, PC_PX \* 0\.8125/.test(OT),
+     'the pieces are drawn by the shared renderer, at the shared inset');
+  ok(/PJCCPieces\.draw\(ctx, mid, mid, PC_PX \* 0\.8125/.test(PT),
+     '…the same call the Park Tables makes', 'one renderer, one livery');
+  ok(OT.indexOf('var PC_PX = 160;') > -1 && PT.indexOf('var PC_PX = 160;') > -1,
+     '…onto a bitmap of the same size', '160px covers a 3x phone square');
+  ok(OT.indexOf('-webkit-text-stroke: 0.062em') === -1,
+     'and the old text-stroked glyph styling is GONE, not overridden',
+     'an outranked rule is a rule that comes back');
+  ok(/canvas class="ot-pc"/.test(OT) && /canvas class="pt-pc"/.test(PT),
+     'both rooms put a <canvas> in the square');
+
+  /* the fallback, because pjcc-pieces.js is one script among five ([[down-never-stuck]]) */
+  ok(OT.indexOf('if (window.PJCCPieces)') > -1,
+     'a missing renderer still leaves pieces on the board');
+
+  /* and the canon file has to KNOW about this board, or the next person tuning the woods
+     has no way to learn it is out here reading them */
+  const CANON = read('_sass/_pjcc-22-chess-canon.scss');
+  ok(CANON.indexOf('.ot-sq/.ot-pc') > -1, 'the canon names this board in its roll call');
+  ok(/html\.eclipse-total \.ot-sq/.test(CANON),
+     '…and eases it through the eclipse with the others', 'or it snaps while they fade');
 }
 
 
