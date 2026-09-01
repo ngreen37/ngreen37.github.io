@@ -196,7 +196,25 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
    ⚠ The tooltip is anchored to the lamp's RIGHT edge by the partial. Here the lamp stands at
    the left of a full-width panel, so `right:0` would hang 224px of tip off the left of the
    page; it is re-anchored to the panel instead. */
+/* ⚑ CENTERED 2026-08-31 — Nate: *"On the McPuppy page, let's center the desk lamp — I love
+   that feature."* One declaration, `justify-content: center`, and it centers the PAIR rather
+   than the lamp: the lamp and the line beside it are one object (the lamp is the proof, the
+   line is the claim — see the note where this band's markup lives), so centering the lamp
+   ALONE would have pushed the post off to the right and split them. Rendered both ways at
+   1100 before choosing; the pair is the version that reads as placed rather than as slid.
+   ⚠ THE TIP STILL POINTS RIGHT AND STILL MUST. `.sl-tip` is 224px wide, always in the layout
+   at opacity 0, and anchored `left: 0` to the lamp — from a centered lamp at 1100 it ends at
+   x=725 inside a 1027 panel, and on a phone the copy fills the row so the group does not move
+   off the left at all. Anchor it `right: 0` and it hangs off the left of the page.
+   ⚠⚠ `safe center`, AND THE PLAIN `center` ABOVE IT IS THE FALLBACK, NOT A DUPLICATE. A
+   centered flex row whose content overflows pushes its FIRST child out through the START
+   edge, where no clip and no scrollTop can reach it — the mechanism that ate the VS rail and
+   Floor Ten in one afternoon ([[centered-overflow-clips]]). Here the first child is the lamp,
+   which is the whole point of the band. `safe` falls back to `start` the instant it does not
+   fit and changes nothing in the case that already worked; a browser too old to parse it
+   keeps the line above. */
 .mcp-awake { display: flex; align-items: flex-end; gap: 22px;
+  justify-content: center; justify-content: safe center;
   margin: var(--space-4) 0 var(--space-5);
   padding: var(--space-4) var(--space-4) calc(var(--space-4) + 4px);
   background: #131218; border: 1px solid #2a2830; border-radius: var(--r-sm); }

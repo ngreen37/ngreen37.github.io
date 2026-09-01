@@ -311,11 +311,45 @@
    the same finding that stopped the header marks being shrunk to fit. 1.35 keeps 0.17rem.
    ⚠ ANY FUTURE CHANGE TO THE RAIL WIDTH (--rail-w) OR THIS SIZE MOVES THE CLIFF. Re-sweep;
    do not reason about it. */
-.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; color: #f2f4f7; font-size: 1.35rem; }
+/* ⛑⛑ HE ASKED A SECOND TIME (2026-08-31): *"Let's make the top left Nav ChessWild.com logo a
+   little bigger so it fully uses the space."* The first ask (08-27) got 1.05 → 1.35 and then
+   stopped at a WALL — the sweep above found the mark wrapping at 1.55 with 24px of the rail
+   left over. A repeat means the fix was a layer short, so this time the wall moved instead of
+   the number ([[when-he-repeats-himself]]). Two levers, and NEITHER of them costs a pixel of
+   anything else on the rail:
+
+     · THE QUEEN STOPS SCALING. It inherited the brand's size, so every step up spent its
+       gain twice — once on the name, once on an ornament that was already big enough. Pinned
+       at 1.35rem it stays EXACTLY the size it is today; only the name grows. Worth 5.4px at
+       this size, and more at every size above it.
+     · THE HEAD GIVES BACK ITS RIGHT PADDING (desktop only). 8px of the 197 was reserved on
+       the side the eye never reads to. `padding-right`, never `padding-left`: the left is
+       what lines the mark up against the row icons below it (brand x=24, icon x=29), and
+       trimming that side would have bought the same 8px by breaking the alignment.
+
+   Swept again on the live page with Poppins 800 confirmed loaded, content width now 205:
+
+     1.35  head 66.00  brand 36.70  text 172.91  slack 32.09   ← was shipping
+     1.50  head 66.00  brand 40.80  text 189.73  slack 15.27
+     1.55  head 66.00  brand 42.14  text 195.33  slack  9.67   ← shipped
+     1.60  head 66.00  brand 43.50  text 200.91  slack  4.09
+     1.65     98.58       89.78                               ← WRAPS
+
+   ⭐ AND THE ROWS DID NOT MOVE: head 66.00, first row top 158, expanded and collapsed, at
+   1440 and 1024 — the 2026-07-27 rule holds. 66px was always a FLOOR, and the brand at 42.14
+   still sits inside the 50px it leaves once the head's own padding is paid, which is the
+   sense in which this now "fully uses the space" vertically as well as across.
+   ⚠ THE CLIFF IS STILL A CLIFF, one rung further out. Any change to `--rail-w`, to this size,
+   or to the queen's pin moves it — re-sweep, do not reason about it. */
+.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; color: #f2f4f7; font-size: 1.55rem; }
 a.drawer-brand { text-decoration: none; transition: opacity .2s; }
 a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opacity: 0.82; }
-/* the queen stays WHITE (his call) — it is the drawer's ornament, not a letter of the name */
-.drawer-queen { color: #ffffff; }
+/* the queen stays WHITE (his call) — it is the drawer's ornament, not a letter of the name.
+   ⚠ AND IT IS PINNED, NOT SHRUNK: 1.35rem is the size it has rendered at since 2026-08-27,
+   because that was the brand's size and the queen inherited it. The glyph on screen does not
+   change; it simply stops growing with the name beside it. Restore the inheritance and the
+   mark wraps at 1.55 again. */
+.drawer-queen { color: #ffffff; font-size: 1.35rem; }
 /* ⛑ `.drawer-sub` CAME OUT 2026-08-26 WITH THE LINE IT DRESSED — Nate: "Remove the McPuppy
    Studios from the ChessWild Logo top left — time for it to stand on its own." It styled the
    one element that used it, the "by McPuppy Studios" byline under the wordmark, and nothing
@@ -504,7 +538,11 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      re-wrap at 66px and change it). Collapsing is now purely a width change. */
   :root { --dl-h: 72px; --drawer-head-h: 66px; }   /* 72 = the tallest natural row (a two-line subtitle); below it that row still outgrew the rest */
   .site-header .site-nav.drawer .page-link.drawer-link { min-height: var(--dl-h); }
-  .site-header .site-nav.drawer .drawer-head { min-height: var(--drawer-head-h); }
+  /* ⚑ 2026-08-31 — the head gives its RIGHT padding to the wordmark (see the sweep at
+     `.drawer-brand`). 8px on the side nothing aligns to was the difference between the mark
+     stopping at 1.35rem and reaching 1.55. Desktop only: below 901px the drawer is a wide
+     overlay with 90px of slack and has no reason to give anything up. */
+  .site-header .site-nav.drawer .drawer-head { min-height: var(--drawer-head-h); padding-right: 0; }
 
   .site-header .site-nav.drawer {
     top: 0; bottom: 0;

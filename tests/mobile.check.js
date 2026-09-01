@@ -383,7 +383,23 @@ const WIDTHS = [320, 360, 390, 430];
       /header-top-right/.test(hdr) && /nav-operative/.test(hdr) && /site-mark/.test(hdr),
       hdr.length + ' chars,control group + pill + marks present');
 
-    const NAMES = [['Mr. McPuppy', 'his own'], ['CommanderLongcodename24', 'a 23-char codename']];
+    /* ⛑⛑ THE THIRD ROW IS SIGNED **OUT**, AND ITS ABSENCE HID A REAL BUG FOR ELEVEN DAYS
+       (2026-08-31). This block was built on 2026-08-20 to catch a signed-IN header — the pill
+       is 48px wider with a codename, and that was the failure of the day — so both rows here
+       forced `.in` and a name. **Signed out is the WIDER state on a narrow phone**, and
+       nothing ever built it: below 480px the signed-in pill drops the codename and measures
+       44px, while "⬡ Sign in" keeps its words and measures 83. So at 320px the ⌕ button sat
+       15.41px ON TOP of cW.com, on the default state of every first-time visitor, while this
+       check reported the header healthy at 320 twice over.
+       ⭐ THE LESSON IS THE SHAPE OF THE LIST, NOT THE MISSING NUMBER. A state toggle is a
+       PAIR, and a fixture that only ever builds one side of it proves nothing about the other
+       ([[measure-the-real-page]]). `null` means "leave it as the markup ships it", which is
+       the one case the harness must not have to construct. */
+    const NAMES = [
+      ['Mr. McPuppy', 'his own'],
+      ['CommanderLongcodename24', 'a 23-char codename'],
+      [null, 'SIGNED OUT — the default every visitor arrives in'],
+    ];
     const bad = [];
     for (const [nm, why] of NAMES) {
       const tmp = path.join(os.tmpdir(), 'pjcc_hdr_' + Date.now() + '.html');
@@ -395,9 +411,17 @@ const WIDTHS = [320, 360, 390, 430];
         hdr +
         '<main class="page-content"><div class="wrapper"><div class="page-card">' +
         '<p>a page under the header</p></div></div></main>' +
+        /* both branches are copied from pjcc-eggs.js, which is the only thing that writes
+           this pill in production — a fixture that renders it any other way is a different
+           element (a pinned width, say, cannot ellipsize, and reports overflow the real one
+           never has). */
         '<script>(function(){var e=document.getElementById("nav-operative");' +
-        'if(!e)return;e.hidden=false;e.classList.add("in");' +
-        'e.innerHTML="\\uD83D\\uDC36 <span class=\\"nav-op-name\\">' + nm + '</span>";})();</script>' +
+        'if(!e)return;e.hidden=false;' +
+        (nm === null
+          ? 'e.classList.remove("in");e.textContent="\\u2B21 Sign in";'
+          : 'e.classList.add("in");' +
+            'e.innerHTML="\\uD83D\\uDC36 <span class=\\"nav-op-name\\">' + nm + '</span>";') +
+        '})();</script>' +
         '</body></html>');
       for (const w of WIDTHS) {
         await page.setViewport({ width: w, height: 800, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
@@ -466,8 +490,10 @@ const WIDTHS = [320, 360, 390, 430];
       }
       fs.unlinkSync(tmp);
     }
-    check('⚠⚠ the SIGNED-IN header fits every phone, at any codename length', bad.length === 0,
-      bad.length ? bad.slice(0, 4).join(' · ') : WIDTHS.join(', ') + 'px × 2 codenames, nothing escapes');
+    check('⚠⚠ the header fits every phone — signed IN at any codename length, and signed OUT',
+      bad.length === 0,
+      bad.length ? bad.slice(0, 4).join(' · ')
+                 : WIDTHS.join(', ') + 'px × ' + NAMES.length + ' pill states, nothing escapes or collides');
   }
 
   /* ══ PART 1e — THE TWO NEW SWIPE RAILS ════════════════════════════════════════════

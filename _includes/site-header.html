@@ -17,8 +17,11 @@
     <div class="wrapper header-inner">
 
       <!-- Top bar: hamburger LEFT (2026-07-23 Nate — the drawer opens from the left, so its
-           trigger belongs there), the McPuppy logo CENTERED, controls RIGHT. The header is a
-           3-column grid (see .header-top) so the badge sits dead-center of the header. -->
+           trigger belongs there), ONE mark CENTERED, controls RIGHT. The header is a
+           3-column grid (see .header-top) so the middle column sits dead-center of the header.
+           ⛑ WHICH mark is centered has changed twice: the McPuppy badge held the middle from
+           2026-07-23, then shared it with cW.com (and briefly P&JCC), and on 2026-08-31 the
+           badge moved into the right-hand control group so cW.com holds it alone. -->
       <div class="header-top">
         <div class="header-top-left">
           <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -27,15 +30,20 @@
             <span class="nav-toggle-bar"></span>
           </button>
         </div>
-        {%- comment -%} ── THE FRONT DOORS: THREE, THEN TWO (2026-08-09 → 2026-08-25) ──────
+        {%- comment -%} ── THE FRONT DOORS: THREE, THEN TWO, THEN ONE IN THE MIDDLE
+             (2026-08-09 → 2026-08-25 → 2026-08-31) ─────────────────────────────────────
+
+             ⛑ THE ROW IS ONE MARK AS OF 2026-08-31. cW.com is the only thing in this middle
+             column; the McPuppy badge is still on every page and still a link, it just lives
+             in `.header-top-right` now. The note beside it there says why.
 
              ⛑⛑ THE P&JCC MARK CAME OUT 2026-08-25 — Nate: *"Let's remove the P&JCC link from
              the top but SAVE IT FOR EASTER EGGS LATER."* It was the third of the three doors
-             described below, and the loudest one still standing: dead center, every page. The
-             two that remain are cW.com and the McPuppy badge.
+             described below, and the loudest one still standing: dead center, every page.
 
              ⚠ SAVED, NOT RETIRED. When an egg reveals the world, the mark comes back HERE, in
-             this slot, between cW.com and the badge — gold (`#F5C518`, the world's, worn since
+             this slot, to the RIGHT of cW.com (it sat between cW.com and the badge when the
+             badge was still in this row) — gold (`#F5C518`, the world's, worn since
              the first hero), `.site-mark site-mark--word site-mark--pjcc`, title "P&JCC — The
              World", `aria-current` on `/pjcc/`, and the shrunken `&`. Its three CSS rules came
              out of _pjcc-01-core.scss the same day and the note there says which.
@@ -110,6 +118,36 @@
                exactly "P&JCC" so a copy-paste, the accessible name and every crawler read the
                brand the way [[site-two-brand-split]] requires. Keep that if it returns.
                {%- endcomment -%}
+          {%- comment -%} ⛑ THE McPUPPY BADGE LEFT THIS ROW 2026-08-31 — Nate: *"On the top
+               center where the two links (mcpuppy and cw) are, let's move mcpuppy to the
+               right, next to the search bar, and center the cw.com — that's more prominent
+               for now."* Its anchor is unchanged; it is the same element, re-parented into
+               `.header-top-right` as the first item, directly left of ⌕ Search. See it there.
+
+               ⭐ SO THE CENTER COLUMN IS ONE MARK NOW, AND THAT IS THE POINT. A centered PAIR
+               has no center — the eye lands in the gap between them, and cW.com sat left of
+               the header's middle while the badge sat right of it. One mark in the middle
+               column is the only way "centered" and "prominent" mean the same thing.
+               ⚠ THE `.site-marks` WRAPPER STAYS even with one child, and must. It is the
+               named middle grid column (`.header-top > .site-marks { grid-column: 2 }`), the
+               ≥1201px rail nudge hangs off it, and tests/mobile.check.js measures the three
+               groups by these three class names. Deleting it re-auto-places the row.
+               {%- endcomment -%}
+        </div>
+        <div class="header-top-right">
+          {%- comment -%} ⚑ THE STUDIO BADGE, AS OF 2026-08-31 — first in the control group, so
+               it reads as "the other house" beside the site's own tools rather than as half of
+               a centered lockup. It keeps every rule it already had: `.site-mark` (no shrink,
+               the hover fade), the `aria-current` dim on /projects/, the ≥901–1200 step-down
+               to 36px, the ≤700 step-down to 28px and the ≤429px `display: none` — all of
+               them selector-based, none of them positional, which is why the move is a
+               re-parent and not a rebuild.
+               ⚠ IT STAYS HIDDEN BELOW 430px. The rule was written when the badge was the wide
+               third of a centered trio; the reason survives the move unchanged — the phone row
+               is ☰ + a mark + ⌕ + 日本語 + Sign in, and the badge is the one that does not fit.
+               ⚠ AND IT MUST STAY FIRST. Left of ⌕ is what he asked for ("next to the search
+               bar"), and it is also the only slot that cannot collide: the pill and Contact are
+               the two items that grow, and both sit outboard of it. {%- endcomment -%}
           <a class="site-mark site-mark--mcp"
              href="{{ '/projects/' | relative_url }}" title="McPuppy Studios — Home"
              {% if page.url == '/projects/' %}aria-current="page"{% endif %}>
@@ -117,8 +155,6 @@
                  alt="McPuppy Studios"
                  class="logo-stacked">
           </a>
-        </div>
-        <div class="header-top-right">
           {%- comment -%} 2026-07-28 — the grandparent test. This button used to read
                "⌕ Jump to… ⌘K", and two of those three parts were doing damage:
                  · "Jump to…" doesn't say what happens. "Search" is a word everyone on

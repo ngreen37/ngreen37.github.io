@@ -278,9 +278,23 @@ ul, ol {
 
    ⭐ TRACK 1 KEEPS ITS `auto` MINIMUM ON PURPOSE. The hamburger is the only way into the
    menu on a phone; a track that may shrink to zero would push it out from under
-   `justify-self: start` and straight into the marks. Only the CONTROL side gives. */
-.header-top { grid-template-columns: 1fr auto minmax(0, 1fr); }
-.header-top-right { min-width: 0; }
+   `justify-self: start` and straight into the marks. Only the CONTROL side gives.
+
+   ⛑⛑ AND IT IS SCOPED TO PHONES NOW — 2026-08-31, when moving the McPuppy badge into this
+   group made the shrinkable track bite from the other end. A `minmax(0, 1fr)` track hands
+   the group a box NARROWER THAN ITS CONTENTS, and the contents do not shrink (`flex-shrink:
+   0`, three lines down, on purpose). A flex row overflows to its RIGHT, so the surplus left
+   the header through the far edge and the DOCUMENT PANNED — signed in, at 1201 (+31), 901
+   (+4), 830 (+31), 768 (+31) and 701 (+31). The identical failure this rule was written to
+   cure, produced by the rule itself, one breakpoint band over.
+   ⭐ ABOVE 700 THE FLOOR IS NOT THE PROBLEM AND NEVER WAS. Min-content for the whole row at
+   701 is ~536px — the panning of 2026-08-20 was a PHONE fact (measured 320→393, clean from
+   412 up), and the fix was applied site-wide rather than where it was measured. So the
+   shrinkable track and the `min-width: 0` that arms it now live in the ≤700 block with the
+   phone track rule they belong to, and above 700 the group keeps its content minimum: when
+   the row runs short the two rails go UNEQUAL and the centered mark drifts left, which is a
+   layout degrading, not a layout breaking. [[one-fix-every-instance]] in reverse — a fix
+   applied everywhere can be as wrong as a fix applied once. */
 /* ⭐ AND THE PILL IS WHAT GIVES — it is the only item in the row whose width is written
    by a user (a codename runs to 24 characters). ⌕ and 日本語 are fixed glyphs and are
    pinned, so a squeeze can never turn them into a smudge. */
@@ -344,7 +358,14 @@ ul, ol {
 
    ⚠ THE CURRENT PAGE'S MARK IS DIMMED VIA `[aria-current="page"]`, which Liquid writes.
    Don't swap it for a class: the attribute is what tells a screen reader the same thing
-   the dim tells everyone else, and one source can't drift from itself. */
+   the dim tells everyone else, and one source can't drift from itself.
+
+   ⛑ 2026-08-31 — `.site-marks` HOLDS ONE MARK NOW. Nate: *"move mcpuppy to the right, next
+   to the search bar, and center the cw.com — that's more prominent for now."* The badge is
+   a child of `.header-top-right`; every `.site-mark` rule in this block still reaches it,
+   because all of them are selector-based and none of them was ever positional. The wrapper
+   stays (it is the named middle grid column and mobile.check.js measures it by name), and
+   its `gap` is inert with one child — left alone so the P&JCC restore above still lands. */
 .site-marks {
   display: flex;
   align-items: center;
@@ -460,6 +481,23 @@ h1 .mk-amp, h2 .mk-amp, h3 .mk-amp,
   .site-marks { gap: 12px; }
   .site-mark--word { font-size: 15px; }
   .logo-stacked { height: 36px; }
+}
+
+/* ⭐ THE MISSING RUNG — 701–900px (2026-08-31). The badge's size ladder had a hole in it:
+   ≥1201 gets 44px, 901–1200 gets 36, ≤700 gets 28, and the tablet band fell through to the
+   full 44. Measured on the live page BEFORE anything moved: at 768 the centered pair ran to
+   x=450.19 while the ⌕ button started at 429.63 — the badge sat ON TOP of Search by 20.56px,
+   and at 701 by 23.06. It had been that way since the pair was built and nothing ever looked
+   wrong, because the badge is white line-art on a dark bar and the collision landed in its
+   own whitespace. Moving the badge into the control group did not fix that; it only turned
+   an overlap into a TOUCH (gap 0.00 at 768), which is the same shortage with a shape you can
+   see. 32px is the step that buys the row a real gap instead of a rounding error.
+   ⚠ AND IT LIVES DOWN HERE, BELOW `.logo-stacked`, FOR THE FOURTH TIME IN THIS FILE. Written
+   next to `.site-marks` where it reads best, it lost to the identical plain `.logo-stacked`
+   200 lines below — a media query carries NO specificity, so the badge stayed 44px at every
+   width and the measurement came back byte-identical to the broken one. */
+@media (min-width: 701px) and (max-width: 900px) {
+  .logo-stacked { height: 32px; }
 }
 
 /* ⚑ AND BELOW 1100 THE HEADER GIVES UP CONTACT — a judgment call, flagged for Nate.
@@ -1435,6 +1473,30 @@ pre code {
   .site-mark--mcp { display: none; }
   .site-marks { gap: 5px; }
   .site-mark--word { font-size: 12px; }
+  /* ⛑⛑ THE 320px FLOOR WAS NOT A FLOOR, IT WAS 80px OF PADDING (2026-08-31, his call to fix
+     it). The note further down calls 320 "the floor of the design" and it is wrong: signed
+     OUT, ⌕ + 日本語 + ⬡ Sign in (192.19) plus the hamburger (46) left the centered mark a
+     track **1.81px wide**, so a 32.63px mark overflowed 15.41px through BOTH sides and sat
+     under the Search button. Measured live: 15.41 at 320, 5.41 at 340, clean from 360.
+
+     ⭐ AND THE ROW WAS NEVER SHORT OF SPACE — it was short of USED space. `.wrapper` pays
+     28px a side and `.header-top` another 12, so a 320px phone spent **a quarter of its
+     screen** on margin inside a bar that is edge-to-edge translucent anyway. Taking the
+     wrapper to 10 gives the row 36px back — more than twice the shortage — and removes
+     nothing: no control steps out, 日本語 stays, the mark stays, Sign in keeps its words.
+     ⚠ IT IS THE HEADER'S WRAPPER ONLY. Page content keeps its 28px; the header going flush
+     while the content sits inset is the same thing desktop has done since 2026-07-22
+     (`.site-header .wrapper { padding-left: 20px }` in _pjcc-13-nav.scss). The drawer and
+     the backdrop are `position: fixed` and do not read this padding at all.
+     ⚠ WHY IT IS SCOPED TO 429 AND NOT APPLIED TO EVERY PHONE: at 430–700 the row already
+     clears with room, and this session's own lesson is that a fix applied wider than it was
+     measured is how the last one turned into a bug ([[one-fix-every-instance]]). */
+  .site-header .wrapper { padding-left: 10px; padding-right: 10px; }
+  /* ⚠ AND THE BAR'S OWN 12px COMES DOWN TO 6, because the wrapper alone left the mark
+     clearing Search by 2.60px — arithmetically fixed and visually still touching. Together
+     they leave 16px of inset (the iOS standard gutter) and an 8.60px gap either side of the
+     mark. "It no longer overlaps" is not the bar; "it looks placed" is. */
+  .header-top { padding-left: 6px; padding-right: 6px; }
 }
 /* ⚠⚠ A PHONE SHOWS THE AVATAR, NOT THE NAME (2026-08-20, Nate: “the window still can slide
    right and left” — his second report, so the defect was a layer behind the fix). The rung
@@ -1471,9 +1533,17 @@ pre code {
    is 44px for a 33px single mark. Nothing overlaps at any phone width.
    ⚠ SCOPED TO PHONES ON PURPOSE. Above 700px the row has room to be truly centered and the
    desktop rule above stands — including the 1201px rail nudge, which took three failed
-   attempts and whose comment says why. This does not touch it. */
+   attempts and whose comment says why. This does not touch it.
+   ⛑ 2026-08-31 — `min-width: 0` ON THE CONTROL GROUP MOVED IN HERE, out of the base rules,
+   and it is the SAME DECISION as the track above it: it exists to let the group's box shrink
+   so the page cannot pan on a phone, and above 700 that shrink is what MAKES the page pan
+   (the contents do not shrink with the box, and a flex row spills to its right). The two
+   belong together — a shrinkable track without `min-width: 0` on the group barely shrinks,
+   and `min-width: 0` without the track does nothing. The note at the base rule has the
+   measurements. */
 @media (max-width: 700px) {
   .header-top { grid-template-columns: auto minmax(0, 1fr) minmax(0, auto); }
+  .header-top-right { min-width: 0; }
 }
 /* 360 and 375 are still real Android/iPhone widths and they miss by a couple of pixels,
    so the type takes one more step rather than the row taking an overlap. */
