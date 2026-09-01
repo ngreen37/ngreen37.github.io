@@ -557,9 +557,17 @@
       var r = remote[id];
       if (!r || typeof r !== 'object') continue;
       var mine = local[id] || (local[id] = {});
-      if (r.known && !mine.known) { mine.known = 1; changed = true; }
-      var held = parseInt(r.held, 10) || 0;
-      if (held > (mine.held || 0)) { mine.held = held; changed = true; }
+      /* ⚑ FOUR FIELDS SINCE 2026-09-01, TWO RULES. `known`/`held` are the black side (the
+         original spelling, so every book written before the white chair existed is still a
+         valid entry and needed no migration); `wKnown`/`wHeld` are the same two claims from
+         the other side of the board. Knowing a line as Black and as White are different
+         achievements — the Park Tables settled that with a star per seat AND color — so they
+         merge independently and neither can stand in for the other. */
+      [['known', 'held'], ['wKnown', 'wHeld']].forEach(function (f) {
+        if (r[f[0]] && !mine[f[0]]) { mine[f[0]] = 1; changed = true; }
+        var held = parseInt(r[f[1]], 10) || 0;
+        if (held > (mine[f[1]] || 0)) { mine[f[1]] = held; changed = true; }
+      });
     }
     if (changed) { try { localStorage.setItem(BOOK_KEY, JSON.stringify(local)); } catch (e) {} }
     return changed;

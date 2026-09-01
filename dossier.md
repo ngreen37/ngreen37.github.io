@@ -424,6 +424,9 @@ permalink: /dossier/
       var bKnown = 0, bHeld = 0, bTop = 0, bid;
       for (bid in bk) {
         if (!bk.hasOwnProperty(bid) || !bk[bid]) continue;
+        /* ⚠ THE BLACK HALF ONLY. `wKnown`/`wHeld` are the same six lines studied from the
+           other chair (idea #9) — real work, and a different claim. Adding them here would
+           double a repertoire the player has not doubled. */
         if (bk[bid].known) bKnown++;
         if (bk[bid].held) { bHeld++; if (bk[bid].held > bTop) bTop = bk[bid].held; }
       }

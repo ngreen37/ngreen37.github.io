@@ -87,6 +87,25 @@
     'left at home, you take the center back. Whoever holds the middle on move six is not the ' +
     'same person who holds it on move twenty.';
 
+  /* ══ THE OTHER CHAIR (2026-09-01, idea #9: "play the Austrian as White against your own
+     defense") ═══════════════════════════════════════════════════════════════════════════
+     ⚠⚠ THIS ONE IS NOT MICHAEL'S AND MUST NOT BE ATTRIBUTED TO HIM. The creed above is a
+     character's posture, written in his voice; he plays the Pirc, he does not play against
+     it. A white-side "creed" signed by the same man would be the character arguing with
+     himself, which is the cheapest way to make a voice stop meaning anything.
+     ⭐ So this is the ROOM talking — instructional register, no byline, and the page prints
+     no <cite> under it. It is mine, and it is the kind of copy that is mine to write
+     ([[text-changes-need-approval]]: UI copy me, lore and voice him). If Nate wants a
+     character on this side of the board, that is a different and larger decision than a
+     paragraph. */
+  var CREED_W =
+    'Now you are the one with the space, and space is not a gift — it is a loan, and the ' +
+    'interest is time. Every pawn you push is another square you have to defend and another ' +
+    'piece that has to stay home to do it. He is going to finish his house, keep every piece ' +
+    'on a square it likes, and wait for you to overreach; that is not him being passive, that ' +
+    'is the entire plan. Play this side honestly and you will find out which of your moves he ' +
+    'was hoping for.';
+
   /* ══ THE REPERTOIRE ═══════════════════════════════════════════════════════════════
      Six of White's systems, in the order a Pirc player actually meets them. The first
      three are the lines the Tabiya room already teaches and the accuracy suite already
@@ -107,6 +126,7 @@
       white: 'Two Knights — 4.Nf3 and 5.Be2',
       line: 'e4 d6 d4 Nf6 Nc3 g6 Nf3 Bg7 Be2 O-O O-O c6 a4 e5',
       why: 'He builds quietly and asks you no questions, so you are allowed to build too. Nobody is punished for patience in this one — which is exactly why it is the line to know first. Learn what the position WANTS here and the sharp ones stop looking like different openings.',
+      whyW: 'The quiet way, and the honest one. You take the center that is offered and nothing more, then ask him a question every move until one of them has no good answer. The trap on this side is boredom: the position hands you nothing to attack, so the temptation is to invent something. Every player who loses to the Pirc as White loses to that temptation.',
       plan: 'The main line, and the one to know cold. White builds quietly, so you strike ' +
             'in the center on your own terms: …c6 and …e5 stake out d4, and if the center ' +
             'closes your play is …Nbd7, …Qc7 and a break with …f5. The g7 bishop is your ' +
@@ -120,6 +140,7 @@
       white: 'The big pawn storm — 4.f4',
       line: 'e4 d6 d4 Nf6 Nc3 g6 f4 Bg7 Nf3 O-O Bd3 Na6 O-O c5',
       why: 'He throws the whole front of the board at you. Let him. A wall pushed that far forward has nothing standing behind it, and every pawn he advances is one that is never coming back to defend. Your job is not to survive the storm — it is to still be standing when it has spent itself.',
+      whyW: 'Four pawns pointed at his king and about ten moves to use them. This is the most fun anybody has against the Pirc and the fastest way to lose to it — if the storm stalls, every square you pushed past is a hole, and he has been waiting all game for exactly that. Play it from this side once and you will never again wonder why Black invites it.',
       plan: 'The sharpest thing White has, and the reason people fear the Pirc. White wants ' +
             'e5 and f5 with mate on the h-file; you answer a big center the classical way — ' +
             'by hitting it. …c5 and …Na6 pressure d4 immediately. If White ever plays e5, ' +
@@ -133,6 +154,7 @@
       white: 'Be3, Qd2, f3 — then castle long',
       line: 'e4 d6 d4 Nf6 Nc3 g6 Be3 Bg7 Qd2 c6 f3 b5 Nge2 Nbd7',
       why: 'He is coming for your king with a plan he read in a book, and he is going to get there in about nine moves. You are coming for his with the same idea and one extra tempo. This line is not about defending; it is about counting honestly and then racing.',
+      whyW: 'A plan you can memorize: bishop, queen, f3, castle long, then throw the h-pawn at him. It works often enough to be worth knowing, and it is a race that can be lost by a single tempo. Count the moves to each king honestly before you commit to it, because after move ten there is no version of this where you get to change your mind.',
       plan: "The club player's Pirc-killer: Be3, Qd2, f3, Bh6 to trade your good bishop, then " +
             'h4-h5. It is a race, and you are not behind in it. White castles queenside, so ' +
             'your pawns go there: …c6 and …b5 first, …a5 and …b4 next, and the a- and b-files ' +
@@ -146,6 +168,7 @@
       white: 'The early pin — 4.Bg5',
       line: 'e4 d6 d4 Nf6 Nc3 g6 Bg5 Bg7 Qd2 h6 Bh4 c6 O-O-O b5',
       why: 'He pins the knight before you can castle and waits for you to flinch. Ask the bishop what it actually wants — it turns out to want very little, and the moment it retreats it stops being a threat and starts being a target.',
+      whyW: 'The pin is a question, not a threat. Ask it early and watch what he does — then be honest about what the bishop is actually accomplishing three moves from now. On this side you learn the thing that makes the line hard for Black: the answer is inconvenient rather than difficult, and inconvenient is enough at a real board.',
       plan: 'White pins the f6 knight before you can castle and hopes for Bh6 or e5 tricks. ' +
             '…h6 asks the bishop the question at once — it retreats to h4 and stops being a ' +
             'threat and starts being a target. After White castles long you get the same ' +
@@ -159,6 +182,7 @@
       white: 'Quiet and symmetrical — 4.g3',
       line: 'e4 d6 d4 Nf6 Nc3 g6 g3 Bg7 Bg2 O-O Nge2 e5 O-O Nc6',
       why: 'He offers you a draw without ever saying the word. Decline it by taking the center he was too polite to claim. The mistake here is impatience: there is nothing to punish yet, so improve a piece and let him be the one who commits.',
+      whyW: 'You decline the fight and play chess. There is no refutation here, only the slow argument about who used their pieces better — which is a genuinely good way to beat somebody who turned up prepared for a brawl. It is also the line that teaches a Pirc player the most, because it takes away the counterattack and leaves only the position.',
       plan: 'White declines the fight and mirrors your bishop. Nothing is going to be handed ' +
             'to you, so take the center: …e5 and …Nc6 hit d4, and the position becomes a ' +
             "King's Indian where White has not committed to c4. Play …exd4 only when it wins " +
@@ -176,6 +200,7 @@
       white: 'Your OWN setup — 3…Nbd7 and …e5',
       line: 'e4 d6 d4 Nf6 Nc3 Nbd7 Nf3 e5 Bc4 Be7 O-O O-O a4 c6',
       why: 'You do not answer him at all. You build the same house every single game and dare him to knock it down. It is the least fashionable idea in the repertoire and the hardest to play against, because there is nothing to prepare FOR.',
+      whyW: 'He is building the same house he always builds and he does not care what you do. You get to choose the ground, which sounds like an advantage until you notice there is nothing to aim at. Take space, keep your pieces flexible, and do not go hunting a knockout that is not there — that hunt is the whole reason the setup works.',
       plan: 'The Pirc move order without the fianchetto: …Nbd7 supports …e5 straight away, ' +
             'and the pawn on e5 holds the center while you finish developing behind it. Slow, ' +
             'solid and very hard to break down. Your plans are …Qc7, …Re8 and a break with ' +
@@ -275,7 +300,7 @@
         plies[plies.length - 1].fen = C.toFEN(S);
       }
       return {
-        id: v.id, name: v.name, eco: v.eco, white: v.white, plan: v.plan, why: v.why,
+        id: v.id, name: v.name, eco: v.eco, white: v.white, plan: v.plan, why: v.why, whyW: v.whyW,
         note: v.note, plies: plies, fen: C.toFEN(S)
       };
     } catch (e) { return null; }
@@ -293,6 +318,7 @@
   return {
     CREED: CREED,
     TEACHER: TEACHER,
+    CREED_W: CREED_W,
     VARIATIONS: VARIATIONS,
     LEVELS: LEVELS,
     resolve: resolve,

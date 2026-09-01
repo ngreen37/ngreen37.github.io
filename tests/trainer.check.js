@@ -482,13 +482,13 @@ section('10 · the repertoire is a possession');
   /* ⚠ THE TWO GRANTS ARE GUARDED, and the guards are the feature. Without the first, Skip to
      the Position is a shortcut to the whole trophy case; without the second, ★ can be won on
      a line you never learned, which makes the tiers meaningless. */
-  ok(/if \(!G\.helped && grantKnown\(G\.v\.id\)\)/.test(OT),
-     'KNOWN is granted only on an unhelped walk-in');
-  ok(/if \(loser !== USER && !G\.helped && grantHeld\(G\.v\.id, G\.lvl\.elo\)\)/.test(OT),
+  ok(/if \(!G\.helped && grantKnown\(G\.v\.id, USER\)\)/.test(OT),
+     'KNOWN is granted only on an unhelped walk-in, and only to the side that walked it');
+  ok(/if \(loser !== USER && !G\.helped && grantHeld\(G\.v\.id, G\.lvl\.elo, USER\)\)/.test(OT),
      'HELD is granted only on an unhelped WIN, at the level actually played');
-  ok(/if \(!all\[id\] \|\| !all\[id\]\.known\) return false;/.test(OT),
+  ok(/if \(!all\[id\] \|\| !all\[id\]\[f\.known\]\) return false;/.test(OT),
      '…and never on a line that is not KNOWN first', 'the tiers are a ladder, not two switches');
-  ok(/if \(\(all\[id\]\.held \|\| 0\) >= elo\) return false;/.test(OT),
+  ok(/if \(\(all\[id\]\[f\.held\] \|\| 0\) >= elo\) return false;/.test(OT),
      '…and never downward', 'beating Fresh Recruit after Expert changes nothing');
 
   /* ── it reaches the account, and comes back ────────────────────────────────── */
@@ -520,6 +520,65 @@ section('10 · the repertoire is a possession');
     .filter((f) => read(f).indexOf("'" + KEY + "'") > -1);
   ok(spellers.length === 2 && spellers.indexOf('dossier.md') === -1,
      'only the trainer and the profile module name the storage key', spellers.join(' · '));
+}
+
+
+/* ── 11 · BOTH SIDES OF THE LINE ─────────────────────────────────────────────────
+   Idea #9, 2026-09-01: *"play the Austrian as White against your own defense."* The room
+   was built Black-only on purpose and said so in three places, so the risks here are not
+   about chess — they are about a half-flipped room: a board drawn from one side while the
+   marks are banked for the other, or advice written to Black handed to a White player as
+   though it were theirs. */
+section('11 · the other chair');
+{
+  const OT = read('academy-opening-trainer.html');
+  const PROF = read('assets/js/pjcc-profile.js');
+
+  ok(/var pickSide = 'b';/.test(OT), 'Black is still the default — it is the room\'s premise');
+  ok(/USER = \(pickSide === 'w'\) \? 'w' : 'b';/.test(OT),
+     'and the side is fixed once, in start(), not read live',
+     'flipping USER mid-game rewrites the position under the player');
+  ok(/\(USER === 'w'\) \? \(dr \* 8 \+ dc\) : \(\(7 - dr\) \* 8 \+ \(7 - dc\)\)/.test(OT),
+     'the board is drawn from whichever chair you took');
+
+  /* ⚠⚠ THE HALF-FLIP IS THE BUG WORTH GATING. A board that turns around while the marks
+     stay on the black half is invisible until somebody notices their white wins banked as
+     black ones — by which time the book is wrong and there is nothing to reconcile it
+     against. So every reader and writer has to name a side. */
+  const FIELDED = ['grantKnown(G.v.id, USER)', 'grantHeld(G.v.id, G.lvl.elo, USER)',
+                   'bookEntry(G.v.id, USER)', 'heldLevel(G.v.id, USER)',
+                   'bookEntry(v.id, pickSide)', 'heldLevel(v.id, pickSide)',
+                   "bookCounts('b')", 'bookCounts(pickSide)'];
+  const sideless = FIELDED.filter((c) => OT.indexOf(c) === -1);
+  ok(sideless.length === 0, 'every book call names the side it is about',
+     sideless.join(' · ') || FIELDED.length + ' call sites, all sided');
+  ok(/var FIELD = \{ b: \{ known: 'known', held: 'held' \}, w: \{ known: 'wKnown', held: 'wHeld' \} \};/.test(OT),
+     'the two field names live in exactly one map',
+     'black keeps the original spelling, so no book written before today needed migrating');
+  ok(/\[\['known', 'held'\], \['wKnown', 'wHeld'\]\]\.forEach/.test(PROF),
+     '…and the account merge carries both halves, by the same two rules');
+
+  /* ⚠⚠ THE ADVICE MUST NOT CHANGE HANDS SILENTLY. Every word of `plan` is written TO Black
+     ("the g7 bishop is your best piece"); handed to a White player as their plan it is the
+     room lying to them. The heading is what makes it a scouting report instead. */
+  ok(/elPlanH\.textContent = white \? 'What Black Is Trying to Do' : 'The Plan';/.test(OT),
+     'from the white chair the plan is relabelled as the OPPONENT\'s plan',
+     'the same paragraph, told the truth about who it belongs to');
+  ok(/var why = white \? \(v\.whyW \|\| ''\) : \(v\.why \|\| ''\);/.test(OT),
+     '…and the argument is the one written for that side');
+  BOOK.all().forEach(function (v) {
+    ok(!!v.whyW && v.whyW !== v.why, v.name + ': has its own white-side argument');
+  });
+
+  /* ⚠⚠ AND MICHAEL DOES NOT SIGN THE OTHER SIDE. He plays the Pirc; he does not play
+     against it, and a creed under his name arguing both ways is a voice that stops meaning
+     anything. The white text is the room's own, and the byline is WITHHELD rather than
+     handed to somebody else. [[slow-roll-cast]] */
+  ok(!!BOOK.CREED_W && BOOK.CREED_W !== BOOK.CREED, 'the white chair has its own creed');
+  ok(/\(!white && BOOK\.TEACHER \? '<cite>— '/.test(OT),
+     '…and it is signed by nobody', 'the teacher plays this opening; he does not play against it');
+  ok(BOOK.CREED_W.indexOf(BOOK.TEACHER) === -1,
+     '…and does not name him in its own text either', 'no byline through the back door');
 }
 
 
