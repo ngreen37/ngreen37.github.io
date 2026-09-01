@@ -95,8 +95,48 @@ and go.</p>
   <h2 class="ot-h2">Choose Your Side</h2>
   <div class="ot-sides" id="ot-sides" role="radiogroup" aria-label="Choose your side"></div>
 
-  <h2 class="ot-h2">Choose Your Opponent</h2>
+  {%- comment -%}
+    ⛑ ONE QUESTION, TWO ANSWERS — 2026-09-01, and it is a DECLUTTER rather than a feature.
+    Shipping "Or Prepare for a Regular" as a fifth stacked list put twenty-two controls on
+    the setup screen and asked "who are you playing?" twice, in two different vocabularies,
+    a screen apart. Rendered and counted before it was changed, not reasoned about.
+    ⭐ A rung and a regular are the same choice, so they share a heading and a switch. By
+    Strength stays the default because it is the room's own ladder and it needs no roster.
+  {%- endcomment -%}
+  <div class="ot-oh">
+    <h2 class="ot-h2">Choose Your Opponent</h2>
+    <div class="ot-tabs" role="tablist" aria-label="How to pick an opponent">
+      <button class="ot-tab on" type="button" role="tab" aria-selected="true" data-t="lvl">By Strength</button>
+      <button class="ot-tab" type="button" role="tab" aria-selected="false" data-t="reg">By Name</button>
+    </div>
+  </div>
   <div class="ot-levels" id="ot-levels" role="radiogroup" aria-label="Choose an opponent"></div>
+
+  {%- comment -%}
+    ⚑⚑ PREPARE FOR A NAMED REGULAR (2026-09-01) — idea #1, and the one Nate said was worth
+    building: *"Not 'level 4' — Robert. The room shows what he actually plays, drills you
+    against it, then sends you to the Park Tables to face him for real."*
+
+    ⭐ THE ROSTER IS PRINTED FROM `_data/regulars.yml`, NEVER TYPED HERE. `book:` and `elo:`
+    on those rows are compared field-for-field against the game's own BOTS object by
+    `npm run test:regulars` — so a seat whose system changes at the tables cannot go on
+    advertising the old one in the Academy. A third hand-typed copy of the bench is exactly
+    the trap that gate exists for. [[dead-game-links-trap]]
+    ⚠ ONLY ROWS WITH A `book` APPEAR. Auston has none because she adapts and Vince has none
+    because he studies you rather than chess — neither can be prepared FOR, and offering
+    them here would promise a drill the tables cannot deliver.
+  {%- endcomment -%}
+  <p class="ot-sub" id="ot-regs-sub" hidden>Drill against what a park regular actually plays,
+    at his own strength — then go and sit down with him.</p>
+  <div class="ot-regs" id="ot-regs" role="radiogroup" aria-label="Prepare for a park regular" hidden></div>
+  <script id="ot-regs-data" type="application/json">
+    [{%- assign booked = site.data.regulars | where_exp: "r", "r.book" -%}
+     {%- for r in booked -%}
+       {"key":{{ r.key | jsonify }},"name":{{ r.name | jsonify }},"elo":{{ r.elo }},
+        "book":{{ r.book | jsonify }},"icon":{{ r.icon | jsonify }},"open":{{ r.open | default: false }}}
+       {%- unless forloop.last -%},{%- endunless -%}
+     {%- endfor -%}]
+  </script>
 
   <div class="ot-go-row">
     <button class="ot-go" id="ot-go" type="button">Start the Walk-In ▸</button>
@@ -150,6 +190,7 @@ and go.</p>
       </div>
 
       <div class="ot-actions">
+        <a class="ot-btn ot-btn--go" id="ot-table" hidden>Go and Play Him ▸</a>
         <button class="ot-btn" id="ot-hint" type="button">Show Me the Move</button>
         <button class="ot-btn" id="ot-take" type="button" hidden>↶ Take Back</button>
         <button class="ot-btn ot-btn-ghost" id="ot-again" type="button">↻ Start Over</button>
@@ -202,6 +243,10 @@ and go.</p>
       elVars  = document.getElementById('ot-vars'),
       elLvls  = document.getElementById('ot-levels'),
       elSides = document.getElementById('ot-sides'),
+      elRegs  = document.getElementById('ot-regs'),
+      elRegsSub = document.getElementById('ot-regs-sub'),
+      elTabs  = document.querySelector('.ot-tabs'),
+      elTable = document.getElementById('ot-table'),
       elBoard = document.getElementById('ot-board'),
       elStat  = document.getElementById('ot-status'),
       elMoves = document.getElementById('ot-moves'),
@@ -288,6 +333,56 @@ and go.</p>
     }
     return { glyph: '☆', words: 'in your book' };
   }
+  /* ⚠ PARSED FROM A <script type="application/json"> RATHER THAN ASSIGNED INTO A VAR. A
+     Liquid loop writing JavaScript is a Liquid loop that can emit a syntax error from a
+     character in somebody's name; a JSON island is inert text until this line reads it, and
+     a bad parse costs the section rather than the page. [[down-never-stuck]] */
+  var REGULARS = (function () {
+    try { return JSON.parse(document.getElementById('ot-regs-data').textContent) || []; }
+    catch (e) { return []; }
+  })();
+  /* which regular you are preparing for, or null for the six plain rungs */
+  var pickReg = null;
+  function regByKey(k) {
+    for (var i = 0; i < REGULARS.length; i++) if (REGULARS[i].key === k) return REGULARS[i];
+    return null;
+  }
+  /* which of the two lists is on screen. Not persisted: it is a way of asking, not a
+     preference, and a room that opens on a different screen every visit is harder to learn. */
+  var opTab = 'lvl';
+  function paintTabs() {
+    if (!elTabs) return;
+    /* ⚠⚠ THE PANELS ARE TOGGLED WITH .hidden, NEVER WITH A CLASS THAT SETS display. A class
+       that sets display and a [hidden] attribute fight, and [hidden] loses — it is a UA rule
+       of the lowest possible specificity. That has bitten this site twice.
+       [[silent-css-deletions]] */
+    var reg = opTab === 'reg' && REGULARS.length > 0;
+    elLvls.hidden = reg;
+    elRegs.hidden = !reg;
+    if (elRegsSub) elRegsSub.hidden = !reg;
+    Array.prototype.forEach.call(elTabs.querySelectorAll('[data-t]'), function (b) {
+      var on = b.getAttribute('data-t') === opTab;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+  function paintRegs() {
+    if (!elRegs) return;
+    if (!REGULARS.length) { elRegs.hidden = true; return; }
+    elRegs.innerHTML = REGULARS.map(function (r) {
+      var v = varById(r.book);
+      return '<button class="ot-reg' + (pickReg === r.key ? ' on' : '') + '" type="button"' +
+        ' role="radio" aria-checked="' + (pickReg === r.key ? 'true' : 'false') + '"' +
+        ' data-r="' + esc(r.key) + '"' +
+        ' aria-label="Prepare for ' + esc(r.name) + ', rated ' + r.elo +
+        (v ? ', who plays ' + esc(v.name) : '') + '">' +
+        '<span class="ot-reg-pc" aria-hidden="true">' + (r.icon || '♟') + '</span>' +
+        '<span class="ot-reg-t"><b>' + esc(r.name) + '</b><small>' +
+        (v ? esc(v.name) : 'unknown line') + '</small></span>' +
+        '<span class="ot-reg-elo">' + r.elo + '</span></button>';
+    }).join('');
+  }
+
   var SIDES = [
     { id: 'b', name: 'Black', sub: 'Play the Pirc. The room’s own side.' },
     { id: 'w', name: 'White', sub: 'Play against it, and find out what it costs him.' }
@@ -304,6 +399,8 @@ and go.</p>
   }
   function paintSetup() {
     paintSides();
+    paintRegs();
+    paintTabs();
     paintCreed();
     var anyMark = bookCounts(pickSide).known > 0;
     elVars.innerHTML = VARS.map(function (v) {
@@ -333,16 +430,41 @@ and go.</p>
 
   elVars.addEventListener('click', function (e) {
     var b = e.target.closest('[data-v]'); if (!b) return;
-    pickVar = b.getAttribute('data-v'); paintSetup();
+    pickVar = b.getAttribute('data-v');
+    pickReg = null;                       // choosing a line by hand is not preparing for him
+    paintSetup();
   });
   elLvls.addEventListener('click', function (e) {
     var b = e.target.closest('[data-l]'); if (!b) return;
-    pickLvl = +b.getAttribute('data-l'); paintSetup();
+    pickLvl = +b.getAttribute('data-l');
+    pickReg = null;                       // a rung is not a person
+    paintSetup();
   });
   /* ⚠ paintSetup() REDRAWS THE CARDS, and that is the point rather than a side effect: the
      marks on the six variations are per side, so changing chairs changes what you have
      proved. A picker that only moved a ring would leave the black marks showing over a
      white game. */
+  /* ⚠ THE THREE PICKERS ARE NOT INDEPENDENT, and pretending they were is how you end up
+     drilling "Robert" against a line he does not play. Choosing a regular FIXES the
+     variation and the strength — he plays what he plays, at what he is rated — so choosing
+     either of those by hand afterward means you have stopped preparing for him, and the
+     highlight leaves his card to say so. */
+  elTabs.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-t]'); if (!b) return;
+    opTab = b.getAttribute('data-t');
+    /* ⚠ LEAVING THE NAMED LIST LEAVES THE PREPARATION. Otherwise the screen shows a rung
+       highlighted while the game quietly still belongs to Robert. */
+    if (opTab !== 'reg') pickReg = null;
+    paintSetup();
+  });
+  elRegs.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-r]'); if (!b) return;
+    var k = b.getAttribute('data-r');
+    pickReg = (pickReg === k) ? null : k;
+    var r = pickReg && regByKey(pickReg);
+    if (r) pickVar = r.book;
+    paintSetup();
+  });
   elSides.addEventListener('click', function (e) {
     var b = e.target.closest('[data-s]'); if (!b) return;
     pickSide = b.getAttribute('data-s'); paintSetup();
@@ -409,11 +531,15 @@ and go.</p>
     return { known: !!e[f.known], held: e[f.held] || 0 };
   }
   /* the strongest opponent a line has been held against, as a LEVEL — null if never held */
+  /* ⚠ A HELD RATING IS NOT ALWAYS A RUNG. Preparing for a regular plays at HIS number —
+     1800, 1400, 1150 — none of which is one of the six steps, and reporting "held against
+     Expert" for a win over an 1800 would be naming the wrong opponent. An exact rung gets
+     its name; anything else gets the number, which is always true. */
   function heldLevel(id, side) {
     var e = bookEntry(id, side);
     if (!e || !e.held) return null;
-    for (var i = LEVELS.length - 1; i >= 0; i--) if (LEVELS[i].elo <= e.held) return LEVELS[i];
-    return null;
+    for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].elo === e.held) return LEVELS[i];
+    return { name: String(e.held), elo: e.held };
   }
   function bookCounts(side) {
     var all = bookLoad(), f = FIELD[side] || FIELD.b, k = 0, h = 0, id;
@@ -463,9 +589,28 @@ and go.</p>
     /* ⚠ THE ONE PLACE USER MOVES. Set before G exists, so nothing can be built against a
        side that changes underneath it. */
     USER = (pickSide === 'w') ? 'w' : 'b';
+    /* ⭐ PREPARING FOR A REGULAR MEANS HIS RATING, NOT THE NEAREST RUNG. The bench does not
+       sit on this room's six steps — Robert is 1800, Kedar 1400 — and rounding him to 1700
+       would be drilling against somebody else and calling it his name. `dialFor` is the same
+       curve the rungs use, addressed by rating instead of by step.
+       ⚠ THE MOVETIME IS THE NEAREST RUNG'S, and that is a PACING choice rather than a
+       strength one: how long a bot appears to think is not a claim about how well it plays,
+       and inventing a formula for it would be a second dial nobody asked for. */
+    var reg = pickReg ? regByKey(pickReg) : null;
+    var lvl = levelById(pickLvl);
+    if (reg) {
+      var near = LEVELS[0];
+      for (var q = 0; q < LEVELS.length; q++) {
+        if (Math.abs(LEVELS[q].elo - reg.elo) < Math.abs(near.elo - reg.elo)) near = LEVELS[q];
+      }
+      lvl = { id: 0, name: reg.name, elo: reg.elo, movetime: near.movetime,
+              blurb: 'What he actually plays, at what he is actually rated.' };
+    }
     G = {
       v: v,
-      lvl: levelById(pickLvl),
+      reg: reg,
+      dial: reg ? BOOK.dialFor(reg.elo, lvl.movetime) : BOOK.dial(pickLvl),
+      lvl: lvl,
       S: C.parseFEN(),
       idx: 0,                 // how many plies of the book have been played
       phase: 'book',
@@ -511,6 +656,19 @@ and go.</p>
     elWhyH.textContent = white ? 'Why He Plays It' : 'Why This Line';
     elWhy.hidden = !why;
 
+    /* ⭐ THE LOOP CLOSES HERE — the drill sends you to the real seat (idea #1). Only for a
+       seat you can actually sit at: the two locked rungs can be PREPARED for long before
+       they open, which is motivating, but a door to a seat that refuses you is a dead end.
+       ⚠ A plain literal href, built once: tests/links.check.js reads hrefs out of the
+       source, and a path spliced together in an attribute reads to it as a broken link. */
+    if (elTable) {
+      var canSit = !!(reg && reg.open);
+      elTable.hidden = !canSit;
+      if (canSit) {
+        elTable.href = '/games/park-tables/?table=' + encodeURIComponent(reg.key);
+        elTable.textContent = 'Go and Play ' + reg.name + ' ▸';
+      }
+    }
     elYou.textContent = white ? 'You · White' : 'You · Black';
     elBoard.setAttribute('aria-label', 'The trainer board — you are ' +
       (white ? 'White, playing up the screen' : 'Black, playing up the screen'));
@@ -531,6 +689,10 @@ and go.</p>
     tick();
   }
 
+  function varById(id) {
+    for (var i = 0; i < VARS.length; i++) if (VARS[i].id === id) return VARS[i];
+    return null;
+  }
   function levelById(id) {
     for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].id === id) return LEVELS[i];
     return LEVELS[0];
@@ -624,7 +786,9 @@ and go.</p>
   function engineTurn() {
     if (G.thinking) return;
     G.thinking = true;
-    var mySeq = G.seq, dial = BOOK.dial(G.lvl.id);
+    /* ⚠ THE GAME'S OWN DIAL, not a fresh lookup by rung id — a game prepared against a
+       regular has no rung id, and BOOK.dial(0) would quietly hand back Fresh Recruit. */
+    var mySeq = G.seq, dial = G.dial;
     render();
 
     var pr = (ENGINE && ENGINE.move)
@@ -1105,6 +1269,47 @@ and go.</p>
 .ot-card--got .ot-card-mark { color: #e08a3c; }
 .ot-card--got { border-left-color: #e08a3c; }
 
+/* the heading and its switch share a row — one question, two vocabularies */
+.ot-oh { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; }
+.ot-tabs { display: flex; gap: 6px; }
+.ot-tab { background: transparent; border: 1px solid #2c4636; border-radius: 999px;
+  color: #b7c6b3; font-size: 0.76rem; padding: 5px 12px; min-height: 30px; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.ot-tab:hover { border-color: #e08a3c; color: #f2eddd; }
+.ot-tab.on { border-color: #e08a3c; color: #ffd7a8; background: rgba(224,138,60,0.14); }
+
+/* ── preparing for a named regular (2026-09-01) ─────────────────────────────────
+   The same row skeleton as .ot-lvl and .ot-side-btn, because the setup screen is one list
+   of decisions and a third shape would read as a third feature. The glyph is the seat's own
+   piece from _data/regulars.yml, drawn in the canon black livery so the bench looks the same
+   here as it does at the tables. */
+/* ⛑⛑ THE [hidden] PAIR IS WRITTEN IN THE SAME BLOCK, AND IT IS NOT TIDYING. `display: flex`
+   here is (0,1,0); the UA's `[hidden] { display: none }` is the lowest specificity there is,
+   so the class WINS and el.hidden = true changes nothing on screen. This site has now been
+   bitten by that three times — the rating room, the trainer's own promo overlay, and this
+   switch, which shipped "working" and drove fourteen green checks over a list that was
+   still visible the whole time. If a rule sets display, its [hidden] twin goes with it.
+   [[silent-css-deletions]] */
+.ot-regs { display: flex; flex-direction: column; gap: 7px; max-width: 560px; margin-bottom: 22px; }
+.ot-regs[hidden] { display: none; }
+.ot-reg { display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
+  background: rgba(23,42,30,0.62); border: 1px solid #2c4636; border-radius: var(--r-sm, 8px);
+  padding: 9px 13px; min-height: 44px; transition: border-color 0.15s, background 0.15s; }
+.ot-reg:hover { border-color: #e08a3c; background: rgba(28,52,37,0.85); }
+.ot-reg.on { border-color: #e08a3c; background: rgba(45,68,44,0.9);
+  box-shadow: 0 0 0 1px rgba(224,138,60,0.4); }
+.ot-reg-pc { font-size: 1.3rem; line-height: 1; width: 1.4em; text-align: center;
+  color: var(--piece-b-fill); -webkit-text-stroke: 0.03em var(--piece-b-line); }
+.ot-reg-t { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; }
+.ot-reg-t b { color: #f2eddd; font-size: 0.94rem; }
+.ot-reg-t small { color: #8fae94; font-size: 0.76rem; }
+.ot-reg-elo { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: #e08a3c; }
+/* the door back to the real seat — the only anchor among the room's buttons, so it says so */
+.ot-btn--go { text-decoration: none; display: inline-flex; align-items: center;
+  border-color: #e08a3c; color: #ffd7a8; }
+.ot-btn--go:hover { background: rgba(224,138,60,0.16); color: #fff3e2; }
+
 /* ── the two chairs (2026-09-01) ───────────────────────────────────────────────────
    Two wide rows rather than a segmented pill: each side is an argument, not a toggle, and
    the sub-line under the name is what makes White worth choosing. Same skeleton as .ot-lvl
@@ -1128,6 +1333,7 @@ and go.</p>
 
 /* ── the six opponents ─────────────────────────────────────────────────────────── */
 .ot-levels { display: flex; flex-direction: column; gap: 7px; max-width: 560px; }
+.ot-levels[hidden] { display: none; }   /* the same pair — see the note over .ot-regs */
 .ot-lvl { display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
   background: rgba(23,42,30,0.62); border: 1px solid #2c4636; border-radius: var(--r-sm, 8px);
   padding: 9px 13px; min-height: 44px; transition: border-color 0.15s, background 0.15s; }

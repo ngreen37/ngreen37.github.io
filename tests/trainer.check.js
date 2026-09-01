@@ -582,6 +582,90 @@ section('11 · the other chair');
 }
 
 
+/* ── 12 · PREPARE FOR A NAMED REGULAR ────────────────────────────────────────────
+   Idea #1, the one Nate called worth building: *"Not 'level 4' — Robert. The room shows what
+   he actually plays, drills you against it, then sends you to the Park Tables to face him."*
+   Its prerequisite — an opening book on the bench — is gated in test:regulars; this covers
+   the Academy's half. */
+section('12 · preparing for a named regular');
+{
+  const OT = read('academy-opening-trainer.html');
+  const YML = read('_data/regulars.yml');
+
+  /* ⚠⚠ THE ROSTER IS PRINTED FROM THE DATA FILE, NEVER TYPED. A third hand-typed copy of the
+     bench is the trap test:regulars exists for, and this page would be the third. */
+  ok(/site\.data\.regulars \| where_exp/.test(OT),
+     'the roster is read from _data/regulars.yml at build time');
+  /* ⛑⛑ ASKED OF THE PAGE WITH ITS COMMENTS STRIPPED, AND THE FIRST VERSION WAS NOT. The
+     Liquid comment above this feature QUOTES Nate — "Not 'level 4' — Robert" — so a bare
+     search for the name flagged the page for explaining itself. Third time this exact shape
+     has bitten: a pointer comment naming a selector, a comment naming a storage key, and now
+     a comment quoting the person the feature is about. Strip the prose, then ask. */
+  const RENDERED = OT
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+  const NAMES = [...YML.matchAll(/^ {2}name: (.+)$/gm)].map((m) => m[1].trim());
+  const typed = NAMES.filter((n) => RENDERED.indexOf(n) > -1);
+  ok(NAMES.length >= 8 && typed.length === 0,
+     '…and not one regular is named in the page\'s own markup or code',
+     typed.length ? 'TYPED: ' + typed.join(', ') : NAMES.length + ' names, none of them here');
+  ok(/where_exp: "r", "r\.book"/.test(OT),
+     '…and only seats with a BOOK are offered',
+     'Auston adapts and Vince studies you — neither can be prepared for');
+
+  /* the data file has to carry the field the page filters on */
+  ok(/^ {2}book: \w+$/m.test(YML), 'the data file carries each seat\'s book');
+
+  /* ⚠ A LIQUID LOOP THAT WRITES JAVASCRIPT CAN EMIT A SYNTAX ERROR FROM SOMEBODY'S NAME. A
+     JSON island is inert text until one line parses it, and a bad parse costs the section
+     rather than the page. [[down-never-stuck]] */
+  ok(/<script id="ot-regs-data" type="application\/json">/.test(OT),
+     'it arrives as a JSON island, not as generated JavaScript');
+  ok(/JSON\.parse\(document\.getElementById\('ot-regs-data'\)\.textContent\)/.test(OT) &&
+     /catch \(e\) \{ return \[\]; }/.test(OT),
+     '…and a bad parse costs the section, not the room');
+
+  /* ⭐ HIS RATING, NOT THE NEAREST RUNG — the bench does not sit on this room's six steps */
+  ok(/dial: reg \? BOOK\.dialFor\(reg\.elo, lvl\.movetime\) : BOOK\.dial\(pickLvl\)/.test(OT),
+     'a prepared game plays at the regular\'s own rating',
+     'rounding 1800 to the 1700 rung is drilling against somebody else');
+  ok(typeof BOOK.dialFor === 'function', '…through the same curve the rungs use');
+  {
+    const byRung = BOOK.dial(5), byElo = BOOK.dialFor(1700, byRung.movetime);
+    ok(byRung.skill === byElo.skill && byRung.blunder === byElo.blunder,
+       '…and the two doors agree where they meet', 'rung 5 is 1700: ' + JSON.stringify(byRung));
+  }
+  ok(/var mySeq = G\.seq, dial = G\.dial;/.test(OT),
+     '…and the engine reads the dial the game was built with',
+     'a fresh BOOK.dial(0) would quietly hand back Fresh Recruit');
+
+  /* the loop closes, and only where it can */
+  ok(/var canSit = !!\(reg && reg\.open\);/.test(OT),
+     'the door to the tables opens only for a seat you can sit at',
+     'the two locked rungs can be prepped for long before they open');
+  ok(OT.indexOf("'/games/park-tables/?table=' + encodeURIComponent(reg.key)") > -1,
+     '…and it goes to that seat\'s own table');
+
+  /* ⚠ THE THREE PICKERS ARE NOT INDEPENDENT. Choosing a line or a rung by hand means you
+     have stopped preparing for him, and the state has to say so or the screen lies. */
+  const clears = (OT.match(/pickReg = null;/g) || []).length;
+  ok(clears >= 3, 'choosing a line, a rung or the other tab all stop preparing for him',
+     clears + ' places clear it');
+
+  /* ⛑⛑ THE SWITCH: [hidden] LOSES TO A CLASS THAT SETS display, AND THIS SHIPPED BROKEN
+     ONCE TODAY — sixteen driven checks passed over a list that had never gone away. Both
+     panels set display:flex, so both need their [hidden] twin in the same block.
+     [[silent-css-deletions]] */
+  ['ot-regs', 'ot-levels'].forEach(function (c) {
+    ok(OT.indexOf('.' + c + '[hidden] { display: none; }') > -1 ||
+       new RegExp('\.' + c + '\[hidden\]\s*\{[^}]*display:\s*none').test(OT),
+       '.' + c + ' carries its own [hidden] rule',
+       'without it el.hidden = true changes nothing on screen');
+  });
+}
+
+
 console.log('\n' + (FAIL ? '✗ ' + FAIL + ' FAILED' : '✓ all ' + PASS + ' checks passed'));
 if (FAIL) { console.log('\nFailures:'); fails.forEach((f) => console.log('  · ' + f)); }
 process.exit(FAIL ? 1 : 0);

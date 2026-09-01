@@ -57,6 +57,11 @@ while ((m = entry.exec(botsBlock)) !== null) {
        direction: if the YAML forgets the flag, the front door prints Auston's seed as a
        rating. That number is invisible everywhere else on purpose. */
     adaptive: /adaptive:\s*true/.test(body),
+    /* ⚑ 2026-09-01 — the Academy reads this field to offer "prepare for Robert", so it is a
+       FIFTH thing that can disagree between the game and the data file, and the disagreement
+       is the worst kind: the trainer would drill you against a line the seat no longer
+       plays, and every move of it would look right. */
+    book: (/book:\s*'(\w+)'/.exec(body) || [, null])[1],
     open: !/locked:/.test(body)
   });
 }
@@ -98,6 +103,8 @@ for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
   check('· ' + b.key + ' — name', r.name === b.name, r.name + ' vs ' + b.name);
   check('· ' + b.key + ' — rating', r.elo === b.elo, r.elo + ' vs ' + b.elo);
   check('· ' + b.key + ' — icon', r.icon === b.icon, r.icon + ' vs ' + b.icon);
+  check('· ' + b.key + ' — opening book', (r.book || null) === (b.book || null),
+        (r.book || 'none') + ' vs ' + (b.book || 'none'));
   check('· ' + b.key + ' — ' + (b.open ? 'open' : 'locked'), r.open === b.open,
         'data says ' + (r.open ? 'open' : 'locked') + ', the game says ' + (b.open ? 'open' : 'locked'));
   check('· ' + b.key + ' — ' + (b.adaptive ? 'adaptive' : 'a fixed rung'), !!r.adaptive === b.adaptive,

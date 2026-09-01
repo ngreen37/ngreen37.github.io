@@ -241,21 +241,33 @@
      this module is also loaded in Node by the test, where no bridge is on the page.
      ⚠ MUST STAY THE SAME FORMULA as pjcc-gauntlet-engine.js; tests/trainer.check.js
      compares the two so a tuned curve there cannot silently leave this behind. */
+  /* ⚑ dialFor(elo, movetime) — the same curve, addressed by RATING instead of by rung
+     (2026-09-01, idea #1). Preparing for a named regular means playing at HIS strength, and
+     the bench does not sit on this room's six rungs: Robert is 1800, Vince 1150, Kedar 1400.
+     Rounding him to the nearest rung would be drilling against a different opponent and
+     calling it his name.
+     ⚠ IT IS THE SAME TWO FUNCTIONS, NOT A SECOND CURVE. dial() is now a lookup that hands
+     its rung's elo to this — so the day skillForElo changes, both doors move together, which
+     is the whole reason §5 of test:trainer compares this file against the engine bridge. */
+  function dialFor(elo, movetime) {
+    var E = root && root.PJCCGauntletEngine;   // absent in Node, and that is the fallback's job
+    var skill, blunder;
+    if (E && E.skillForElo && E.blunderForElo) {
+      skill = E.skillForElo(elo);
+      blunder = E.blunderForElo(elo);
+    } else {
+      skill = elo < 1400 ? 0 : Math.min(20, Math.round(3 + (elo - 1400) * 0.017));
+      blunder = blunderFallback(elo);
+    }
+    return { skill: skill, blunder: blunder, movetime: movetime };
+  }
   function dial(level) {
     var L = null, i;
     for (i = 0; i < LEVELS.length; i++) if (LEVELS[i].id === level) L = LEVELS[i];
     if (!L) L = LEVELS[0];
-    var E = root && root.PJCCGauntletEngine;   // absent in Node, and that is the fallback's job
-    var skill, blunder;
-    if (E && E.skillForElo && E.blunderForElo) {
-      skill = E.skillForElo(L.elo);
-      blunder = E.blunderForElo(L.elo);
-    } else {
-      skill = L.elo < 1400 ? 0 : Math.min(20, Math.round(3 + (L.elo - 1400) * 0.017));
-      blunder = blunderFallback(L.elo);
-    }
-    return { skill: skill, blunder: blunder, movetime: L.movetime };
+    return dialFor(L.elo, L.movetime);
   }
+
   var BLUNDER_LADDER = [
     [350, 0.36], [500, 0.28], [650, 0.20], [800, 0.16], [950, 0.10],
     [1100, 0.03], [1250, 0.02], [1400, 0.01], [1600, 0.00], [1800, 0.005]
@@ -319,6 +331,7 @@
     CREED: CREED,
     TEACHER: TEACHER,
     CREED_W: CREED_W,
+    dialFor: dialFor,
     VARIATIONS: VARIATIONS,
     LEVELS: LEVELS,
     resolve: resolve,
