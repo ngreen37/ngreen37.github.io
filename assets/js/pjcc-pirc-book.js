@@ -58,16 +58,27 @@
      recite fourteen plies without knowing the posture has memorized a phone number. This is
      the one paragraph that turns the room from a drill into somebody's opening.
 
-     ⛑⛑ THE TEACHER IS UNNAMED ON PURPOSE, AND THIS IS THE ONE LINE THAT CHANGES IT.
-     In canon the Pirc belongs to **Michael** — the Chess City rival, *"acts as God would,
-     always"*, who teaches it to Princess. But Michael has NO FILE AND NO PAGE: Nate deleted
-     `_characters/Michael.md` and `_evolutions/rival.md` in 4ce0b46 (2026-07-05) and he is
-     gone from the whole site, surviving only in `private/FUTURE-IDEAS.md`. Printing his name
-     here would put a deliberately removed character back on the public internet, and that is
-     a reveal only Nate can spend. [[slow-roll-cast]] [[private-by-default]]
-     ⭐ So the creed is written IN HIS VOICE and signed by nobody. Set TEACHER to 'Michael'
-     and the room attributes it; that is the whole switch. */
-  var TEACHER = null;
+     ⛑⛑ THE TEACHER IS **MICHAEL**, AND NATE SPENT THAT REVEAL HIMSELF ON 2026-09-01
+     (*"go ahead and call teacher Michael"*). Do not quietly walk it back.
+
+     In canon the Pirc belongs to Michael — the Chess City rival, *"acts as God would,
+     always"*, who teaches the opening to Princess. He was written in this voice from the
+     first draft and shipped unsigned for one day, because he has **NO FILE AND NO PAGE**:
+     `_characters/Michael.md` and `_evolutions/rival.md` were deleted in 4ce0b46
+     (2026-07-05) and he survives only in `private/FUTURE-IDEAS.md`. So this is a reveal
+     with a genuine cost, and it was Nate's to make rather than mine.
+
+     ⭐ WHAT IT ACTUALLY PUTS ON THE INTERNET: a NAME under a paragraph, and nothing else.
+     There is no page to reach, no card in the cast grid, no entry on the map — the same
+     shape as Robert appearing as a bot before his page was ever unhidden, except that
+     Michael has no hidden page either. A name with nothing behind it is a question, not a
+     disclosure, which is the cheapest possible version of this reveal.
+     ⚠⚠ SO THE COST LANDS LATER, NOT NOW. The day Michael gets a character page, that page
+     inherits an audience that has already met him here. Anything written for him must agree
+     with this paragraph — it is now his oldest public line. [[slow-roll-cast]]
+     ⚠ `test:trainer` now asserts the attribution RENDERS. The old gate asserted the
+     opposite, which is exactly right for the day before the decision and wrong after it. */
+  var TEACHER = 'Michael';
   var CREED =
     'You are going to let him have the middle of the board. Not because you cannot fight ' +
     'for it — because you are not interested in fighting for it yet. You build behind your ' +

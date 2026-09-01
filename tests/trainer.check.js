@@ -111,20 +111,28 @@ section('3 · the menu');
 
   /* the creed, and the reveal it deliberately does not spend */
   ok(!!BOOK.CREED && BOOK.CREED.length > 200, 'the repertoire has a creed');
-  /* ⚠⚠ MICHAEL IS DELETED FROM THIS SITE, NOT HIDDEN ON IT — `_characters/Michael.md` and
-     `_evolutions/rival.md` went in 4ce0b46 (2026-07-05); his canon survives only in
-     private/FUTURE-IDEAS.md. He owns this opening in the fiction, so the temptation to sign
-     the creed with his name is permanent and the cost is a reveal only Nate can spend.
-     This fails the moment somebody spends it by accident. [[slow-roll-cast]] */
-  ok(BOOK.TEACHER === null || typeof BOOK.TEACHER === 'string',
-     'the teacher slot is a single switch');
+  /* ⛑⛑ THIS CHECK USED TO ASSERT THE OPPOSITE, AND BOTH VERSIONS WERE RIGHT ON THEIR DAY.
+     From 2026-08-31 it failed if the name **Michael** reached this page at all: he was
+     deleted from the site in 4ce0b46 (2026-07-05), he owns this opening in canon, and the
+     temptation to sign the creed with his name was therefore permanent and not mine to
+     act on. On 2026-09-01 Nate spent the reveal himself — *"go ahead and call teacher
+     Michael"* — so the guard now protects the DECISION instead of the secret.
+
+     ⭐ THE THING WORTH GATING DID NOT CHANGE: that the byline is deliberate. A creed that
+     silently loses its author reads as an editing accident, and a creed that gains one
+     nobody chose is the leak the first version existed to stop. Either direction is caught
+     by asking that TEACHER and the page agree. [[slow-roll-cast]] [[removed-not-forgotten]] */
+  ok(BOOK.TEACHER === 'Michael', 'the creed is signed by the character who owns the opening',
+     'Nate spent this reveal on 2026-09-01; a silent revert is the failure');
   const PAGE_SRC = read('academy-opening-trainer.html');
-  const leaked = ['Michael'].filter(function (n) {
-    return BOOK.TEACHER === n || PAGE_SRC.split('pjcc-pirc-book.js')[0].indexOf('>' + n) > -1;
-  });
-  ok(leaked.length === 0,
-     'no deleted character is named in the page the public reads' +
-     (leaked.length ? '  -> ' + leaked.join(', ') + ' (a reveal only Nate can make)' : ''));
+  ok(/BOOK\.TEACHER \? '<cite>— ' \+ esc\(BOOK\.TEACHER\)/.test(PAGE_SRC),
+     '…and the page actually prints it, rather than holding a name it never renders',
+     'the switch is only a switch if something reads it');
+  /* ⚠ AND NO SECOND COPY OF THE NAME. It is typed once, in the book; a page that also
+     hard-codes it is a page that keeps saying Michael the day the switch is flipped back. */
+  ok(PAGE_SRC.split('<script').slice(1).join('<script').indexOf(">Michael") === -1 &&
+     !/'Michael'/.test(PAGE_SRC),
+     '…and the room never hard-codes the name itself', 'one switch, one spelling');
 }
 
 /* ── 4 · the six opponents ───────────────────────────────────────────────────────── */
