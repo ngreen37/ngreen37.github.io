@@ -1,0 +1,878 @@
+---
+layout: page
+title: The Opening Trainer
+permalink: /academy/opening-trainer/
+own_title: true
+body_class: theme-academy
+description: "Learn the Pirc Defense as Black — walk into the main line and its variations move by move, then play the middlegame out against six opponents, from a true beginner to a full-strength engine. Free, no account needed."
+---
+
+{% comment %} ══════════════════════════════════════════════════════════════════════════
+     THE OPENING TRAINER — LESSON 3, IN DEVELOPMENT (2026-08-31).
+
+     Nate: "I love the Pirc defense, right? So how about a trainer where you get into the
+     main line (and variations like Lions Jaw, etc) so you can hit it hard… Build it out
+     as much as possible, starting with PIRC-ONLY - and ONLY WITH BLACK for the user…
+     Do 6 different levels - true beginner opponent all the way to perfect play."
+
+     ⚠⚠ THIS IS NOT THE PIRC PROTOCOL, AND THE DIFFERENCE IS THE WHOLE IDEA.
+     /games/pirc-protocol/ is a BOOK DRILL: it asks for the book move and it ends when the
+     book ends. That teaches you a move order. It does not teach you the opening, because
+     the opening is the position it leaves you in — and a student who can recite fourteen
+     plies and then has no idea what to do on move eight has not learned the Pirc.
+
+     So this room is two halves welded together, and the weld is the point:
+       · THE WALK-IN — both sides are scripted through the chosen variation, so you
+         reliably ARRIVE at the tabiya. Play the book move and it advances; play something
+         else and it says so and lets you try again. Nothing is scored, nothing is timed.
+       · THE PLAY-OUT — the instant the book runs out, White is handed to the engine at the
+         level you picked and you play the middlegame you just built. THIS is the lesson.
+
+     ⭐ WHY THE PAGE OWNS NO CHESS. Move generation is pjcc-chess.js (the perft-verified
+     referee, shared with every other board on the site) and the opponent is
+     pjcc-gauntlet-engine.js (Stockfish, with the referee re-validating every move it
+     returns and a negamax fallback when it cannot load). The repertoire is
+     assets/js/pjcc-pirc-book.js, replayed through the referee at load. This file is a
+     BOARD and a STATE MACHINE — every chess claim it makes is proved somewhere else, by
+     something a test can run without a browser. [[accuracy-above-all]]
+
+     ⚠ THE STUDENT IS ALWAYS BLACK. That is Nate's constraint, and it is load-bearing in
+     more places than it looks: the board is drawn flipped, the book alternates from a
+     WHITE first ply, `USER` is a constant rather than a setting, and every line in the
+     book ends on a Black move so the hand-off never hands White two moves in a row. If a
+     white repertoire is ever wanted, it is a new book file and a `side` flag — not a
+     tweak to this page.
+
+     ⚠ MARKED IN DEVELOPMENT, DELIBERATELY, AND IT IS PLAYABLE ANYWAY. Nate: "We'll add it
+     to the Academy as IN DEVELOPMENT." So the badge is honest about the state without the
+     door being shut — this is `cat:'dev'` on the games registry, NOT `playable:false`
+     behind the prototype key gate. Nothing here is hidden; it is labeled.
+     {% endcomment %}
+
+<p class="ot-crumb"><a href="{{ '/academy/' | relative_url }}">← The Academy</a> &middot; Lesson 3</p>
+
+<h1 class="page-title">The Opening Trainer</h1>
+
+<div class="ot-devbar" role="note">
+  <span class="ot-devpill">In Development</span>
+  <span class="ot-devtext">The Pirc Defense, as Black. More openings — and more of this one — are coming.</span>
+</div>
+
+<p class="ot-lead">Most opening trainers stop the moment the book stops, which is the moment
+the game actually starts. This one walks you into the line, then makes you play it. Pick how
+White comes at you, pick who you are playing, and go.</p>
+
+<!-- ══ SCREEN 1 · THE SETUP ══════════════════════════════════════════════════════ -->
+<section class="ot-setup" id="ot-setup">
+
+  <h2 class="ot-h2">Choose Your Variation</h2>
+  <p class="ot-sub">Six ways White meets the Pirc. Each one walks you to its main position.</p>
+  <div class="ot-cards" id="ot-vars" role="radiogroup" aria-label="Choose a variation"></div>
+
+  <h2 class="ot-h2">Choose Your Opponent</h2>
+  <p class="ot-sub">Same opening, six different fights. The rating is what the engine is
+    throttled to — it is the same dial the Gauntlet and the Park Tables use.</p>
+  <div class="ot-levels" id="ot-levels" role="radiogroup" aria-label="Choose an opponent"></div>
+
+  <div class="ot-go-row">
+    <button class="ot-go" id="ot-go" type="button">Start the Walk-In ▸</button>
+    <button class="ot-skip" id="ot-skip" type="button" title="Jump straight to the end of the book and play from there">Skip to the Position</button>
+  </div>
+  <p class="ot-engine-note" id="ot-engine-note" role="status"></p>
+</section>
+
+<!-- ══ SCREEN 2 · THE BOARD ══════════════════════════════════════════════════════ -->
+<section class="ot-room" id="ot-room" hidden>
+
+  <div class="ot-topline">
+    <button class="ot-back" id="ot-back" type="button">← Change Setup</button>
+    <span class="ot-tag" id="ot-tag">—</span>
+  </div>
+
+  <div class="ot-stage">
+
+    <div class="ot-boardwrap">
+      {%- comment -%} The board is a plain 8×8 grid of buttons drawn from Black's side. It
+           reads the chess canon tokens (--chess-lt / --piece-b-fill / …), so it goes under
+           the eclipse with every other board on the site and gets any future retint free.
+           [[chess-visual-canon]] {%- endcomment -%}
+      <div class="ot-board" id="ot-board" aria-label="The trainer board — you are Black, playing up the screen"></div>
+      <div class="ot-status" id="ot-status" role="status" aria-live="polite">Loading the board…</div>
+    </div>
+
+    <aside class="ot-side">
+      <div class="ot-phase" id="ot-phase">The Walk-In</div>
+      <div class="ot-vs">
+        <span class="ot-vs-you">You · Black</span>
+        <span class="ot-vs-sep">vs</span>
+        <span class="ot-vs-them" id="ot-vs-them">—</span>
+      </div>
+
+      <div class="ot-movesbox">
+        <div class="ot-moves" id="ot-moves" aria-label="Moves played"></div>
+      </div>
+
+      <div class="ot-plan" id="ot-plan" hidden>
+        <div class="ot-plan-h">The Plan</div>
+        <p class="ot-plan-b" id="ot-plan-b"></p>
+      </div>
+
+      <div class="ot-actions">
+        <button class="ot-btn" id="ot-hint" type="button">Show Me the Move</button>
+        <button class="ot-btn" id="ot-take" type="button" hidden>↶ Take Back</button>
+        <button class="ot-btn ot-btn-ghost" id="ot-again" type="button">↻ Start Over</button>
+      </div>
+    </aside>
+
+  </div>
+
+  {%- comment -%} The promotion chooser. Rare as Black in this opening but not impossible in
+       a played-out endgame, and `findMove` silently defaults to a queen when no piece is
+       named — which would quietly steal an underpromotion from somebody who meant it. {%- endcomment -%}
+  <div class="ot-promo" id="ot-promo" hidden>
+    <div class="ot-promo-card">
+      <div class="ot-promo-h">Promote To</div>
+      <div class="ot-promo-row" id="ot-promo-row"></div>
+    </div>
+  </div>
+
+</section>
+
+<p class="ot-foot">Built on the same referee every board on this site uses, so every legal
+move you are shown is genuinely legal. Nothing here is scored and nothing is timed — lose as
+many games as you like. <a href="{{ '/games/pirc-protocol/' | relative_url }}">The Pirc Protocol</a>
+drills the book itself if you want the moves in your fingers first.</p>
+
+<script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-pirc-book.js' | relative_url }}"></script>
+<script>
+/* ══ THE OPENING TRAINER ═══════════════════════════════════════════════════════════════
+   Four scripts above, and the ORDER IS LOAD-BEARING: the referee first (everything below
+   is built on it), the negamax fallback before the bridge that falls back to it, and the
+   book last because it resolves its lines through the referee the moment it is defined.
+   [[feature-shipped-but-never-loaded]] — every one of them is checked by
+   tests/trainer.check.js, from source, because a missing <script src> here is a page that
+   renders perfectly and does nothing. */
+(function () {
+  'use strict';
+
+  var C = window.PJCCChess, BOOK = window.PJCCPircBook, ENGINE = window.PJCCGauntletEngine;
+
+  var elSetup = document.getElementById('ot-setup'),
+      elRoom  = document.getElementById('ot-room'),
+      elVars  = document.getElementById('ot-vars'),
+      elLvls  = document.getElementById('ot-levels'),
+      elBoard = document.getElementById('ot-board'),
+      elStat  = document.getElementById('ot-status'),
+      elMoves = document.getElementById('ot-moves'),
+      elPhase = document.getElementById('ot-phase'),
+      elTag   = document.getElementById('ot-tag'),
+      elThem  = document.getElementById('ot-vs-them'),
+      elPlan  = document.getElementById('ot-plan'),
+      elPlanB = document.getElementById('ot-plan-b'),
+      elHint  = document.getElementById('ot-hint'),
+      elTake  = document.getElementById('ot-take'),
+      elPromo = document.getElementById('ot-promo'),
+      elPromoRow = document.getElementById('ot-promo-row'),
+      elNote  = document.getElementById('ot-engine-note');
+
+  /* ⛑ DOWN, NEVER STUCK. Every dependency is checked before a single element is painted,
+     and a missing one leaves a page that SAYS what is wrong instead of a board that never
+     appears. The status line's default text is "Loading the board…", which no state below
+     can emit — so if that string is ever on screen, this function never ran.
+     [[down-never-stuck]] */
+  if (!C || !BOOK) {
+    if (elStat) elStat.textContent = 'The board could not load. Try a refresh.';
+    if (elNote) elNote.textContent = 'The chess engine did not load on this page — a refresh usually fixes it.';
+    return;
+  }
+
+  var USER = 'b';                       // ⚠ Nate's constraint: the student is ALWAYS Black.
+  var VARS = BOOK.all();                // only the lines the referee could replay
+  var LEVELS = BOOK.LEVELS;
+
+  var pickVar = VARS.length ? VARS[0].id : null;
+  var pickLvl = 3;                      // Club Regular — a fair first fight, not a wall
+
+  /* The whole game state. `phase` is the state machine: 'book' while the line is being
+     walked, 'play' once the engine has White, 'over' when the referee says so. */
+  var G = null;
+
+  /* ── the setup screen ──────────────────────────────────────────────────────────── */
+  function paintSetup() {
+    elVars.innerHTML = VARS.map(function (v) {
+      return '<button class="ot-card' + (v.id === pickVar ? ' on' : '') + '" type="button" role="radio"' +
+             ' aria-checked="' + (v.id === pickVar ? 'true' : 'false') + '" data-v="' + esc(v.id) + '">' +
+             '<span class="ot-card-eco">' + esc(v.eco) + '</span>' +
+             '<span class="ot-card-name">' + esc(v.name) + '</span>' +
+             '<span class="ot-card-white">' + esc(v.white) + '</span>' +
+             '<span class="ot-card-note">' + esc(v.note) + '</span>' +
+             '</button>';
+    }).join('');
+
+    elLvls.innerHTML = LEVELS.map(function (L) {
+      return '<button class="ot-lvl' + (L.id === pickLvl ? ' on' : '') + '" type="button" role="radio"' +
+             ' aria-checked="' + (L.id === pickLvl ? 'true' : 'false') + '" data-l="' + L.id + '">' +
+             '<span class="ot-lvl-n">' + L.id + '</span>' +
+             '<span class="ot-lvl-main"><b>' + esc(L.name) + '</b><small>' + esc(L.blurb) + '</small></span>' +
+             '<span class="ot-lvl-elo">' + L.elo + '</span>' +
+             '</button>';
+    }).join('');
+  }
+
+  elVars.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-v]'); if (!b) return;
+    pickVar = b.getAttribute('data-v'); paintSetup();
+  });
+  elLvls.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-l]'); if (!b) return;
+    pickLvl = +b.getAttribute('data-l'); paintSetup();
+  });
+
+  /* ⚠ AN HONEST LINE ABOUT THE ENGINE, AND ONLY WHEN IT IS BAD NEWS. `available()` is
+     false with no Worker or no WebAssembly, and the room still works — the negamax
+     fallback plays every level — but "Perfect Play" would then be a promise the page
+     cannot keep, so it says so rather than quietly playing weaker. */
+  if (ENGINE && !ENGINE.available()) {
+    elNote.textContent = 'This browser cannot run the full engine, so the top levels will play a little weaker than advertised. Everything else works.';
+  } else if (ENGINE) {
+    try { ENGINE.warmup(); } catch (e) {}
+  }
+
+  /* ── starting a session ────────────────────────────────────────────────────────── */
+  function start(skipBook) {
+    var v = null;
+    for (var i = 0; i < VARS.length; i++) if (VARS[i].id === pickVar) v = VARS[i];
+    if (!v) return;
+
+    G = {
+      v: v,
+      lvl: levelById(pickLvl),
+      S: C.parseFEN(),
+      idx: 0,                 // how many plies of the book have been played
+      phase: 'book',
+      sel: -1,                // selected square, or -1
+      hist: [],               // [{S, san, color}] — one entry per ply, for take-back
+      reps: {},               // posKey -> count, for threefold
+      thinking: false,
+      seq: 0,                 // stale-reply guard: an engine answer for an abandoned game
+      result: null,
+      pendPromo: null,
+      wrong: null,            // the off-book move just tried, for the correction line
+      hintSq: null,           // {from,to} while a hint is lit
+      hintSan: null
+    };
+    noteRep(G.S);
+    if (ENGINE) { try { ENGINE.newGame(); } catch (e) {} }
+
+    elSetup.hidden = true;
+    elRoom.hidden = false;
+    elTag.textContent = v.eco + ' · ' + v.name;
+    elThem.textContent = G.lvl.name + ' · ' + G.lvl.elo;
+    elPlanB.textContent = v.plan;
+
+    if (skipBook) {
+      /* Walk the whole book instantly. Same moves, same referee, no animation — this is
+         for somebody who already knows the line and came here for the game after it.
+         ⚠ THE LOOP EXITS ON applyBookPly()'s RETURN, not on the index. A ply the referee
+         declines does not advance `idx`, so `while (idx < len)` alone would spin the tab
+         to a halt on the one failure this room is built to survive. */
+      while (G.idx < G.v.plies.length) { if (!applyBookPly()) break; }
+      toPlay();
+    }
+    render();
+    tick();
+  }
+
+  function levelById(id) {
+    for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].id === id) return LEVELS[i];
+    return LEVELS[0];
+  }
+
+  document.getElementById('ot-go').addEventListener('click', function () { start(false); });
+  document.getElementById('ot-skip').addEventListener('click', function () { start(true); });
+  document.getElementById('ot-back').addEventListener('click', function () {
+    G = null; elRoom.hidden = true; elSetup.hidden = false; paintSetup();
+  });
+  document.getElementById('ot-again').addEventListener('click', function () {
+    start(false);
+  });
+
+  /* ── the book walk ─────────────────────────────────────────────────────────────── */
+  function bookPly() { return G.idx < G.v.plies.length ? G.v.plies[G.idx] : null; }
+
+  /* Play the next scripted ply — through the referee, like every other move in this file.
+     Returns false if it could not, which is the caller's cue to stop walking. */
+  function applyBookPly() {
+    var p = bookPly(); if (!p) return false;
+    var mv = C.findMove(G.S, p.from, p.to, p.promo);
+    if (!mv) {
+      /* Cannot happen: the book resolved through this same referee at load. But "cannot
+         happen" is how a board freezes, so the book simply ends here and the game starts. */
+      toPlay(); return false;
+    }
+    push(mv);
+    G.idx++;
+    return true;
+  }
+
+  /* ⚠ THE HISTORY STORES THE MOVE OBJECT, NOT from/to. A take-back that rebuilt the move
+     from coordinates would look right and be wrong exactly once — over a promotion, where
+     `findMove` with no piece named silently defaults to a queen and would rewrite somebody's
+     underpromotion as they stepped back through it. `S` is the position BEFORE the move. */
+  function push(mv) {
+    G.hist.push({ S: G.S, san: C.toSAN(G.S, mv), color: G.S.turn, mv: mv });
+    G.S = C.makeMove(G.S, mv);
+    noteRep(G.S);
+    G.sel = -1;
+    G.hintSq = null; G.hintSan = null;   // a hint lives until the move it pointed at is made
+  }
+
+  function noteRep(S) {
+    var k = C.posKey(S);
+    G.reps[k] = (G.reps[k] || 0) + 1;
+  }
+
+  function toPlay() {
+    if (G.phase === 'play') return;
+    G.phase = 'play';
+    elPlan.hidden = false;
+  }
+
+  /* THE DRIVER. Called after every change of state; decides whose job it is to move next
+     and does it. Everything that moves a piece goes through here, so there is exactly one
+     place that can hand the turn to the wrong side. */
+  function tick() {
+    if (!G || G.phase === 'over') return;
+
+    var res = C.gameResult(G.S, G.reps[C.posKey(G.S)] || 0);
+    if (res) { finish(res); return; }
+
+    if (G.phase === 'book') {
+      if (G.idx >= G.v.plies.length) { toPlay(); render(); tick(); return; }
+      var p = bookPly();
+      if (p.color !== USER) {
+        /* White's book move plays itself, after a beat you can actually watch. */
+        var mySeq = G.seq;
+        setTimeout(function () {
+          if (!G || G.seq !== mySeq || G.phase !== 'book') return;
+          applyBookPly();
+          render();
+          tick();
+        }, 480);
+      }
+      render();
+      return;
+    }
+
+    /* play phase */
+    if (G.S.turn !== USER) engineTurn();
+    render();
+  }
+
+  function engineTurn() {
+    if (G.thinking) return;
+    G.thinking = true;
+    var mySeq = G.seq, dial = BOOK.dial(G.lvl.id);
+    render();
+
+    var pr = (ENGINE && ENGINE.move)
+      ? ENGINE.move(G.S, dial)
+      : Promise.resolve(fallbackMove(G.S));
+
+    pr.then(function (mv) {
+      /* ⚠ THE STALE-REPLY GUARD. A search started before "Start Over" or a take-back
+         resolves anyway — landing that move would move a piece in a game that no longer
+         exists. Same guard the Park Tables use for the same reason. */
+      if (!G || G.seq !== mySeq) return;
+      G.thinking = false;
+      if (!mv) { tick(); return; }
+      push(mv);
+      render();
+      tick();
+    }).catch(function () {
+      if (!G || G.seq !== mySeq) return;
+      G.thinking = false;
+      var mv = fallbackMove(G.S);
+      if (mv) { push(mv); }
+      render();
+      tick();
+    });
+  }
+
+  function fallbackMove(S) {
+    try {
+      if (window.PJCCChessAI) { var m = window.PJCCChessAI.bestMove(S); if (m) return m; }
+    } catch (e) {}
+    var lm = C.legalMoves(S);
+    return lm.length ? lm[(Math.random() * lm.length) | 0] : null;
+  }
+
+  function finish(res) {
+    G.phase = 'over';
+    var loser = G.S.turn;
+    if (res === 'checkmate') {
+      G.result = (loser === USER)
+        ? { k: 'loss', t: 'Checkmate. White got there first.' }
+        : { k: 'win',  t: 'Checkmate — you won it. That is the Pirc doing its job.' };
+    } else {
+      var names = { stalemate: 'Stalemate', material: 'Draw — not enough material', fifty: 'Draw — the fifty-move rule', threefold: 'Draw — threefold repetition' };
+      G.result = { k: 'draw', t: (names[res] || 'Draw') + '.' };
+    }
+    render();
+  }
+
+  /* ── input ─────────────────────────────────────────────────────────────────────── */
+  function userMayMove() {
+    if (!G || G.phase === 'over' || G.thinking) return false;
+    if (G.S.turn !== USER) return false;
+    if (G.phase === 'book') { var p = bookPly(); return !!p && p.color === USER; }
+    return true;
+  }
+
+  elBoard.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-i]'); if (!b) return;
+    onSquare(+b.getAttribute('data-i'));
+  });
+
+  function onSquare(i) {
+    if (!userMayMove()) return;
+    var piece = G.S.b[i];
+
+    if (G.sel >= 0) {
+      var opts = movesFrom(G.sel).filter(function (m) { return m.to === i; });
+      if (opts.length) {
+        if (opts.length > 1 && opts[0].promo) { askPromo(G.sel, i); return; }
+        commit(G.sel, i, null);
+        return;
+      }
+    }
+    if (piece && C.colorOf(piece) === USER) { G.sel = (G.sel === i ? -1 : i); render(); return; }
+    G.sel = -1; render();
+  }
+
+  function movesFrom(from) {
+    return C.legalMoves(G.S).filter(function (m) { return m.from === from; });
+  }
+
+  /* The student's move. In the book phase it is CHECKED against the script rather than
+     played — a wrong move is a teaching moment, not an illegal one, so the board does not
+     move and the status line says what the line wants instead. */
+  function commit(from, to, promo) {
+    var mv = C.findMove(G.S, from, to, promo);
+    if (!mv) { G.sel = -1; render(); return; }
+
+    if (G.phase === 'book') {
+      var p = bookPly();
+      var right = p && p.from === from && p.to === to &&
+                  ((p.promo || null) === (mv.promo || null) || !p.promo);
+      if (!right) {
+        G.sel = -1;
+        G.wrong = C.toSAN(G.S, mv);
+        render();
+        return;
+      }
+      G.wrong = null;
+      applyBookPly();
+      render();
+      tick();
+      return;
+    }
+
+    G.wrong = null;
+    push(mv);
+    render();
+    tick();
+  }
+
+  function askPromo(from, to) {
+    G.pendPromo = { from: from, to: to };
+    var pcs = [['q', '♛', 'Queen'], ['r', '♜', 'Rook'], ['b', '♝', 'Bishop'], ['n', '♞', 'Knight']];
+    elPromoRow.innerHTML = pcs.map(function (p) {
+      return '<button class="ot-promo-btn" type="button" data-p="' + p[0] + '" aria-label="' + p[2] + '">' +
+             '<span aria-hidden="true">' + p[1] + '</span><small>' + p[2] + '</small></button>';
+    }).join('');
+    elPromo.hidden = false;
+  }
+  elPromoRow.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-p]'); if (!b || !G || !G.pendPromo) return;
+    var pp = G.pendPromo; G.pendPromo = null; elPromo.hidden = true;
+    commit(pp.from, pp.to, b.getAttribute('data-p'));
+  });
+
+  /* ── take back ─────────────────────────────────────────────────────────────────
+     Only in the play phase, and it rewinds a PAIR — your move and White's reply — because
+     undoing one ply would hand you a position with White to move, which is not the
+     position you were in. The engine's in-flight search is abandoned by bumping `seq`. */
+  elTake.addEventListener('click', function () {
+    if (!G || G.phase !== 'play') return;
+    G.seq++;
+    G.thinking = false;
+    var floor = G.v.plies.length;      // never rewind back into the book
+    var target = G.hist.length;
+    var back = 0;
+    while (back < 2 && target > floor) { target--; back++; }
+    if (!back) return;
+    rewindTo(target);
+  });
+
+  /* Replays the kept prefix from the starting position rather than unwinding it. Slower by
+     an amount nobody can perceive at forty plies, and it cannot drift: the repetition table
+     is rebuilt in the same pass, because DECREMENTING counts on the way back is how an
+     off-by-one turns into a phantom threefold draw three moves later. */
+  function rewindTo(n) {
+    var keep = G.hist.slice(0, n), S = C.parseFEN(), i;
+    G.reps = {}; noteRep(S);
+    for (i = 0; i < keep.length; i++) { S = C.makeMove(keep[i].S, keep[i].mv); noteRep(S); }
+    G.S = S;
+    G.hist = keep;
+    G.sel = -1;
+    G.result = null;
+    G.wrong = null;
+    G.hintSq = null; G.hintSan = null;
+    G.phase = 'play';
+    render();
+    tick();
+  }
+
+  /* ── the hint ──────────────────────────────────────────────────────────────────── */
+  elHint.addEventListener('click', function () {
+    if (!G) return;
+    if (G.phase === 'book') {
+      var p = bookPly();
+      if (p && p.color === USER) { G.hintSq = { from: p.from, to: p.to }; G.hintSan = p.san; render(); }
+      return;
+    }
+    /* Out of book there IS no book move, and inventing one would be the trainer lying.
+       It shows the plan instead — which is the honest answer to "what do I do here". */
+    elPlan.hidden = false;
+    elPlan.classList.add('ot-plan-flash');
+    setTimeout(function () { elPlan.classList.remove('ot-plan-flash'); }, 900);
+  });
+
+  /* ── render ────────────────────────────────────────────────────────────────────── */
+  var GLYPH = { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟' };
+
+  function render() {
+    if (!G) return;
+
+    /* THE BOARD IS DRAWN FROM BLACK'S SIDE. Display cell k maps to engine index
+       (7 - row) * 8 + (7 - col): rank 1 across the top, the h-file on the left. */
+    var sel = G.sel, lm = sel >= 0 ? movesFrom(sel) : [];
+    var goes = {}; for (var q = 0; q < lm.length; q++) goes[lm[q].to] = !!G.S.b[lm[q].to] || !!lm[q].ep;
+    var last = G.hist.length ? G.hist[G.hist.length - 1] : null;
+    var hint = G.hintSq;
+
+    var html = '';
+    for (var k = 0; k < 64; k++) {
+      var dr = (k / 8) | 0, dc = k % 8;
+      var i = (7 - dr) * 8 + (7 - dc);
+      var p = G.S.b[i];
+      var cls = 'ot-sq ' + ((((i / 8) | 0) + (i % 8)) % 2 === 0 ? 'lt' : 'dk');
+      if (i === sel) cls += ' sel';
+      if (i in goes) cls += goes[i] ? ' cap' : ' go';
+      /* ⚠ `last.mv`, NOT `last.from`. The history entry stores the MOVE OBJECT (so a
+         take-back over a promotion stays exact) — reading the old flat from/to gave
+         `undefined`, which quietly matched no square, so the last-move highlight simply
+         never painted. No error, and invisible in review: the board looked fine, it was
+         just missing a cue. Caught by counting `.ot-sq.last` in a real render, not by
+         looking at a screenshot. [[audit-numbers-can-be-wrong]] */
+      if (last && last.mv && (i === last.mv.from || i === last.mv.to)) cls += ' last';
+      if (hint && (i === hint.from || i === hint.to)) cls += ' hint';
+      var lbl = C.nameFromSq(i) + (p ? ' — ' + (C.colorOf(p) === 'w' ? 'White' : 'Black') + ' ' + pieceName(p) : ' — empty');
+      html += '<button class="' + cls + '" data-i="' + i + '" aria-label="' + lbl + '">' +
+              (p ? '<span class="ot-pc ' + (C.colorOf(p) === 'w' ? 'w' : 'b') + '">' + GLYPH[p.toUpperCase()] + '</span>' : '') +
+              '</button>';
+    }
+    elBoard.innerHTML = html;
+
+    /* the move list, in pairs */
+    var rows = '';
+    for (var m = 0; m < G.hist.length; m += 2) {
+      var w = G.hist[m], b2 = G.hist[m + 1];
+      rows += '<span class="ot-mv"><i>' + (m / 2 + 1) + '.</i>' + esc(w ? w.san : '') +
+              (b2 ? ' <b>' + esc(b2.san) + '</b>' : '') + '</span>';
+    }
+    elMoves.innerHTML = rows || '<span class="ot-mv-empty">No moves yet.</span>';
+    elMoves.scrollTop = elMoves.scrollHeight;
+
+    elPhase.textContent = G.phase === 'book' ? 'The Walk-In' : (G.phase === 'over' ? 'Game Over' : 'Your Game Now');
+    elPhase.className = 'ot-phase' + (G.phase === 'book' ? '' : ' ot-phase-play');
+    elTake.hidden = (G.phase !== 'play') || G.hist.length <= G.v.plies.length;
+    elHint.textContent = G.phase === 'book' ? 'Show Me the Move' : 'What Is the Plan?';
+    elHint.hidden = (G.phase === 'over');
+
+    elStat.className = 'ot-status';
+    elStat.innerHTML = statusHTML();
+  }
+
+  function pieceName(p) {
+    return ({ k: 'king', q: 'queen', r: 'rook', b: 'bishop', n: 'knight', p: 'pawn' })[p.toLowerCase()] || 'piece';
+  }
+
+  function statusHTML() {
+    if (G.phase === 'over') {
+      return '<b class="ot-res ot-res-' + G.result.k + '">' + esc(G.result.t) + '</b>';
+    }
+    if (G.thinking) return 'White is thinking…';
+
+    if (G.phase === 'book') {
+      var p = bookPly();
+      var left = G.v.plies.length - G.idx;
+      if (!p) return 'Book complete.';
+      if (p.color !== USER) return '<span class="ot-dim">White is playing the line…</span>';
+      /* ⚠ THE HINT OUTRANKS THE CORRECTION, and the order used to be the other way round.
+         The sequence that exposed it is the ONLY one that matters here: play a wrong move,
+         then press Show Me the Move. `G.wrong` is still set — correctly, it survives until
+         the right move is played — so the correction was still winning and the button did
+         nothing visible. Somebody who is stuck is exactly who presses that button. */
+      if (G.hintSan) return '<b class="ot-cue">Play ' + esc(G.hintSan) + '.</b> ' + plyLeft(left);
+      if (G.wrong) {
+        return '<b class="ot-warn">Not this line.</b> ' + esc(G.wrong) + ' is legal, but ' +
+               esc(G.v.name) + ' goes another way. Try again — or press <i>Show Me the Move</i>.';
+      }
+      /* ⚠ NO ARTICLE HERE. Every variation is named "The …", so a prefixed "the" reads
+         "in the The Austrian Attack". Caught on a live render, not in review. */
+      return '<b>Your move.</b> Find Black&rsquo;s move in ' + esc(G.v.name) + '. ' + plyLeft(left);
+    }
+
+    if (C.inCheck(G.S, USER)) return '<b class="ot-warn">You are in check.</b> Get out of it.';
+    if (G.hist.length === G.v.plies.length) {
+      return '<b class="ot-cue">Book over — the game is yours.</b> ' + esc(G.v.note);
+    }
+    return '<b>Your move.</b>';
+  }
+
+  function plyLeft(left) {
+    var moves = Math.ceil(left / 2);
+    return '<span class="ot-dim">' + moves + ' more ' + (moves === 1 ? 'move' : 'moves') + ' to the position.</span>';
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  paintSetup();
+})();
+</script>
+
+<style>
+/* ══ THE OPENING TRAINER ═══════════════════════════════════════════════════════════════
+   Wears theme-academy (the pine + ember-copper the rest of the school wears), and the
+   BOARD wears the chess canon tokens rather than a palette of its own — so it dims under
+   totality with every other board on the site and follows any future retint for free.
+   [[chess-visual-canon]] [[theme-hall-depurple]] */
+
+/* ── THE ACADEMY THEME — THE THIRD COPY, AND DELIBERATELY SO ──────────────────
+   Byte-identical to the blocks in academy.md and academy-bootcamp.md. ⚠ IT LOOKS LIKE IT
+   BELONGS IN `_sass/`, AND IT CANNOT GO THERE WITHOUT A REORDER: `body.theme-academy
+   .page-title` and `html.sky-night .page-title` have the SAME specificity (0,2,1), so
+   which one paints the banner is decided purely by source order. A page `<style>` ships
+   after the linked stylesheet, which is the only reason the pine tree-line beats the
+   purple night sky today. Move this into a partial numbered below _pjcc-20-town-sky.scss
+   and the Academy silently goes purple at night — and only at night.
+   [[site-architecture-2026-07-12]]: the _sass/ import order is load-bearing.
+   ⚠ If a fourth Academy page ever wants it, hoist all four into ONE partial ordered AFTER
+   town-sky rather than making a fourth copy. That is a deliberate refactor, not a drive-by. */
+body.theme-academy .page-card { background: linear-gradient(165deg, #101d16 0%, #16281d 52%, #0b1710 100%);
+  border-color: #2c4636; box-shadow: 0 14px 44px rgba(0, 10, 4, 0.6); }
+body.theme-academy .page-body { color: #cfd8c8; }
+body.theme-academy .page-title { color: #f2eddd;
+  background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
+  border-bottom: 2px solid #e08a3c; }
+body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
+body.theme-academy .town-sky { background: linear-gradient(180deg, #0a130e 0%, #0e1a12 55%, #142016 100%); }
+body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,0), rgba(224,138,60,0.09) 74%, rgba(224,138,60,0.15)); }
+
+.ot-crumb { font-size: 0.85rem; margin: 0 0 4px; }
+.ot-crumb a { color: #8fae94; text-decoration: none; }
+.ot-crumb a:hover { color: #e08a3c; }
+
+.page-body > .page-title { margin: 10px -44px 20px; border-radius: 0; }
+@media (max-width: 700px) { .page-body > .page-title { margin: 8px -20px 16px; } }
+
+/* ── the in-development badge ──────────────────────────────────────────────────── */
+.ot-devbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: rgba(224,138,60,0.10); border: 1px solid rgba(224,138,60,0.42);
+  border-radius: var(--r-sm, 8px); padding: 9px 13px; margin: 0 0 14px; }
+.ot-devpill { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #140e06; background: #e08a3c; border-radius: 999px;
+  padding: 4px 10px; white-space: nowrap; font-weight: 700; }
+.ot-devtext { color: #d8c9a8; font-size: 0.85rem; }
+
+.ot-lead { max-width: 640px; color: #e9e4d3; line-height: 1.62; margin: 0 0 22px; }
+
+.ot-h2 { color: #ffb347; margin: 26px 0 4px; font-size: 1.12rem; }
+.ot-sub { color: #8fae94; font-size: 0.86rem; margin: 0 0 12px; max-width: 620px; }
+
+/* ── the variation cards ───────────────────────────────────────────────────────── */
+/* ⚠ THE MAX-WIDTH IS DOING THE LAYOUT, not the minmax. Six cards on a wide screen fell
+   into 4 + 2, which reads as "two of these are an afterthought". Capping the track band at
+   880px lands three per row on a desktop — a clean 3×2 — two on a tablet and one on a
+   phone, with no breakpoints of its own. */
+.ot-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;
+  max-width: 880px; }
+.ot-card { display: flex; flex-direction: column; gap: 2px; text-align: left; cursor: pointer;
+  background: rgba(23,42,30,0.7); border: 1px solid #2c4636; border-left: 3px solid #3d5a45;
+  border-radius: var(--r-sm, 8px); padding: 11px 13px; min-height: 44px;
+  transition: border-color 0.15s, background 0.15s, transform 0.12s; }
+.ot-card:hover { border-color: #e08a3c; background: rgba(28,52,37,0.9); transform: translateY(-1px); }
+.ot-card.on { border-color: #e08a3c; border-left-color: #e08a3c; background: rgba(45,68,44,0.9);
+  box-shadow: 0 0 0 1px rgba(224,138,60,0.4); }
+.ot-card-eco { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: #7f9d86; }
+.ot-card-name { color: #f2eddd; font-weight: 800; font-size: 0.98rem; }
+.ot-card-white { color: #b7c6b3; font-size: 0.78rem; }
+.ot-card-note { color: #8fae94; font-size: 0.76rem; font-style: italic; margin-top: 3px; }
+
+/* ── the six opponents ─────────────────────────────────────────────────────────── */
+.ot-levels { display: flex; flex-direction: column; gap: 7px; max-width: 560px; }
+.ot-lvl { display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
+  background: rgba(23,42,30,0.62); border: 1px solid #2c4636; border-radius: var(--r-sm, 8px);
+  padding: 9px 13px; min-height: 44px; transition: border-color 0.15s, background 0.15s; }
+.ot-lvl:hover { border-color: #e08a3c; background: rgba(28,52,37,0.85); }
+.ot-lvl.on { border-color: #e08a3c; background: rgba(45,68,44,0.9); box-shadow: 0 0 0 1px rgba(224,138,60,0.4); }
+.ot-lvl-n { font-family: 'Share Tech Mono', monospace; font-weight: 700; color: #5d7a63; flex: 0 0 auto; width: 14px; }
+.ot-lvl.on .ot-lvl-n { color: #e08a3c; }
+.ot-lvl-main { flex: 1; min-width: 0; }
+.ot-lvl-main b { display: block; color: #f2eddd; font-size: 0.94rem; }
+.ot-lvl-main small { display: block; color: #8fae94; font-size: 0.78rem; }
+.ot-lvl-elo { flex: 0 0 auto; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+  color: #93b39a; background: rgba(10,20,14,0.6); border: 1px solid #2c4636;
+  border-radius: 999px; padding: 3px 9px; }
+
+.ot-go-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 6px; }
+.ot-go { background: #e08a3c; color: #140e06; font-weight: 800; border: none; border-radius: 999px;
+  padding: 12px 24px; font-size: 1rem; cursor: pointer; min-height: 44px;
+  box-shadow: 0 6px 22px -6px rgba(224,138,60,0.55); transition: transform 0.12s, box-shadow 0.12s; }
+.ot-go:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -6px rgba(224,138,60,0.65); }
+.ot-skip { background: transparent; color: #b7c6b3; border: 1px solid #2c4636; border-radius: 999px;
+  padding: 12px 20px; font-size: 0.9rem; cursor: pointer; min-height: 44px; }
+.ot-skip:hover { border-color: #e08a3c; color: #f2eddd; }
+.ot-engine-note { color: #c9a36a; font-size: 0.8rem; margin: 8px 0 0; min-height: 1em; }
+
+/* ── the room ──────────────────────────────────────────────────────────────────── */
+.ot-topline { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; margin: 0 0 12px; }
+.ot-back { background: transparent; border: 1px solid #2c4636; color: #b7c6b3; border-radius: 999px;
+  padding: 8px 15px; font-size: 0.84rem; cursor: pointer; min-height: 44px; }
+.ot-back:hover { border-color: #e08a3c; color: #f2eddd; }
+.ot-tag { font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; color: #ffb347;
+  letter-spacing: 0.06em; }
+
+.ot-stage { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.85fr); gap: 18px;
+  align-items: start; }
+@media (max-width: 780px) { .ot-stage { grid-template-columns: minmax(0, 1fr); } }
+
+.ot-boardwrap { min-width: 0; }
+/* ⭐ ON A PHONE THE BOARD TAKES THE WHOLE CARD. Measured, not guessed: at a 390px
+   viewport the card's 20px side padding left the board 292px — 36px squares, which is a
+   small target for the one thing on this page you actually touch. Bleeding to the card
+   edge (the same -20px trick `.page-title` uses two rules up, so it is the card's real
+   padding and not a guess) buys ~40px of board and takes the square to ~41px.
+   ⚠ Verified to add NO sideways scroll at 390 and 320 — a bleed is a horizontal overflow
+   if the number is wrong by even a pixel, and this page has no other full-width child to
+   hide behind. [[mobile-window-slide]] */
+@media (max-width: 700px) {
+  .ot-boardwrap { margin-left: -20px; margin-right: -20px; }
+  .ot-board { border-radius: 0; border-left-width: 0; border-right-width: 0; }
+  .ot-status { padding: 0 20px; }
+}
+
+/* ⭐ THE BOARD READS THE CANON TOKENS, exactly as the Bootcamp drill board does.
+   `container-type: inline-size` is what lets the piece glyph scale with the board instead
+   of with the viewport — a fixed px glyph over a fluid board is a different picture at
+   every width. [[puzzles-is-a-room-not-a-cabinet]] */
+.ot-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+  aspect-ratio: 1 / 1; width: 100%; container-type: inline-size;
+  border: 6px solid var(--chess-frame); border-radius: 10px; overflow: hidden;
+  box-shadow: 0 16px 40px -18px rgba(0,0,0,0.8); }
+.ot-sq { position: relative; display: flex; align-items: center; justify-content: center;
+  border: none; padding: 0; margin: 0; cursor: default; }
+.ot-sq.lt { background-color: var(--chess-lt); background-image: var(--chess-grain); }
+.ot-sq.dk { background-color: var(--chess-dk); background-image: var(--chess-grain); }
+.ot-sq.last { background-image: linear-gradient(rgba(245,197,24,0.34), rgba(245,197,24,0.34)), var(--chess-grain); }
+.ot-sq.hint { background-image: linear-gradient(rgba(107,255,184,0.42), rgba(107,255,184,0.42)), var(--chess-grain); }
+.ot-sq.sel { box-shadow: inset 0 0 0 3px #6bffb8; }
+.ot-sq.go, .ot-sq.cap { cursor: pointer; }
+.ot-sq.go::after { content: ''; position: absolute; width: 26%; height: 26%; border-radius: 50%;
+  background: rgba(224,138,60,0.55); }
+.ot-sq.cap { box-shadow: inset 0 0 0 4px rgba(224,138,60,0.8); }
+.ot-sq:focus-visible { outline: 2px solid #6bffb8; outline-offset: -2px; }
+
+.ot-pc { font-size: 10.5cqw; line-height: 1; user-select: none; position: relative; z-index: 1;
+  pointer-events: none; paint-order: stroke fill; }
+.ot-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.062em var(--piece-w-line); }
+.ot-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.062em var(--piece-b-line); }
+
+.ot-status { margin: 12px 0 0; color: #cfd8c8; font-size: 0.92rem; line-height: 1.55; min-height: 3em; }
+.ot-status b { color: #f2eddd; }
+.ot-status .ot-warn { color: #ffb066; }
+.ot-status .ot-cue { color: #6bffb8; }
+.ot-status .ot-dim { color: #8fae94; }
+.ot-res-win { color: #6bffb8; } .ot-res-loss { color: #ff9a8f; } .ot-res-draw { color: #ffd48f; }
+
+/* ── the side panel ────────────────────────────────────────────────────────────── */
+.ot-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.ot-phase { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #93b39a; background: rgba(10,20,14,0.6);
+  border: 1px solid #2c4636; border-radius: 999px; padding: 5px 11px; align-self: flex-start; }
+.ot-phase-play { color: #140e06; background: #6bffb8; border-color: #6bffb8; }
+.ot-vs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.85rem; }
+.ot-vs-you { color: #f2eddd; font-weight: 700; }
+.ot-vs-sep { color: #5d7a63; }
+.ot-vs-them { color: #ffb347; font-weight: 700; }
+
+.ot-movesbox { background: rgba(10,20,14,0.45); border: 1px solid #2c4636; border-radius: var(--r-sm, 8px); }
+.ot-moves { max-height: 190px; overflow-y: auto; padding: 9px 11px; display: flex; flex-wrap: wrap;
+  gap: 3px 10px; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: #cfd8c8; }
+.ot-mv i { color: #5d7a63; font-style: normal; margin-right: 3px; }
+.ot-mv b { color: #f2eddd; font-weight: 400; }
+.ot-mv-empty { color: #5d7a63; }
+
+.ot-plan { background: rgba(224,138,60,0.08); border: 1px solid rgba(224,138,60,0.32);
+  border-radius: var(--r-sm, 8px); padding: 10px 12px; }
+.ot-plan-h { font-family: 'Share Tech Mono', monospace; font-size: 0.64rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #e08a3c; margin-bottom: 5px; }
+.ot-plan-b { color: #d8c9a8; font-size: 0.83rem; line-height: 1.6; margin: 0; }
+.ot-plan-flash { animation: otFlash 0.9s ease; }
+@keyframes otFlash { 0%, 100% { box-shadow: none; } 40% { box-shadow: 0 0 0 3px rgba(224,138,60,0.55); } }
+
+.ot-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.ot-btn { background: rgba(23,42,30,0.9); border: 1px solid #2c4636; color: #e9e4d3;
+  border-radius: 999px; padding: 10px 15px; font-size: 0.84rem; cursor: pointer; min-height: 44px; }
+.ot-btn:hover { border-color: #e08a3c; color: #fff; }
+.ot-btn-ghost { color: #8fae94; }
+
+/* ── the promotion chooser ─────────────────────────────────────────────────────── */
+.ot-promo { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center;
+  justify-content: center; background: rgba(4,10,6,0.72); }
+/* ⚠⚠ THIS LINE IS NOT TIDYING, IT IS THE FIX. `[hidden] { display: none }` is a UA rule of
+   the lowest possible specificity, so the `display: flex` one line above BEAT IT and the
+   promotion overlay — fixed, inset 0, z-index 60, and 72% transparent black — sat over the
+   whole room from the moment the board opened. It looked like a dim theme. It was actually
+   swallowing every single click on the board and on the buttons, and the only symptom was a
+   trainer where nothing happened when you pressed it. Found by DRIVING the page, not by
+   reading it: no error is thrown, nothing logs, and the markup is correct.
+   ⭐ Any rule that gives an element a `display` must re-hide it for [hidden]. */
+.ot-promo[hidden] { display: none; }
+.ot-promo-card { background: #16281d; border: 1px solid #e08a3c; border-radius: 12px;
+  padding: 16px 18px; max-width: 340px; }
+.ot-promo-h { color: #ffb347; font-size: 0.9rem; margin-bottom: 10px; text-align: center; }
+.ot-promo-row { display: flex; gap: 8px; }
+.ot-promo-btn { display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: rgba(23,42,30,0.9); border: 1px solid #2c4636; border-radius: 8px;
+  padding: 8px 10px; cursor: pointer; color: #f2eddd; font-size: 26px; min-width: 56px; min-height: 56px; }
+.ot-promo-btn:hover { border-color: #e08a3c; }
+.ot-promo-btn small { font-size: 0.62rem; color: #8fae94; }
+
+.ot-foot { color: #8fae94; font-size: 0.84rem; line-height: 1.6; margin: 26px 0 0; max-width: 640px; }
+.ot-foot a { color: #e08a3c; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ot-card, .ot-go { transition: none; }
+  .ot-plan-flash { animation: none; }
+}
+</style>

@@ -72,6 +72,25 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
     <span class="ac-soon">Building</span>
   </div>
 
+  {%- comment -%} LESSON 3 — THE OPENING TRAINER (2026-08-31). Nate: "a trainer where you get
+       into the main line (and variations like Lions Jaw, etc) so you can hit it hard … We'll
+       add it to the Academy as IN DEVELOPMENT."
+
+       ⚠ IT IS AN OPEN LESSON WEARING A DEV TAG, NOT A `--soon` CARD, and the distinction is
+       the honest one: Lesson 2 is `--soon` because it does not exist yet and the card leads
+       nowhere. This one is finished enough to teach with today — six variations, six
+       opponents, a real board — so shutting the door would be a lie in the other direction.
+       The tag says what it is; the link works. [[positivity-check]] {%- endcomment -%}
+  <a class="ac-lesson ac-lesson--open" href="{{ '/academy/opening-trainer/' | relative_url }}">
+    <span class="ac-lesson-n">03</span>
+    <span class="ac-lesson-ico" aria-hidden="true">♟</span>
+    <span class="ac-lesson-main">
+      <b>The Opening Trainer</b>
+      <small>The Pirc Defense as Black — walk into the line, then play it out.</small>
+    </span>
+    <span class="ac-lesson-dev">In Dev</span>
+  </a>
+
 </div>
 
 <h2 class="ac-h2 ac-h2--soft">A school that's still being built</h2>
@@ -193,6 +212,14 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
 .ac-lesson-state { flex: 0 0 auto; font-weight: 800; color: #ffb347; font-size: 0.9rem; white-space: nowrap; }
 .ac-soon { flex: 0 0 auto; font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em;
   text-transform: uppercase; color: #93b39a; background: rgba(10,20,14,0.65); border: 1px solid #2c4636;
+  border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+/* The IN DEV tag. Same pill geometry as .ac-soon so the two read as one family, but in
+   the ember copper rather than the muted sage — because they mean OPPOSITE things: sage
+   "Building" is a door that does not open yet, copper "In Dev" is a door that does, on a
+   room still being furnished. A student has to be able to tell those apart at a glance. */
+.ac-lesson-dev { flex: 0 0 auto; font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: #140e06; background: #e08a3c;
+  border: 1px solid #e08a3c; font-weight: 700;
   border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
 
 /* PHONE: give the lesson its own line (2026-07-28, skeptic pass). The row is

@@ -1,0 +1,218 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════
+ * THE OPENING TRAINER — every line it teaches is a legal Pirc, and it is wired in.
+ * -----------------------------------------------------------------------------------
+ *   node tests/trainer.check.js        (also runs inside `npm test` and `npm run test:games`)
+ *
+ * WHY THIS EXISTS. The trainer walks a student, move by move, into a position and then
+ * tells them it is the Pirc. That is a CLAIM, and this site's rule is that a chess claim
+ * gets re-proved rather than trusted ([[accuracy-above-all]]). Three separate ways this
+ * room can lie, all of which render as a perfectly normal-looking page:
+ *
+ *   · a typo'd SAN token          -> the variation silently vanishes from the menu,
+ *                                    because resolve() returns null rather than throwing
+ *   · a line ending on WHITE      -> the hand-off gives White two moves in a row and the
+ *                                    student's "first move of the game" is already a reply
+ *   · a missing <script src>      -> the page renders in full and does nothing at all,
+ *                                    which is [[feature-shipped-but-never-loaded]] exactly
+ *
+ * All three are invisible in source review and none of them throws. So they are gated
+ * here, in pure Node, in milliseconds — no browser, no server.
+ *
+ * ⭐ AND THE CURVE CANNOT DRIFT. The six opponents are not hand-tuned: the book's `dial()`
+ * carries a FALLBACK copy of the site's elo->skill/blunder formula for the Node case, and
+ * §5 compares it against the real one in pjcc-gauntlet-engine.js. The last time a room set
+ * its own numbers, "Medium" came out at ~1575 ([[park-tables-matchmaking]]).
+ * ═══════════════════════════════════════════════════════════════════════════════════ */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+const ROOT = path.join(__dirname, '..');
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+
+const C = require(path.join(ROOT, 'assets/js/pjcc-chess.js'));
+const BOOK = require(path.join(ROOT, 'assets/js/pjcc-pirc-book.js'));
+
+let PASS = 0, FAIL = 0;
+const fails = [];
+function ok(cond, msg, extra) {
+  if (cond) { PASS++; console.log('  ✓ ' + msg + (extra ? '   ' + extra : '')); }
+  else { FAIL++; fails.push(msg); console.log('  ✗ ' + msg + (extra ? '   ' + extra : '')); }
+}
+function section(t) { console.log('\n=== ' + t + ' ==='); }
+
+console.log('\n══ THE OPENING TRAINER — ' + BOOK.VARIATIONS.length + ' variations, ' +
+            BOOK.LEVELS.length + ' opponents ══');
+
+/* ── 1 · every line replays through the referee, exactly as written ──────────────── */
+section('1 · the repertoire is legal');
+for (const v of BOOK.VARIATIONS) {
+  const r = BOOK.resolve(v.id);
+  ok(!!r, v.name + ': replays move for move through the referee');
+  if (!r) continue;
+
+  const toks = v.line.trim().split(/\s+/);
+  ok(r.plies.length === toks.length,
+     v.name + ': all ' + toks.length + ' plies resolved', '(' + r.plies.length + ')');
+
+  /* Re-derive the SAN from the resolved squares and demand it matches the authored
+     token. resolve() already matched on SAN, so this is a second, independent pass —
+     it catches a line that resolved to a DIFFERENT legal move than the one written. */
+  let S = C.parseFEN(), good = true, where = '';
+  for (let i = 0; i < r.plies.length; i++) {
+    const mv = C.findMove(S, r.plies[i].from, r.plies[i].to, r.plies[i].promo);
+    if (!mv || C.toSAN(S, mv) !== toks[i]) { good = false; where = 'ply ' + (i + 1) + ' "' + toks[i] + '"'; break; }
+    S = C.makeMove(S, mv);
+  }
+  ok(good, v.name + ': every resolved square round-trips back to its own SAN', where);
+}
+
+/* ── 2 · it is a PIRC trainer, for BLACK ─────────────────────────────────────────
+   Nate's constraint, and the one a future "just one more opening" commit would break
+   without noticing. 1.e4 d6 is the Pirc move order; anything else belongs in a new book. */
+section('2 · Pirc only, Black only');
+for (const v of BOOK.VARIATIONS) {
+  const r = BOOK.resolve(v.id); if (!r) continue;
+  ok(r.plies[0].san === 'e4' && r.plies[1].san === 'd6',
+     v.name + ': opens 1.e4 d6', r.plies.slice(0, 2).map((p) => p.san).join(' '));
+
+  /* ⚠ THE ONE THAT MATTERS MOST. The engine takes over the instant the book ends; a line
+     ending on White would hand it a position with White already to move. */
+  const lastPly = r.plies[r.plies.length - 1];
+  ok(lastPly.color === 'b',
+     v.name + ': ends on a BLACK move, so the hand-off is clean', 'last = ' + lastPly.san);
+  ok(r.plies.length % 2 === 0, v.name + ': an even number of plies');
+
+  /* the student must actually get to move — a book of nothing but White is not a lesson */
+  const mine = r.plies.filter((p) => p.color === 'b').length;
+  ok(mine >= 4, v.name + ': the student plays at least four moves of it', mine + ' Black moves');
+}
+
+/* ── 3 · the menu is well formed ─────────────────────────────────────────────────── */
+section('3 · the menu');
+{
+  const ids = BOOK.VARIATIONS.map((v) => v.id);
+  ok(new Set(ids).size === ids.length, 'every variation id is unique');
+  ok(BOOK.all().length === BOOK.VARIATIONS.length,
+     'every authored variation survives resolution and reaches the menu',
+     BOOK.all().length + '/' + BOOK.VARIATIONS.length);
+  for (const v of BOOK.VARIATIONS) {
+    ok(/^[A-E]\d\d$/.test(v.eco), v.name + ': carries a real ECO code', v.eco);
+    ok(!!v.plan && v.plan.length > 80,
+       v.name + ': says what Black is actually trying to do once the book runs out');
+    ok(!!v.note && !!v.white, v.name + ': names White\'s system and carries a one-line note');
+  }
+}
+
+/* ── 4 · the six opponents ───────────────────────────────────────────────────────── */
+section('4 · true beginner to perfect play');
+{
+  const L = BOOK.LEVELS;
+  ok(L.length === 6, 'six levels, as asked', L.length + '');
+  let rising = true, slower = true;
+  for (let i = 1; i < L.length; i++) {
+    if (L[i].elo <= L[i - 1].elo) rising = false;
+    if (L[i].movetime <= L[i - 1].movetime) slower = false;
+  }
+  ok(rising, 'the advertised rating rises at every step',
+     L.map((x) => x.elo).join(' → '));
+  ok(slower, 'and so does the thinking time — a stronger level also thinks longer');
+  ok(L[0].elo <= 400, 'level 1 really is a beginner', L[0].elo + '');
+  ok(L[L.length - 1].elo >= 2400, 'level 6 is full strength', L[L.length - 1].elo + '');
+  for (const x of L) ok(!!x.name && !!x.blurb, 'level ' + x.id + ' is named and described');
+
+  /* the dial actually reaches the engine's extremes */
+  const lo = BOOK.dial(1), hi = BOOK.dial(6);
+  ok(hi.skill === 20, 'level 6 asks Stockfish for skill 20', 'got ' + hi.skill);
+  ok(lo.skill === 0 && lo.blunder > 0.3,
+     'level 1 pins to skill 0 and gets its weakness from the blunder rate',
+     'skill ' + lo.skill + ', blunder ' + lo.blunder);
+}
+
+/* ── 5 · ONE CURVE, THREE ROOMS ──────────────────────────────────────────────────
+   The book's Node fallback vs the real formula in the engine bridge. If somebody tunes
+   the ladder in one file, this fails instead of the trainer quietly keeping the old one. */
+section('5 · the strength curve has not drifted');
+{
+  const sandbox = { console };
+  sandbox.self = sandbox; sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  let ENG = null;
+  try {
+    vm.runInContext(read('assets/js/pjcc-gauntlet-engine.js'), sandbox);
+    ENG = sandbox.PJCCGauntletEngine;
+  } catch (e) { /* reported by the check below */ }
+
+  ok(!!(ENG && ENG.skillForElo && ENG.blunderForElo),
+     'the shared engine bridge loads and exposes the curve');
+  if (ENG && ENG.skillForElo) {
+    let same = true, bad = [];
+    for (const L of BOOK.LEVELS) {
+      const mine = BOOK.dial(L.id);
+      if (mine.skill !== ENG.skillForElo(L.elo)) { same = false; bad.push(L.name + ' skill'); }
+      if (mine.blunder !== ENG.blunderForElo(L.elo)) { same = false; bad.push(L.name + ' blunder'); }
+    }
+    ok(same, "the book's fallback curve matches pjcc-gauntlet-engine.js at all six levels",
+       bad.length ? '-> drifted: ' + bad.join(', ') : '');
+  }
+}
+
+/* ── 6 · the page is wired, and wired IN ORDER ───────────────────────────────────
+   The referee first, the negamax fallback before the bridge that falls back to it, and the
+   book last because it resolves through the referee at definition time. A page missing one
+   of these renders perfectly and does nothing. [[feature-shipped-but-never-loaded]] */
+section('6 · the page loads what it runs on');
+{
+  const PAGE = 'academy-opening-trainer.html';
+  ok(fs.existsSync(path.join(ROOT, PAGE)), 'the trainer page exists');
+  const src = read(PAGE);
+
+  const NEED = ['pjcc-chess.js', 'pjcc-chess-ai.js', 'pjcc-gauntlet-engine.js', 'pjcc-pirc-book.js'];
+  const at = NEED.map((n) => src.indexOf('/assets/js/' + n));
+  NEED.forEach((n, i) => ok(at[i] > -1, 'loads ' + n));
+  ok(at.every((x, i) => i === 0 || (x > -1 && x > at[i - 1])),
+     'and loads them in dependency order', NEED.join(' → '));
+
+  ok(/permalink:\s*\/academy\/opening-trainer\/\s*$/m.test(src),
+     'it lives at /academy/opening-trainer/');
+  ok(/body_class:\s*theme-academy/.test(src), 'it wears the Academy theme');
+  ok(/var USER = 'b'/.test(src), 'the student is hard-wired to Black');
+  ok(/ot-devpill[^>]*>In Development</.test(src), 'it says IN DEVELOPMENT on its face');
+
+  /* the room must survive its dependencies going missing — a placeholder that cannot be
+     reached is the same bug as no placeholder at all. [[down-never-stuck]] */
+  ok(/if \(!C \|\| !BOOK\)/.test(src), 'it says so out loud when the engine did not load');
+
+  /* ⭐ the status line's initial text must be a string the renderer can never emit — that
+     is what makes "shipped dead" distinguishable from "shipped with no data" at a glance.
+     [[markdown-eats-scripts]] */
+  ok(src.indexOf('Loading the board…') > -1 &&
+     src.indexOf("'Loading the board…'") === -1,
+     'the placeholder text is one no engine state can produce');
+}
+
+/* ── 7 · nothing leads to a shut door ───────────────────────────────
+   The trainer is an ACADEMY LESSON, not a games-hall game — Nate asked for it in the
+   Academy, and that is the only door it has. ⚠ It is deliberately NOT in
+   assets/js/pjcc-games-data.js: `pjcc-hall.js` builds every card's href as
+   `/games/<slug>/`, so a registry row for a room that lives under /academy/ would render a
+   card pointing at a page that does not exist. [[dead-game-links-trap]] If it should ever
+   appear on the hall, the hall has to learn about off-hall pages FIRST. */
+section('7 · the doors');
+{
+  const ACADEMY = read('academy.md');
+  ok(ACADEMY.indexOf('/academy/opening-trainer/') > -1,
+     'the Academy links to the trainer');
+  ok(/<a class="ac-lesson[^"]*"[^>]*href="\{\{ '\/academy\/opening-trainer\/' \| relative_url \}\}"/.test(ACADEMY),
+     'and links to it as a real, openable lesson — not a grayed-out Building card');
+  ok(/ac-lesson-dev/.test(ACADEMY),
+     '…carrying the IN DEVELOPMENT tag Nate asked for');
+
+  const REG = read('assets/js/pjcc-games-data.js');
+  ok(!/slug:'opening-trainer'/.test(REG),
+     'it stays OUT of the games registry, whose cards all resolve to /games/<slug>/');
+}
+
+console.log('\n' + (FAIL ? '✗ ' + FAIL + ' FAILED' : '✓ all ' + PASS + ' checks passed'));
+if (FAIL) { console.log('\nFailures:'); fails.forEach((f) => console.log('  · ' + f)); }
+process.exit(FAIL ? 1 : 0);
