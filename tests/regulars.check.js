@@ -104,6 +104,85 @@ for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
         'data says ' + (r.adaptive ? 'adaptive' : 'fixed') + ', the game says ' + (b.adaptive ? 'adaptive' : 'fixed'));
 }
 
+/* ══ WHAT EACH REGULAR ACTUALLY PLAYS — the opening book, 2026-09-01 ═══════════════════
+   Nate's own blocker on "prep for a named opponent": *"it would require getting at least 5
+   moves deep into the Pirc at the park tables (or whatever variation is chosen)."* A seat
+   you cannot predict cannot be prepared for, so `book:` names one of the six White systems
+   in pjcc-pirc-book.js and the regular follows it while you stay in the line with him.
+
+   ⭐ THE BAR IS HIS AND IT IS CHECKED AS A NUMBER. "At least 5 moves" is 10 plies, so a line
+   shorter than that could not satisfy him however well the code worked — and the lines are
+   the one part of this that a person will edit later.
+   ⚠ THE BOOK ITSELF IS NOT RE-PROVED HERE. Every line is resolved through the referee at
+   load and gated by `npm run test:trainer`; this asks only that the bench points at real
+   ones. Two files proving the same chess twice is how they come to disagree. */
+{
+  const book = require(path.join(ROOT, 'assets/js/pjcc-pirc-book.js'));
+  const lines = {};
+  book.all().forEach((v) => { lines[v.id] = v.plies; });
+
+  /* the assignment, read off the roster the same way every other field is */
+  const assigned = {};
+  const src = tablesSrc.slice(start, tablesSrc.indexOf('\n  };', start));
+  [...src.matchAll(/^ {4}(\w+):\s*\{[^}]*?book:\s*'(\w+)'/gms)].forEach((m2) => { assigned[m2[1]] = m2[2]; });
+
+  check('the bench declares an opening book', Object.keys(assigned).length > 0,
+        Object.keys(assigned).length + ' seats booked of ' + bots.length);
+
+  const seatKeys = bots.map((b) => b.key);
+  const strangers = Object.keys(assigned).filter((k) => !seatKeys.includes(k));
+  check('…on real seats only', strangers.length === 0, strangers.join(', ') || 'every booked key is in BOTS');
+
+  const unreal = Object.keys(assigned).filter((k) => !lines[assigned[k]]);
+  check('…and every line named is one the Academy actually teaches',
+        unreal.length === 0,
+        unreal.map((k) => k + '→' + assigned[k]).join(', ') ||
+        Object.keys(assigned).map((k) => k + ':' + assigned[k]).join(' · '));
+
+  /* ⚠⚠ HIS BAR, AS ARITHMETIC. 5 moves = 10 plies. A shorter line would leave a seat out of
+     book before the tabiya, which is the exact failure that made idea #1 impossible. */
+  const short = Object.keys(assigned).filter((k) => (lines[assigned[k]] || []).length < 10);
+  check('…and each is at least 5 moves deep, which was the whole prerequisite',
+        short.length === 0,
+        short.map((k) => k + ' ' + (lines[assigned[k]] || []).length + ' plies').join(', ') ||
+        'shortest ' + Math.min(...Object.keys(assigned).map((k) => lines[assigned[k]].length)) + ' plies');
+
+  /* ⭐ TWO SEATS HAVE NO BOOK AND MUST NOT GET ONE BY TIDYING. In both cases the absence is
+     the character: Auston has no fixed anything, and Vince's whole trait is that he studies
+     YOU rather than chess. Giving either of them a memorized repertoire would undo them. */
+  const adaptiveKey = (bots.find((b) => b.adaptive) || {}).key;
+  check('the adaptive seat has no book — she cannot have a fixed anything',
+        !assigned[adaptiveKey], adaptiveKey + (assigned[adaptiveKey] ? ' → ' + assigned[adaptiveKey] : ': none'));
+  const studies = /(\w+):\s*\{[^}]*?studies:\s*true/s.exec(src);
+  check('…and neither does the seat that studies YOU instead of chess',
+        !!studies && !assigned[studies[1]],
+        studies ? studies[1] + (assigned[studies[1]] ? ' → ' + assigned[studies[1]] : ': none') : 'no studying seat found');
+
+  /* ⚠ THE LION IS BLACK'S OWN SETUP (3…Nbd7). White's half of it is just the Classical, so a
+     seat "playing the Lion" would be a label on nothing. */
+  check('nobody is assigned the Lion, which is not a White system',
+        Object.values(assigned).indexOf('lion') === -1,
+        'the six lines are five White systems plus Black\'s own');
+
+  /* the wiring, because a perfect assignment nobody consults is [[feature-shipped-but-never-loaded]] */
+  check('the page loads the book module', /pjcc-pirc-book\.js/.test(tablesSrc));
+  /* ⛑⛑ BOTH INDICES MUST EXIST, AND THE FIRST VERSION OF THIS CHECK DID NOT SAY SO. A
+     mutation that deleted the call outright left indexOf returning -1, and -1 is less than
+     everything, so the ordering check passed while the feature was gone. An ordering test
+     over a missing thing is unanimous and worthless. [[green-must-name-what-ran]] */
+  const askedAt = tablesSrc.indexOf('var bkMv = botBookMove(st, S);');
+  const engineAt = tablesSrc.indexOf('PJCCGauntletEngine.move(S, botDial(bot, st, S))');
+  check('…and asks it BEFORE spending an engine search',
+        askedAt > -1 && engineAt > -1 && askedAt < engineAt,
+        askedAt < 0 ? 'THE BOOK IS NEVER CONSULTED' :
+          'book@' + askedAt + ' engine@' + engineAt);
+  /* ⛑ THE TRAP THIS PAGE HAS ALREADY FALLEN INTO ONCE: botCommitMove() ends by calling
+     botThink(), so committing a bot's own move through it makes the bot play both sides. */
+  check('…and commits the move inline, never through botCommitMove()',
+        /var bkMv = botBookMove[\s\S]{0,400}?botSave\(st\);\s*\n\s*return botRender\(\);/.test(tablesSrc),
+        'botCommitMove() hands the turn back — that bug shipped once and looked correct');
+}
+
 const openGame = bots.filter(b => b.open).length;
 const openData = rows.filter(r => r.open).length;
 check('the OPEN count agrees — this is the number the front door prints',
