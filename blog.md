@@ -7,25 +7,9 @@ body_class: theme-bw
 
 <div class="ep-index">
   <div class="ep-index-eyebrow">McPuppy Studios — The Blog</div>
-  <h1 class="ep-index-title">Archive</h1>
   <p class="ep-index-sub">{{ site.posts.size }} posts. Newest first.</p>
 
   <div class="ep-list">
-    {%- comment -%} THE DRAFT CARD MOVED UP WITH THE ORDER (2026-08-13). It sat at the foot
-         of the list when the list ran oldest-first, which put "still being written" in the
-         one place it belonged: after the last finished post. Newest-first inverts that — the
-         unwritten post is the newest thing there is, so leaving the card at the bottom would
-         have filed the future behind the past. {%- endcomment -%}
-    <div class="ep-card ep-card--draft" aria-hidden="true">
-      <div class="ep-card-stripe"></div>
-      <div class="ep-card-main">
-        <div class="ep-title">[DRAFT — BUILDING]</div>
-        <div class="ep-logline">Still being written. Check back soon.</div>
-      </div>
-      <div class="ep-date">— — —</div>
-      <div class="ep-card-arrow">→</div>
-    </div>
-
     {%- comment -%} NEWEST FIRST (2026-08-13, Nate). `site.posts` is already newest-first in
          Jekyll; the old `| reverse` was what put the oldest on top, so flipping the order
          meant DELETING a filter rather than adding one.
