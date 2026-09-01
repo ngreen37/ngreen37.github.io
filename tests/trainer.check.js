@@ -392,6 +392,129 @@ section('9 · the board and the pieces are the canon ones');
 }
 
 
+/* ── 10 · YOUR BOOK — the one thing this room remembers ──────────────────────────
+   Idea #7, 2026-09-01. Two tiers: ☆ KNOWN (you walked the whole line with no help) and
+   ★ HELD (you then won the game that came out of it, against a named opponent). It is
+   EARNED progress, so it syncs, and the sync is where the silent failures live.
+
+   ⭐ THE MERGE IS LIFTED OUT OF pjcc-profile.js AND RUN, not read. A merge is a claim about
+   two devices, and the only honest way to check it is to hand it two states. §5 already does
+   this for the elo curve; same trick, same reason. */
+section('10 · the repertoire is a possession');
+{
+  const OT = read('academy-opening-trainer.html');
+  const PROF = read('assets/js/pjcc-profile.js');
+  const DOSS = read('dossier.md');
+  const KEY = 'pjcc.trainer.book.v1';
+
+  /* ── the merge, actually executed ──────────────────────────────────────────── */
+  const src = PROF.slice(PROF.indexOf('var BOOK_KEY ='));
+  const cut = src.indexOf('\n  var PJCC = {');
+  const sandbox = {
+    store: {},
+    localStorage: {
+      getItem(k) { return Object.prototype.hasOwnProperty.call(sandbox.store, k) ? sandbox.store[k] : null; },
+      setItem(k, v) { sandbox.store[k] = String(v); },
+      removeItem(k) { delete sandbox.store[k]; }
+    },
+    parseInt: parseInt, JSON: JSON, out: null
+  };
+  ok(cut > 0, 'the merge was found in pjcc-profile.js');
+  try {
+    vm.createContext(sandbox);
+    vm.runInContext(src.slice(0, cut) + '\n out = { book: trainerBook, merge: trainerBookMerge };', sandbox);
+  } catch (e) { ok(false, 'the merge parses on its own', e.message); }
+  const M = sandbox.out;
+  ok(!!(M && M.merge), 'and it runs outside a browser');
+
+  if (M && M.merge) {
+    const run = (local, remote) => {
+      sandbox.store[KEY] = JSON.stringify(local);
+      M.merge(remote);
+      return JSON.parse(sandbox.store[KEY]);
+    };
+    /* ⚠⚠ DIRECTION INDEPENDENCE IS THE PROPERTY. A merge that works one way and loses data
+       the other is exactly how a phone last opened in July rolls back this morning's win —
+       and it passes every single-direction test ever written. [[everything-earned-syncs]] */
+    const A = { austrian: { known: 1, held: 1700 }, byrne: { known: 1 } };
+    const B = { austrian: { known: 1, held: 900 },  lion:  { known: 1, held: 350 } };
+    const ab = run(A, B), ba = run(B, A);
+    /* ⚠ COMPARED CANONICALLY. The first version stringified both results and failed on KEY
+       ORDER — {byrne, lion} against {lion, byrne}, identical content, different insertion
+       sequence. A merge has no opinion about key order and neither should this. */
+    const canon = (o) => JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k].known || 0, o[k].held || 0]));
+    ok(canon(ab) === canon(ba),
+       'the merge gives the same answer whichever device speaks first',
+       canon(ab) + '  vs  ' + canon(ba));
+    ok(ab.austrian.held === 1700, 'held takes the MAX — a weaker win cannot walk a stronger one back',
+       'held ' + ab.austrian.held);
+    ok(ab.byrne && ab.byrne.known === 1 && ab.lion && ab.lion.known === 1,
+       'known is a UNION — neither device loses a line the other learned',
+       Object.keys(ab).sort().join(' · '));
+    /* ⚠ STICKY. "I learned this line" cannot un-happen, so an account row that has never
+       heard of a line must not erase it. */
+    const kept = run({ lion: { known: 1 } }, { lion: {} });
+    ok(kept.lion && kept.lion.known === 1, 'a remote row with no news cannot unlearn a line');
+    /* garbage in must cost nothing — this reads a JSON blob off the network */
+    let survived = true;
+    try { M.merge(null); M.merge('nope'); M.merge({ x: 4 }); M.merge({ y: { held: 'lots' } }); }
+    catch (e) { survived = false; }
+    ok(survived, 'and junk from the wire is ignored rather than thrown', 'null · string · scalars');
+  }
+
+  /* ── the four ways to lose the mark, all wired ─────────────────────────────── */
+  const HELP = [
+    ['the walk-in hint', /G\.helped = 1;\s*\n\s*G\.hintSq = \{/],
+    ['a wrong move',    /G\.helped = 1;\s*\n\s*G\.wrong = C\.toSAN/],
+    ['a take-back',     /G\.helped = 1;\s*\n\s*rewindTo\(target\);/],
+    ['skipping the book', /G\.helped = 1;\s*\n\s*toPlay\(\);/]
+  ];
+  HELP.forEach((h) => ok(h[1].test(OT), 'help is recorded for ' + h[0]));
+
+  /* ⚠ THE TWO GRANTS ARE GUARDED, and the guards are the feature. Without the first, Skip to
+     the Position is a shortcut to the whole trophy case; without the second, ★ can be won on
+     a line you never learned, which makes the tiers meaningless. */
+  ok(/if \(!G\.helped && grantKnown\(G\.v\.id\)\)/.test(OT),
+     'KNOWN is granted only on an unhelped walk-in');
+  ok(/if \(loser !== USER && !G\.helped && grantHeld\(G\.v\.id, G\.lvl\.elo\)\)/.test(OT),
+     'HELD is granted only on an unhelped WIN, at the level actually played');
+  ok(/if \(!all\[id\] \|\| !all\[id\]\.known\) return false;/.test(OT),
+     '…and never on a line that is not KNOWN first', 'the tiers are a ladder, not two switches');
+  ok(/if \(\(all\[id\]\.held \|\| 0\) >= elo\) return false;/.test(OT),
+     '…and never downward', 'beating Fresh Recruit after Expert changes nothing');
+
+  /* ── it reaches the account, and comes back ────────────────────────────────── */
+  ok(/PJCC\.saveScore\('opening-trainer'/.test(OT), 'the book is banked to the account');
+  ok(OT.indexOf('if (!(window.PJCC && PJCC.saveScore)) return;') > -1,
+     '…guarded, so a missing profile module cannot take the room down');
+  ok(/r\.game === 'opening-trainer'/.test(PROF) && /trainerBookMerge\(bk\.data\.book\)/.test(PROF),
+     'and it is pulled back on every page, through PJCC.ready');
+  /* ⚠ ONE REQUEST. myStats() returns every row; a second call for the book would be a
+     duplicate round trip for data already in hand. */
+  ok((PROF.match(/PJCC\.myStats\(\)\.then/g) || []).length === 1,
+     '…inside the ONE myStats call, not a second round trip');
+
+  /* ── the Dossier draws it, and stays quiet at zero ─────────────────────────── */
+  ok(DOSS.indexOf('PJCC.trainerBook') > -1, 'the Dossier reads the book through the module');
+  ok(/if \(bKnown > 0\)/.test(DOSS), '…and draws nothing until a line is actually learned',
+     'a row saying "0 of 6" is an accusation');
+  ok(DOSS.indexOf("href=\"/academy/opening-trainer/\"") > -1, '…and links back to the room');
+
+  /* ⚠⚠ THE KEY IS SPELLED IN EXACTLY TWO FILES. A third copy is the drift this site has
+     been bitten by more than once — the room that writes it and the module that merges it
+     are the only two things allowed to know its name. */
+  const spellers = ['academy-opening-trainer.html', 'assets/js/pjcc-profile.js',
+                    'dossier.md', 'games/park-tables/index.html']
+    /* ⚠⚠ THE QUOTES ARE THE CHECK. dossier.md NAMES the key in a comment explaining where
+       the book comes from, and a bare indexOf read that as a third copy — the same false
+       positive §8 produced when a pointer comment mentioned a selector. A declaration is
+       quoted; a sentence about one is not. */
+    .filter((f) => read(f).indexOf("'" + KEY + "'") > -1);
+  ok(spellers.length === 2 && spellers.indexOf('dossier.md') === -1,
+     'only the trainer and the profile module name the storage key', spellers.join(' · '));
+}
+
+
 console.log('\n' + (FAIL ? '✗ ' + FAIL + ' FAILED' : '✓ all ' + PASS + ' checks passed'));
 if (FAIL) { console.log('\nFailures:'); fails.forEach((f) => console.log('  · ' + f)); }
 process.exit(FAIL ? 1 : 0);

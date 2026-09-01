@@ -402,6 +402,40 @@ permalink: /dossier/
       }
     } catch (e) {}
 
+    /* ── YOUR BOOK (2026-09-01, his idea #7: "the repertoire is a possession") ────────
+       A third road in the same shape as the two above it: a glyph, a brag with a number in
+       it, and a way back to the room. The Opening Trainer writes `pjcc.trainer.book.v1` and
+       pjcc-profile.js merges the account copy into it on arrival, so this reads LOCAL and is
+       still right on a phone that has never opened the trainer.
+
+       ⚠⚠ IT NAMES NO LINE AND NO OPPONENT, AND THAT IS A DELIBERATE LIMIT. The book stores a
+       variation ID and an elo; turning either into "the Austrian, held against Expert" means
+       a copy of the variation names and the level names living on THIS page, and a copied
+       list is a list that goes stale the day a line is renamed ([[dead-game-links-trap]] —
+       and the Lion Variation was renamed eight days ago). The elo is a real number that
+       cannot drift, so the Dossier brags with numbers and the TRAINER'S OWN CARDS carry the
+       named version, where the book module is already loaded.
+       ⚠ HIDDEN AT ZERO, exactly like the puzzle rating directly above — an untouched meter
+       is a chore, and a row reading "0 of 6" is an accusation.
+       ⚠ Read through PJCC.trainerBook() rather than reaching into localStorage here, so the
+       key is spelled in exactly one file. */
+    try {
+      var bk = PJCC.trainerBook ? PJCC.trainerBook() : {};
+      var bKnown = 0, bHeld = 0, bTop = 0, bid;
+      for (bid in bk) {
+        if (!bk.hasOwnProperty(bid) || !bk[bid]) continue;
+        if (bk[bid].known) bKnown++;
+        if (bk[bid].held) { bHeld++; if (bk[bid].held > bTop) bTop = bk[bid].held; }
+      }
+      if (bKnown > 0) {
+        var bLine = 'Your Book · <b>' + bKnown + ' line' + (bKnown === 1 ? '' : 's') + ' learned</b>' +
+          (bHeld ? ' · <b>' + bHeld + ' held</b>, best against ' + bTop : '');
+        html += '<a class="dsr-climb" href="/academy/opening-trainer/">' +
+          '<span class="dsr-climb-glyph">📖</span><span>' + bLine + '</span>' +
+          '<span class="dsr-climb-go">▸</span></a>';
+      }
+    } catch (e) {}
+
     html += '<h2 class="dsr-h">Achievements</h2><div class="dsr-ach-grid">';
     PJCC.earnedAchievements(prof, stats).forEach(function (a) {
       html += '<div class="dsr-ach ' + (a.earned ? 'got' : 'locked') + '">' +

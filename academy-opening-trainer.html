@@ -229,14 +229,36 @@ White comes at you, pick who you are playing, and go.</p>
   })();
 
   /* ── the setup screen ──────────────────────────────────────────────────────────── */
+  /* ⭐ THE CASE IS THE MENU. The six cards are already the only place all six lines are
+     listed, so the marks belong on them rather than in a seventh panel — you read what you
+     have and pick what is missing in one glance.
+     ⚠ THE MARK IS IN THE ARIA-LABEL, NOT ONLY IN A GLYPH. ★ and ☆ are decorative to a
+     screen reader and nearly identical to a lot of eyes at 14px, so the words ride along.
+     ⚠ NOTHING IS DRAWN UNTIL SOMETHING IS EARNED — six empty outlines on a first visit is
+     decoration on a promise, the same call the Park Tables bench already made. */
+  function markFor(v) {
+    var e = bookEntry(v.id);
+    if (!e || !(e.known || e.held)) return { glyph: '', words: '' };
+    if (e.held) {
+      var L = heldLevel(v.id);
+      return { glyph: '★', words: 'held' + (L ? ' against ' + L.name : '') };
+    }
+    return { glyph: '☆', words: 'in your book' };
+  }
   function paintSetup() {
+    var anyMark = bookCounts().known > 0;
     elVars.innerHTML = VARS.map(function (v) {
-      return '<button class="ot-card' + (v.id === pickVar ? ' on' : '') + '" type="button" role="radio"' +
-             ' aria-checked="' + (v.id === pickVar ? 'true' : 'false') + '" data-v="' + esc(v.id) + '">' +
+      var m = anyMark ? markFor(v) : { glyph: '', words: '' };
+      return '<button class="ot-card' + (v.id === pickVar ? ' on' : '') +
+             (m.glyph ? ' ot-card--got' : '') + '" type="button" role="radio"' +
+             ' aria-checked="' + (v.id === pickVar ? 'true' : 'false') + '" data-v="' + esc(v.id) + '"' +
+             ' aria-label="' + esc(v.name) + (m.words ? ' — ' + esc(m.words) : '') + '">' +
              '<span class="ot-card-eco">' + esc(v.eco) + '</span>' +
              '<span class="ot-card-name">' + esc(v.name) + '</span>' +
              '<span class="ot-card-white">' + esc(v.white) + '</span>' +
              '<span class="ot-card-note">' + esc(v.note) + '</span>' +
+             (m.glyph ? '<span class="ot-card-mark" aria-hidden="true">' + m.glyph + ' ' +
+                        esc(m.words) + '</span>' : '') +
              '</button>';
     }).join('');
 
@@ -270,6 +292,76 @@ White comes at you, pick who you are playing, and go.</p>
   }
 
   /* ── starting a session ────────────────────────────────────────────────────────── */
+  /* ══ YOUR BOOK — THE ONE THING THIS ROOM REMEMBERS ═══════════════════════════════
+     Idea #7, his: *"The repertoire is a possession. Your book fills in as you master lines,
+     lives in the Dossier, syncs, is displayable. Not XP — an artifact inside a fiction."*
+
+     ⭐ TWO TIERS, HIS PICK, AND THEY ARE TWO DIFFERENT CLAIMS.
+       ☆ KNOWN — you walked the whole book line with no help. A memory claim.
+       ★ HELD  — you then won the game that came out of it. A chess claim, and it records
+                 WHO you did it against, so "held vs Fresh Recruit" is honest and
+                 unimpressive all by itself. That is why there is no difficulty floor.
+     ⚠ HELD REQUIRES KNOWN. You cannot hold a line you have not learned — which is also
+     what stops Skip to the Position from being a shortcut to the whole trophy case.
+
+     ⚠⚠ ONE FLAG DECIDES BOTH, AND IT IS DELIBERATELY BLUNT: `helped`. Set by a hint, a
+     correction, a take-back, or skipping the walk-in. Four affordances, one rule, one
+     sentence anybody can read off the card — the Park Tables star tiers are richer and cost
+     a vocabulary this room has no room for.
+
+     ⚠ THE ELO IS STORED, NOT THE NAME. `levelById`/LEVELS own the names; a stored string
+     would be a second copy that goes stale the day a level is retuned. [[dead-game-links-trap]]
+     ⚠ IT SYNCS, because it is EARNED ([[everything-earned-syncs]]) — `known` sticky-true,
+     `held` by max, merged per field in pjcc-profile.js so the pull reaches /dossier/ on a
+     page this room is not loaded on. Local is the working copy; a failed write costs the
+     mirror and never the local state. */
+  var BOOK_KEY = 'pjcc.trainer.book.v1';
+  function bookLoad() {
+    try { var o = JSON.parse(localStorage.getItem(BOOK_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function bookSave(o) { try { localStorage.setItem(BOOK_KEY, JSON.stringify(o)); } catch (e) {} }
+  function bookEntry(id) { return bookLoad()[id] || null; }
+  /* the strongest opponent a line has been held against, as a LEVEL — null if never held */
+  function heldLevel(id) {
+    var e = bookEntry(id);
+    if (!e || !e.held) return null;
+    for (var i = LEVELS.length - 1; i >= 0; i--) if (LEVELS[i].elo <= e.held) return LEVELS[i];
+    return null;
+  }
+  function bookCounts() {
+    var all = bookLoad(), k = 0, h = 0, id;
+    for (id in all) { if (!all.hasOwnProperty(id)) continue; if (all[id].known) k++; if (all[id].held) h++; }
+    return { known: k, held: h, of: VARS.length };
+  }
+  /* ⚠ FIRE AND FORGET, AND GUARDED. pjcc-profile.js is one script among six and this runs
+     from a game-over path; a mirror that throws must not take the room down with it. */
+  function bookBank() {
+    try {
+      if (!(window.PJCC && PJCC.saveScore)) return;
+      PJCC.saveScore('opening-trainer', bookCounts().held, { data: { book: bookLoad() } });
+    } catch (e) {}
+  }
+  /* Both grants are STICKY and MONOTONIC — a line never leaves your book, and a weaker win
+     never walks a stronger one back. Returns true only when something actually changed, so
+     the room can say so once instead of every render. */
+  function grantKnown(id) {
+    var all = bookLoad();
+    if (all[id] && all[id].known) return false;
+    all[id] = all[id] || {};
+    all[id].known = 1;
+    bookSave(all); bookBank();
+    return true;
+  }
+  function grantHeld(id, elo) {
+    var all = bookLoad();
+    if (!all[id] || !all[id].known) return false;          // held requires known
+    if ((all[id].held || 0) >= elo) return false;
+    all[id].held = elo;
+    bookSave(all); bookBank();
+    return true;
+  }
+
   function start(skipBook) {
     var v = null;
     for (var i = 0; i < VARS.length; i++) if (VARS[i].id === pickVar) v = VARS[i];
@@ -290,7 +382,12 @@ White comes at you, pick who you are playing, and go.</p>
       pendPromo: null,
       wrong: null,            // the off-book move just tried, for the correction line
       hintSq: null,           // {from,to} while a hint is lit
-      hintSan: null
+      hintSan: null,
+      /* ⚠ ONE GAME, ONE VERDICT. Set by a hint, a correction, a take-back or a skip, and
+         never cleared inside a game — help taken on move 3 is help taken, whatever happens
+         on move 30. Start Over builds a fresh G, which is the honest way to try again. */
+      helped: 0,
+      earned: null            // 'known' | 'held', so the room says it once
     };
     noteRep(G.S);
     if (ENGINE) { try { ENGINE.newGame(); } catch (e) {} }
@@ -313,6 +410,9 @@ White comes at you, pick who you are playing, and go.</p>
          declines does not advance `idx`, so `while (idx < len)` alone would spin the tab
          to a halt on the one failure this room is built to survive. */
       while (G.idx < G.v.plies.length) { if (!applyBookPly()) break; }
+      /* ⚠ BEFORE toPlay(), which is where KNOWN is granted. Skipping is not a walk-in: the
+         position is identical and the memory claim is not, so this game can earn nothing. */
+      G.helped = 1;
       toPlay();
     }
     render();
@@ -372,6 +472,10 @@ White comes at you, pick who you are playing, and go.</p>
     if (G.phase === 'play') return;
     G.phase = 'play';
     elPlan.hidden = false;
+    /* ⭐ THE MOMENT THE LINE ENTERS YOUR BOOK. The book is finished and nobody helped you
+       finish it, which is the whole of the ☆ claim. Granted here rather than in the input
+       handler because EVERY route out of the walk-in passes through this function. */
+    if (!G.helped && grantKnown(G.v.id)) G.earned = 'known';
   }
 
   /* THE DRIVER. Called after every change of state; decides whose job it is to move next
@@ -450,6 +554,10 @@ White comes at you, pick who you are playing, and go.</p>
       G.result = (loser === USER)
         ? { k: 'loss', t: 'Checkmate. White got there first.' }
         : { k: 'win',  t: 'Checkmate — you won it. That is the Pirc doing its job.' };
+      /* ⭐ AND THE ★ CLAIM: you learned the line and then held it against somebody named.
+         ⚠ Only on a win, only unhelped, only if the line is already KNOWN — and only ever
+         upward, so beating Fresh Recruit after Expert cannot downgrade the entry. */
+      if (loser !== USER && !G.helped && grantHeld(G.v.id, G.lvl.elo)) G.earned = 'held';
     } else {
       var names = { stalemate: 'Stalemate', material: 'Draw — not enough material', fifty: 'Draw — the fifty-move rule', threefold: 'Draw — threefold repetition' };
       G.result = { k: 'draw', t: (names[res] || 'Draw') + '.' };
@@ -503,6 +611,9 @@ White comes at you, pick who you are playing, and go.</p>
                   ((p.promo || null) === (mv.promo || null) || !p.promo);
       if (!right) {
         G.sel = -1;
+        /* the correction is the teaching, and it is also the end of THIS game's ☆ claim —
+           you did not walk the line, you were walked back onto it */
+        G.helped = 1;
         G.wrong = C.toSAN(G.S, mv);
         render();
         return;
@@ -515,6 +626,10 @@ White comes at you, pick who you are playing, and go.</p>
     }
 
     G.wrong = null;
+    /* ⚠ THE MARK'S ANNOUNCEMENT IS CLEARED BY YOUR NEXT MOVE, not by a timer. It is news
+       about the move you just finished, so it belongs on screen for exactly as long as you
+       have not made another one — and a timer would take it away mid-sentence. */
+    G.earned = null;
     push(mv);
     render();
     tick();
@@ -548,6 +663,9 @@ White comes at you, pick who you are playing, and go.</p>
     var back = 0;
     while (back < 2 && target > floor) { target--; back++; }
     if (!back) return;
+    /* ⚠ AFTER the early returns, so a take-back that could not happen does not cost you the
+       game's verdict. A no-op must not be charged for. */
+    G.helped = 1;
     rewindTo(target);
   });
 
@@ -575,7 +693,15 @@ White comes at you, pick who you are playing, and go.</p>
     if (!G) return;
     if (G.phase === 'book') {
       var p = bookPly();
-      if (p && p.color === USER) { G.hintSq = { from: p.from, to: p.to }; G.hintSan = p.san; render(); }
+      /* ⚠ ONLY THE BOOK-PHASE HINT COUNTS AS HELP, and the asymmetry is deliberate. This one
+         hands you the move you were supposed to remember, which is exactly the claim ☆ makes.
+         The play-phase branch below only flashes THE PLAN — text the "What Is the Plan?"
+         button offers unconditionally two feet away — so treating it as help would price a
+         button that costs nothing. */
+      if (p && p.color === USER) {
+        G.helped = 1;
+        G.hintSq = { from: p.from, to: p.to }; G.hintSan = p.san; render();
+      }
       return;
     }
     /* Out of book there IS no book move, and inventing one would be the trainer lying.
@@ -696,11 +822,44 @@ White comes at you, pick who you are playing, and go.</p>
     elHint.hidden = (G.phase === 'over');
 
     elStat.className = 'ot-status';
-    elStat.innerHTML = statusHTML();
+    /* ⛑⛑ THE THREE PIECES ARE COMPOSED HERE, NOT INSIDE statusHTML(). The first version
+       appended the "in your book" line to the book-over branch — and that branch is true for
+       about two hundred milliseconds, because White answers immediately and the status moves
+       on to "Your move." The mark was granted correctly, banked correctly, and announced to
+       nobody. Caught by driving the room and reading the status AFTER the reply, which is
+       when a person would actually look at it. [[measure-the-real-page]] */
+    elStat.innerHTML = statusHTML() + earnedHTML() + helpedHTML();
   }
 
   function pieceName(p) {
     return ({ k: 'king', q: 'queen', r: 'rook', b: 'bishop', n: 'knight', p: 'pawn' })[p.toLowerCase()] || 'piece';
+  }
+
+  /* ⭐ AN EARNED LINE IS ANNOUNCED, ONCE, WHERE IT HAPPENED. A trophy that only ever appears
+     on another page is a trophy nobody connects to the thing they just did — and this room's
+     whole argument is that the book is a possession rather than a score.
+     ⚠ IT IS ALSO THE ONLY PLACE THE RULE IS TEACHABLE. Somebody who used a hint gets no mark
+     and would otherwise have nothing to read it off; the "no help" line below is how they
+     learn what the mark costs, at the exact moment they can act on it.
+     ⚠ NULL UNLESS SOMETHING CHANGED. grantKnown/grantHeld return false when the entry was
+     already there, so a second clean walk-in stays quiet instead of congratulating you for
+     a line you banked last week. */
+  function earnedHTML() {
+    if (!G || !G.earned) return '';
+    if (G.earned === 'known') {
+      return ' <b class="ot-cue">☆ ' + esc(G.v.name) + ' is in your book.</b>' +
+             ' Win from here and it fills in.';
+    }
+    var L = heldLevel(G.v.id);
+    return ' <b class="ot-cue">★ You held ' + esc(G.v.name) +
+           (L ? ' against ' + esc(L.name) : '') + '.</b>';
+  }
+  /* the quiet half of the same rule: you are mid-game and this one is not going to count */
+  function helpedHTML() {
+    if (!G || !G.helped || G.phase === 'over') return '';
+    var e = bookEntry(G.v.id);
+    if (e && e.held) return '';                    // nothing left to earn on this line
+    return ' <span class="ot-dim">(No mark for this game — you took help.)</span>';
   }
 
   function statusHTML() {
@@ -812,6 +971,12 @@ White comes at you, pick who you are playing, and go.</p>
 .ot-card-name { color: #f2eddd; font-weight: 800; font-size: 0.98rem; }
 .ot-card-white { color: #b7c6b3; font-size: 0.78rem; }
 .ot-card-note { color: #8fae94; font-size: 0.76rem; font-style: italic; margin-top: 3px; }
+/* what you have proved about this line — copper for ☆ known, the Academy's own gold for ★
+   held, so the second tier reads as the brighter one without a second shape to learn */
+.ot-card-mark { margin-top: 6px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+  letter-spacing: 0.06em; color: #e08a3c; }
+.ot-card--got .ot-card-mark { color: #e08a3c; }
+.ot-card--got { border-left-color: #e08a3c; }
 
 /* ── the six opponents ─────────────────────────────────────────────────────────── */
 .ot-levels { display: flex; flex-direction: column; gap: 7px; max-width: 560px; }

@@ -528,11 +528,48 @@
   }
 
 
+  /* ══ YOUR BOOK — the Opening Trainer's repertoire, merged per field ══════════════
+     `pjcc.trainer.book.v1` = { <variationId>: { known: 1, held: <elo> } }. It is EARNED
+     progress, so it syncs, and it merges rather than replaces ([[everything-earned-syncs]]):
+
+       · `known` is STICKY TRUE — you learned the line; that cannot un-happen.
+       · `held` takes the MAX — the strongest opponent you have held it against, so a phone
+         you last opened in July can never walk this morning's win backwards.
+
+     ⭐ THE MERGE IS DIRECTION-INDEPENDENT, which is the property that actually matters and
+     the one `test:trainer` asserts both ways: M(a,b) and M(b,a) must agree, or the two
+     devices disagree about which of them is right and the loser loses real progress.
+     ⚠ IT LIVES HERE RATHER THAN IN THE ROOM because /dossier/ draws the book and never loads
+     the trainer — the same reason the Park-Table stars pull from this file. */
+  var BOOK_KEY = 'pjcc.trainer.book.v1';
+  function trainerBook() {
+    try { var o = JSON.parse(localStorage.getItem(BOOK_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function trainerBookMerge(remote) {
+    if (!remote || typeof remote !== 'object') return false;
+    var local = trainerBook(), changed = false, id;
+    for (id in remote) {
+      if (!remote.hasOwnProperty(id)) continue;
+      var r = remote[id];
+      if (!r || typeof r !== 'object') continue;
+      var mine = local[id] || (local[id] = {});
+      if (r.known && !mine.known) { mine.known = 1; changed = true; }
+      var held = parseInt(r.held, 10) || 0;
+      if (held > (mine.held || 0)) { mine.held = held; changed = true; }
+    }
+    if (changed) { try { localStorage.setItem(BOOK_KEY, JSON.stringify(local)); } catch (e) {} }
+    return changed;
+  }
+
   var PJCC = {
     enabled: !!configured,
     ready: null,
     AURAS: AURAS,
     AURA_ORDER: AURA_ORDER,
+    /* the Dossier draws this; the trainer owns the writing */
+    trainerBook: trainerBook,
+    trainerBookMerge: trainerBookMerge,
     AURA_MEANING: AURA_MEANING,
     /* the word under a swatch, or '' for the four that belong to nobody */
     auraWord: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].word) || ''; },
@@ -888,6 +925,11 @@
       PJCC.myStats().then(function (rows) {
         var row = (rows || []).find(function (r) { return r.game === 'park-bot'; });
         if (row && row.data && row.data.stars) ptStarsMerge(row.data.stars);
+        /* ⚠ THE SAME REQUEST, NOT A SECOND ONE. myStats() returns every game_stats row this
+           account owns, so a second pull for the trainer's book would be a duplicate round
+           trip for data already in hand. */
+        var bk = (rows || []).find(function (r) { return r.game === 'opening-trainer'; });
+        if (bk && bk.data && bk.data.book) trainerBookMerge(bk.data.book);
       })['catch'](function () {});
     } catch (e) {}
   });
