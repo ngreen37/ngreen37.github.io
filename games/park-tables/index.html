@@ -719,7 +719,17 @@ body_class: theme-hall
        stated rather than chosen, so do not "tidy" it back toward the blues. */
     dad:      { name: 'Kedar',    icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'turquoise' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
-    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet' },
+    /* ⭐ HE STUDIES YOU (2026-08-31, Nate: *"Do number three but put it in the park tables
+       next to Auston … or make it the checker town rival"*). Robert is the Checker Town
+       rival, and a rival is exactly who would go and watch your games.
+       ⚠ HE STAYS ON THE LADDER. Moving him beside Auston was the first idea and it opens a
+       1400→2100 hole in the rungs — and Nate has objected to a ladder hole before. The
+       BEHAVIOR sits on his existing seat; only the EXPLANATION lives next to Auston, which is
+       where this page already explains seats that do something unusual.
+       ⚠ `studies` is a flag, not a person. Moving the trait to a different character later
+       is this one word, which is the point of it being a flag. */
+    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet',
+                studies: true },
     /* ⚑⚑ SHE WEARS A PAWN, AND THAT IS THE WHOLE POINT (2026-08-19, Nate: *"Make it a pawn -
        she'll graduate later."*). This seat had worn ♛ since the ladder was built, which put
        the ending of her arc on a live page four weeks AFTER he took that arc off the site on
@@ -1481,6 +1491,28 @@ body_class: theme-hall
      between 1000 and 1400 all of that read as a rung behaving oddly rather than as a
      different kind of seat.
      ⚠ Returns '' if no adaptive seat exists, so callers still need no guard. */
+  /* ══ THE OTHER SEAT THAT LEARNS YOU ═══════════════════════════════════════
+     Nate asked for the studying opponent to sit *next to Auston*, and this is that — the
+     explanation, not a second card. The two of them are a PAIR and the pairing is the idea:
+     **Auston adapts to your strength inside one game; Robert adapts to your repertoire
+     across many.** Two seats that learn you, in two different dimensions.
+
+     ⚠ IT SAYS NOTHING UNTIL HE HAS SOMETHING. A panel announcing "he studies your games"
+     to somebody who has played none is a promise, and this page's rule for the lamp, the
+     stars and the locked seats is the same one: show the truth or show nothing. */
+  function studiesPanel(){
+    if (!botsReady()) return '';
+    var ids = Object.keys(BOTS).filter(function (id) { return BOTS[id].studies; });
+    if (!ids.length) return '';
+    var fav = repFavorite('w') || repFavorite('b');
+    if (!fav) return '';
+    var who = BOTS[ids[0]].name;
+    return '<h2 class="pt-h pt-h--adapt">' + esc(who) + ' Has Your File</h2>' +
+      '<p class="pt-adapt-note">He has watched you play the <b>' + esc(fav.name) + '</b> ' +
+      fav.n + ' times. Sit down at his table and he will steer you somewhere else. ' +
+      'Auston finds your level inside a game; he studies you between them.</p>';
+  }
+
   function austonPanel(){
     if (!botsReady()) return '';
     var saved = botLoad();
@@ -1599,7 +1631,13 @@ body_class: theme-hall
          line and “400 · resume” on the next — which is the one place a wrap is unreadable,
          because it splits a number from its label. On its own line it is also the truer
          shape: the rating is what the seat IS, resume is what is waiting for you there. */
-      return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '"' + tint(b) + '>' +
+      /* ⭐ HIS MARK FOLLOWS AUSTON'S LAMP, RULE FOR RULE. It appears only once he actually
+         has a file on this device, so a stranger sees an ordinary card and nothing is
+         advertised or spoiled; it is TRUE rather than decorative; and it disappears if the
+         browser is cleared, because then he genuinely has not watched you play. */
+      var hasFile = !!b.studies && !!(repFavorite('w') || repFavorite('b'));
+      return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') +
+        (hasFile ? ' pt-bot--studies' : '') + '" data-bot="' + id + '"' + tint(b) + '>' +
         '<span class="pt-card-icon">' + glyph + '</span>' +
         '<span class="pt-card-t">' + esc(b.name) + stars + '<br><i>' + esc(meta) + '</i>' +
         (resume ? '<b class="pt-bot-go">resume</b>' : '') + '</span></button>';
@@ -1738,7 +1776,7 @@ body_class: theme-hall
      both. Returns '' when the engine never loaded, so every caller can concatenate it
      without a guard — same contract botsPanel() and austonPanel() already had. */
   function benchPanel(){
-    var b = botsPanel() + austonPanel();
+    var b = botsPanel() + austonPanel() + studiesPanel();
     return b ? b + benchStrip() : '';
   }
 
@@ -1864,9 +1902,55 @@ body_class: theme-hall
      at all. A game logged twice would double every count Auston derives — her head-to-head,
      her streak, "games since we last played" — so the flag lives on the SAVED state, not in
      a variable, and therefore survives the reload that a refresh mid-game causes. */
+  /* ══ THE FILE — what you actually play, kept in this browser (2026-08-31) ════════════
+     Nate wanted an opponent who has studied your games. This is the study: one tally per
+     opening you have REACHED, per side you had, with the deepest book line you took it to.
+
+     ⭐ IT IS DERIVED FROM GAMES YOU ALREADY PLAYED, not from a survey or a setting. That is
+     the whole reason it feels like being scouted rather than configured — nothing ever asked
+     you what you play, and it knows.
+     ⚠ LOCAL ONLY, and deliberately so. This shapes one bot's opening move; it is not earned
+     progress, so it does not sync ([[everything-earned-syncs]] draws that line). Clearing
+     your browser makes him forget you, which is the honest consequence and costs you nothing.
+     ⚠ `bookPlies < 4` games are ignored — two moves is not a repertoire, and letting them
+     count would have him "preparing" for an opening you wandered into once. */
+  var REP_KEY = 'pjcc.pt.rep.v1';
+  function repLoad(){
+    try { var o = JSON.parse(localStorage.getItem(REP_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function repSave(o){ try { localStorage.setItem(REP_KEY, JSON.stringify(o)); } catch (e) {} }
+  function logRepertoire(st){
+    var O = window.PJCCOpenings, moves = (st && st.moves || '').trim();
+    if (!O || !O.classify || !moves) return;
+    try {
+      var c = O.classify(moves);
+      if (!c.name || c.bookPlies < 4) return;
+      var side = sidePlayed(st), all = repLoad();
+      var bucket = all[side] || (all[side] = {});
+      var e = bucket[c.name] || (bucket[c.name] = { n: 0, line: [] });
+      e.n++;
+      var arr = moves.split(/\s+/).slice(0, c.bookPlies);
+      if (arr.length > e.line.length) e.line = arr;   // keep the deepest instance you reached
+      repSave(all);
+    } catch (e2) {}
+  }
+  /* Your most-played opening as `side`, or null. Two games is the floor: once is an
+     accident, twice is a habit, and a rival who reacts to an accident is just wrong. */
+  function repFavorite(side){
+    var bucket = repLoad()[side], best = null, k;
+    if (!bucket) return null;
+    for (k in bucket) {
+      if (!bucket.hasOwnProperty(k) || bucket[k].n < 2) continue;
+      if (!best || bucket[k].n > best.n) best = { name: k, n: bucket[k].n, line: bucket[k].line || [] };
+    }
+    return (best && best.line.length) ? best : null;
+  }
+
   function logFinished(st, plies){
     if (!st || st.logged) return;
     st.logged = 1; botSave(st);
+    logRepertoire(st);          // ⚠ before the Auston hook, so one throw cannot eat the other
     try {
       if (window.PJCCAuston) {
         PJCCAuston.logGame({ bot: st.bot, result: st.result, plies: plies, reason: st.reason });
@@ -1917,9 +2001,51 @@ body_class: theme-hall
   // The opening's name, shown live as a game follows known theory (Nate 2026-07-17:
   // "during the game, can the opening name pop up?"). Once a game leaves book the
   // deepest name reached keeps showing — the opening is a property of the whole game.
-  function openingCap(movesStr){
-    var nm = (window.PJCCOpenings && window.PJCCOpenings.name) ? window.PJCCOpenings.name(movesStr || '') : null;
-    return nm ? '<p class="pt-open">📖 ' + esc(nm) + '</p>' : '';
+  /* ⭐ AND THE MOMENT IT STOPS BEING THEORY (2026-08-31). The name above tells you what
+     you are IN; this tells you when you left it — which is the more useful of the two facts
+     and the one no other room on the site was saying. Preparation ends on a specific move,
+     and that move is where the game actually starts.
+
+     `classify()` already returns `bookPlies` and this call site was throwing it away. So the
+     alarm is free: no new book, no engine call, no state. It names WHO stepped out, because
+     "they left the book" and "you left the book" are opposite pieces of news — one is a
+     warning and the other is permission.
+
+     ⚠ SILENT UNTIL A GAME IS ACTUALLY IN BOOK. `bookPlies === 0` means the opening was
+     never recognized at all (1.a3, say), and announcing "out of book" on move one would be
+     technically true and useless. It also stays quiet once the game is well past theory —
+     the alarm is a MOMENT, not a permanent banner, so it shows only while the deviation is
+     still recent (≤ 6 plies back). */
+  /* He deviated, and the board says so once — otherwise the whole feature is invisible and
+     just reads as a bot that plays 1.d4. ⚠ IT NAMES THE OPENING HE AVOIDED, because that is
+     the part that proves he was not guessing. Cleared when a new game starts (`st.studied`
+     lives on the saved board), and only shown while it is still the opening. */
+  function studiedLine(st){
+    if (!st || !st.studied) return '';
+    var plies = (st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0;
+    if (plies > 8) return '';
+    var who = (BOTS[st.bot] && BOTS[st.bot].name) || 'He';
+    return '<p class="pt-studied">◉ ' + esc(who) + ' has your file — no ' +
+           esc(st.studied) + ' today.</p>';
+  }
+
+  function openingCap(movesStr, mySide){
+    var O = window.PJCCOpenings;
+    if (!O || !O.classify) return '';
+    var arr = String(movesStr || '').trim().split(/\s+/).filter(Boolean);
+    var c = O.classify(arr);
+    if (!c.name) return '';
+    var out = '<p class="pt-open">📖 ' + esc(c.name) + '</p>';
+
+    var i = c.bookPlies;                       // index of the FIRST move outside the book
+    if (i > 0 && arr.length > i && (arr.length - i) <= 6) {
+      var side = (i % 2 === 0) ? 'w' : 'b';    // even ply index = White to move
+      var moveNo = ((i / 2) | 0) + 1;
+      var who = !mySide ? (side === 'w' ? 'White left the book' : 'Black left the book')
+              : (side === mySide ? 'You left the book' : 'They left the book');
+      out += '<p class="pt-oob">↯ ' + who + ' — move ' + moveNo + '.</p>';
+    }
+    return out;
   }
 
   // Board coordinates (2026-07-17 upgrade) — a file letter on each bottom-visual square,
@@ -2244,7 +2370,8 @@ body_class: theme-hall
       estimateLine(st, lab) +
       bubble +
       earnedLine(st) +
-      openingCap(lab ? lab.moves : st.moves) +
+      openingCap(lab ? lab.moves : st.moves, sidePlayed(st)) +
+      studiedLine(st) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
       // the streaks BRACKET the whole arena — plate, board, plate — so the pair reads as
@@ -2443,8 +2570,73 @@ body_class: theme-hall
     botThink(st, g2.S);
   }
 
+  /* ══ HE IS NOT LETTING YOU HAVE IT — the deviation (2026-08-31) ══════════════════
+     If the game is still walking your most-played line and the next move on it is HIS, he
+     plays something else — a sound something else, from openings anybody would respect.
+
+     ⭐ WHY ONLY HIS FIRST MOVE. Deviating deep needs a reason to prefer one alternative over
+     another, and "not your line" is not a chess reason — an engine told to avoid one move
+     will happily play a bad one instead. On move one every option below is excellent, so the
+     deviation costs him nothing and reads as preparation rather than as a bot malfunctioning.
+     Going deeper than this needs an opening book on the bots, which is the same thing idea #1
+     is blocked on. [[adaptive-opponent]]
+     ⚠ EVERY CANDIDATE IS RE-VALIDATED THROUGH THE REFEREE before it can touch the board —
+     same rule as the engine bridge: nothing hand-written moves a piece. */
+  var OPEN_W = ['e2e4', 'd2d4', 'c2c4', 'g1f3'];
+  var OPEN_B = {
+    e2e4: ['c7c5', 'e7e5', 'e7e6', 'c7c6'],   // Sicilian / Open / French / Caro-Kann
+    d2d4: ['g8f6', 'd7d5', 'e7e6'],
+    c2c4: ['e7e5', 'g8f6', 'c7c5'],
+    g1f3: ['g8f6', 'd7d5']
+  };
+  function studyMove(st, S){
+    var bot = BOTS[st.bot];
+    if (!bot || !bot.studies) return null;
+    /* ⚠ ONLY EVER ON HIS OWN TURN. botThink() is reachable from the path that lands YOUR
+       move, so without this a deviation could be played on your behalf. */
+    if (!S || S.turn === sidePlayed(st)) return null;
+    var arr = (st.moves || '').trim() ? st.moves.trim().split(/\s+/) : [];
+    if (arr.length > 1) return null;                       // his first move only
+    var fav = repFavorite(sidePlayed(st));
+    if (!fav) return null;                                 // no file on you yet
+    for (var i = 0; i < arr.length; i++) if (arr[i] !== fav.line[i]) return null;  // already off your line
+    var avoid = fav.line[arr.length];
+    if (!avoid) return null;
+    var pool = arr.length === 0 ? OPEN_W : (OPEN_B[arr[0]] || null);
+    if (!pool) return null;
+    for (var j = 0; j < pool.length; j++) {
+      if (pool[j] === avoid) continue;
+      var mv = C.findMove(S, C.sqFromName(pool[j].slice(0, 2)), C.sqFromName(pool[j].slice(2, 4)));
+      if (mv) return { mv: mv, fav: fav.name };
+    }
+    return null;
+  }
+
   function botThink(st, S){
     var bot = BOTS[st.bot], tok = ++botSeq;
+
+    /* ⚠ BEFORE THE ENGINE IS ASKED, not after. Asking first and then discarding the answer
+       would burn a real search and leave the two of them disagreeing about the position.
+
+       ⛑⛑ AND IT COMMITS INLINE, EXACTLY AS THE `.then` BELOW DOES — NOT through
+       botCommitMove(). The first version called botCommitMove and produced a bot that
+       played BOTH SIDES: that function ends with `botThink(st, g2.S)` because its job is to
+       land the PLAYER's move and then hand over, so calling it from in here handed the turn
+       straight back to the engine, which dutifully played Black's reply for me. On screen it
+       looked like the deviation worked; the move list said `d2d4 d7d6` and nobody had
+       touched a piece. Caught by reading the saved move list, not the board.
+       ⚠ The turn guard in studyMove() is the second lock on the same door. */
+    var dev = studyMove(st, S);
+    if (dev) {
+      st.studied = dev.fav;                                // remembered so the board can say it once
+      botThinking = false;
+      clockBank(st, true);                                 // his think comes off his own clock
+      var duci = C.nameFromSq(dev.mv.from) + C.nameFromSq(dev.mv.to) + (dev.mv.promo || '');
+      st.moves = ((st.moves || '') + ' ' + duci).trim();
+      botSave(st);
+      return botRender();
+    }
+
     botThinking = true; botRender();
     PJCCGauntletEngine.move(S, botDial(bot, st, S))
       .then(function (mv) {
@@ -2922,7 +3114,7 @@ body_class: theme-hall
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
-      openingCap(m.moves) +
+      openingCap(m.moves, (m && m.pc === 'b') ? 'b' : (m && m.pc === 'w') ? 'w' : null) +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
       // board (with nameplates + the chat line) LEFT, scoresheet RIGHT (2026-07-17 Nate)
       '<div class="pt-arena"><div class="pt-boardwrap">' +
@@ -3556,6 +3748,13 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-state.go { color: #6bffb8; }
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
 .pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
+/* the out-of-book alarm — amber, one line, and it sits tight under the opening name so the
+   pair reads as one thought: here is what you were in, here is where you left it */
+.pt-oob { color: #ffb066; font-size: 0.82rem; font-weight: 600; margin: -8px 0 10px; }
+/* he deviated on purpose, and the board says so once */
+.pt-studied { color: #c9a7ff; font-size: 0.82rem; font-weight: 600; margin: -8px 0 10px; }
+/* the studying seat's mark — the same quiet edge Auston's lamp uses, in his own violet */
+.pt-bot--studies { box-shadow: inset 0 0 0 1px rgba(201,167,255,0.55), 0 0 14px -6px rgba(201,167,255,0.6); }
 
 /* ── THE VS STREAKS — the bar itself now lives in _sass/_pjcc-28-vs.scss ───────────────
    Moved out 2026-08-13, the same day it shipped, when Nate asked for it in every chess
