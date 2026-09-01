@@ -406,7 +406,12 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      line — without it every seat parses as a rung and the ladder check below silently
      stops distinguishing them, which is the shape of bug this whole file is about. */
   const bots = [...PT.matchAll(/\{ name: '([^']+)',\s*icon: '.',\s*diff: '([^']+)',\s*elo: (\d+)([^}]*)/g)]
-    .map(m => ({ name: m[1], diff: m[2], elo: +m[3], adaptive: /adaptive:\s*true/.test(m[4] || '') }));
+    .map(m => ({ name: m[1], diff: m[2], elo: +m[3], adaptive: /adaptive:\s*true/.test(m[4] || ''),
+                 /* ⚑ A SECOND FLAG SAYS "not a rung" (2026-08-31). The Elder Brother HAS a fixed
+                    rating — it is simply not a step on the ladder — so `adaptive` alone stopped
+                    describing the seats this climb has to skip, and the climb below read
+                    400 → … → 2400 → 1150 and called a correct bench broken. */
+                 offLadder: /offLadder:\s*true/.test(m[4] || '') }));
   /* ⚑ THE COUNT IS CROSS-CHECKED, NOT HARD-CODED (2026-08-10). It used to assert `=== 7`,
      which had to be edited by hand the moment Auston came back — and a number a human edits
      to make a test pass is not a test. Both sides are now READ from the file by two
@@ -489,15 +494,15 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      ⚠ THE FIX IS NOT TO SKIP THE LAST ENTRY. It filters on `adaptive`, so the check still
      covers every rung and still fails the day somebody drops a real rung out of order —
      which is the regression it exists for. */
-  const benchRungs = bots.filter(b => !b.adaptive);
+  const benchRungs = bots.filter(b => !b.adaptive && !b.offLadder);
   check('the ladder actually climbs',
     benchRungs.every((b, i) => i === 0 || b.elo > benchRungs[i - 1].elo),
     benchRungs.map(b => b.elo).join(' → ') +
-      (benchRungs.length === bots.length ? '' : '   (+' + (bots.length - benchRungs.length) + ' adaptive, off-ladder)'));
+      (benchRungs.length === bots.length ? '' : '   (+' + (bots.length - benchRungs.length) + ' off the ladder)'));
   /* ⚠ AND THE OFF-LADDER SEAT IS STILL A SEAT. Excluding it from the climb must not exclude
      it from the bench — a bot with no rung and no dial would simply never play. */
   check('…and every off-ladder seat still carries a seed for its dial',
-    bots.filter(b => b.adaptive).every(b => b.elo > 0),
+    bots.filter(b => b.adaptive || b.offLadder).every(b => b.elo > 0),
     bots.filter(b => b.adaptive).map(b => b.name + ' seeds at ' + b.elo).join(' · ') || 'none');
 
   /* THE REGRESSION ITSELF. A seat labelled Easy or Medium that lands at skill 1 or more is

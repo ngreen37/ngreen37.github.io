@@ -448,9 +448,14 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     await reopen();
     const cold = await row();
     check('the whole palette is SHOWN, locked ones included', cold.total === 13, cold.total + ' swatches');
-    check('…with seven locked and gold grandfathered in — the fixture is wearing it',
-      cold.locked.length === 7 && !cold.locked.includes('gold') && cold.locked.includes('violet'),
-      cold.locked.join(', '));
+    /* ⚑ THE COUNT IS DERIVED, 2026-09-01. It read `=== 7` until the Elder Brother took a
+       seat and lime became a prize, and the two failures that produced said "7 expected, 8
+       found" about a palette that was correct. The number of earned colors is a fact about
+       AURA_MEANING, which this file already has in hand — so ask it. */
+    const EARNED = [...MEAN_SRC.matchAll(/from:\s*'(\w+)'/g)].length;
+    check('…with every earned color but gold locked — the fixture is wearing that one',
+      cold.locked.length === EARNED - 1 && !cold.locked.includes('gold') && cold.locked.includes('violet'),
+      cold.locked.join(', ') + '   (' + EARNED + ' have a price)');
 
     /* ⚠⚠ THE GRANDFATHER CLAUSE HAS TWO PATHS AND THE LINE ABOVE ONLY EXERCISES ONE.
        `auraUnlocked` forgives an aura found on the ACCOUNT or in the local `pjcc.identity.v1`,
@@ -545,7 +550,7 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     const won = await row();
     check('a FULL star opens exactly that color', !won.locked.includes('violet'), won.locked.join(', '));
     check('…and only that one — nobody else\'s came with it',
-      won.locked.length === 6 && won.locked.includes('turquoise'), won.locked.join(', '));
+      won.locked.length === EARNED - 2 && won.locked.includes('turquoise'), won.locked.join(', '));
     await page.evaluate(() => document.querySelector('[data-aura="violet"]').click());
     await new Promise((r) => setTimeout(r, 150));
     check('…and now it can actually be worn',

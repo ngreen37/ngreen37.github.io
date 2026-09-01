@@ -719,17 +719,13 @@ body_class: theme-hall
        stated rather than chosen, so do not "tidy" it back toward the blues. */
     dad:      { name: 'Kedar',    icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'turquoise' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
-    /* ⭐ HE STUDIES YOU (2026-08-31, Nate: *"Do number three but put it in the park tables
-       next to Auston … or make it the checker town rival"*). Robert is the Checker Town
-       rival, and a rival is exactly who would go and watch your games.
-       ⚠ HE STAYS ON THE LADDER. Moving him beside Auston was the first idea and it opens a
-       1400→2100 hole in the rungs — and Nate has objected to a ladder hole before. The
-       BEHAVIOR sits on his existing seat; only the EXPLANATION lives next to Auston, which is
-       where this page already explains seats that do something unusual.
-       ⚠ `studies` is a flag, not a person. Moving the trait to a different character later
-       is this one word, which is the point of it being a flag. */
-    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet',
-                studies: true },
+    /* ⚑ THE STUDYING TRAIT LEFT THIS SEAT ON 2026-08-31, hours after it arrived here, and
+       the round trip is worth keeping. I put it on Robert because a rival is who would go
+       and watch your games; Nate read the alternatives and picked one of them — *"I like
+       using the prodigal brother (one of them) … let's roll with it."* It moved by deleting
+       one word here and typing it on another seat, which is exactly what `studies` being a
+       flag was for. See the brother's entry at the foot of this object. */
+    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet' },
     /* ⚑⚑ SHE WEARS A PAWN, AND THAT IS THE WHOLE POINT (2026-08-19, Nate: *"Make it a pawn -
        she'll graduate later."*). This seat had worn ♛ since the ladder was built, which put
        the ending of her arc on a live page four weeks AFTER he took that arc off the site on
@@ -769,7 +765,32 @@ body_class: theme-hall
        ⭐ AND THE 1000→1400 HOLE IS NOT BACK EITHER WAY. Nate fills the rung; Auston fills
        every step there will ever be, including the ones above the CEO and below Maxwell. */
     auston:   { name: 'Auston',   icon: '♘', diff: 'Adapts',   elo: 1200, movetime: 420,  aura: 'crimson',
-                adaptive: true }
+                adaptive: true },
+    /* ⚑⚑ THE ELDER BROTHER — the other seat that is not a rung (2026-08-31, Nate's pick for
+       the studying opponent: *"I like using the prodigal brother (one of them)"*).
+
+       ⭐ HIS CANON IS THE MECHANIC. `_characters/prodigal-brothers.md` says it in five words —
+       *"all swagger, no substance"* — and that is precisely a man who scouts you instead of
+       studying chess. He is 1150 and everybody he talks about is stronger than he is; what he
+       has is your file. `studies: true` is the whole of it, and it is the same flag Robert
+       wore for an afternoon.
+
+       ⚠ OFF THE LADDER, DELIBERATELY. Wedging 1150 between Argus and Nate would make the row
+       of rungs read 400→750→1000→1150→1200→… and turn a character into a step. `offLadder`
+       keeps the rungs at eight and draws him under them beside Auston — which is where Nate
+       asked the studying seat to go in the first place. The two of them are the PAIR: she
+       adapts to your strength inside one game, he adapts to your repertoire across many.
+
+       ⚠ LOCKED BEHIND A CLEAN WIN OVER CROCKETT, and the lock is characterization rather
+       than difficulty: a crony turns up once you are worth watching. It also keeps the front
+       door's bench at six open seats, whose three-column grid `test:regulars` measures.
+
+       ⚠⚠ HIS NAME IS THE CANON PHRASE AND NOTHING MORE. The brothers have no proper names in
+       `_characters/`, and inventing one is not mine to do ([[text-changes-need-approval]]) —
+       so the seat wears what the character file calls him. One string to change if Nate names
+       him. [[slow-roll-cast]] */
+    brother:  { name: 'The Elder Brother', icon: '♕', diff: 'Scouts', elo: 1150, movetime: 500, aura: 'lime',
+                studies: true, offLadder: true, locked: 'crockett' }
   };
   /* ⚠ PUBLISHED, NOT DUPLICATED (2026-08-13). Auston's memory names the other regulars
      ("you beat Robert since we last played"), and the one thing it must never do is keep
@@ -1473,7 +1494,12 @@ body_class: theme-hall
     if (!botsReady()) return '';
     var saved = botLoad();
     var showStars = anyStar();
-    var rungs = Object.keys(BOTS).filter(function (id) { return !BOTS[id].adaptive; })
+    /* ⚠ TWO KINDS OF SEAT ARE NOT RUNGS NOW. Auston has no fixed strength; the Elder Brother
+       has one and it is beside the point, because he is a character rather than a step. Both
+       are drawn under the ladder in their own blocks, so this filter is what keeps the row of
+       rungs reading 400 → 750 → 1000 → 1200 → 1400 → 1800 → 2100 → 2400 with nothing
+       irregular wedged into it. `test:ladders` asserts that climb over the same two flags. */
+    var rungs = Object.keys(BOTS).filter(function (id) { return !BOTS[id].adaptive && !BOTS[id].offLadder; })
       .sort(function (a, b) { return BOTS[a].elo - BOTS[b].elo; });
     var half = Math.ceil(rungs.length / 2);
     var shelf = function (ids) {
@@ -1492,25 +1518,39 @@ body_class: theme-hall
      different kind of seat.
      ⚠ Returns '' if no adaptive seat exists, so callers still need no guard. */
   /* ══ THE OTHER SEAT THAT LEARNS YOU ═══════════════════════════════════════
-     Nate asked for the studying opponent to sit *next to Auston*, and this is that — the
-     explanation, not a second card. The two of them are a PAIR and the pairing is the idea:
-     **Auston adapts to your strength inside one game; Robert adapts to your repertoire
-     across many.** Two seats that learn you, in two different dimensions.
+     Nate asked for the studying opponent to sit *next to Auston*, and this is that. The two
+     of them are a PAIR and the pairing is the idea: **Auston adapts to your strength inside
+     one game; the brother adapts to your repertoire across many.** Two seats that learn you,
+     in two different dimensions, drawn one under the other for exactly that reason.
 
-     ⚠ IT SAYS NOTHING UNTIL HE HAS SOMETHING. A panel announcing "he studies your games"
-     to somebody who has played none is a promise, and this page's rule for the lamp, the
-     stars and the locked seats is the same one: show the truth or show nothing. */
+     ⚑ IT GREW A CARD ON 2026-08-31, when the trait stopped being Robert's. While the studying
+     seat was a rung on the ladder this was an EXPLANATION and nothing else — the card was
+     already up there with the other seven. A character who is not a rung has to be drawn
+     somewhere, and a seat that hides until it has news is a seat people report as missing.
+
+     ⚠ SO THE CARD IS UNCONDITIONAL AND THE CLAIM IS NOT. The heading and the seat are always
+     here; the sentence about what he has watched you play appears only once that is TRUE —
+     the same rule as Auston's lamp, the stars and the locked seats: show the truth or show
+     nothing. A panel announcing "he studies your games" to somebody who has played none is a
+     promise, and this page does not make those. */
   function studiesPanel(){
     if (!botsReady()) return '';
     var ids = Object.keys(BOTS).filter(function (id) { return BOTS[id].studies; });
     if (!ids.length) return '';
-    var fav = repFavorite('w') || repFavorite('b');
-    if (!fav) return '';
+    var saved = botLoad();
+    var showStars = anyStar();
     var who = BOTS[ids[0]].name;
-    return '<h2 class="pt-h pt-h--adapt">' + esc(who) + ' Has Your File</h2>' +
-      '<p class="pt-adapt-note">He has watched you play the <b>' + esc(fav.name) + '</b> ' +
-      fav.n + ' times. Sit down at his table and he will steer you somewhere else. ' +
-      'Auston finds your level inside a game; he studies you between them.</p>';
+    var fav = repFavorite('w') || repFavorite('b');
+    var note = fav
+      ? 'He has watched you play the <b>' + esc(fav.name) + '</b> ' + fav.n +
+        ' times. Sit down at his table and he will steer you somewhere else. ' +
+        'Auston finds your level inside a game; he studies you between them.'
+      : 'Robert’s crony, and a rung below everyone he talks about. ' +
+        'He does not study chess; he studies the people at these tables.';
+    return '<h2 class="pt-h pt-h--adapt">' + esc(who) + '’s Table</h2>' +
+      '<p class="pt-adapt-note">' + note + '</p>' +
+      '<div class="pt-actions pt-bots pt-bots--adapt">' +
+      ids.map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
   }
 
   function austonPanel(){

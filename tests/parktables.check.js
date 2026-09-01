@@ -160,12 +160,20 @@ const BOT = 'maxwell';
      the roster holds, that many cards are on screen. It also covers the real risk the split
      introduced — two panels, and a seat that belongs to NEITHER filter would simply vanish
      with nothing to say so. [[bot-gate]] */
-  const rosterSize = (() => {
+  /* ⚑ AND HOW MANY OF THEM ARE NOT RUNGS — read the same way, for the same reason. There
+     are TWO off-ladder seats since 2026-09-01 (Auston, who has no fixed strength, and the
+     Elder Brother, who has one that is beside the point), and the split check below used to
+     say `=== 1`. A hand-edited number in a test is the thing this block already replaced
+     once; the arithmetic is derived on both sides now, so a third one costs nothing. */
+  const roster = (() => {
     const src = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
     const i = src.indexOf('var BOTS = {');
     const block = src.slice(i, src.indexOf('\n  };', i));
-    return [...block.matchAll(/^\s{4}(\w+):\s*\{/gm)].length;
+    const seats = [...block.matchAll(/^\s{4}(\w+):\s*\{([^}]*)\}/gm)];
+    return { size: [...block.matchAll(/^\s{4}(\w+):\s*\{/gm)].length,
+             off: seats.filter((m) => /adaptive:\s*true|offLadder:\s*true/.test(m[2])).length };
   })();
+  const rosterSize = roster.size;
   const cards = await p.evaluate(() => document.querySelectorAll('[data-bot]').length);
   ok('every seat in BOTS is drawn on the page', cards === rosterSize,
      cards + ' cards · ' + rosterSize + ' in the roster');
@@ -176,9 +184,9 @@ const BOT = 'maxwell';
     rungs: document.querySelectorAll('.pt-bots:not(.pt-bots--adapt) [data-bot]').length,
     adapt: document.querySelectorAll('.pt-bots--adapt [data-bot]').length,
   }));
-  ok('the ladder and the off-ladder seat are drawn separately',
-     panels.rungs === rosterSize - 1 && panels.adapt === 1,
-     panels.rungs + ' rungs · ' + panels.adapt + ' adaptive');
+  ok('the ladder and the off-ladder seats are drawn separately',
+     roster.off > 0 && panels.adapt === roster.off && panels.rungs === rosterSize - roster.off,
+     panels.rungs + ' rungs · ' + panels.adapt + ' off the ladder (roster says ' + roster.off + ')');
   /* ⛑ EVERY OPEN SEAT WEARS ITS OWN COLOR — 2026-08-19, Nate: *"Give each bot box a unique
      color, and that is their aura color for the intro."*
      ⚠⚠ THE SOURCE GATE IN regulars.check.js CANNOT SEE THIS. That one proves the roster

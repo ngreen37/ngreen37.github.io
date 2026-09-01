@@ -475,7 +475,18 @@
     violet:    { word: 'certainty',                   from: 'robert'   },
     sakura:    { word: 'the beginner\'s heart',       from: 'princess' },
     gold:      { word: 'appetite',                    from: 'ceo'      },
-    crimson:   { word: 'nerve',                       from: null       }
+    crimson:   { word: 'nerve',                       from: null       },
+    /* ⚑ THE TENTH COLOR, 2026-08-31 — the Elder Brother took a seat, and every bench seat
+       has to hold a color `test:regulars` can price. Lime came out of the free four
+       (mono/azure/rose stay unclaimed), so a brand-new player picks from three instead of
+       four and one more color became winnable. That is the direction the miser rule allows:
+       loosening later is a gift, tightening is a takeaway — and nobody wearing lime today
+       loses it, because auraUnlocked() grandfathers whatever is already on a profile.
+       ⚠⚠ THE WORD IS A PLACEHOLDER AND IT IS HIS TO REPLACE. Every other frequency here is
+       Nate's own; this one is lifted out of the brothers' character file — *"away, undone,
+       and (eventually) the long road back"* — precisely so that it is a quotation rather
+       than an invention. [[text-changes-need-approval]] */
+    lime:      { word: 'the road back',               from: 'brother'  }
   };
 
   /* The Park Tables keep the stars; this only READS them. Same key, same shape:

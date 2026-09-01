@@ -92,11 +92,23 @@
 # would go. `elo: 1200` is kept ONLY because the gate compares this file field-for-field
 # against BOTS, where 1200 survives as the dial's invisible SEED — it is not a claim about
 # her strength and nothing renders it.
-# ⚠ THE ORDER OF THIS FILE IS CHECKED. She must stay last here for as long as she is last
-# in BOTS; the gate fails on order, not just on contents.
+# ⚠ THE ORDER OF THIS FILE IS CHECKED. She must sit here for as long as she sits here in
+# BOTS; the gate fails on order, not just on contents.
 - key: auston
   name: Auston
   icon: "♘"
   elo: 1200
   adaptive: true
   open: true
+
+# ⚑⚑ THE SECOND SEAT THAT IS NOT A RUNG (2026-08-31) — the Elder Brother, Nate's pick for the
+# opponent who studies your games. He is drawn under the ladder beside Auston in the game.
+# ⚠ `open: false` IS NOT A TECHNICALITY. He is locked behind a clean win over Crockett, and
+# the front door draws only the open seats — so the bench there stays six across three
+# columns, which is arithmetic `test:regulars` checks. Unlock him by deleting his `locked:`
+# in BOTS and this line has to follow, or the gate says so.
+- key: brother
+  name: The Elder Brother
+  icon: "♕"
+  elo: 1150
+  open: false
