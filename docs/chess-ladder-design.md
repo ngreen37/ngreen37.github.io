@@ -122,7 +122,7 @@ Difficulty = **search depth × blunder rate × eval personality**, not depth alo
   Low rungs are human-beatable; it also *expresses character* (a greedy bot overvalues material,
   an aggressive bot overvalues attacking the king).
 - **Eval weights** per persona: `{ material, mobility, kingSafety, center, aggression }`.
-- **Opening book** for the top rungs only (reuse the Pirc Protocol's opening data for the Rival;
+- **Opening book** for the top rungs only (reuse Tabiya's opening data for the Rival;
   a short e4 book for the CEO).
 
 ## 6. Game UX

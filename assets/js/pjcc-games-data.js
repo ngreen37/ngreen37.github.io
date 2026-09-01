@@ -15,7 +15,14 @@ window.PJCC_GAMES = [
   // "Puzzles" link in the site drawer now, so it is hidden from the combined games grid.
   // The game + its page are untouched; only the hall card is suppressed (see pjcc-hall.js).
   { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move',               icon:'⚔', accent:'#00e436', cat:'learn',  score:['fork-in-the-road','solved'], engine:true, noHall:true },
-  { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart',          icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
+  // ⛑ RENAMED TO *TABIYA* 2026-08-31 (Nate). A tabiya is the position an opening is
+  // aiming at, which is exactly what this room drills you toward.
+  // ⚠⚠ THE SLUG DID NOT MOVE, AND MUST NOT. `pirc-protocol` is an IDENTIFIER — it keys
+  // the saved score (`score:` below), PJCC.BOUNTY_GAMES, the flawless-threshold table in
+  // pjcc-profile.js and the dossier's label map, and it is the permalink. Renaming it would
+  // orphan every score anybody has already banked. Same rule the two-brand split runs on:
+  // display text changes, identifiers keep the old spelling. [[site-two-brand-split]]
+  { slug:'pirc-protocol',     name:'Tabiya',             cryptic:'Learn the book by heart',          icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
   // Shogi Island — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating 将 icon on the splash. Restore by uncommenting.
   // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war',      icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },
   { slug:'clearance-delta',   name:'Clearance: DELTA',   cryptic:'Chess Trivia game',              icon:'Δ', accent:'#ff77a8', cat:'learn',  score:['clearance-delta','score'] },

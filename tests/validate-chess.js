@@ -177,7 +177,7 @@ async function openPage(browser, port, rel) {
 
 /* ============ 4. PIRC OPENING LINES + TRAPS ============ */
 async function testPirc(browser, port) {
-  section('4 · Pirc Protocol — every stored line replayed through the referee');
+  section('4 · Tabiya — every stored line replayed through the referee');
   const page = await openPage(browser, port, '/assets/games/pjcc_pirc.html');
   const res = await page.evaluate(() => {
     const C = window.PJCCChess;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>P&JCC: The Pirc Protocol v2.1</title>
+<title>P&JCC: Tabiya</title>
 <!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
      ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
      nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
@@ -46,7 +46,9 @@
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   #hint-btn {
     bottom: 12px; left: 50%; transform: translateX(-50%);
-    background: #ff8fd0; color: #3a0a2a; padding: 8px 18px; font-size: 13px;
+    /* ⛑ was sakura #ff8fd0 — Princess's color, and the last thing on screen still wearing
+       it after she left this room. Turquoise is Kedar's, the same key the VS rail reads. */
+    background: #40e0d0; color: #06302c; padding: 8px 18px; font-size: 13px;
   }
   #hint-btn:active { transform: translateX(-50%) translateY(2px); }
   #menu-btn {
@@ -205,24 +207,27 @@
 </head>
 <body>
 <div id="stage">
-  <!-- THE VS RAILS (2026-08-13). Princess sits across this table and only ever plays book,
-       so the top rail is her sakura for the whole session; the bottom one is yours.
-       ⚠ Sakura by KEY, not by hex — `PJCC.AURAS` owns the palette and a literal here
-       is a copy that drifts the first time one is tuned. -->
+  <!-- THE VS RAILS (2026-08-13). Kedar sits across this table and only ever plays book,
+       so the top rail is his turquoise for the whole session; the bottom one is yours.
+       ⚠ Turquoise by KEY, not by hex — `PJCC.AURAS` owns the palette and a literal here
+       is a copy that drifts the first time one is tuned. ⭐ Turquoise is not a pick, it is
+       HIS: the palette's thirteenth color was added on 2026-08-20 for this character
+       specifically ("make the Dad character's aura turquoise"). -->
   <div class="vs-aura hidden" id="pr-aura-opp" aria-hidden="true" style="--dir:1"><i></i></div>
   <canvas id="canvas" width="480" height="500"></canvas>
   <div class="vs-aura hidden" id="pr-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
 
   <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
-  <button class="float-btn hidden" id="hint-btn">🐾 Show me</button>
+  <button class="float-btn hidden" id="hint-btn">📖 Show me</button>
 
   <!-- DECK SELECT -->
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The Opening Library · v2.2</div>
-    <div class="big-title">THE PIRC PROTOCOL</div>
+    <div class="big-title">TABIYA</div>
     <div class="blurb">
-      Welcome to the library. Across the table, <b style="color:#F5C518">Princess</b> plays only
-      <b class="book">📖 book moves</b> — the established main lines. Learn them by repetition:
+      A <i>tabiya</i> is the position a whole opening is aiming at — the spot both players
+      know they are heading for. Across the table, <b style="color:#F5C518">Kedar</b> plays only
+      <b class="book">📖 book moves</b>, so you get there every time. Learn them by repetition:
       master a whole line and it returns <i>later</i>; slip and you'll see it <i>sooner</i>.
     </div>
     <div class="deck-list" id="deck-list"></div>
@@ -519,7 +524,7 @@ function metaFor(id){ return LINEMETA[id] || { eco:'', ref:'' }; }
 function pgnFor(id){
   const ln = LINES[id]; if (!ln) return '';
   const meta = metaFor(id);
-  let h = '[Event "P&JCC — The Pirc Protocol"]\n[Site "mcpuppystudios.com"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n';
+  let h = '[Event "P&JCC — Tabiya"]\n[Site "mcpuppystudios.com"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n';
   if (meta.eco) h += '[ECO "' + meta.eco + '"]\n';
   h += '[Opening "' + ln.name + '"]\n\n';
   let mt = '', n = 1;
@@ -681,7 +686,7 @@ function loadLine(id) {
   session.attempts[id] = (session.attempts[id] || 0) + 1;
   if (!session.stats.seen[id]) { session.stats.seen[id] = true; session.stats.lines++; }
   coach.mood = 'think';
-  coach.say = '';   // Princess stays quiet; she only speaks when she plays a move
+  coach.say = '';   // Kedar stays quiet; he only speaks when he plays a move
   // brief intro pause, then run auto-moves to first player card
   G.phase = 'animating';
   setTimeout(() => advanceAuto(), 750);
@@ -693,7 +698,7 @@ function advanceAuto() {
   if (G.idx >= plies.length) { lineComplete(); return; }
   const ply = plies[G.idx];
   if (ply.color === G.orient) {
-    // Player's turn — Princess waits quietly (no chatter on your move)
+    // Player's turn — Kedar waits quietly (no chatter on your move)
     G.phase = 'await'; G.wrongHere = 0; G.selected = null;
     coach.mood = 'think'; coach.say = '';
     document.getElementById('hint-btn').classList.remove('hidden');
@@ -995,55 +1000,102 @@ function drawFloaters() {
   });
 }
 
-// ---- Opponent mascot (Princess, the dog you're playing against) ----
+// ---- Opponent portrait (Kedar, the man across the table) ----
+/* ⛑ HE USED TO BE A DOG. Princess sat here until 2026-08-31 (Nate: "Kedar can be the
+   character you play against in that one"), and swapping a name over a drawing of a snout
+   would have been the visible half of the change only. So the head is redrawn as a PERSON,
+   in this canvas's own flat style, at the SAME cx/cy/S geometry — the speech bubble, the
+   bob and every caller are untouched.
+
+   ⚠ THE SKIN IS THE SITE'S OWN TOKEN, not a new invention: #caa472 / #a8814f are
+   `SKIN['']` and its shade from pjcc-face-art.js, so the one character drawn on a canvas
+   sits in the same family as every face the Forge composites. He has no canonical portrait
+   anywhere else — if one is ever drawn, this is the place that has to follow it.
+   ⭐ Kedar reads as a FATHER, not a rival: heavy brows, a close beard, calm eyes. His
+   three moods are the same three the drill already drives (think / talk / happy / oops). */
 function drawCoach() {
   const cx = 42, cy = 52, S = 26;
   coach.bob += 0.06;
   const bob = Math.sin(coach.bob) * 2;
   ctx.save(); ctx.translate(cx, cy + bob);
 
-  // ears
-  ctx.fillStyle = '#8a5a2a';
-  ctx.beginPath(); ctx.ellipse(-S * 0.78, -S * 0.2, S * 0.3, S * 0.5, -0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(S * 0.78, -S * 0.2, S * 0.3, S * 0.5, 0.4, 0, Math.PI * 2); ctx.fill();
-  // head
-  const hg = ctx.createRadialGradient(-S * 0.3, -S * 0.3, S * 0.2, 0, 0, S);
-  hg.addColorStop(0, '#caa06a'); hg.addColorStop(1, '#9a6a38');
-  ctx.fillStyle = hg;
-  ctx.beginPath(); ctx.arc(0, 0, S * 0.92, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 1.5; ctx.stroke();
-  // muzzle
-  ctx.fillStyle = '#e8d3ac';
-  ctx.beginPath(); ctx.ellipse(0, S * 0.34, S * 0.5, S * 0.38, 0, 0, Math.PI * 2); ctx.fill();
+  const SKIN = '#caa472', SHADE = '#a8814f', HAIR = '#2e2119';
 
-  // eyes by mood
+  // ears, behind the head
+  ctx.fillStyle = SHADE;
+  ctx.beginPath(); ctx.ellipse(-S * 0.82, S * 0.02, S * 0.16, S * 0.24, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(S * 0.82, S * 0.02, S * 0.16, S * 0.24, 0, 0, Math.PI * 2); ctx.fill();
+
+  // head — a touch taller than wide, which is most of what says "person" at this size
+  ctx.fillStyle = SKIN;
+  ctx.beginPath(); ctx.ellipse(0, 0, S * 0.80, S * 0.92, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // a close-cropped beard along the jaw, drawn as the lower slice of the same ellipse
+  ctx.save();
+  ctx.beginPath(); ctx.ellipse(0, 0, S * 0.80, S * 0.92, 0, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = 'rgba(46,33,25,0.42)';
+  ctx.beginPath(); ctx.ellipse(0, S * 0.74, S * 0.62, S * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  /* hair — a cap over the CROWN. ⚠ THE BOTTOM EDGE IS THE WHOLE PROBLEM: at ry 0.52
+     centered on -0.52 the cap reached y=0, which is eye level, and he read as a man in a
+     helmet with no forehead. The ellipse is raised so its lower edge lands at -0.48S,
+     which leaves a forehead for the brows to sit on. Clipped to the head either way. */
+  ctx.save();
+  ctx.beginPath(); ctx.ellipse(0, 0, S * 0.80, S * 0.92, 0, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = HAIR;
+  ctx.beginPath(); ctx.ellipse(0, -S * 0.93, S * 0.86, S * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  // brows — heavy, and they carry the mood as much as the eyes do
+  ctx.strokeStyle = HAIR; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+  const browY = coach.mood === 'oops' ? -S * 0.32 : -S * 0.27;
+  ctx.beginPath(); ctx.moveTo(-S * 0.48, browY); ctx.lineTo(-S * 0.12, browY - S * 0.06); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(S * 0.48, browY); ctx.lineTo(S * 0.12, browY - S * 0.06); ctx.stroke();
+
+  // eyes by mood — the same three the drill drives
   ctx.fillStyle = '#1a0f1a';
   if (coach.mood === 'happy') {
     ctx.lineWidth = 2.4; ctx.strokeStyle = '#1a0f1a';
-    ctx.beginPath(); ctx.arc(-S * 0.3, -S * 0.1, S * 0.16, Math.PI, 0); ctx.stroke();
-    ctx.beginPath(); ctx.arc(S * 0.3, -S * 0.1, S * 0.16, Math.PI, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-S * 0.30, -S * 0.08, S * 0.15, Math.PI, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(S * 0.30, -S * 0.08, S * 0.15, Math.PI, 0); ctx.stroke();
   } else if (coach.mood === 'oops') {
-    ctx.beginPath(); ctx.arc(-S * 0.3, -S * 0.08, S * 0.15, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(S * 0.3, -S * 0.08, S * 0.15, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-S * 0.30, -S * 0.06, S * 0.14, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.30, -S * 0.06, S * 0.14, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-S * 0.34, -S * 0.12, S * 0.05, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(S * 0.26, -S * 0.12, S * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-S * 0.34, -S * 0.10, S * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.26, -S * 0.10, S * 0.05, 0, Math.PI * 2); ctx.fill();
   } else {
-    ctx.beginPath(); ctx.arc(-S * 0.3, -S * 0.08, S * 0.13, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(S * 0.3, -S * 0.08, S * 0.13, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-S * 0.30, -S * 0.06, S * 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.30, -S * 0.06, S * 0.12, 0, Math.PI * 2); ctx.fill();
   }
-  // nose
-  ctx.fillStyle = '#2a1a2a';
-  ctx.beginPath(); ctx.ellipse(0, S * 0.2, S * 0.13, S * 0.1, 0, 0, Math.PI * 2); ctx.fill();
-  // mouth (animated when talking)
-  ctx.strokeStyle = '#3a221a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+
+  // nose — one stroke; anything more reads as a caricature at 26px
+  ctx.strokeStyle = SHADE; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(0, -S * 0.02); ctx.lineTo(0, S * 0.20);
+  ctx.lineTo(S * 0.09, S * 0.24); ctx.stroke();
+
+  // mouth (animated while he is talking)
+  /* ⚠ A LIGHT MOUTH, NOT A DARK ONE. The first pass stroked it #3a221a over a beard that
+     is itself dark brown, so at 26px the mouth simply vanished and he read as expressionless.
+     It is the one feature that has to sit ON the beard rather than in it. */
+  ctx.strokeStyle = '#e8cdb4'; ctx.lineWidth = 1.9; ctx.lineCap = 'round';
   const talking = (coach.mood === 'talk' || coach.mood === 'happy');
-  const open = talking ? (0.5 + 0.5 * Math.sin(Date.now() / 90)) * S * 0.12 : 0;
-  ctx.beginPath(); ctx.moveTo(0, S * 0.3); ctx.lineTo(0, S * 0.38 + open); ctx.stroke();
-  ctx.beginPath(); ctx.arc(0, S * 0.38, S * 0.16 + open, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+  const open = talking ? (0.5 + 0.5 * Math.sin(Date.now() / 90)) * S * 0.10 : 0;
+  /* ⚠ A CURVE, NOT A BAR. A straight light stroke across a dark beard rendered as a
+     rectangle stuck to his face — legible, but it did not read as a mouth. A shallow arc
+     costs the same and is unmistakable at 26px. */
+  if (coach.mood === 'happy') {
+    ctx.beginPath(); ctx.arc(0, S * 0.38, S * 0.22 + open, 0.14 * Math.PI, 0.86 * Math.PI); ctx.stroke();
+  } else if (open) {
+    ctx.beginPath(); ctx.ellipse(0, S * 0.50, S * 0.12, Math.max(open, S * 0.04), 0, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(0, S * 0.36, S * 0.19, 0.22 * Math.PI, 0.78 * Math.PI); ctx.stroke();
+  }
   ctx.restore();
 
-  // speech bubble — only when Princess actually has something to say
+  // speech bubble — only when Kedar actually has something to say
   if (coach.say) drawBubble(coach.say);
 }
 
@@ -1157,10 +1209,10 @@ function loop(now) {
 }
 
 // ---- Screens ----
-/* the VS rails: on at the table, off in the library. Princess is the constant opponent
+/* the VS rails: on at the table, off in the library. Kedar is the constant opponent
    here, so her color never changes mid-session — this only has to run when one starts. */
 function showAuras() {
-  PJCCVs.paint('pr-aura-opp', PJCCVs.color('sakura'));
+  PJCCVs.paint('pr-aura-opp', PJCCVs.color('turquoise'));
   PJCCVs.paint('pr-aura-me', PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
   ['pr-aura-opp', 'pr-aura-me'].forEach(id => document.getElementById(id).classList.remove('hidden'));
 }

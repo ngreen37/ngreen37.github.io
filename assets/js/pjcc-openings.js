@@ -95,7 +95,7 @@
        inaccuracy — "But that's the Pirc defense! And that's just the first move." Two
        things were wrong: the Gauntlet never loaded this book at all, and even where it
        DID load, the Pirc ran out after five plies. These three are the exact lines The
-       Pirc Protocol already teaches (and that the accuracy suite already checks against
+       Tabiya room already teaches (and that the accuracy suite already checks against
        Stockfish), so the book and the lesson now say the same thing. */
     ['B07', 'Pirc Defense', 'e4 d6 d4 Nf6 Nc3 g6'],
     ['B08', 'Pirc, Classical', 'e4 d6 d4 Nf6 Nc3 g6 Nf3 Bg7 Be2 O-O O-O c6 a4 e5'],

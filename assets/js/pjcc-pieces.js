@@ -1,6 +1,6 @@
 /* =============================================================================
  * PJCC Pieces — one shared chess-piece look used across the canvas games
- * (Pirc Protocol, Fork in the Road, Sand Mine Depths). A flat, high-contrast
+ * (Tabiya, Fork in the Road, Sand Mine Depths). A flat, high-contrast
  * "carved" piece: a bold outlined glyph with a soft drop shadow — far more
  * recognizable than a glossy disc, and themeable via a palette override.
  *

@@ -215,7 +215,7 @@ permalink: /dossier/
   var GAMES = {
     'the-gauntlet': ['The Gauntlet', 'cleared'], 'clearance-delta': ['Clearance: DELTA', 'score'],
     'notation-run': ['Notation Blitz', 'score'], 'notation-accuracy': ['Notation · Timing', 'precision'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
-    'sand-mine-depths': ['Sand Mine Depths', 'points'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
+    'sand-mine-depths': ['Sand Mine Depths', 'points'], 'pirc-protocol': ['Tabiya', 'flawless'],
     'shogi-island': ['Shogi Island', 'solved'], 'reading-room': ['The Reading Room', 'score'],
     'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score'],
     'siege-endless': ['Siege · Endless', 'wave'], 'sky-run': ['Sky Run', 'score'], 'dungeon': ['Princess Dungeon', 'floors']
