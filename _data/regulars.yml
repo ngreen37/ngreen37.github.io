@@ -42,56 +42,64 @@
   name: Maxwell
   icon: "♖"
   elo: 400
-  book: classical
+  sys_w: london
+  sys_b: openb
   open: true
 
 - key: crockett
   name: Crockett
   icon: "♞"
   elo: 750
-  book: byrne
+  sys_w: larsen
+  sys_b: slav
   open: true
 
 - key: argus
   name: Argus
   icon: "♝"
   elo: 1000
-  book: fianchetto
+  sys_w: kia
+  sys_b: caro
   open: true
 
 - key: nate
   name: Nate
   icon: "♙"
   elo: 1200
-  book: austrian
+  sys_w: qgambit
+  sys_b: grunfeld
   open: true
 
 - key: dad
   name: Kedar
   icon: "♚"
   elo: 1400
-  book: classical
+  sys_w: italian
+  sys_b: french
   open: true
 
 - key: robert
   name: Robert
   icon: "♜"
   elo: 1800
-  book: attack150
+  sys_w: samisch
+  sys_b: kid
   open: true
 
 - key: princess
   name: Princess
   icon: "♟"
   elo: 2100
-  book: fianchetto
+  sys_w: catalan
+  sys_b: pircb
   open: false
 
 - key: ceo
   name: The CEO
   icon: "♔"
   elo: 2400
-  book: austrian
+  sys_w: mainline
+  sys_b: najdorf
   open: false
 
 # ⚑⚑ AUSTON IS LAST BECAUSE SHE IS NOT A RUNG (2026-08-19, Nate: "move Auston to a separate

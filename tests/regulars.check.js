@@ -59,9 +59,13 @@ while ((m = entry.exec(botsBlock)) !== null) {
     adaptive: /adaptive:\s*true/.test(body),
     /* ⚑ 2026-09-01 — the Academy reads this field to offer "prepare for Robert", so it is a
        FIFTH thing that can disagree between the game and the data file, and the disagreement
-       is the worst kind: the trainer would drill you against a line the seat no longer
-       plays, and every move of it would look right. */
-    book: (/book:\s*'(\w+)'/.exec(body) || [, null])[1],
+       is the worst kind: the trainer would drill you against an opening the seat no longer
+       plays, and every move of it would look right.
+       ⚑ 2026-09-01, LATER THE SAME DAY: `book` became `sysW`/`sysB` when the anti-Pirc lines
+       were replaced by per-character systems on BOTH colors. Two fields now, because "the
+       bench has no Black repertoire" was the other half of what was wrong. */
+    sysW: (/sysW:\s*'(\w+)'/.exec(body) || [, null])[1],
+    sysB: (/sysB:\s*'(\w+)'/.exec(body) || [, null])[1],
     open: !/locked:/.test(body)
   });
 }
@@ -103,91 +107,146 @@ for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
   check('· ' + b.key + ' — name', r.name === b.name, r.name + ' vs ' + b.name);
   check('· ' + b.key + ' — rating', r.elo === b.elo, r.elo + ' vs ' + b.elo);
   check('· ' + b.key + ' — icon', r.icon === b.icon, r.icon + ' vs ' + b.icon);
-  check('· ' + b.key + ' — opening book', (r.book || null) === (b.book || null),
-        (r.book || 'none') + ' vs ' + (b.book || 'none'));
+  /* ⛑⛑ THIS LINE READ `r.book` vs `b.book` FOR EXACTLY AS LONG AS THE FIELD EXISTED, AND
+     THEN WENT ON PASSING. When `book:` was replaced by `sysW`/`sysB` on 2026-09-01 both sides
+     of the comparison became undefined, and undefined equals undefined ten times over — ten
+     green checks about a field that no longer existed anywhere in the repo. A per-seat
+     comparison must fail when the FIELD goes, not only when the two copies disagree, so both
+     sides are asserted present before they are asserted equal. [[green-must-name-what-ran]] */
+  /* ⚠ AND TWO SEATS ARE ALLOWED TO HAVE NONE — Auston adapts, Vince studies you — so the
+     rule is "both files agree, and if there IS one it is on both sides", never "everybody
+     has one". That the two of them stay empty is asserted separately, by name, below. */
+  const hasSys = !!(b.sysW || b.sysB || r.sys_w || r.sys_b);
+  check('· ' + b.key + ' — White system',
+        hasSys ? (!!r.sys_w && r.sys_w === b.sysW) : (!r.sys_w && !b.sysW),
+        hasSys ? (r.sys_w || 'MISSING') + ' vs ' + (b.sysW || 'MISSING') : 'none, on purpose');
+  check('· ' + b.key + ' — Black system',
+        hasSys ? (!!r.sys_b && r.sys_b === b.sysB) : (!r.sys_b && !b.sysB),
+        hasSys ? (r.sys_b || 'MISSING') + ' vs ' + (b.sysB || 'MISSING') : 'none, on purpose');
   check('· ' + b.key + ' — ' + (b.open ? 'open' : 'locked'), r.open === b.open,
         'data says ' + (r.open ? 'open' : 'locked') + ', the game says ' + (b.open ? 'open' : 'locked'));
   check('· ' + b.key + ' — ' + (b.adaptive ? 'adaptive' : 'a fixed rung'), !!r.adaptive === b.adaptive,
         'data says ' + (r.adaptive ? 'adaptive' : 'fixed') + ', the game says ' + (b.adaptive ? 'adaptive' : 'fixed'));
 }
 
-/* ══ WHAT EACH REGULAR ACTUALLY PLAYS — the opening book, 2026-09-01 ═══════════════════
-   Nate's own blocker on "prep for a named opponent": *"it would require getting at least 5
-   moves deep into the Pirc at the park tables (or whatever variation is chosen)."* A seat
-   you cannot predict cannot be prepared for, so `book:` names one of the six White systems
-   in pjcc-pirc-book.js and the regular follows it while you stay in the line with him.
+/* ══ WHAT EACH REGULAR ACTUALLY PLAYS — THEIR OWN SYSTEM, BOTH COLORS ═════════════════
+   Nate, 2026-09-01: *"What if the characters we have so far … have their own openings for
+   white and black that they prefer to play … allow more flexibility for what we are trying
+   to do."*
 
-   ⭐ THE BAR IS HIS AND IT IS CHECKED AS A NUMBER. "At least 5 moves" is 10 plies, so a line
-   shorter than that could not satisfy him however well the code worked — and the lines are
-   the one part of this that a person will edit later.
-   ⚠ THE BOOK ITSELF IS NOT RE-PROVED HERE. Every line is resolved through the referee at
-   load and gated by `npm run test:trainer`; this asks only that the bench points at real
-   ones. Two files proving the same chess twice is how they come to disagree. */
+   ⛑⛑ THIS SECTION USED TO GATE A `book:` FIELD, AND THE THING IT GATED LASTED ONE DAY.
+   Each seat carried a memorized 14-ply anti-Pirc LINE; every one of those lines starts 1.e4,
+   so the whole bench opened 1.e4 at anyone sitting down as Black, and there was no Black half
+   at all. What the gate proved — that the assignment pointed at real lines, deep enough — was
+   all true, and the feature was still wrong. A gate can only ever check the thing you built.
+
+   ⭐ SO WHAT IS CHECKED NOW IS DIFFERENT IN KIND: not "does the seat name a line" but "does
+   the seat name a SYSTEM, on BOTH colors, and is that system distinct from the others". The
+   chess itself — legality, depth, whether anything hangs — is proved in test:systems, which
+   plays them. Two files must not prove the same chess twice. */
 {
-  const book = require(path.join(ROOT, 'assets/js/pjcc-pirc-book.js'));
-  const lines = {};
-  book.all().forEach((v) => { lines[v.id] = v.plies; });
+  const SY = require(path.join(ROOT, 'assets/js/pjcc-systems.js'));
 
   /* the assignment, read off the roster the same way every other field is */
   const assigned = {};
   const src = tablesSrc.slice(start, tablesSrc.indexOf('\n  };', start));
-  [...src.matchAll(/^ {4}(\w+):\s*\{[^}]*?book:\s*'(\w+)'/gms)].forEach((m2) => { assigned[m2[1]] = m2[2]; });
+  [...src.matchAll(/^ {4}(\w+):\s*\{[\s\S]*?sysW:\s*'(\w+)',\s*sysB:\s*'(\w+)'/gm)]
+    .forEach((m2) => { assigned[m2[1]] = { w: m2[2], b: m2[3] }; });
 
-  check('the bench declares an opening book', Object.keys(assigned).length > 0,
-        Object.keys(assigned).length + ' seats booked of ' + bots.length);
+  check('the bench declares a system for each regular', Object.keys(assigned).length > 0,
+        Object.keys(assigned).length + ' seats with systems, of ' + bots.length);
 
   const seatKeys = bots.map((b) => b.key);
   const strangers = Object.keys(assigned).filter((k) => !seatKeys.includes(k));
-  check('…on real seats only', strangers.length === 0, strangers.join(', ') || 'every booked key is in BOTS');
+  check('…on real seats only', strangers.length === 0, strangers.join(', ') || 'every key is in BOTS');
 
-  const unreal = Object.keys(assigned).filter((k) => !lines[assigned[k]]);
-  check('…and every line named is one the Academy actually teaches',
+  /* ⚠⚠ BOTH COLORS, AND THIS IS THE WHOLE POINT OF THE REWRITE. The old book was White's
+     half only — sit down as White and the bench played exactly as it always had. A seat with
+     one color filled in is that bug coming back through the roster. */
+  const known = {};
+  SY.all().forEach((x) => { known[x.id] = x.side; });
+  const halfDressed = Object.keys(assigned).filter((k) => !assigned[k].w || !assigned[k].b);
+  check('…and every one of them has BOTH colors', halfDressed.length === 0,
+        halfDressed.join(', ') || Object.keys(assigned).length + ' seats, 2 colors each');
+
+  const unreal = [];
+  Object.keys(assigned).forEach((k) => {
+    if (known[assigned[k].w] !== 'w') unreal.push(k + '.w→' + assigned[k].w);
+    if (known[assigned[k].b] !== 'b') unreal.push(k + '.b→' + assigned[k].b);
+  });
+  check('…and each names a real system, on the right side of the board',
         unreal.length === 0,
-        unreal.map((k) => k + '→' + assigned[k]).join(', ') ||
-        Object.keys(assigned).map((k) => k + ':' + assigned[k]).join(' · '));
+        unreal.join(', ') || Object.keys(assigned).map((k) => k + ':' + assigned[k].w + '/' + assigned[k].b).join(' · '));
 
-  /* ⚠⚠ HIS BAR, AS ARITHMETIC. 5 moves = 10 plies. A shorter line would leave a seat out of
-     book before the tabiya, which is the exact failure that made idea #1 impossible. */
-  const short = Object.keys(assigned).filter((k) => (lines[assigned[k]] || []).length < 10);
-  check('…and each is at least 5 moves deep, which was the whole prerequisite',
-        short.length === 0,
-        short.map((k) => k + ' ' + (lines[assigned[k]] || []).length + ' plies').join(', ') ||
-        'shortest ' + Math.min(...Object.keys(assigned).map((k) => lines[assigned[k]].length)) + ' plies');
+  /* ⭐ AND THEY ARE NOT ALL THE SAME PERSON. Eight seats sharing three systems is the "every
+     seat opens 1.e4" failure in a new costume, so the spread is asserted rather than hoped
+     for. Not uniqueness — two characters may genuinely share a taste — but most of them. */
+  const wSys = new Set(Object.values(assigned).map((x) => x.w));
+  const bSys = new Set(Object.values(assigned).map((x) => x.b));
+  check('the bench does not all play the same thing as White',
+        wSys.size >= Object.keys(assigned).length - 1, wSys.size + ' distinct White systems');
+  check('…nor as Black', bSys.size >= Object.keys(assigned).length - 1,
+        bSys.size + ' distinct Black systems');
 
-  /* ⭐ TWO SEATS HAVE NO BOOK AND MUST NOT GET ONE BY TIDYING. In both cases the absence is
+  /* ⭐ TWO SEATS HAVE NO SYSTEM AND MUST NOT GET ONE BY TIDYING. In both cases the absence is
      the character: Auston has no fixed anything, and Vince's whole trait is that he studies
-     YOU rather than chess. Giving either of them a memorized repertoire would undo them. */
+     YOU rather than chess. */
   const adaptiveKey = (bots.find((b) => b.adaptive) || {}).key;
-  check('the adaptive seat has no book — she cannot have a fixed anything',
-        !assigned[adaptiveKey], adaptiveKey + (assigned[adaptiveKey] ? ' → ' + assigned[adaptiveKey] : ': none'));
+  check('the adaptive seat has no system — she cannot have a fixed anything',
+        !assigned[adaptiveKey], adaptiveKey + (assigned[adaptiveKey] ? ' → assigned!' : ': none'));
   const studies = /(\w+):\s*\{[^}]*?studies:\s*true/s.exec(src);
   check('…and neither does the seat that studies YOU instead of chess',
         !!studies && !assigned[studies[1]],
-        studies ? studies[1] + (assigned[studies[1]] ? ' → ' + assigned[studies[1]] : ': none') : 'no studying seat found');
+        studies ? studies[1] + (assigned[studies[1]] ? ' → assigned!' : ': none') : 'no studying seat found');
 
-  /* ⚠ THE LION IS BLACK'S OWN SETUP (3…Nbd7). White's half of it is just the Classical, so a
-     seat "playing the Lion" would be a label on nothing. */
-  check('nobody is assigned the Lion, which is not a White system',
-        Object.values(assigned).indexOf('lion') === -1,
-        'the six lines are five White systems plus Black\'s own');
+  /* the data file agrees with the game, field for field — the roster is drawn from BOTH */
+  const mismatched = [];
+  bots.forEach((b) => {
+    const r = rows.find((x) => x.key === b.key) || {};
+    const want = assigned[b.key];
+    if ((r.sys_w || null) !== (want ? want.w : null)) mismatched.push(b.key + '.sys_w');
+    if ((r.sys_b || null) !== (want ? want.b : null)) mismatched.push(b.key + '.sys_b');
+  });
+  check('_data/regulars.yml carries the same systems the game does',
+        mismatched.length === 0,
+        mismatched.join(', ') || 'all ' + bots.length + ' seats agree on both colors');
 
   /* the wiring, because a perfect assignment nobody consults is [[feature-shipped-but-never-loaded]] */
-  check('the page loads the book module', /pjcc-pirc-book\.js/.test(tablesSrc));
-  /* ⛑⛑ BOTH INDICES MUST EXIST, AND THE FIRST VERSION OF THIS CHECK DID NOT SAY SO. A
-     mutation that deleted the call outright left indexOf returning -1, and -1 is less than
-     everything, so the ordering check passed while the feature was gone. An ordering test
-     over a missing thing is unanimous and worthless. [[green-must-name-what-ran]] */
-  const askedAt = tablesSrc.indexOf('var bkMv = botBookMove(st, S);');
+  check('the page loads the systems module', /pjcc-systems\.js/.test(tablesSrc));
+  check('…and no longer ships the Academy\'s Pirc book to the bench',
+        !/pjcc-pirc-book\.js/.test(tablesSrc),
+        '23kB of teaching prose for 84 half-moves — it belongs to the room that teaches');
+  /* ⛑⛑ BOTH INDICES MUST EXIST. A mutation that deleted the call outright once left indexOf
+     returning -1, and -1 is less than everything, so the ordering check passed while the
+     feature was gone. [[green-must-name-what-ran]] */
+  const askedAt = tablesSrc.indexOf('var sysMv = botSystemMove(st, S);');
   const engineAt = tablesSrc.indexOf('PJCCGauntletEngine.move(S, botDial(bot, st, S))');
   check('…and asks it BEFORE spending an engine search',
         askedAt > -1 && engineAt > -1 && askedAt < engineAt,
-        askedAt < 0 ? 'THE BOOK IS NEVER CONSULTED' :
-          'book@' + askedAt + ' engine@' + engineAt);
+        askedAt < 0 ? 'THE SYSTEM IS NEVER CONSULTED' : 'system@' + askedAt + ' engine@' + engineAt);
   /* ⛑ THE TRAP THIS PAGE HAS ALREADY FALLEN INTO ONCE: botCommitMove() ends by calling
      botThink(), so committing a bot's own move through it makes the bot play both sides. */
-  check('…and commits the move inline, never through botCommitMove()',
-        /var bkMv = botBookMove[\s\S]{0,400}?botSave\(st\);\s*\n\s*return botRender\(\);/.test(tablesSrc),
-        'botCommitMove() hands the turn back — that bug shipped once and looked correct');
+  /* ⚠ READ AS A BLOCK, NOT AS A SHAPE. The first version pinned the exact sequence "botSave
+     then return botRender" and broke the moment the commit moved inside a setTimeout — which
+     it did, the same afternoon, once an instant reply turned out to leave the regular's clock
+     frozen for six moves. A regex that encodes today's line breaks is a regex that fails on
+     the next honest edit. What must be true is simpler and permanent: whatever happens in
+     this block, botCommitMove() is not in it. */
+  /* ⚠ BOUNDED BY THE ENGINE CALL, NOT BY A CHARACTER COUNT. The first attempt sliced a flat
+     1400 characters and cut the block in half — so it reported a missing botSave() that was
+     right there, four lines past the window. An arbitrary constant standing in for a boundary
+     is a check that starts lying the moment a comment grows. */
+  const sysBlock = (function () {
+    const i = tablesSrc.indexOf('var sysMv = botSystemMove(st, S);');
+    if (i < 0) return '';
+    const j = tablesSrc.indexOf('PJCCGauntletEngine.move(S, botDial', i);
+    return j < 0 ? '' : tablesSrc.slice(i, j);
+  })();
+  check('…and commits the move itself, never through botCommitMove()',
+        sysBlock.length > 0 && sysBlock.indexOf('botCommitMove') === -1 &&
+        /botSave\(st\);/.test(sysBlock) && /botRender\(\);/.test(sysBlock),
+        sysBlock.length === 0 ? 'THE SYSTEM BLOCK IS GONE'
+          : 'botCommitMove() hands the turn back — that bug shipped once and looked correct');
 }
 
 const openGame = bots.filter(b => b.open).length;

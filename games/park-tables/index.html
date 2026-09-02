@@ -55,7 +55,7 @@ body_class: theme-hall
   Academy teaches, consulted by the bench.
   ⚠ AFTER pjcc-chess.js, which its own UMD wrapper reads at definition time.
 {%- endcomment -%}
-<script src="{{ '/assets/js/pjcc-pirc-book.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-systems.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
@@ -708,11 +708,14 @@ body_class: theme-hall
      is what found The Dad still wearing mono in the duel, minutes after he lost it here. */
   var BOTS = {
     maxwell:  { name: 'Maxwell',  icon: '♖', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald',
-                book: 'classical' /* he plays what looks normal, because it is */ },
+                sysW: 'london', sysB: 'openb' /* one setup, at everything — what somebody
+                   shown a single opening actually does. He plays it, then plays like a 400 */ },
     crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber',
-                book: 'byrne' /* an early pin is every improving player’s favorite trick */ },
+                sysW: 'larsen', sysB: 'slav' /* ⭐ NATE'S OWN EXAMPLE, verbatim: 1.b3, and
+                   “the Slav or 1…e5 for black regardless of 1.e4 or 1.d4” */ },
     argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260,  aura: 'ice',
-                book: 'fianchetto' /* quiet, structural, nothing given away — “the kept word” */ },
+                sysW: 'kia', sysB: 'caro' /* quiet, structural, nothing given away from
+                   either chair — “the kept word” as a shape */ },
     /* ⚑⚑ NATE TOOK THE 1200 RUNG, 2026-08-19 (Nate: *"Make Nate the 1200 player to fill
        that spot — Nate replaces Auston's spot, and Auston has her own special spot."*).
        Auston vacated it because a seat that travels the whole road was never really a rung;
@@ -737,7 +740,9 @@ body_class: theme-hall
        Creator plays back", which is a REAL async table against the actual person. Flagged
        to him: a bot called Nate stands next to a door that offers the real one. */
     nate:     { name: 'Nate',     icon: '♙', diff: 'Club',     elo: 1200, movetime: 480,  aura: 'jade',
-                book: 'austrian' /* the creator picks the sharpest one. Of course he does */ },
+                sysW: 'qgambit', sysB: 'grunfeld' /* ⚠ THE SEAT IS NOT THE MAN. The real
+                   Nate plays the Pirc; he gave this seat the Queen's Gambit on purpose, so the
+                   character is a character. [[yel-fiction-guardrail]] */ },
     /* ⛑ "Father" → "The Dad" (2026-08-10) → "Kedar" (2026-08-25). Same character, same
        seat, same `dad` key. Nate picked the name off the Autobiography of a Yogi shortlist:
        *"not one with too much reverence like Paramahansa but something in-between."*
@@ -752,7 +757,8 @@ body_class: theme-hall
        frequency of love and wisdom"*. It is the only seat whose color means something
        stated rather than chosen, so do not "tidy" it back toward the blues. */
     dad:      { name: 'Kedar',    icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'turquoise',
-                book: 'classical' /* steady, immovable, no fireworks — the character, in moves */ },
+                sysW: 'italian', sysB: 'french' /* the oldest opening there is, and the most
+                   immovable defense — steady, no fireworks. 1.e4 keeps him distinct from Nate */ },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
     /* ⚑ THE STUDYING TRAIT LEFT THIS SEAT ON 2026-08-31, hours after it arrived here, and
        the round trip is worth keeping. I put it on Robert because a rival is who would go
@@ -761,7 +767,9 @@ body_class: theme-hall
        one word here and typing it on another seat, which is exactly what `studies` being a
        flag was for. See the brother's entry at the foot of this object. */
     robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet',
-                book: 'attack150' /* a plan you can memorize and execute. His color means certainty */ },
+                sysW: 'samisch', sysB: 'kid' /* ⭐ HE PLAYS BOTH SIDES OF THE SAME ARGUMENT —
+                   his White setup is the system that exists to meet his Black one. A plan you
+                   can memorize and execute, from either chair */ },
     /* ⚑⚑ SHE WEARS A PAWN, AND THAT IS THE WHOLE POINT (2026-08-19, Nate: *"Make it a pawn -
        she'll graduate later."*). This seat had worn ♛ since the ladder was built, which put
        the ending of her arc on a live page four weeks AFTER he took that arc off the site on
@@ -781,10 +789,15 @@ body_class: theme-hall
        queen glyph returns to this seat, so a later tidy cannot quietly re-spoil it. */
     princess: { name: 'Princess', icon: '♟', diff: 'Master',   elo: 2100, movetime: 1150, aura: 'sakura',
                 locked: 'robert',
-                book: 'fianchetto' /* patience at 2100 reads as mastery, not as timidity */ },
+                sysW: 'catalan', sysB: 'pircb' /* ⭐ AND THE PIRC IS MICHAEL'S OPENING, which
+                   is a relationship the canon has not stated out loud. It fits her: she has never
+                   been too proud to be a beginner, and the Pirc's whole argument is to let him
+                   have the middle and take it back later. [[princess-canon-hook]] */ },
     ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300, aura: 'gold',
                 locked: 'princess',
-                book: 'austrian' /* appetite: the whole front of the board, at his king */ },
+                sysW: 'mainline', sysB: 'najdorf' /* ⚠ THE SHORTEST LIST ON THE BENCH, on
+                   purpose. He has no system, he has principles and then he thinks: four main-line
+                   moves and a real search. Appetite, and no shortcuts */ },
     /* ⚑⚑ AUSTON IS NOT A RUNG — SHE IS THE OTHER KIND OF SEAT (2026-08-19). She sat at
        1200 from 2026-08-10 and became the adaptive seat on 08-17, and for two days she was
        both: a number on the ladder AND a dial that ignored it. Nate ended that — *"they are
@@ -2185,6 +2198,28 @@ body_class: theme-hall
            esc(st.studied) + ' today.</p>';
   }
 
+  /* ⭐ (a) FROM NATE'S ASK, 2026-09-01: *"they can comment on getting into their favorite
+     opening or not."* It is A SENTENCE ABOUT HIM, not a status light — "Maxwell never got the
+     London" is a fact about a person; "system: inactive" is a debug readout.
+     ⚠⚠ SAID ONCE, AT THE MOMENT IT STOPS BEING TRUE. A line reading "still in his system" on
+     every render is noise from move two; the interesting moment is the one where he leaves
+     it, because that is when the game stopped being his and started being yours. Same
+     restraint as the out-of-book line it sits under. [[no-excuses-copy]]
+     ⚠ AND IT IS RECORDED WHERE IT HAPPENS, NOT RE-DERIVED. `st.sysOut` is stamped on the
+     saved board the first time the engine has to answer for him. Re-deriving it at render
+     time would mean asking his system for a move on YOUR turn, which it cannot answer —
+     next() only speaks for the side to move — and every way of faking that position is a way
+     for the caption to disagree with the board. */
+  function systemCap(st){
+    try {
+      if (!st || !st.sysOut || !BOTS[st.bot] || !window.PJCCSystems) return '';
+      var sys = PJCCSystems.get(st.sysOut);
+      if (!sys) return '';
+      return '<p class="pt-oob">♟ ' + esc(BOTS[st.bot].name) + ' is out of ' +
+             esc(sys.name) + ' — from here he is thinking.</p>';
+    } catch (e) { return ''; }
+  }
+
   function openingCap(movesStr, mySide){
     var O = window.PJCCOpenings;
     if (!O || !O.classify) return '';
@@ -2527,6 +2562,7 @@ body_class: theme-hall
       bubble +
       earnedLine(st) +
       openingCap(lab ? lab.moves : st.moves, sidePlayed(st)) +
+      (lab ? '' : systemCap(st)) +
       studiedLine(st) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
@@ -2750,66 +2786,60 @@ body_class: theme-hall
      is blocked on. [[adaptive-opponent]]
      ⚠ EVERY CANDIDATE IS RE-VALIDATED THROUGH THE REFEREE before it can touch the board —
      same rule as the engine bridge: nothing hand-written moves a piece. */
-  /* ══ WHAT EACH REGULAR ACTUALLY PLAYS (2026-09-01) ══════════════════════════════
-     The prerequisite Nate named for idea #1, and the whole of it: a seat you can prepare
-     FOR. `book` names one of the six White systems in `PJCCPircBook`, and the regular
-     follows it move for move as long as you stay in the line with him.
+  /* ══ WHAT EACH REGULAR ACTUALLY PLAYS — THEIR OWN SYSTEM, BOTH COLORS ═══════════
+     Nate, 2026-09-01: *"What if the characters we have so far, who are part of the story,
+     have their own openings for white and black that they prefer to play … This way they can
+     (a) comment on getting into their favorite opening or not and (b) allow more flexibility
+     for what we are trying to do."*
 
-     ⭐ IT IS THE SAME BOOK THE ACADEMY TEACHES, NOT A SECOND COPY. Every line is resolved
-     through this same referee at load and gated by `npm run test:trainer`; the bench simply
-     reads it. A hand-typed roster of moves here would be a second chess claim to keep true,
-     which is the one thing this site does not do ([[accuracy-above-all]]).
+     ⛑⛑ THIS REPLACED A VERSION THAT SHIPPED FOR ONE DAY, AND THE FAILURE IS WORTH KEEPING.
+     Each seat carried a memorized 14-ply anti-Pirc LINE out of the Academy's own book. Every
+     line starts 1.e4, so all eight seats opened 1.e4 at every player who sat down as Black —
+     a general chess room wearing the shape of one lesson — and the instant you played
+     anything the line had not heard of, the whole thing evaporated. Nate called it a
+     structural-integrity problem and he was right: prep is a REASON to have a repertoire, not
+     a reason to build the room around one opening.
 
-     ⚠⚠ FIXED PER SEAT, ON PURPOSE. Predictability is the FEATURE — "Robert plays the 150
-     Attack" is only useful if it is reliably true, and prep against a coin flip is not prep.
-     Variety comes from the roster having eight of them, not from any one seat wandering.
+     ⭐⭐ SO: SYSTEMS, NOT LINES. `sysW`/`sysB` name a set of squares the character wants,
+     reachable in any order, against anything — the moves are in pjcc-systems.js and the
+     assignment is here, on the seat, beside every other fact about them. Crockett plays b3,
+     Bb2, e3, Nf3 whether you answer 1…e5, 1…c5 or the Pirc, and he is still Crockett in a
+     position no book has ever seen. Measured: every seat holds its system SIX full moves
+     against every other seat's, and not one of the 64 pairings ends a piece down.
 
-     ⚠ WHITE'S SIDE ONLY, and the limit is honest rather than lazy: these six lines ARE
-     White's systems against the Pirc, so a regular can follow one only while you are the one
-     playing the Pirc. Sit down as White and the engine plays as it always did. A black
-     repertoire for the bench is a different book and a different day.
+     ⭐ AND IT WORKS FROM BOTH CHAIRS NOW, which the book could not — those six lines were
+     White's systems against the Pirc, so they were dead whenever you sat down as White. Sit
+     where you like; the regular has an opening either way.
 
-     ⭐ TWO SEATS DELIBERATELY HAVE NONE, and in both cases that IS the character:
-       · Auston adapts — a fixed book is the one thing her seat cannot have.
+     ⭐ TWO SEATS DELIBERATELY HAVE NONE, and in both cases the absence IS the character:
+       · Auston adapts — a fixed anything is the one thing her seat cannot have.
        · Vince does not study chess; he studies you. Handing the man whose whole trait is
          "no substance" a memorized repertoire would undo him.
-     ⚠ The Lion is not assigned to anybody: it is BLACK's own setup (3…Nbd7), so White's
-     half of it is just the Classical. A seat "playing the Lion" would be a label on nothing. */
-  /* ⚑ IT LIVES ON THE SEAT, not in a second map beside the roster. Everything else a
-     regular has — its rating, its color, its glyph, whether it adapts, whether it studies
-     you — is a field in BOTS, and a ninth fact kept somewhere else is the ninth fact that
-     goes stale when a seat is added ([[dead-game-links-trap]]). It also means
-     `test:parktables` can read the assignment the same way `test:regulars` reads the rest.
-     the chosen line's plies, or null — guarded, because the book is one <script> among ten
-     and a bench that cannot open a game is worse than a bench with no book ([[down-never-stuck]]) */
-  function botBookPlies(id){
-    try {
-      var want = (BOTS[id] || {}).book;
-      if (!want || !window.PJCCPircBook) return null;
-      var all = PJCCPircBook.all();
-      for (var i = 0; i < all.length; i++) if (all[i].id === want) return all[i].plies;
-    } catch (e) {}
-    return null;
+     ⚠ IT LIVES ON THE SEAT, not in a second map beside the roster — everything else a regular
+     has is a field in BOTS, and a fact kept somewhere else is the fact that goes stale when a
+     seat is added ([[dead-game-links-trap]]). `test:regulars` reads it the same way it reads
+     the rest. */
+  function botSystem(id, side){
+    var b = BOTS[id] || {};
+    return side === 'w' ? (b.sysW || null) : (b.sysB || null);
   }
-  function uciOf(p){ return C.nameFromSq(p.from) + C.nameFromSq(p.to) + (p.promo || ''); }
-  /* His next book move, if the game so far IS his book line and the next ply is his.
-     ⚠ THE PREFIX TEST IS WHAT MAKES IT SAFE. The moment you play something the line does not
-     contain, nothing matches and the engine takes over on the very next move — so a regular
-     can never be walked into a position his book was not written for. */
-  function botBookMove(st, S){
-    var me = sidePlayed(st);
-    if (me !== 'b') return null;                 // his half of these lines is White's
-    if (!S || S.turn === me) return null;        // only ever on his own turn
-    var line = botBookPlies(st.bot);
-    if (!line) return null;
-    var arr = (st.moves || '').trim() ? st.moves.trim().split(/\s+/) : [];
-    if (arr.length >= line.length) return null;  // the book has run out
-    for (var i = 0; i < arr.length; i++) if (arr[i] !== uciOf(line[i])) return null;
-    var p = line[arr.length];
-    if (p.color !== S.turn) return null;
-    /* ⚠ RE-VALIDATED THROUGH THE REFEREE, like every other hand-picked move on this page.
-       The book resolved cleanly at load; "cannot happen" is still how a board freezes. */
-    return C.findMove(S, p.from, p.to, p.promo) || null;
+  /* His next move from his own system, or null if the position has stopped being about
+     development — in check, nothing wanted is legal, or the wanted move would drop material.
+     ⚠ GUARDED, because pjcc-systems.js is one <script> among ten and a bench that cannot
+     open a game is worse than a bench with no system ([[down-never-stuck]]).
+     ⚠ THE REFEREE STILL VALIDATES — next() only ever returns a move it took out of
+     legalMoves(), and this is the second lock on the same door. */
+  function botSystemMove(st, S){
+    try {
+      if (!S || !window.PJCCSystems) return null;
+      if (S.turn === sidePlayed(st)) return null;          // only ever on his own turn
+      var id = botSystem(st.bot, S.turn);
+      if (!id) return null;
+      var arr = (st.moves || '').trim() ? st.moves.trim().split(/\s+/) : [];
+      var mv = PJCCSystems.next(id, S, arr);
+      if (!mv) return null;
+      return C.findMove(S, mv.from, mv.to, mv.promo) || null;
+    } catch (e) { return null; }
   }
 
   var OPEN_W = ['e2e4', 'd2d4', 'c2c4', 'g1f3'];
@@ -2867,25 +2897,53 @@ body_class: theme-hall
       return botRender();
     }
 
-    /* ⭐ THE BOOK, AFTER THE DEVIATION AND BEFORE THE ENGINE. The order is the meaning:
-       Vince's "not your line today" outranks everything (he has no book anyway), and a seat
-       that is still inside its own preparation should not be burning an engine search to
-       rediscover a move it already knows.
+    /* ⭐ HIS SYSTEM, AFTER THE DEVIATION AND BEFORE THE ENGINE. The order is the meaning:
+       Vince's "not your line today" outranks everything (he has no system anyway), and a seat
+       still building the shape it always builds should not burn an engine search to
+       rediscover a move it was always going to play.
        ⚠⚠ COMMITTED INLINE, EXACTLY AS THE DEVIATION AND THE ENGINE'S OWN .then DO — NEVER
        through botCommitMove(), whose last line hands the turn straight back and makes a bot
        play both sides. That bug shipped once already on this page and looked correct on
        screen. [[park-tables-matchmaking]]
-       ⭐ AND IT ANSWERS FAST, WHICH IS RIGHT RATHER THAN CHEAP. A player inside their own
-       book moves quickly; the thinking starts when the book stops, and now you can feel
-       exactly where that was. */
-    var bkMv = botBookMove(st, S);
-    if (bkMv) {
-      botThinking = false;
-      clockBank(st, true);
-      var buci = C.nameFromSq(bkMv.from) + C.nameFromSq(bkMv.to) + (bkMv.promo || '');
-      st.moves = ((st.moves || '') + ' ' + buci).trim();
-      botSave(st);
-      return botRender();
+       ⭐ AND IT ANSWERS FAST, WHICH IS RIGHT RATHER THAN CHEAP. A player putting pieces on
+       the squares they always use does not think about it; the thinking starts when the
+       position stops being about development, and you can feel exactly where that was. */
+    var sysMv = botSystemMove(st, S);
+    if (sysMv) {
+      /* ⛑⛑ FAST, BUT NOT INSTANT, AND THE FIRST VERSION WAS INSTANT. Committing synchronously
+         meant the reply landed in the same tick as your move, so clockBank() banked ~0ms and
+         the regular's clock did not move AT ALL for the first six moves of every timed game.
+         Caught by test:parktables, which had been asserting "the regular is on its own clock"
+         since August and suddenly could not observe him using it. The check was right and the
+         behavior was wrong: a player in a timed game who has spent no time is not playing one.
+         ⭐ AND THE DELAY IS THE CHARACTERIZATION. A third of his own movetime — Maxwell snaps
+         a London move out in 120ms, the CEO takes closer to half a second over a main line —
+         so you can feel the difference between a man playing his setup and a man thinking,
+         and the moment the search starts is unmistakable. */
+      var wait = Math.max(120, Math.round((bot.movetime || 300) * 0.35));
+      botThinking = true; botRender();
+      setTimeout(function () {
+        /* ⚠ THE SAME STALE GUARD THE ENGINE'S .then CARRIES. Get up from the table during
+           the wait and this reply belongs to a game you are no longer in. */
+        if (tok !== botSeq || botCur !== st) return;
+        botThinking = false;
+        clockBank(st, true);
+        var suci = C.nameFromSq(sysMv.from) + C.nameFromSq(sysMv.to) + (sysMv.promo || '');
+        st.moves = ((st.moves || '') + ' ' + suci).trim();
+        botSave(st);
+        botRender();
+      }, wait);
+      return;
+    }
+    /* ⭐ THE MOMENT HE LEAVES IT, WRITTEN DOWN ONCE. Everything below this line is the engine
+       thinking, so if he has a system and did not just use it, this is where it ran out.
+       ⚠ `|| st.sysOut` KEEPS THE FIRST ANSWER. A system can go quiet for one move and come
+       back — Bc4 refused this turn is available the next — but "he left his opening" is about
+       the first time it happened, and a flag that flickered would put the sentence on and off
+       the screen while you were reading it. */
+    if (!st.sysOut) {
+      var outOf = botSystem(st.bot, S.turn);
+      if (outOf) { st.sysOut = outOf; botSave(st); }
     }
 
     botThinking = true; botRender();

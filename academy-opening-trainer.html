@@ -131,18 +131,22 @@ White comes at you, pick who you are playing, and go.</p>
     `npm run test:regulars` — so a seat whose system changes at the tables cannot go on
     advertising the old one in the Academy. A third hand-typed copy of the bench is exactly
     the trap that gate exists for. [[dead-game-links-trap]]
-    ⚠ ONLY ROWS WITH A `book` APPEAR. Auston has none because she adapts and Vince has none
-    because he studies you rather than chess — neither can be prepared FOR, and offering
-    them here would promise a drill the tables cannot deliver.
+    ⚠⚠ THE ISLAND CARRIES `sys_w` AND THE FILTERING HAPPENS IN JS, NOT HERE. A seat is
+    preparable in a PIRC room only if the system it actually plays is a reply to the Pirc, and
+    that fact lives in pjcc-systems.js where the systems are — Liquid must not grow a second
+    opinion about it. Auston and Vince have no system at all (she adapts; he studies you), so
+    they never reach this loop; Maxwell, Argus, Nate and Princess do reach it and are dropped
+    by the JS, because the London, the KIA, the Queen's Gambit and the Catalan are not answers
+    to the Pirc. [[dead-game-links-trap]]
   {%- endcomment -%}
   <p class="ot-sub" id="ot-regs-sub" hidden>Drill against what a park regular actually plays,
     at his own strength — then go and sit down with him.</p>
   <div class="ot-regs" id="ot-regs" role="radiogroup" aria-label="Prepare for a park regular" hidden></div>
   <script id="ot-regs-data" type="application/json">
-    [{%- assign booked = site.data.regulars | where_exp: "r", "r.book" -%}
+    [{%- assign booked = site.data.regulars | where_exp: "r", "r.sys_w" -%}
      {%- for r in booked -%}
        {"key":{{ r.key | jsonify }},"name":{{ r.name | jsonify }},"elo":{{ r.elo }},
-        "book":{{ r.book | jsonify }},"icon":{{ r.icon | jsonify }},"open":{{ r.open | default: false }}}
+        "sys":{{ r.sys_w | jsonify }},"icon":{{ r.icon | jsonify }},"open":{{ r.open | default: false }}}
        {%- unless forloop.last -%},{%- endunless -%}
      {%- endfor -%}]
   </script>
@@ -224,6 +228,11 @@ White comes at you, pick who you are playing, and go.</p>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-pirc-book.js' | relative_url }}"></script>
+{%- comment -%} ⚠ THE SYSTEMS MODULE IS HERE FOR ONE FACT: which park regular plays an
+     opening that is actually a reply to the Pirc. The room teaches the Pirc from its own
+     book above; this only decides whose NAME may appear on the By Name list, and it is read
+     rather than copied so the bench and the Academy cannot drift. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-systems.js' | relative_url }}"></script>
 {%- comment -%}
   ⚑ THE DRAWN PIECE SET, 2026-09-01. Nate: *"Fix the colors on the opening trainer board to
   match the chessboards of the park tables. The shapes of the pieces and board as well."*
@@ -349,9 +358,24 @@ White comes at you, pick who you are playing, and go.</p>
      Liquid loop writing JavaScript is a Liquid loop that can emit a syntax error from a
      character in somebody's name; a JSON island is inert text until this line reads it, and
      a bad parse costs the section rather than the page. [[down-never-stuck]] */
+  /* ⚠ THE FILTER IS HERE, AND IT IS WHY THIS LIST IS SHORT. Every seat with a system
+     arrives from the data file; only the ones whose system is an actual reply to the Pirc
+     survive, and `book` is the variation of THIS room's six that the seat's system reaches.
+     A seat we cannot honestly drill you against does not belong on a screen that promises to
+     drill you against him. */
   var REGULARS = (function () {
-    try { return JSON.parse(document.getElementById('ot-regs-data').textContent) || []; }
+    var rows;
+    try { rows = JSON.parse(document.getElementById('ot-regs-data').textContent) || []; }
     catch (e) { return []; }
+    if (!window.PJCCSystems) return [];
+    var out = [];
+    for (var i = 0; i < rows.length; i++) {
+      var v = PJCCSystems.pircVariation(rows[i].sys);
+      if (!v) continue;
+      rows[i].book = v;
+      out.push(rows[i]);
+    }
+    return out;
   })();
   /* which regular you are preparing for, or null for the six plain rungs */
   var pickReg = null;

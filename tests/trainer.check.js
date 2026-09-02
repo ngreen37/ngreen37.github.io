@@ -676,12 +676,31 @@ section('12 · preparing for a named regular');
   ok(NAMES.length >= 8 && typed.length === 0,
      '…and not one regular is named in the page\'s own markup or code',
      typed.length ? 'TYPED: ' + typed.join(', ') : NAMES.length + ' names, none of them here');
-  ok(/where_exp: "r", "r\.book"/.test(OT),
-     '…and only seats with a BOOK are offered',
-     'Auston adapts and Vince studies you — neither can be prepared for');
+  ok(/where_exp: "r", "r\.sys_w"/.test(OT),
+     '…and only seats that HAVE a system reach the loop at all',
+     'Auston adapts and Vince studies you — neither has one');
 
   /* the data file has to carry the field the page filters on */
-  ok(/^ {2}book: \w+$/m.test(YML), 'the data file carries each seat\'s book');
+  ok(/^ {2}sys_w: \w+$/m.test(YML) && /^ {2}sys_b: \w+$/m.test(YML),
+     'the data file carries each seat\'s system, on both colors');
+
+  /* ⛑⛑ AND THE SECOND FILTER — THE ONE THAT MAKES THIS LIST HONEST, AND MUCH SHORTER.
+     Until 2026-09-01 every seat carried an anti-Pirc line, so every seat could be prepared
+     for in a Pirc room. Now they play their own systems, and most of those are not answers
+     to the Pirc at all: the London, the King's Indian Attack, the Queen's Gambit and the
+     Catalan are perfectly good openings that simply never meet a Pirc. Offering those names
+     here would promise a drill the tables cannot deliver ([[dead-game-links-trap]]), so the
+     room asks the systems module which of them is genuinely an anti-Pirc setup and drops the
+     rest. THE LIST GETTING SHORTER IS THE FEATURE. */
+  ok(/PJCCSystems\.pircVariation\(rows\[i\]\.sys\)/.test(OT),
+     '…and only the ones whose system actually MEETS the Pirc are offered',
+     'a shorter, true list beats a long one that promises a drill that cannot happen');
+  ok(/pjcc-systems\.js/.test(OT), '…which means the room loads the systems module');
+  const SYSM = require(path.join(ROOT, 'assets/js/pjcc-systems.js'));
+  const anti = SYSM.all().filter((x) => x.side === 'w' && SYSM.pircVariation(x.id));
+  ok(anti.length > 0 && anti.every((x) => BOOK.all().some((v) => v.id === SYSM.pircVariation(x.id))),
+     '…and every variation those systems point at is one this room teaches',
+     anti.map((x) => x.id + '→' + SYSM.pircVariation(x.id)).join(' · '));
 
   /* ⚠ A LIQUID LOOP THAT WRITES JAVASCRIPT CAN EMIT A SYNTAX ERROR FROM SOMEBODY'S NAME. A
      JSON island is inert text until one line parses it, and a bad parse costs the section
