@@ -260,6 +260,25 @@ body_class: theme-hall
     var m = /[?&]table=([^&]+)/.exec(location.search);
     return m ? decodeURIComponent(m[1]) : null;
   }
+  /* ⛑⛑ &side=w|b — A LINK MAY NAME THE CHAIR, FOR ONE GAME, AND MAY NOT TOUCH THE STRIP.
+     2026-09-01, and it exists because two correct changes made on the same day broke a
+     feature between them. The Academy drills you as Black against Robert's system and then
+     offers "Go and Play Robert ▸"; the bench had just been moved to Random-by-default. So
+     half of every walk through that door sat the student down as WHITE, where Robert's book
+     does not even run — the room spent five minutes teaching a defense and then dealt a coin
+     to decide whether any of it applied. Neither change was wrong and no test covered the
+     seam, because no test spans two rooms.
+     ⚠⚠ IT IS A REQUEST, NOT A PREFERENCE, AND THE DIFFERENCE IS THE WHOLE DESIGN. Nothing
+     here writes pjcc.pt.side.v1: the strip still says 🎲 when you walk back out, the next
+     seat you take is still dealt, and "Play again" on this very board tosses the coin again.
+     Persisting it would be today's "Other side" bug arriving through a different door.
+     ⚠ ANYTHING BUT 'w' OR 'b' IS NULL rather than passed through — 'r' from a URL would be
+     a link asking for a coin, which is what happens anyway, and any other value would reach
+     resolveSide() as a shrug. */
+  function askedForSide(){
+    var m = /[?&]side=(w|b)(?:&|$)/.exec(location.search);
+    return m ? m[1] : null;
+  }
   /* ⚠ `BOTS &&` IS LOAD-BEARING, NOT DEFENSIVE NOISE. `var BOTS = {…}` is declared ~150
      lines BELOW this, so it is hoisted-but-undefined for every caller that runs during
      module setup — and the stand-down guard at the top of the file is exactly such a
@@ -1796,8 +1815,31 @@ body_class: theme-hall
     if (mine) return botStart(id, sidePlayed(saved));
     /* ⭐ THE PREFERENCE IS READ AT THE MOMENT OF SITTING, NOT CACHED. 'r' is still a
        question here — botStart() is the one place that resolves it, and it resolves it
-       once, so Random means a fresh coin per game rather than one coin remembered. */
-    botStart(id, sidePref());
+       once, so Random means a fresh coin per game rather than one coin remembered.
+       ⚠ AND THE LINK OUTRANKS THE PREFERENCE, BUT NOT A GAME ALREADY IN PROGRESS. The
+       resume above returns first on purpose: a board you are in the middle of keeps the
+       color it was dealt, however you arrived at the URL this time. */
+    /* ⛑⛑ AN UNTOUCHED BOARD IS NOT A GAME IN PROGRESS, AND IT WAS EATING THE LINK. Sit at a
+       seat as White, play nothing, walk off; botStart() then finds a save that is this bot's,
+       unfinished and replayable, and resumes it — ignoring the side the link just asked for.
+       So: prep for Robert in the Academy, press "Go and Play Robert ▸", and land back in the
+       White chair you had abandoned, with the door reporting success. Exactly the defect the
+       parameter was added to fix, one layer further in. [[when-he-repeats-himself]]
+       ⚠ NOTHING IS LOST BY DROPPING IT — an empty move list is a dealt color and a clock
+       stamp, and both are re-made a line later. The guard stays narrow on purpose: this
+       bot's board, not finished, genuinely empty. A board with even one move on it is a
+       game, and a game outranks a link.
+       ⚠ AND BE HONEST ABOUT THE MOVE-LIST CLAUSE: mutation testing says it is UNREACHABLE
+       while the `mine` return above stands, because that return already requires moves
+       and answers first. Widening this line to eat played games leaves the whole suite green.
+       It is kept as the second lock rather than deleted — the day somebody loosens `mine`,
+       this is what stops a link from throwing a real position away — but no test pins it, and
+       a comment claiming one did would be the lie. [[green-must-name-what-ran]] */
+    var wantSide = askedForSide();
+    if (wantSide && saved && saved.bot === id && !saved.done && !(saved.moves || '').trim()) {
+      try { localStorage.removeItem(BOT_KEY); } catch (e) {}
+    }
+    botStart(id, wantSide || sidePref());
   }
 
   /* ══ THE BENCH STRIP — one choice, above every seat ════════════════════════════════

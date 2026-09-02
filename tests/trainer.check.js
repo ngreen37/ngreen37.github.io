@@ -712,6 +712,17 @@ section('12 · preparing for a named regular');
      'the two locked rungs can be prepped for long before they open');
   ok(OT.indexOf("'/games/park-tables/?table=' + encodeURIComponent(reg.key)") > -1,
      '…and it goes to that seat\'s own table');
+  /* ⛑⛑ AND IT NAMES THE CHAIR, WHICH IS THE SEAM BETWEEN THIS ROOM AND THE OTHER ONE.
+     Shipped broken for a few hours on 2026-09-01 by two changes that were each correct:
+     this door was built while the bench defaulted to White, and the bench then moved to
+     Random. Half of every prepared walk-through arrived as WHITE — where the regular's book
+     does not run at all — so the room taught a defense and then tossed a coin over whether
+     any of it applied. Neither file changed in a way its own gate could see, because the
+     defect lived in the space between them. Both ends are pinned now: the href here, and
+     the arrival in test:parktables. */
+  ok(/'&side=' \+ USER;/.test(OT),
+     '…and it names the chair the student just trained in',
+     'from USER, so the anti-Pirc room inherits a working door');
 
   /* ⚠ THE THREE PICKERS ARE NOT INDEPENDENT. Choosing a line or a rung by hand means you
      have stopped preparing for him, and the state has to say so or the screen lies. */

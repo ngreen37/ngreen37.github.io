@@ -903,6 +903,76 @@ const BOT = 'maxwell';
      'the coin says white and it is not being asked');
   await p.evaluate(() => localStorage.removeItem('__coin'));
 
+  /* ── 12. A LINK MAY NAME THE CHAIR — FOR ONE GAME ─────────────────────────────────
+     ⛑⛑ THE SEAM BETWEEN TWO ROOMS, AND THE ONLY REASON IT IS CHECKED HERE IS THAT NOTHING
+     ELSE COULD SEE IT. The Academy drills you as Black against a named regular and then
+     hands you a door to his table. On the day the bench moved to Random-by-default, half of
+     everyone walking through it sat down as White — where that regular's opening book does
+     not run — and both changes passed their own gates.
+     ⚠⚠ THE SECOND ASSERTION IS THE IMPORTANT ONE. Making the link work is easy; making it
+     work WITHOUT writing the preference is the whole design, because a link that quietly
+     pinned somebody to Black would be this morning's "Other side" bug wearing a new coat. */
+  await p.evaluate(() => { localStorage.setItem('pjcc.pt.side.v1', 'r');
+                           localStorage.removeItem('pjcc.park.bot.v1'); });
+  await p.goto(URL + '?table=' + BOT + '&side=b', { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  const viaDoor = await p.evaluate(() => ({
+    pc: (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc,
+    pref: localStorage.getItem('pjcc.pt.side.v1')
+  }));
+  ok('a link that names a chair seats you in it',
+     viaDoor.pc === 'b', 'asked for black, dealt ' + viaDoor.pc);
+  ok('⛑⛑ …without touching the strip you walk back out to',
+     viaDoor.pref === 'r',
+     'preference is ' + JSON.stringify(viaDoor.pref) +
+     (viaDoor.pref === 'r' ? ' — still a coin for the next seat' : ' — the link has pinned him'));
+  /* ⚠ AND THE OTHER DIRECTION, so "always force black" cannot pass the pair above. */
+  await p.evaluate(() => localStorage.removeItem('pjcc.park.bot.v1'));
+  await p.goto(URL + '?table=' + BOT + '&side=w', { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  ok('…and it can name the other chair just as well',
+     await p.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc) === 'w',
+     'the parameter is read, not assumed');
+  /* ⚠⚠ AND A BOARD ALREADY IN PROGRESS OUTRANKS THE LINK. Re-opening a bookmark mid-game
+     must not restart you in the other chair and throw the position away.
+     ⚠ BE HONEST ABOUT WHICH LINE THIS PINS: NOT the early return in botSitDown. Deleting
+     that guard outright leaves this green, because botStart() carries its own resume and
+     answers first. This is the promise a player would feel, and the guard it names is the
+     second lock on the same door — the same shape as the bot-clock pair above.
+     [[green-must-name-what-ran]] */
+  await p.evaluate(async () => {
+    /* one real move, so the board is a GAME rather than an empty seat */
+    const st = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+    const g = PJCCMatch.replayGame(st.moves || ''), L = PJCCChess.legalMoves(g.S);
+    st.moves = ((st.moves || '') + ' ' + PJCCChess.nameFromSq(L[0].from) +
+                PJCCChess.nameFromSq(L[0].to)).trim();
+    localStorage.setItem('pjcc.park.bot.v1', JSON.stringify(st));
+  });
+  await p.goto(URL + '?table=' + BOT + '&side=b', { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  ok('…but a game you are already in the middle of keeps its chair',
+     await p.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc) === 'w',
+     'one move played is a game, and a game outranks a link');
+
+  /* ⛑⛑ AND THE EDGE THAT ATE THE FIX. An UNTOUCHED board — sat down at, never played, walked
+     away from — is this bot's, unfinished and replayable, so botStart() resumed it and threw
+     the link's chair away. That is the Academy door failing in exactly the case it was built
+     for, reporting success. Found by mutation-testing the check above, not by reading.
+     [[one-fix-every-instance]] */
+  await p.evaluate(() => { localStorage.setItem('pjcc.pt.side.v1', 'w');
+                           localStorage.removeItem('pjcc.park.bot.v1'); });
+  await p.goto(URL + '?table=' + BOT, { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  const idle = await p.evaluate(() =>
+    JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {});
+  ok('a board sat down at and never played is genuinely empty',
+     idle.pc === 'w' && !(idle.moves || '').trim(),
+     'dealt ' + idle.pc + ', moves "' + (idle.moves || '') + '"');
+  await p.goto(URL + '?table=' + BOT + '&side=b', { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  ok('⛑⛑ …and it does not swallow a link asking for the other chair',
+     await p.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc) === 'b',
+     'an empty seat is not a game in progress');
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
                            localStorage.removeItem('pjcc.pt.side.v1'); });
 

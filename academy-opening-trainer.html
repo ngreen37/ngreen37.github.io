@@ -655,7 +655,13 @@ White comes at you, pick who you are playing, and go.</p>
       var canSit = !!(reg && reg.open);
       elTable.hidden = !canSit;
       if (canSit) {
-        elTable.href = '/games/park-tables/?table=' + encodeURIComponent(reg.key);
+        /* ⚠ &side= NAMES THE CHAIR YOU JUST TRAINED IN, for that one game. Without it the
+           bench's Random default deals a coin at the far end of the door and half of every
+           prepared walk-through arrives as White, where his book does not run at all. It
+           does NOT change his preference — see askedForSide() at the tables.
+           ⚠ FROM `USER` RATHER THAN 'b', so the anti-Pirc room inherits a working door. */
+        elTable.href = '/games/park-tables/?table=' + encodeURIComponent(reg.key) +
+                       '&side=' + USER;
         elTable.textContent = 'Go and Play ' + reg.name + ' ▸';
       }
     }
