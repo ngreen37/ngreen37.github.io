@@ -86,39 +86,16 @@
      under the thumb rather than halfway up a phone. */
   #screen-map #endturn, #screen-battle #resign, #screen-roll #tobattle { margin-top: auto; }
 
-  /* ── ⛑⛑ THE PRIMARY CONTROL IS FURNITURE, NOT CONTENT — 2026-09-02 ──────────────
-     Nate: *"on mobile, Campaign button after the dice roll to go to the board can't be
-     scrolled down to."* MEASURED before it was touched, at the real stage a phone gives
-     this cabinet (302×660 at a 390px phone, 232×660 at a 320px one):
-
-         the roll screen overflows its stage by  49px at 302 · 109px at 232
-         "To the board" therefore sits at y 647–695 inside a 660px stage — BELOW IT
-         the How-it-works screen overflows by   199px at 302 · 420px at 232 — Back at 845
-
-     ⚠⚠ AND THE INNER SCROLL IS NOT THE ANSWER, WHICH IS THE WHOLE POINT. The screen does
-     scroll and the button IS reachable by dragging it (`reachable: true` on every probe) —
-     but that drag lands the button at the BOTTOM EDGE OF THE STAGE, and the stage is
-     660px tall inside a phone that shows less than that. So the gesture that reveals the
-     button is the same gesture that would have scrolled the page to where the button
-     could be seen, and the inner scroller eats it. **Two boxes, one finger.**
-
-     ⭐ SO THE BUTTON STOPS BEING SOMETHING YOU SCROLL TO. `position: sticky; bottom: 0`
-     inside a container that already scrolls pins it to the stage's bottom edge while the
-     content slides underneath, and lets it sit in normal flow the moment the content fits
-     — short screens look EXACTLY as they did.
-     ⚠ `bottom: 0` LANDS IT 14px UP, NOT FLUSH, and that is the reason it is 0: a scroll
-     container's sticky rectangle is its CONTENT box, so the container's own 14px of
-     bottom padding is already the gap. `bottom: 14px` measured 28px of air — the padding
-     counted twice. It also makes the stuck position and the end-of-scroll position the
-     same pixel, so nothing jumps as you reach the end.
-     ⚠ A STICKY THING NEEDS ITS OWN GROUND or the content scrolls through it: the solid
-     14px ring is the stage's background (`#0d0a17`, the body — the town-sky wash is a
-     fixed overlay ABOVE everything, so the base color really is flat here), and the
-     blurred one above it is the only part that reads as a shadow.
-     ⚠ #back IS `.btn.ghost`, which is TRANSPARENT — a ghost button pinned over moving text
-     is unreadable. It takes the same background it is already sitting on, so nothing about
-     it looks different; it just stops being see-through.
-     The other half of this fix is the cabinet itself — see `games/campaign/index.html`. */
+  /* ⛑ THE PRIMARY CONTROL IS FURNITURE, NOT CONTENT (2026-09-02). "To the board" sat 49px
+     below a 660px stage at a 390px phone, 95px at 320. The screen scrolls, so it was
+     reachable by dragging — and that is the trap: the same drag would have scrolled the
+     PAGE to where the bottom of the cabinet is visible, and the inner scroller eats it.
+     Sticky pins it to the stage's bottom edge; it drops back into flow when content fits.
+     ⚠ `bottom: 0`, not 14px: a scroll container's sticky rect is its CONTENT box, so the
+     14px padding IS the gap. 14px measured 28px of air.
+     ⚠ The 14px shadow ring is the ground — without it content scrolls through the button.
+     ⚠ #back is `.btn.ghost` (transparent), so it takes the background it already sits on.
+     Other half of the fix: games/campaign/index.html. */
   #screen-map #endturn, #screen-battle #resign, #screen-roll #tobattle, #screen-how #back {
     position: sticky; bottom: 0; z-index: 5;
     box-shadow: 0 0 0 14px #0d0a17, 0 -22px 18px -12px #0d0a17;
@@ -154,13 +131,9 @@
   .btn.slim { padding: 9px; font-size: 13px; margin-top: 7px; }
 
   /* ── HOME ── */
-  /* ⚠ `safe center`, not `center`. A centered flex column whose content overflows pushes
-     its FIRST children out through the START edge, where `scrollTop` cannot follow — it
-     cannot go negative, so the crest and the title are not "scrolled past", they are
-     outside the scrollable region entirely. `safe` falls back to START the moment the
-     content stops fitting and changes nothing at all while it does. This screen measures
-     0px of overflow at both phone stages today; the guard is for the day a line is added
-     to it. Same mechanism that ate the Gauntlet's Floor Ten. [[centered-overflow-clips]] */
+  /* ⚠ `safe center`: a centered column that overflows pushes its FIRST children out the
+     START edge, where scrollTop can't follow (it can't go negative). `safe` falls back to
+     start only when content stops fitting. 0px overflow here today — this is the guard. */
   #screen-home { justify-content: safe center; gap: 4px; }
   .crest { font-size: 52px; text-align: center; line-height: 1; margin-bottom: 6px; }
   /* THE DIFFICULTY PICKER. Three buttons rather than a select, because a select on iOS
