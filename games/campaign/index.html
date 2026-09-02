@@ -88,6 +88,31 @@ sitemap: false
   .ml-frame { max-width: 480px; }
   .ml-frame iframe { height: 720px; }
   @media (max-width: 600px) { .ml-frame iframe { height: 660px; } }
+
+  /* ⛑⛑ THE CABINET HAS TO FIT THE PHONE — 2026-09-02, the second half of the "can't
+     scroll down to the button" fix. The first half is in the game itself, which now pins
+     its primary control to the bottom edge of the stage. That is worth nothing if the
+     BOTTOM EDGE OF THE STAGE is below the fold, and at 660px it was: measured on the live
+     page, the frame starts at document y 205 on a 390px phone and runs to 865 — taller
+     than the window it is being read in, on every iPhone.
+
+     ⚠⚠ AND THE PAGE SCROLL THAT WOULD REACH IT IS NOT AVAILABLE, because the finger is
+     over an iframe whose own screen is a scroll container. One drag, two boxes, and the
+     inner one wins. So the frame has to fit rather than the player having to scroll it.
+
+     ⭐ `svh`, NOT `dvh` OR `vh`. `dvh` tracks Safari's toolbar sliding in and out, which
+     would resize the board mid-move; `vh` is the tall one and ignores the toolbars
+     entirely, which is the bug. `svh` is the SMALL viewport — the height with every bar
+     showing — so it is both stable and always true. A browser that has never heard of it
+     (Safari < 15.4) drops the declaration and gets exactly today's behavior.
+     ⚠ 48px = the cabinet's own 14px of padding a side, plus a little air so the frame is
+     not flush against the top and bottom of the window.
+     ⚠ SCOPED TO `pointer: coarse` — a short DESKTOP window is a laptop with dev tools
+     open, and there the page scroll works fine because the mouse wheel is not captured
+     the way a touch drag is. [[mobile-window-slide]] */
+  @media (pointer: coarse) {
+    .ml-frame iframe { max-height: calc(100svh - 48px); }
+  }
 </style>
 
 <script>

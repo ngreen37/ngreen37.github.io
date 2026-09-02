@@ -838,6 +838,226 @@ const WIDTHS = [320, 360, 390, 430];
         + 'px × every board, credits fully on screen');
   }
 
+  /* ══ PART 1h — A CONTROL YOU CANNOT SCROLL DOWN TO ═════════════════════════════
+     2026-09-02, Nate: *"on mobile, Campaign button after the dice roll to go to the board
+     can't be scrolled down to."*
+
+     ⚠⚠ EVERY PROBE ABOVE WAS RIGHT TO STAY GREEN AGAIN, AND THIS IS A DIFFERENT AXIS.
+     PART 1g asks whether a box pans SIDEWAYS. Nothing in this file had ever asked whether
+     the thing you have to press is on the screen at all — and "To the board" sat 35px
+     below the bottom edge of a 660px stage at a 390px phone, 95px below at a 320px one.
+
+     ⭐⭐ THE PART THAT MAKES IT UNREACHABLE RATHER THAN MERELY LOW: the screen it sits in
+     IS a scroll container, so scrolling it works — and that is the problem. The drag that
+     would scroll the PAGE far enough to bring the bottom of the cabinet into view is eaten
+     by the game's own scroller, which consumes it and stops. One finger, two boxes, and
+     the inner one wins. So "reachable by scrollTop" is NOT the invariant; the invariant is
+     **visible without scrolling anything**.
+
+     THE PREDICATE: for every visible vertical scroll container that HAS somewhere to
+     scroll, if its last element child is a button — the shape every one of these games
+     uses for "the thing you press to go on" — that button's bottom must already be inside
+     the container's content box at `scrollTop = 0`.
+
+     ⚠ WHAT THIS COVERS AND WHAT IT DOES NOT, because a probe that finds nothing must not
+     read as a pass ([[green-must-name-what-ran]]):
+       · it loads each shell's OPENING screen only. Campaign's roll screen is three
+         interactions in, so THAT one is driven for real below — a home screen is not a
+         shell, which is the same hole PART 1g had to patch for the Gauntlet's Tower.
+       · a scrolling LIST whose last child happens to be a button is not this bug, which is
+         why the predicate is "the last child of the scroll container", not "any button".
+       · `pjcc_battle_room.html` is excluded BY NAME: it was terminated 2026-07-14 and its
+         page deleted, so the shell is a dark asset with no cabinet to be unreachable in.
+         It fails this probe at 232x505 and nobody can see it. ⚠ If it is ever revived,
+         delete it from DARK and fix it — do not widen the exclusion.
+         [[removed-not-forgotten]] */
+  {
+    const http = require('http');
+    const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+      '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.wasm': 'application/wasm',
+      '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.jpg': 'image/jpeg' };
+    const server = http.createServer((req, res) => {
+      const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
+      fs.readFile(p, (e, b) => {
+        if (e) { res.writeHead(404); return res.end('nope'); }
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(p).toLowerCase()] || 'application/octet-stream' });
+        res.end(b);
+      });
+    });
+    await new Promise((r) => server.listen(0, r));
+    const port = server.address().port;
+
+    /* the shell is DARK — no page hosts it. See the note above before adding a second. */
+    const DARK = ['pjcc_battle_room.html'];
+    const SHELLS = fs.readdirSync(path.join(ROOT, 'assets/games'))
+      .filter((f) => f.endsWith('.html') && DARK.indexOf(f) < 0).sort();
+
+    const BURIED = function () {
+      const out = [];
+      document.querySelectorAll('*').forEach(function (el) {
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        const oy = cs.overflowY;
+        if (oy !== 'auto' && oy !== 'scroll') return;
+        if (el.scrollHeight - el.clientHeight <= 1) return;    // nowhere to scroll: not this bug
+        const last = el.lastElementChild;
+        if (!last || last.tagName !== 'BUTTON') return;
+        if (getComputedStyle(last).display === 'none') return;
+        const rs = el.getBoundingClientRect(), rb = last.getBoundingClientRect();
+        const floor = rs.bottom - parseFloat(cs.paddingBottom || 0) - parseFloat(cs.borderBottomWidth || 0);
+        const below = Math.round(rb.bottom - floor);
+        if (below <= 1) return;
+        out.push((el.id || el.tagName.toLowerCase()) + ' hides "' +
+          (last.id || last.textContent.trim().slice(0, 18)) + '" ' + below + 'px below its own floor');
+      });
+      return out;
+    };
+
+    /* ⚠ THREE STAGES, AND THE SHORT ONE IS THE POINT. 232x505 is a 320px phone under the
+       `100svh` cap a capped cabinet now carries; 302x660 is what a 390px phone gives
+       Campaign today. A gate that only ran the roomy box would have passed before the fix. */
+    const STAGES = [[232, 505], [302, 505], [302, 660]];
+    const buried = [];
+    let screens = 0;
+    for (const shell of SHELLS) {
+      for (const [w, h] of STAGES) {
+        await page.setViewport({ width: w, height: h, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+        await page.goto('http://127.0.0.1:' + port + '/assets/games/' + shell, { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 450));
+        screens++;
+        const found = await page.evaluate(BURIED);
+        if (found.length) { buried.push(shell + ' @' + w + 'x' + h + ': ' + found[0]); break; }
+      }
+    }
+    check('the buried-control sweep actually opened the shells', screens >= SHELLS.length,
+      screens + ' shell renders across ' + SHELLS.length + ' shells');
+    check('⚠⚠ NO game hides the button at the bottom of a screen that scrolls', buried.length === 0,
+      buried.length ? buried.slice(0, 4).join(' · ')
+        : SHELLS.length + ' shells x ' + STAGES.map((s) => s.join('x')).join('/'));
+
+    /* ── THE ONE HE REPORTED, DRIVEN FOR REAL ────────────────────────────────────────
+       ⚠ THE HOME SCREEN IS NOT THE SHELL. The roll screen is three interactions in — a
+       campaign begun, every troop deployed, one attack opened — and it is the only screen
+       in the game whose height depends on the dice. Reverting the `position: sticky` rule
+       in pjcc_marchland.html fails the two checks below at all three stages. */
+    {
+      const roll = [];
+      for (const [w, h] of [[232, 660], [302, 660], [302, 505]]) {
+        await page.setViewport({ width: w, height: h, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+        await page.goto('http://127.0.0.1:' + port + '/assets/games/pjcc_marchland.html', { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 400));
+        try {
+          await page.evaluate(() => document.getElementById('go').click());
+          await new Promise((r) => setTimeout(r, 400));
+          /* deploy every troop — one tap a rank, and the last one ends the phase itself */
+          for (let i = 0; i < 40; i++) {
+            const left = await page.evaluate(() => document.querySelectorAll('.node.mine.can').length);
+            if (!left) break;
+            await page.evaluate(() => document.querySelector('.node.mine.can').click());
+            await new Promise((r) => setTimeout(r, 70));
+          }
+          await page.waitForFunction(
+            () => document.querySelector('.phasebar span[data-p="attack"].on') !== null, { timeout: 9000 });
+          await new Promise((r) => setTimeout(r, 700));
+          /* placing the last rank leaves a source selected, so a target is usually already
+             on offer; if it is not, walk the sources until one borders the enemy */
+          const tapNth = (sel, i) => page.evaluate((s, n) => {
+            const el = document.querySelectorAll(s)[n]; if (el) el.click(); return !!el; }, sel, i);
+          if (!(await page.evaluate(() => document.querySelectorAll('.node.tgt').length))) {
+            const src = await page.evaluate(() => document.querySelectorAll('.node.mine.can').length);
+            for (let s = 0; s < src; s++) {
+              if (!(await tapNth('.node.mine.can', s))) break;
+              await new Promise((r) => setTimeout(r, 130));
+              if (await page.evaluate(() => document.querySelectorAll('.node.tgt').length)) break;
+              await tapNth('.node.sel', 0);
+              await new Promise((r) => setTimeout(r, 130));
+            }
+          }
+          await tapNth('.node.tgt', 0);
+          await page.waitForFunction(
+            () => document.getElementById('screen-roll').classList.contains('on'), { timeout: 9000 });
+          await page.evaluate(() => document.getElementById('screen-roll').click());  // skip the flourish
+          await page.waitForFunction(
+            () => !document.getElementById('tobattle').disabled, { timeout: 15000 });
+          await new Promise((r) => setTimeout(r, 350));
+          const m = await page.evaluate(() => {
+            const sc = document.getElementById('screen-roll'), b = document.getElementById('tobattle');
+            sc.scrollTop = 0;
+            const cs = getComputedStyle(sc);
+            const floor = sc.getBoundingClientRect().bottom - parseFloat(cs.paddingBottom || 0);
+            return { over: Math.round(sc.scrollHeight - sc.clientHeight),
+              below: Math.round(b.getBoundingClientRect().bottom - floor),
+              pinned: getComputedStyle(b).position };
+          });
+          roll.push({ w: w, h: h, over: m.over, below: m.below, pinned: m.pinned });
+        } catch (e) { roll.push({ w: w, h: h, err: e.message.slice(0, 60) }); }
+      }
+      const reached = roll.filter((r) => !r.err);
+      check('the roll screen was reached at every stage', reached.length === 3,
+        roll.map((r) => r.w + 'x' + r.h + (r.err ? ' FAILED: ' + r.err : ' ok')).join(' · '));
+      /* ⭐ PROVE THE SUBJECT IS PRESENT. Without this, the check below passes on a roll
+         screen that happened to fit, which is not what is being asserted. */
+      check('…and it really does overflow that stage', reached.length === 3 && reached.every((r) => r.over > 20),
+        reached.map((r) => r.w + 'x' + r.h + ': +' + r.over + 'px of content').join(' · '));
+      check('⚠⚠ "To the board" is on screen WITHOUT scrolling anything',
+        reached.length === 3 && reached.every((r) => r.below <= 1),
+        reached.map((r) => r.w + 'x' + r.h + ': ' + (r.below <= 1 ? 'visible' : r.below + 'px below the floor')).join(' · '));
+      check('…because it is pinned, not because it happened to fit',
+        reached.length === 3 && reached.every((r) => r.pinned === 'sticky'),
+        reached.map((r) => r.pinned).join('/'));
+    }
+
+    /* ── AND THE CABINET AROUND IT ───────────────────────────────────────────────────
+       ⚠⚠ PINNING THE BUTTON TO THE BOTTOM OF THE STAGE IS WORTH NOTHING IF THE BOTTOM OF
+       THE STAGE IS BELOW THE FOLD. Measured on the live page: the Campaign frame starts at
+       document y 205 on a 390px phone and is 660px tall, so it ends at 865 in a window that
+       shows ~664 — and the page scroll that would reach it is the drag the game's own
+       scroller just ate.
+
+       ⭐ THIS CHECK IS A LEDGER, NOT A GREEN LIGHT. Every cabinet on the site is a
+       hard-coded pixel height and most of them are taller than a phone; capping all of them
+       at once would resize nine games nobody has measured, which is its own bug
+       ([[one-fix-every-instance]]). So the list below IS the backlog, in the file that gets
+       read, and the assertion is that it does not GROW: a new game shipping a cabinet
+       taller than a phone with no `svh` cap fails here and has to be a decision rather than
+       an accident. Cap one, then delete it from KNOWN. */
+    /* ⚠ NO `\b` BEFORE `svh`. "100svh" has a digit immediately before the s, and a digit
+       is a word character — so `\bsvh` never matches a real declaration. The first draft
+       of this line reported the freshly-capped Campaign as uncapped for exactly that. */
+    const CAPPED = /max-height:[^;{}]*svh/;
+    const TALL = [];
+    for (const f of fs.readdirSync(path.join(ROOT, 'games'), { withFileTypes: true })) {
+      if (!f.isDirectory()) continue;
+      const idx = path.join(ROOT, 'games', f.name, 'index.html');
+      if (!fs.existsSync(idx)) continue;
+      const src = fs.readFileSync(idx, 'utf8');
+      /* the phone height is the LAST `height: Npx` a frame rule declares — the media query
+         that narrows it for small screens always comes after the desktop one */
+      const hits = [];
+      const re = /-frame\s+iframe\s*\{[^}]*height:\s*(\d+)px/g;
+      let mm;
+      while ((mm = re.exec(src))) hits.push(+mm[1]);
+      if (!hits.length) continue;                    // aspect-ratio or calc(): not a fixed ceiling
+      const phone = hits[hits.length - 1];
+      if (phone <= 560) continue;                    // already fits the shortest phone
+      if (CAPPED.test(src)) continue;                // has had the pass
+      TALL.push(f.name + ' ' + phone + 'px');
+    }
+    const KNOWN = ['blindfold-puzzles 760px', 'clearance-delta 620px', 'duel 720px',
+      'notation-run 660px', 'pirc-protocol 784px', 'reading-room 660px', 'shogi-island 900px',
+      'sky-run 640px', 'tower-defense 740px'];
+    check('⚑ the list of cabinets taller than a phone has not grown',
+      TALL.every((t) => KNOWN.indexOf(t) >= 0),
+      TALL.filter((t) => KNOWN.indexOf(t) < 0).join(' · ')
+        || TALL.length + ' known, each owed its own stage pass');
+    check('…and Campaign is off it — the fix is in the page as well as in the game',
+      TALL.indexOf('campaign 660px') < 0
+        && CAPPED.test(fs.readFileSync(path.join(ROOT, 'games/campaign/index.html'), 'utf8')),
+      'games/campaign/index.html caps the frame at 100svh');
+
+    server.close();
+  }
+
   /* ══ PART 2 — nothing iOS would zoom for ═════════════════════════════════════════
      ⚠⚠ THE <style> GOES IN THE BODY, WHERE JEKYLL PUTS IT. A page's own block beats the
      stylesheet on a tie, and that tie is the whole reason the coarse-pointer rule is

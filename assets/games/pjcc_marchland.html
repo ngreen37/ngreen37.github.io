@@ -86,6 +86,45 @@
      under the thumb rather than halfway up a phone. */
   #screen-map #endturn, #screen-battle #resign, #screen-roll #tobattle { margin-top: auto; }
 
+  /* ── ⛑⛑ THE PRIMARY CONTROL IS FURNITURE, NOT CONTENT — 2026-09-02 ──────────────
+     Nate: *"on mobile, Campaign button after the dice roll to go to the board can't be
+     scrolled down to."* MEASURED before it was touched, at the real stage a phone gives
+     this cabinet (302×660 at a 390px phone, 232×660 at a 320px one):
+
+         the roll screen overflows its stage by  49px at 302 · 109px at 232
+         "To the board" therefore sits at y 647–695 inside a 660px stage — BELOW IT
+         the How-it-works screen overflows by   199px at 302 · 420px at 232 — Back at 845
+
+     ⚠⚠ AND THE INNER SCROLL IS NOT THE ANSWER, WHICH IS THE WHOLE POINT. The screen does
+     scroll and the button IS reachable by dragging it (`reachable: true` on every probe) —
+     but that drag lands the button at the BOTTOM EDGE OF THE STAGE, and the stage is
+     660px tall inside a phone that shows less than that. So the gesture that reveals the
+     button is the same gesture that would have scrolled the page to where the button
+     could be seen, and the inner scroller eats it. **Two boxes, one finger.**
+
+     ⭐ SO THE BUTTON STOPS BEING SOMETHING YOU SCROLL TO. `position: sticky; bottom: 0`
+     inside a container that already scrolls pins it to the stage's bottom edge while the
+     content slides underneath, and lets it sit in normal flow the moment the content fits
+     — short screens look EXACTLY as they did.
+     ⚠ `bottom: 0` LANDS IT 14px UP, NOT FLUSH, and that is the reason it is 0: a scroll
+     container's sticky rectangle is its CONTENT box, so the container's own 14px of
+     bottom padding is already the gap. `bottom: 14px` measured 28px of air — the padding
+     counted twice. It also makes the stuck position and the end-of-scroll position the
+     same pixel, so nothing jumps as you reach the end.
+     ⚠ A STICKY THING NEEDS ITS OWN GROUND or the content scrolls through it: the solid
+     14px ring is the stage's background (`#0d0a17`, the body — the town-sky wash is a
+     fixed overlay ABOVE everything, so the base color really is flat here), and the
+     blurred one above it is the only part that reads as a shadow.
+     ⚠ #back IS `.btn.ghost`, which is TRANSPARENT — a ghost button pinned over moving text
+     is unreadable. It takes the same background it is already sitting on, so nothing about
+     it looks different; it just stops being see-through.
+     The other half of this fix is the cabinet itself — see `games/campaign/index.html`. */
+  #screen-map #endturn, #screen-battle #resign, #screen-roll #tobattle, #screen-how #back {
+    position: sticky; bottom: 0; z-index: 5;
+    box-shadow: 0 0 0 14px #0d0a17, 0 -22px 18px -12px #0d0a17;
+  }
+  #screen-how #back { background: #0d0a17; }
+
   /* ⚠ MEASURED, NOT SOFTENED: "MARCHLAND" is ONE unbreakable word, and at 30px with 6px of
      tracking it is 213px wide inside the 204px a 320px phone gives it — 9px of text painting
      past a box that never changed size, which is why an element-by-element probe found
@@ -115,7 +154,14 @@
   .btn.slim { padding: 9px; font-size: 13px; margin-top: 7px; }
 
   /* ── HOME ── */
-  #screen-home { justify-content: center; gap: 4px; }
+  /* ⚠ `safe center`, not `center`. A centered flex column whose content overflows pushes
+     its FIRST children out through the START edge, where `scrollTop` cannot follow — it
+     cannot go negative, so the crest and the title are not "scrolled past", they are
+     outside the scrollable region entirely. `safe` falls back to START the moment the
+     content stops fitting and changes nothing at all while it does. This screen measures
+     0px of overflow at both phone stages today; the guard is for the day a line is added
+     to it. Same mechanism that ate the Gauntlet's Floor Ten. [[centered-overflow-clips]] */
+  #screen-home { justify-content: safe center; gap: 4px; }
   .crest { font-size: 52px; text-align: center; line-height: 1; margin-bottom: 6px; }
   /* THE DIFFICULTY PICKER. Three buttons rather than a select, because a select on iOS
      opens a wheel for a three-way choice — and because the chosen one has to stay
@@ -444,7 +490,7 @@
     color: #ffd66a; min-height: 22px; }
 
   /* ── RESULT ── */
-  #screen-result { justify-content: center; }
+  #screen-result { justify-content: safe center; }   /* see #screen-home above */
   .verdict { font-size: 27px; font-weight: 900; text-align: center; letter-spacing: 1px; }
   .verdict.win { color: var(--mine); } .verdict.lose { color: var(--theirs); }
 
