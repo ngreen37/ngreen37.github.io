@@ -1222,9 +1222,19 @@ body_class: theme-hall
   }
   /* Which side to take next time. 'w' | 'b' | 'r' (random, resolved at sit-down). */
   var SIDE_KEY = 'pjcc.pt.side.v1';
+  /* ⭐⭐ RANDOM IS THE DEFAULT, AND IT HAS TO STAY RANDOM — 2026-09-01, Nate, and he called
+     it a structural-integrity issue rather than a preference: *"For Park Tables, default
+     should always be set to Random. And it must STAY random."* A park table is a place you
+     sit down and get a game; which color you get is the table's business, and a room that
+     stops tossing the coin has stopped being one.
+     ⚠⚠ AN EXPLICIT 'w' IS STILL HONORED, AND THAT IS WHY THIS IS FOUR LINES INSTEAD OF ONE.
+     The old test read anything-but-b-or-r as White, so a stored 'w' and a stored NOTHING
+     were the same value — moving the default without also reading back a real choice would
+     have re-rolled the board on every White player who had already decided. */
   function sidePref(){
-    try { var v = localStorage.getItem(SIDE_KEY); return (v === 'b' || v === 'r') ? v : 'w'; }
-    catch (e) { return 'w'; }
+    try { var v = localStorage.getItem(SIDE_KEY);
+          return (v === 'w' || v === 'b' || v === 'r') ? v : 'r'; }
+    catch (e) { return 'r'; }
   }
   function saveSidePref(v){ try { localStorage.setItem(SIDE_KEY, v); } catch (e) {} }
   function resolveSide(v){ return v === 'b' ? 'b' : v === 'w' ? 'w' : (Math.random() < 0.5 ? 'w' : 'b'); }
@@ -2525,19 +2535,31 @@ body_class: theme-hall
       if (leaveRoom()) return;
       botCur = null; botSeq++; safeRoute();
     };
-    /* A rematch keeps the chair you are in; "Other side" is the one that turns the board
-       around. Two buttons rather than sending you back to the bench to change your mind —
-       the rematch is the most-tapped control on this page and it stays a single tap.
-       ⭐ AND "OTHER SIDE" MOVES THE BENCH STRIP WITH IT (saveSidePref, below). Turning the
-       board around here is a statement about which color you want next, so the strip you
-       walk back out to should already be showing it — a preference that disagrees with the
-       game you just chose to play is a preference nobody set. */
+    /* A rematch keeps the chair you are in (unless you are on 🎲, above); "Other side" is
+       the one that turns the board around. Two buttons rather than sending you back to the
+       bench to change your mind — the rematch is the most-tapped control on this page and it
+       stays a single tap.
+       ⭐ AND "OTHER SIDE" MOVES THE BENCH STRIP WITH IT (saveSidePref, below), because
+       turning the board around is a statement about which color you want next and the strip
+       you walk back out to should already be showing it.
+       ⛑⛑ EXCEPT ON RANDOM, WHICH IS THE WHOLE POINT OF THE GUARD BELOW. This line used to
+       save unconditionally, so ONE tap of "Other side" converted a Random player into a
+       Black player permanently: the strip said 🎲 on the way in and 'b' on the way out, no
+       dialog, no undo, and every game after it the same color. Wanting the other side of
+       THIS board says nothing about wanting to stop being dealt one. */
     var ag = document.getElementById('pt-bot-again');
-    if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot, sidePlayed(st)); };
+    if (ag) ag.onclick = function(){
+      try { localStorage.removeItem(BOT_KEY); } catch (e) {}
+      /* ⛑ A REMATCH UNDER RANDOM TOSSES THE COIN AGAIN. Keeping your chair is right when you
+         ASKED for a color — but under 🎲, holding whichever side you happened to draw is
+         precisely how "random" decays into "whatever you got the first time", one rematch
+         at a time and with nothing on screen to show it happened. */
+      botStart(st.bot, sidePref() === 'r' ? 'r' : sidePlayed(st));
+    };
     var sw = document.getElementById('pt-bot-swap');
     if (sw) sw.onclick = function(){
       var other = sidePlayed(st) === 'w' ? 'b' : 'w';
-      saveSidePref(other);
+      if (sidePref() !== 'r') saveSidePref(other);
       try { localStorage.removeItem(BOT_KEY); } catch (e) {}
       botStart(st.bot, other);
     };

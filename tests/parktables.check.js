@@ -229,6 +229,34 @@ const BOT = 'maxwell';
      await p.evaluate(() => document.querySelectorAll('.pt-bench-set [data-side]').length === 3));
   ok('…and Random is one of the three',
      await p.evaluate(() => !!document.querySelector('.pt-bench-set [data-side="r"]')));
+  /* ⭐⭐ RANDOM IS THE ONE THAT IS ALREADY ON — 2026-09-01, and Nate filed it as a
+     structural-integrity issue rather than a preference: *"For Park Tables, default should
+     always be set to Random. And it must STAY random."* A park table deals you a color.
+     ⚠ THIS RUNS ON A FRESH PROFILE, WHICH IS THE ONLY STATE THAT CAN ANSWER IT. The browser
+     is new and nothing has written pjcc.pt.side.v1 yet, so what is pressed here is the
+     DEFAULT and not a leftover. Every later section in this file picks a color explicitly,
+     which is why the question has to be asked at this exact point in the run. */
+  ok('🎲 Random is the one already chosen, before anybody picks',
+     await p.evaluate(() => {
+       const on = [...document.querySelectorAll('.pt-bench-set [data-side]')]
+         .filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.dataset.side);
+       return on.length === 1 && on[0] === 'r' && !localStorage.getItem('pjcc.pt.side.v1');
+     }), 'nothing stored, and the strip says 🎲');
+  /* ⚠⚠ AND A WHITE PLAYER WHO ALREADY DECIDED IS NOT RE-ROLLED. The old reader treated
+     anything-but-b-or-r as White, so a stored 'w' and a stored NOTHING were the same value —
+     moving the default without teaching it to read 'w' back would have quietly taken the
+     choice away from everybody who had made it. This is the half of the change that has no
+     visible symptom, so it is the half that needs the check. */
+  await p.evaluate(() => localStorage.setItem('pjcc.pt.side.v1', 'w'));
+  await p.goto(URL, { waitUntil: 'networkidle2' });
+  await sleep(400);
+  ok('…but a White preference somebody really set is still honored',
+     await p.evaluate(() => document.querySelector('.pt-bench-set [data-side="w"]')
+       .getAttribute('aria-pressed') === 'true'),
+     'an explicit choice outranks the new default');
+  await p.evaluate(() => localStorage.removeItem('pjcc.pt.side.v1'));
+  await p.goto(URL, { waitUntil: 'networkidle2' });
+  await sleep(400);
   /* ⚠⚠ THE STRIP MUST SIT AFTER *BOTH* PANELS. Between them it would read as governing only
      the ladder, telling the player their color does not apply to Auston — which is false.
      Asserted by document position rather than by eye: a CSS change cannot quietly move it. */
@@ -767,6 +795,116 @@ const BOT = 'maxwell';
 
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
                            localStorage.setItem('pjcc.pt.tc.v1', ''); });
+
+  /* ── 11. RANDOM STAYS RANDOM ──────────────────────────────────────────────────────
+     ⛑⛑ THE BUG THIS SECTION EXISTS FOR SHIPPED AND WAS INVISIBLE. "Other side" ended with
+     an unconditional saveSidePref(), so ONE tap converted a Random player into a fixed one
+     permanently: the strip read 🎲 on the way in and ⬛ on the way out, no dialog, no undo,
+     and every game after it the same color. Wanting the other side of THIS board says
+     nothing about wanting to stop being dealt one.
+     ⚠ THE ASSERTION IS ON THE STORED PREFERENCE, NOT ON THE STRIP'S PAINT. The strip is
+     redrawn from the preference, so checking the pixels would pass on a page that had
+     already been corrupted and simply not repainted yet. */
+  /* ⚠ "OTHER SIDE" IS A POST-GAME CONTROL — drawn beside "Play again", only on a finished
+     board — so the run has to sit down and actually finish before it can reach for it.
+     ⛑ AND THE GAME IS FINISHED BY RESIGNING, NOT BY STAMPING done=1 INTO STORAGE. The first
+     version of this did the latter and never got a button: reloading with a saved game whose
+     `done` is set makes botSitDown() treat it as no game at all and deal a fresh one, so the
+     fabricated ending was thrown away on the very next navigation and the board came up mid
+     game, at move one, looking perfectly normal. [[measure-the-real-page]] */
+  p.on('dialog', (d) => d.accept());
+  const sitAndFinish = async (pref) => {
+    await p.evaluate((v) => { localStorage.setItem('pjcc.pt.side.v1', v);
+                              localStorage.removeItem('pjcc.park.bot.v1'); }, pref);
+    await p.goto(URL + '?table=' + BOT, { waitUntil: 'networkidle2' });
+    await sleep(1000);
+    const dealt = await p.evaluate(() =>
+      (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc);
+    await p.evaluate(() => document.getElementById('pt-bot-resign').click());
+    await sleep(700);
+    return dealt;
+  };
+
+  const dealtR = await sitAndFinish('r');
+  ok('sitting down on 🎲 deals a real color onto the board',
+     dealtR === 'w' || dealtR === 'b',
+     'the saved game stores a color, never "random" — dealt ' + dealtR);
+  const swapped = await p.evaluate(() => {
+    const b = document.getElementById('pt-bot-swap');
+    if (!b) return null;
+    b.click(); return true;
+  });
+  await sleep(900);
+  const afterSwap = await p.evaluate(() => ({
+    pref: localStorage.getItem('pjcc.pt.side.v1'),
+    pc: (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc
+  }));
+  ok('"Other side" is really there on a finished board, and it turns it around',
+     swapped === true && afterSwap.pc && afterSwap.pc !== dealtR,
+     dealtR + ' → ' + afterSwap.pc);
+  ok('⛑⛑ …and it did NOT quietly convert 🎲 into a fixed color',
+     afterSwap.pref === 'r',
+     'preference is ' + JSON.stringify(afterSwap.pref) +
+     (afterSwap.pref === 'r' ? '' : ' — one tap and the strip has been hijacked'));
+  /* ⚠ AND THE SAME TAP ON A REAL CHOICE STILL MOVES THE STRIP, which is the behavior that
+     was right all along. Without this, a guard that simply never saved would leave the
+     check above green — the failure mode is a preference that stops following you. */
+  await sitAndFinish('w');
+  await p.evaluate(() => document.getElementById('pt-bot-swap').click());
+  await sleep(900);
+  ok('…while a player who picked White and swapped now prefers Black',
+     await p.evaluate(() => localStorage.getItem('pjcc.pt.side.v1')) === 'b',
+     'an explicit choice still follows you back to the bench');
+  /* ⛑⛑ AND THE THIRD WAY RANDOM STOPS BEING RANDOM: THE REMATCH. "Play again" keeps the
+     chair you are in, which is exactly right for somebody who ASKED for a color — and on 🎲
+     it means the coin is tossed once and then honored forever, one rematch at a time, which
+     is the same defect as the swap above wearing a friendlier face.
+     ⚠⚠ THE COIN IS FORCED RATHER THAN OBSERVED, and that is what makes this a test instead
+     of a bet. Watching a dozen rematches for both colors to turn up is a check that fails
+     for free roughly one run in a thousand and proves nothing on any single run; pinning
+     Math.random makes the expected color a fact. 0.9 deals Black, 0.1 deals White — so if
+     the rematch re-rolls, this board must come back the OTHER color. */
+  /* ⚠⚠ THE OVERRIDE IS INSTALLED PER *DOCUMENT*, NOT PER PAGE, AND THE FIRST VERSION WAS
+     NOT. Setting Math.random with p.evaluate() and then navigating throws the override away
+     with the document — so the coin was never forced, the deal came out of the real random,
+     and the pair of checks below went green on a 50/50 guess. The paired "deals what it was
+     told to" line is what caught it; without it the re-roll check was a coin toss wearing a
+     test's clothes. [[green-must-name-what-ran]]
+     ⚠ AND IT READS THE FORCED VALUE OUT OF STORAGE rather than being baked in, so the same
+     one installation covers every navigation in this section and clearing the key hands the
+     page its real Math.random back. */
+  await p.evaluateOnNewDocument(() => {
+    const real = Math.random;
+    Math.random = function () {
+      let v = null;
+      try { v = localStorage.getItem('__coin'); } catch (e) {}
+      return v === null ? real() : Number(v);
+    };
+  });
+  await p.evaluate(() => localStorage.setItem('__coin', '0.9'));
+  const dealtAgain = await sitAndFinish('r');
+  ok('the forced coin deals the color it was told to', dealtAgain === 'b',
+     'random 0.9 is Black — dealt ' + dealtAgain);
+  await p.evaluate(() => localStorage.setItem('__coin', '0.1'));
+  await p.evaluate(() => document.getElementById('pt-bot-again').click());
+  await sleep(1000);
+  ok('⛑⛑ a rematch on 🎲 tosses the coin again rather than keeping the chair',
+     await p.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc) === 'w',
+     'dealt black, then a coin that says white — a board still on black is a chair nobody chose');
+  /* ⚠ AND THE OTHER HALF OF THE RULE: a player who PICKED a color keeps it across a rematch.
+     Without this, "always re-roll" passes the check above and quietly overrides every
+     explicit choice on the page. */
+  await p.evaluate(() => localStorage.setItem('__coin', '0.1'));
+  await sitAndFinish('b');
+  await p.evaluate(() => document.getElementById('pt-bot-again').click());
+  await sleep(1000);
+  ok('…while a rematch for somebody who picked Black is still Black',
+     await p.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc) === 'b',
+     'the coin says white and it is not being asked');
+  await p.evaluate(() => localStorage.removeItem('__coin'));
+
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.removeItem('pjcc.pt.side.v1'); });
 
   ok('no runtime errors anywhere in the run', errs.length === 0, errs.slice(0, 3).join(' | '));
 

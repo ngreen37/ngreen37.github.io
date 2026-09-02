@@ -424,9 +424,11 @@ permalink: /dossier/
       var bKnown = 0, bHeld = 0, bTop = 0, bid;
       for (bid in bk) {
         if (!bk.hasOwnProperty(bid) || !bk[bid]) continue;
-        /* ⚠ THE BLACK HALF ONLY. `wKnown`/`wHeld` are the same six lines studied from the
-           other chair (idea #9) — real work, and a different claim. Adding them here would
-           double a repertoire the player has not doubled. */
+        /* ⚠ THE BLACK HALF ONLY. `wKnown`/`wHeld` are the same six lines from the White
+           chair, which came out on 2026-09-01 the same day it shipped. Nothing writes them
+           now; the fields stay because a mark somebody earned in the hours it existed is
+           still theirs, and because the anti-Pirc room will want the shape. Counting them
+           here would double a repertoire nobody doubled. */
         if (bk[bid].known) bKnown++;
         if (bk[bid].held) { bHeld++; if (bk[bid].held > bTop) bTop = bk[bid].held; }
       }

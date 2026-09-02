@@ -36,20 +36,25 @@ description: "Learn the Pirc Defense as Black — walk into the main line and it
      BOARD and a STATE MACHINE — every chess claim it makes is proved somewhere else, by
      something a test can run without a browser. [[accuracy-above-all]]
 
-     ⚑⚑ THE STUDENT IS BLACK BY DEFAULT AND MAY NOW SIT ON THE OTHER SIDE (2026-09-01,
-     idea #9: *"play the Austrian as White against your own defense"*). `USER` is set once
-     per game from the side picker and read everywhere; the board flips, the book hands the
-     player the plies of whichever color they chose, and the engine takes the rest.
+     ⚑⚑ THE STUDENT IS BLACK. NOT BY DEFAULT — ONLY. A White chair shipped on 2026-09-01
+     and Nate took it back out the same day, correctly: *"when playing white, you'd HAVE to
+     cooperate with the variation for Black's purposes."*
 
-     ⭐ IT IS THE SAME BOOK, NOT A WHITE REPERTOIRE. Nothing new is claimed about chess —
-     every line still ends on a Black move, which from this chair simply means YOU move
-     after the book instead of before. The old note here said a white side would need "a
-     new book file and a side flag"; half of that was wrong, and the half that was right is
-     the flag. A white REPERTOIRE — different openings, chosen by White — is still a new
-     book, and this is not that.
-     ⚠ WHAT THE OTHER CHAIR IS FOR: learning what your own defense feels like to play
-     against, which is the fastest way to find out which of your moves White was hoping
-     for. That is why the book's marks are kept per side rather than shared.
+     ⭐ WHY THAT IS A REAL DEFECT AND NOT A PREFERENCE. This room walks both sides of a
+     line — whichever chair you are not in, the room plays. Sitting White therefore means
+     the room plays the Pirc AT you, move for move, and the drill is a rehearsal against an
+     opponent who has agreed in advance to do the one thing no real opponent has to do.
+     You cannot prepare White for a Pirc, because Black decides whether there is one. The
+     Black chair has no such problem: the whole premise is that you have chosen this
+     defense and White's five systems are the finite set of replies.
+
+     ⭐ A WHITE ROOM IS STILL WANTED, AND IT IS A DIFFERENT ROOM: an opponent who TRIES to
+     play the Pirc against you and a player who has to meet it. That is anti-Pirc prep, and
+     it is a new lesson rather than this book read backwards.
+     ⚠ WHAT SURVIVED THE REMOVAL, ON PURPOSE: the data model is still side-parameterized
+     (marks are banked under `known`/`held` for Black and `wKnown`/`wHeld` for White) and
+     the book still carries `whyW` and `CREED_W`. Rebuilding all of that is a migration;
+     re-opening the door is a line. [[removed-not-forgotten]]
 
      ⚠ MARKED IN DEVELOPMENT, DELIBERATELY, AND IT IS PLAYABLE ANYWAY. Nate: "We'll add it
      to the Academy as IN DEVELOPMENT." So the badge is honest about the state without the
@@ -63,13 +68,12 @@ description: "Learn the Pirc Defense as Black — walk into the main line and it
 
 <div class="ot-devbar" role="note">
   <span class="ot-devpill">In Development</span>
-  <span class="ot-devtext">The Pirc Defense — as Black, or from the other chair. More openings — and more of this one — are coming.</span>
+  <span class="ot-devtext">The Pirc Defense, as Black. More openings — and more of this one — are coming.</span>
 </div>
 
 <p class="ot-lead">Most opening trainers stop the moment the book stops, which is the moment
 the game actually starts. This one walks you into the line, then makes you play it. Pick how
-White comes at you, pick which end of the board you are sitting at, pick who you are playing,
-and go.</p>
+White comes at you, pick who you are playing, and go.</p>
 
 <!-- ══ SCREEN 1 · THE SETUP ══════════════════════════════════════════════════════ -->
 <section class="ot-setup" id="ot-setup">
@@ -87,14 +91,19 @@ and go.</p>
   <p class="ot-sub" id="ot-vars-sub">Six ways White meets the Pirc. Each one walks you to its main position.</p>
   <div class="ot-cards" id="ot-vars" role="radiogroup" aria-label="Choose a variation"></div>
 
-  {%- comment -%} ⚑ THE OTHER CHAIR (2026-09-01). Black is the room's premise and stays the
-       default; White is here to teach you what your own defense is like to face. The sides
-       row deliberately sits BELOW the variations — you pick a line first and then decide
-       which end of it to sit at, which is the order the question actually arrives in.
+  {%- comment -%} ⛑⛑ THE OTHER CHAIR CAME BACK OUT THE SAME DAY IT WENT IN — 2026-09-01,
+       Nate: *"Opening Trainer should only be for Black right now ... The issue is that, when
+       playing white, you'd HAVE to cooperate with the variation for Black's purposes."*
+       He is right, and it is the kind of wrong that reads as working. This room walks BOTH
+       sides of a line: whichever chair you are not sitting in, the room plays. From the
+       White chair that means the room obligingly plays the Pirc at you, move for move — so
+       the lesson is a rehearsal against an opponent who has agreed in advance to do the one
+       thing no real opponent has to do. You cannot drill White into a Pirc, because Black
+       decides whether there is one.
+       ⭐ A WHITE ROOM IS STILL WANTED AND IT IS A DIFFERENT ROOM: your opponent TRIES to
+       play the Pirc and you meet it, which is anti-Pirc prep rather than this book read
+       backwards. Same for the other defenses when they come. [[removed-not-forgotten]]
        {%- endcomment -%}
-  <h2 class="ot-h2">Choose Your Side</h2>
-  <div class="ot-sides" id="ot-sides" role="radiogroup" aria-label="Choose your side"></div>
-
   {%- comment -%}
     ⛑ ONE QUESTION, TWO ANSWERS — 2026-09-01, and it is a DECLUTTER rather than a feature.
     Shipping "Or Prepare for a Regular" as a fifth stacked list put twenty-two controls on
@@ -242,7 +251,6 @@ and go.</p>
       elRoom  = document.getElementById('ot-room'),
       elVars  = document.getElementById('ot-vars'),
       elLvls  = document.getElementById('ot-levels'),
-      elSides = document.getElementById('ot-sides'),
       elRegs  = document.getElementById('ot-regs'),
       elRegsSub = document.getElementById('ot-regs-sub'),
       elTabs  = document.querySelector('.ot-tabs'),
@@ -281,8 +289,16 @@ and go.</p>
      against it — the board's orientation, whose book plies wait for a click, who the engine
      plays, which result is a win, and which half of the book a mark belongs to. Flipping it
      while a board is live would rewrite the meaning of the position under the player. */
+  /* ⛑⛑ BLACK, AND ONLY BLACK, UNTIL A WHITE ROOM IS BUILT AS ITS OWN LESSON — see the
+     note over the removed side picker in the markup above. These two are 'b' for the life
+     of the page.
+     ⚠⚠ THEY ARE NOT COLLAPSED INTO A LITERAL, AND THAT IS DELIBERATE. Everything under them
+     is side-parameterized on purpose — bookEntry(), heldLevel(), grantKnown(), grantHeld()
+     and the two halves of the mark field all take a side — and that is exactly the shape the
+     White room will need. Pinning the ENTRANCE is one line to undo; unpicking a sided data
+     model out of accounts that have already banked marks is a migration. */
   var USER = 'b';
-  var pickSide = 'b';                   // the setup screen's choice; 'b' is the room's premise
+  var pickSide = 'b';
   var VARS = BOOK.all();                // only the lines the referee could replay
   var LEVELS = BOOK.LEVELS;
 
@@ -293,27 +309,23 @@ and go.</p>
      walked, 'play' once the engine has White, 'over' when the referee says so. */
   var G = null;
 
-  /* The creed for the chair you are about to sit in, and the attribution if there is one.
-     ⚠⚠ ONLY THE BLACK ONE IS SIGNED, AND THAT IS NOT AN OVERSIGHT. Michael plays the Pirc;
-     he does not play against it, and a white-side creed under his name would be the
-     character arguing with himself. The white text is the ROOM talking — instructional
-     register, no byline — and the <cite> is withheld rather than filled with somebody else.
-     See the note over CREED_W in pjcc-pirc-book.js. */
+  /* The creed, and the one name on it. Michael plays the Pirc, and this room is his side
+     of it, so the byline is his and the room has one voice.
+     ⚠ CREED_W IS STILL IN pjcc-pirc-book.js AND IS DELIBERATELY NOT DRAWN HERE. It was
+     written for the White chair that came out the day it went in, its byline was withheld
+     on purpose (Michael plays the Pirc; he does not play against it), and the anti-Pirc room
+     will want both facts. It stays in the book rather than half-wired into this function, so
+     that what this room can put on screen is exactly one thing. */
   function paintCreed() {
     var el = document.getElementById('ot-creed');
     if (!el) return;
-    var white = pickSide === 'w';
-    var text = white ? (BOOK.CREED_W || '') : (BOOK.CREED || '');
+    var text = BOOK.CREED || '';
     if (!text) { el.hidden = true; return; }
     el.hidden = false;
     el.innerHTML = '<p>' + esc(text) + '</p>' +
-      (!white && BOOK.TEACHER ? '<cite>— ' + esc(BOOK.TEACHER) + '</cite>' : '');
+      (BOOK.TEACHER ? '<cite>— ' + esc(BOOK.TEACHER) + '</cite>' : '');
     var sub = document.getElementById('ot-vars-sub');
-    if (sub) {
-      sub.textContent = white
-        ? 'Six ways to meet the Pirc. Each one walks you to its main position — from the other chair.'
-        : 'Six ways White meets the Pirc. Each one walks you to its main position.';
-    }
+    if (sub) sub.textContent = 'Six ways White meets the Pirc. Each one walks you to its main position.';
   }
 
   /* ── the setup screen ──────────────────────────────────────────────────────────── */
@@ -383,22 +395,7 @@ and go.</p>
     }).join('');
   }
 
-  var SIDES = [
-    { id: 'b', name: 'Black', sub: 'Play the Pirc. The room’s own side.' },
-    { id: 'w', name: 'White', sub: 'Play against it, and find out what it costs him.' }
-  ];
-  function paintSides() {
-    elSides.innerHTML = SIDES.map(function (s) {
-      return '<button class="ot-side-btn' + (s.id === pickSide ? ' on' : '') + '" type="button"' +
-             ' role="radio" aria-checked="' + (s.id === pickSide ? 'true' : 'false') + '"' +
-             ' data-s="' + s.id + '">' +
-             '<span class="ot-side-pc" aria-hidden="true">' + (s.id === 'w' ? '♔' : '♚') + '</span>' +
-             '<span class="ot-side-t"><b>' + s.name + '</b><small>' + esc(s.sub) + '</small></span>' +
-             '</button>';
-    }).join('');
-  }
   function paintSetup() {
-    paintSides();
     paintRegs();
     paintTabs();
     paintCreed();
@@ -465,11 +462,6 @@ and go.</p>
     if (r) pickVar = r.book;
     paintSetup();
   });
-  elSides.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-s]'); if (!b) return;
-    pickSide = b.getAttribute('data-s'); paintSetup();
-  });
-
   /* ⚠ AN HONEST LINE ABOUT THE ENGINE, AND ONLY WHEN IT IS BAD NEWS. `available()` is
      false with no Worker or no WebAssembly, and the room still works — the negamax
      fallback plays every level — but "Perfect Play" would then be a promise the page
@@ -587,8 +579,10 @@ and go.</p>
     if (!v) return;
 
     /* ⚠ THE ONE PLACE USER MOVES. Set before G exists, so nothing can be built against a
-       side that changes underneath it. */
-    USER = (pickSide === 'w') ? 'w' : 'b';
+       side that changes underneath it.
+       ⛑ AND IT IS BLACK. Left as an assignment rather than folded away, so that when the
+       White room is built there is still exactly one line in this file that decides. */
+    USER = 'b';
     /* ⭐ PREPARING FOR A REGULAR MEANS HIS RATING, NOT THE NEAREST RUNG. The bench does not
        sit on this room's six steps — Robert is 1800, Kedar 1400 — and rounding him to 1700
        would be drilling against somebody else and calling it his name. `dialFor` is the same
@@ -637,23 +631,19 @@ and go.</p>
     elRoom.hidden = false;
     elTag.textContent = v.eco + ' · ' + v.name;
     elThem.textContent = G.lvl.name + ' · ' + G.lvl.elo;
-    /* ⭐ FROM THE WHITE CHAIR THE PLAN IS NOT YOURS — IT IS THE SCOUTING REPORT. Every
-       word of `plan` is written to Black ("the g7 bishop is your best piece"), and handing
-       it to a White player as advice would be the room lying. Handing it over as WHAT HE IS
-       GOING TO DO is the same paragraph telling the truth, and it is the entire study value
-       of sitting on this side: you find out what your own defense is trying to do to you.
-       ⚠ SO THE TEXT NEVER CHANGES AND THE HEADING ALWAYS DOES. A version that rewrote the
-       plan for White would be a second copy of six paragraphs, drifting from the day it
-       shipped. */
-    var white = USER === 'w';
+    /* ⚠ EVERY WORD OF `plan` IS WRITTEN TO BLACK ("the g7 bishop is your best piece"), and
+       that is now simply true rather than conditionally true — this room has one chair. The
+       relabelling branch that handed the same paragraph to a White player as a scouting
+       report went out with the picker; the anti-Pirc room will need it back, and it is one
+       line when it does. */
     elPlanB.textContent = v.plan;
-    elPlanH.textContent = white ? 'What Black Is Trying to Do' : 'The Plan';
+    elPlanH.textContent = 'The Plan';
     /* ⚠ THE WHY IS UP FROM MOVE ONE, the plan is not. You need the argument WHILE you are
        walking the line — that is when the moves would otherwise be arbitrary. The plan is
        about the position the line leaves you in, so it waits for the line to end. */
-    var why = white ? (v.whyW || '') : (v.why || '');
+    var why = v.why || '';
     elWhyB.textContent = why;
-    elWhyH.textContent = white ? 'Why He Plays It' : 'Why This Line';
+    elWhyH.textContent = 'Why This Line';
     elWhy.hidden = !why;
 
     /* ⭐ THE LOOP CLOSES HERE — the drill sends you to the real seat (idea #1). Only for a
@@ -669,9 +659,8 @@ and go.</p>
         elTable.textContent = 'Go and Play ' + reg.name + ' ▸';
       }
     }
-    elYou.textContent = white ? 'You · White' : 'You · Black';
-    elBoard.setAttribute('aria-label', 'The trainer board — you are ' +
-      (white ? 'White, playing up the screen' : 'Black, playing up the screen'));
+    elYou.textContent = 'You · Black';
+    elBoard.setAttribute('aria-label', 'The trainer board — you are Black, playing up the screen');
 
     if (skipBook) {
       /* Walk the whole book instantly. Same moves, same referee, no animation — this is
@@ -829,12 +818,7 @@ and go.</p>
     if (res === 'checkmate') {
       G.result = (loser === USER)
         ? { k: 'loss', t: 'Checkmate. White got there first.' }
-        : { k: 'win',  t: (USER === 'w'
-              /* ⛑ FROM THE WHITE CHAIR YOU DID NOT WIN WITH THE PIRC, YOU BEAT IT. The old
-                 line congratulated a White player on the opening they had just defeated —
-                 the kind of wrong that reads as the room not knowing what game you are in. */
-              ? 'Checkmate — you beat it. Now you know what he was afraid of.'
-              : 'Checkmate — you won it. That is the Pirc doing its job.') };
+        : { k: 'win',  t: 'Checkmate — you won it. That is the Pirc doing its job.' };
       /* ⭐ AND THE ★ CLAIM: you learned the line and then held it against somebody named.
          ⚠ Only on a win, only unhelped, only if the line is already KNOWN — and only ever
          upward, so beating Fresh Recruit after Expert cannot downgrade the entry. */
@@ -1067,7 +1051,10 @@ and go.</p>
     var html = '';
     for (var k = 0; k < 64; k++) {
       var dr = (k / 8) | 0, dc = k % 8;
-      var i = (USER === 'w') ? (dr * 8 + dc) : ((7 - dr) * 8 + (7 - dc));
+      /* ⚠ BLACK AT THE BOTTOM, unconditionally: visual (0,0) is h8 and visual (7,7) is
+         a1, so h1 — the square a Pirc player castles onto — is index 63 from here. The
+         ternary that used to sit on this line was the White chair's, and it went with it. */
+      var i = (7 - dr) * 8 + (7 - dc);
       var p = G.S.b[i];
       var cls = 'ot-sq ' + ((((i / 8) | 0) + (i % 8)) % 2 === 0 ? 'lt' : 'dk');
       if (i === sel) cls += ' sel';
@@ -1158,8 +1145,7 @@ and go.</p>
       var p = bookPly();
       var left = G.v.plies.length - G.idx;
       if (!p) return 'Book complete.';
-      if (p.color !== USER) return '<span class="ot-dim">' +
-        (USER === 'w' ? 'Black' : 'White') + ' is playing the line…</span>';
+      if (p.color !== USER) return '<span class="ot-dim">White is playing the line…</span>';
       /* ⚠ THE HINT OUTRANKS THE CORRECTION, and the order used to be the other way round.
          The sequence that exposed it is the ONLY one that matters here: play a wrong move,
          then press Show Me the Move. `G.wrong` is still set — correctly, it survives until
@@ -1172,11 +1158,10 @@ and go.</p>
       }
       /* ⚠ NO ARTICLE HERE. Every variation is named "The …", so a prefixed "the" reads
          "in the The Austrian Attack". Caught on a live render, not in review. */
-      /* ⛑ AND THE WALK-IN PROMPT NAMED BLACK TO EVERYBODY. "Find Black's move" is exactly
-         backwards when the player IS White, and it is the single line a student reads most
-         often in this room. It names the side you are actually sitting on now. */
-      return '<b>Your move.</b> Find ' + (USER === 'w' ? 'White' : 'Black') +
-             '&rsquo;s move in ' + esc(G.v.name) + '. ' + plyLeft(left);
+      /* ⚠ IT NAMES BLACK, AND MAY ONLY DO SO WHILE BLACK IS THE ONLY CHAIR. This is the
+         single line a student reads most often in this room; when the anti-Pirc room is
+         built it gets its own, rather than this one growing a branch. */
+      return '<b>Your move.</b> Find Black&rsquo;s move in ' + esc(G.v.name) + '. ' + plyLeft(left);
     }
 
     if (C.inCheck(G.S, USER)) return '<b class="ot-warn">You are in check.</b> Get out of it.';
@@ -1280,7 +1265,7 @@ and go.</p>
 .ot-tab.on { border-color: #e08a3c; color: #ffd7a8; background: rgba(224,138,60,0.14); }
 
 /* ── preparing for a named regular (2026-09-01) ─────────────────────────────────
-   The same row skeleton as .ot-lvl and .ot-side-btn, because the setup screen is one list
+   The same row skeleton as .ot-lvl, because the setup screen is one list
    of decisions and a third shape would read as a third feature. The glyph is the seat's own
    piece from _data/regulars.yml, drawn in the canon black livery so the bench looks the same
    here as it does at the tables. */
@@ -1309,27 +1294,6 @@ and go.</p>
 .ot-btn--go { text-decoration: none; display: inline-flex; align-items: center;
   border-color: #e08a3c; color: #ffd7a8; }
 .ot-btn--go:hover { background: rgba(224,138,60,0.16); color: #fff3e2; }
-
-/* ── the two chairs (2026-09-01) ───────────────────────────────────────────────────
-   Two wide rows rather than a segmented pill: each side is an argument, not a toggle, and
-   the sub-line under the name is what makes White worth choosing. Same skeleton as .ot-lvl
-   below so the setup screen reads as one list of decisions, top to bottom. */
-.ot-sides { display: flex; flex-direction: column; gap: 7px; max-width: 560px; margin-bottom: 22px; }
-.ot-side-btn { display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
-  background: rgba(23,42,30,0.62); border: 1px solid #2c4636; border-radius: var(--r-sm, 8px);
-  padding: 9px 13px; min-height: 44px; transition: border-color 0.15s, background 0.15s; }
-.ot-side-btn:hover { border-color: #e08a3c; background: rgba(28,52,37,0.85); }
-.ot-side-btn.on { border-color: #e08a3c; background: rgba(45,68,44,0.9);
-  box-shadow: 0 0 0 1px rgba(224,138,60,0.4); }
-/* the glyph is drawn in the canon piece liveries, so the two chairs are the two colors the
-   board itself uses rather than a third palette invented for a control */
-.ot-side-pc { font-size: 1.5rem; line-height: 1; width: 1.4em; text-align: center;
-  color: var(--piece-b-fill); -webkit-text-stroke: 0.03em var(--piece-b-line); }
-.ot-side-btn:first-child .ot-side-pc { color: var(--piece-b-fill); }
-.ot-side-btn:last-child .ot-side-pc { color: var(--piece-w-fill); -webkit-text-stroke-color: var(--piece-w-line); }
-.ot-side-t { display: flex; flex-direction: column; gap: 1px; }
-.ot-side-t b { color: #f2eddd; font-size: 0.94rem; }
-.ot-side-t small { color: #8fae94; font-size: 0.76rem; }
 
 /* ── the six opponents ─────────────────────────────────────────────────────────── */
 .ot-levels { display: flex; flex-direction: column; gap: 7px; max-width: 560px; }

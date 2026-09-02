@@ -541,62 +541,110 @@ section('10 · the repertoire is a possession');
 }
 
 
-/* ── 11 · BOTH SIDES OF THE LINE ─────────────────────────────────────────────────
-   Idea #9, 2026-09-01: *"play the Austrian as White against your own defense."* The room
-   was built Black-only on purpose and said so in three places, so the risks here are not
-   about chess — they are about a half-flipped room: a board drawn from one side while the
-   marks are banked for the other, or advice written to Black handed to a White player as
-   though it were theirs. */
-section('11 · the other chair');
+/* ── 11 · ONE CHAIR, AND NO WAY INTO THE OTHER ───────────────────────────────────
+   A White chair shipped on 2026-09-01 and Nate took it back out the same day: *"Opening
+   Trainer should only be for Black right now ... when playing white, you'd HAVE to
+   cooperate with the variation for Black's purposes."* He is right, and the reason is
+   structural rather than a matter of taste — this room plays whichever side you are not
+   sitting in, so the White chair had the room playing the Pirc AT the student. That is a
+   rehearsal against an opponent who agreed in advance to walk into it.
+
+   ⚠⚠ SO THIS SECTION GATES A REMOVAL, WHICH IS THE HARDER THING TO KEEP TRUE. A door comes
+   out of four places on this page — the markup, the SIDES list, the click listener and the
+   CSS — and the site's own record is that a half-removed thing keeps looking alive
+   ([[read-before-you-delete]], [[one-fix-every-instance]]). All four are checked.
+   ⭐ AND WHAT DELIBERATELY SURVIVED IS CHECKED TOO. The data model stays side-parameterized
+   and the book keeps its white prose, because the anti-Pirc room that Nate does want is a
+   NEW lesson that will need both. Re-opening a door is a line; rebuilding a sided mark
+   format out of accounts that have already banked marks is a migration. */
+section('11 · one chair — the room is Black\'s');
 {
   const OT = read('academy-opening-trainer.html');
   const PROF = read('assets/js/pjcc-profile.js');
 
-  ok(/var pickSide = 'b';/.test(OT), 'Black is still the default — it is the room\'s premise');
-  ok(/USER = \(pickSide === 'w'\) \? 'w' : 'b';/.test(OT),
-     'and the side is fixed once, in start(), not read live',
-     'flipping USER mid-game rewrites the position under the player');
-  ok(/\(USER === 'w'\) \? \(dr \* 8 \+ dc\) : \(\(7 - dr\) \* 8 \+ \(7 - dc\)\)/.test(OT),
-     'the board is drawn from whichever chair you took');
+  /* ⚠⚠ THE POSITIVE ANCHOR COMES FIRST, AND IT IS NOT CEREMONY. Everything below is an
+     ABSENCE check, and an absence check over a file that failed to load, got renamed or
+     came back empty is unanimous and worthless — four of those shipped green on this page
+     in one day. If the setup screen is not here, nothing under this line means anything.
+     [[green-must-name-what-ran]] */
+  ok(OT.length > 20000 && OT.indexOf("id=\"ot-vars\"") > -1 && OT.indexOf('function paintSetup()') > -1,
+     'the room and its setup screen are actually here to be checked',
+     OT.length + ' bytes, ot-vars present, paintSetup() present');
 
-  /* ⚠⚠ THE HALF-FLIP IS THE BUG WORTH GATING. A board that turns around while the marks
-     stay on the black half is invisible until somebody notices their white wins banked as
-     black ones — by which time the book is wrong and there is nothing to reconcile it
-     against. So every reader and writer has to name a side. */
+  /* ── the side is pinned, and nothing on the page can move it ───────────────── */
+  ok(/var pickSide = 'b';/.test(OT), "pickSide is Black");
+  ok((OT.match(/pickSide\s*=(?!=)/g) || []).length === 1,
+     '…and it is assigned in exactly one place, so nothing can change it',
+     'the picker used to write it from a click handler');
+  ok(/\n    USER = 'b';/.test(OT) && OT.indexOf("USER = (pickSide === 'w')") === -1,
+     "USER is set to Black in start(), not read from a choice");
+  /* ⛑ THE FIRST VERSION OF THIS CHECK WAS AN `||` AND PASSED ON THE WRONG HALF. It read
+     "no === 'w' anywhere OR no pickSide === 'w'", and the second clause was true the moment
+     the picker went, so it went green over four live `USER === 'w'` branches — including
+     the one that still turned the board around. An OR between a strong claim and a weak one
+     is the weak one. [[green-must-name-what-ran]] */
+  const WHITEQ = (OT.match(/(?:USER|pickSide) === 'w'/g) || []);
+  ok(WHITEQ.length === 0, '…and no branch anywhere still asks whether the student is White',
+     WHITEQ.length ? WHITEQ.length + ' live white branches' : 'not one');
+
+  /* ── the door is out of all four places ────────────────────────────────────── */
+  const DOORS = [
+    ['the markup',     'id="ot-sides"'],
+    ['the SIDES list', 'var SIDES = ['],
+    ['the element lookup', "getElementById('ot-sides')"],
+    ['the click listener', "closest('[data-s]')"],
+    ['the painter',    'function paintSides()'],
+    ['the CSS',        '.ot-side-btn']
+  ];
+  const left = DOORS.filter((d) => OT.indexOf(d[1]) > -1);
+  ok(left.length === 0, 'the side picker is gone from every place it lived',
+     left.map((d) => d[0]).join(' · ') || DOORS.length + ' places, all clear');
+
+  /* ⚠ AND NO WHITE-SIDE COPY SURVIVES ON SCREEN. A dead branch that still holds a string is
+     the version of this that ships wrong the day somebody flips a flag to "test it". */
+  /* ⛑⛑ THE PROSE IS IN THIS LIST BECAUSE THE FIRST VERSION OF IT WAS NOT. Every control
+     and every branch had gone, the room rendered perfectly — and the badge under the title
+     still read "as Black, or from the other chair" while the lead paragraph still said "pick
+     which end of the board you are sitting at". A removal is only finished when the page has
+     stopped ADVERTISING the thing, and neither line lives near any code that changed, which
+     is exactly why a source diff will not show them to you. Caught on a render.
+     [[one-fix-every-instance]] */
+  const COPY = ['You · White', 'What Black Is Trying to Do', 'Why He Plays It',
+                'White, playing up the screen', 'BOOK.CREED_W',
+                'or from the other chair', 'which end of the board'];
+  const said = COPY.filter((c) => OT.indexOf(c) > -1);
+  ok(said.length === 0, '…and so is every line of copy written for that chair',
+     said.join(' · ') || COPY.length + ' strings, none of them reachable');
+
+  ok(/var i = \(7 - dr\) \* 8 \+ \(7 - dc\);/.test(OT) && OT.indexOf("(USER === 'w') ? (dr * 8 + dc)") === -1,
+     'the board is drawn from Black\'s side, without asking',
+     'h1 is index 63 from this chair');
+
+  /* ── what stays, so the anti-Pirc room is a build rather than a migration ──── */
   const FIELDED = ['grantKnown(G.v.id, USER)', 'grantHeld(G.v.id, G.lvl.elo, USER)',
                    'bookEntry(G.v.id, USER)', 'heldLevel(G.v.id, USER)',
                    'bookEntry(v.id, pickSide)', 'heldLevel(v.id, pickSide)',
                    "bookCounts('b')", 'bookCounts(pickSide)'];
   const sideless = FIELDED.filter((c) => OT.indexOf(c) === -1);
-  ok(sideless.length === 0, 'every book call names the side it is about',
+  ok(sideless.length === 0, 'every book call still names the side it is about',
      sideless.join(' · ') || FIELDED.length + ' call sites, all sided');
   ok(/var FIELD = \{ b: \{ known: 'known', held: 'held' \}, w: \{ known: 'wKnown', held: 'wHeld' \} \};/.test(OT),
-     'the two field names live in exactly one map',
-     'black keeps the original spelling, so no book written before today needed migrating');
+     '…and the two field names still live in exactly one map',
+     'ripping the white half out would be a migration, not a cleanup');
   ok(/\[\['known', 'held'\], \['wKnown', 'wHeld'\]\]\.forEach/.test(PROF),
-     '…and the account merge carries both halves, by the same two rules');
+     '…and the account merge still carries both halves');
 
-  /* ⚠⚠ THE ADVICE MUST NOT CHANGE HANDS SILENTLY. Every word of `plan` is written TO Black
-     ("the g7 bishop is your best piece"); handed to a White player as their plan it is the
-     room lying to them. The heading is what makes it a scouting report instead. */
-  ok(/elPlanH\.textContent = white \? 'What Black Is Trying to Do' : 'The Plan';/.test(OT),
-     'from the white chair the plan is relabelled as the OPPONENT\'s plan',
-     'the same paragraph, told the truth about who it belongs to');
-  ok(/var why = white \? \(v\.whyW \|\| ''\) : \(v\.why \|\| ''\);/.test(OT),
-     '…and the argument is the one written for that side');
-  BOOK.all().forEach(function (v) {
-    ok(!!v.whyW && v.whyW !== v.why, v.name + ': has its own white-side argument');
-  });
-
-  /* ⚠⚠ AND MICHAEL DOES NOT SIGN THE OTHER SIDE. He plays the Pirc; he does not play
-     against it, and a creed under his name arguing both ways is a voice that stops meaning
-     anything. The white text is the room's own, and the byline is WITHHELD rather than
-     handed to somebody else. [[slow-roll-cast]] */
-  ok(!!BOOK.CREED_W && BOOK.CREED_W !== BOOK.CREED, 'the white chair has its own creed');
-  ok(/\(!white && BOOK\.TEACHER \? '<cite>— '/.test(OT),
-     '…and it is signed by nobody', 'the teacher plays this opening; he does not play against it');
+  /* ⚠⚠ THE BOOK KEEPS ITS WHITE PROSE, AND THE BYLINE RULE KEEPS PROTECTING IT. Michael
+     plays the Pirc; he does not play against it, so the day the anti-Pirc room is built its
+     creed must still be unsigned rather than handed to him. Checked now, while the reason is
+     written down, because that is the version of this rule that survives. [[slow-roll-cast]] */
+  ok(!!BOOK.CREED_W && BOOK.CREED_W !== BOOK.CREED,
+     'the white creed is still on file for the room that will use it');
   ok(BOOK.CREED_W.indexOf(BOOK.TEACHER) === -1,
-     '…and does not name him in its own text either', 'no byline through the back door');
+     '…and it still does not name the teacher', 'he plays this opening; he does not play against it');
+  const noWhy = BOOK.all().filter((v) => !v.whyW || v.whyW === v.why).map((v) => v.name);
+  ok(noWhy.length === 0, '…and every line still has its white-side argument written',
+     noWhy.join(', ') || BOOK.all().length + ' lines, all with whyW');
 }
 
 
