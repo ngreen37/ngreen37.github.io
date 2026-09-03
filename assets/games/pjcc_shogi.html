@@ -148,10 +148,15 @@
   .unlock .locked { background:rgba(255,255,255,0.5); color:var(--muted); border:1px dashed rgba(120,110,90,0.5);
     border-radius:10px; padding:11px 18px; font-size:0.85rem; }
 
+
   /* ===== Overlays / mini-game ===== */
   .overlay { position:fixed; inset:0; z-index:30; background:rgba(20,12,6,0.92); display:flex; flex-direction:column;
     align-items:center; justify-content:flex-start; padding:18px 14px; overflow-y:auto; color:#f3e9d6; }
   .overlay.hidden { display:none; }
+  /* ⛑ A COLUMN THAT ALREADY SCROLLS MUST NEVER SQUASH. `.dob-status`'s explicit `min-height`
+     REPLACES the `min-height: auto` floor that stops a flex item shrinking below its own
+     content, so it kept a 22px box and painted over the buttons — 56px at 232x505. */
+  .overlay > * { flex-shrink: 0; }
   .overlay h2 { color:var(--gold); font-size:1.3rem; margin:4px 0 2px; }
   .overlay .jp-big { font-size:1.7rem; color:var(--gold); }
   .overlay p { margin:4px 0; max-width:360px; text-align:center; font-size:0.9rem; }
@@ -186,6 +191,30 @@
   .m-hand .hp.sel { background:#bfe2ff; }
   .m-hand.enemy .hp { transform:rotate(180deg); color:#a8324a; cursor:default; }
   .m-promo { display:flex; gap:8px; justify-content:center; margin:6px 0; }
+  /* ══ THE STAGE PASS (2026-09-02) ══════════════════════════════════
+     Capped at 100svh this column gets ~505px, not 900, and `html, body { overflow: hidden }`
+     above means everything past the fold was CLIPPED: 確認 Check sat 18px below a 232x505
+     window with no gesture that could reach it.
+     ⚠ `overflow-x: hidden` with the scroll, or the other axis becomes `auto` too and pans. */
+  @media (max-height: 800px) {
+    #app { max-height: 100%; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; }
+    /* ⚠ `#app >`, not `.controls` — the same class sits inside the two dark overlays, and a
+       paper-colored bar pinned across those is the fix wearing the bug's clothes. */
+    #app > .controls { position: sticky; bottom: 0; z-index: 4; padding: 8px 0;
+      background: rgba(239,234,224,0.94); box-shadow: 0 -6px 14px rgba(239,234,224,0.94); }
+    .overlay > .controls { position: sticky; bottom: 0; z-index: 4; padding: 8px 0; width: 100%;
+      background: rgba(20,12,6,0.96); box-shadow: 0 -6px 14px rgba(20,12,6,0.96); }
+    .codex { max-height: min(200px, 26vh); }
+    /* ⭐ THE QUESTION HAS TO CLEAR THE PINNED BAR WITHOUT A SCROLL, and no single block paid
+       for it: at 232x505 the prompt ran 48px under the bar and the board there is already
+       width-bound (84vw). The 58px is the empty `hand` rail (44), margins (14), board (20). */
+    #app { padding: 8px 12px 14px; }
+    .topbar, .bars { margin-bottom: 4px; }
+    .fwd { margin-bottom: 2px; }
+    .hand { min-height: 0; margin: 4px 0 0; }
+    .prompt { margin-top: 4px; }
+    .board-wrap { width: min(380px, 84vw, 40vh); }
+  }
 </style>
 </head>
 <body>

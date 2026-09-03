@@ -24,7 +24,7 @@ sitemap: false
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
 <div id="proto-gate" hidden>
-  <div class="game-frame-wrap ct-frame">
+  <div class="game-frame-wrap fits-phone ct-frame">
     <div id="ct-stage">
       <button type="button" id="ct-load">Load Checker Town</button>
       <p class="ct-note">9.8&nbsp;MB the first time. Cached after that.</p>
@@ -50,12 +50,10 @@ sitemap: false
   .ct-frame #ct-stage { height: 640px; }
   @media (max-width: 600px) { .ct-frame #ct-stage { height: 560px; } }
 
-  /* ⛑ THE CABINET HAS TO FIT THE PHONE. A stage taller than the window is unreachable: the
-     page scroll that would show its bottom edge is a drag the game's own canvas eats.
-     ⭐ `svh`, not `dvh` (resizes mid-move when Safari's toolbar slides) or `vh` (ignores the
-     toolbars, which IS the bug). ⚠ 48 = the cabinet's 14px padding a side plus air. */
+  /* The iframe's cap is `fits-phone` in _layouts/game.html. The placeholder stage is this
+     page's own element, so it carries the same number here or the cabinet jumps on load. */
   @media (pointer: coarse) {
-    .ct-frame iframe, .ct-frame #ct-stage { max-height: calc(100svh - 48px); }
+    .ct-frame #ct-stage { max-height: calc(100svh - 48px); }
   }
 
   .ct-frame #ct-stage {

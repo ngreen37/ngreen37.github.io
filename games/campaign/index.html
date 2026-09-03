@@ -51,7 +51,7 @@ sitemap: false
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
 <div id="proto-gate" hidden>
-  <div class="game-frame-wrap ml-frame">
+  <div class="game-frame-wrap fits-phone ml-frame">
     <iframe
       src="{{ '/assets/games/pjcc_marchland.html' | relative_url }}"
       title="ChessWild: Campaign"
@@ -89,18 +89,7 @@ sitemap: false
   .ml-frame iframe { height: 720px; }
   @media (max-width: 600px) { .ml-frame iframe { height: 660px; } }
 
-  /* ⛑ THE CABINET HAS TO FIT THE PHONE (2026-09-02). Second half of the "can't scroll down
-     to the button" fix — pinning the control to the stage's bottom edge is worthless if
-     that edge is below the fold. Measured live: the frame runs document y 205→865 on a
-     390px phone showing ~664, and the page scroll that would reach it is the drag the
-     game's own scroller eats.
-     ⭐ `svh`, not `dvh` (resizes the board when Safari's toolbar slides) or `vh` (ignores
-     the toolbars, which IS the bug). Safari < 15.4 drops it and gets today's behavior.
-     ⚠ 48 = the cabinet's 14px padding a side plus air. Coarse pointer only: a wheel isn't
-     captured the way a touch drag is. */
-  @media (pointer: coarse) {
-    .ml-frame iframe { max-height: calc(100svh - 48px); }
-  }
+  /* The 100svh cap is `fits-phone` in _layouts/game.html now — one rule, every cabinet. */
 </style>
 
 <script>

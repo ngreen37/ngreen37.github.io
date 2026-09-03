@@ -983,47 +983,105 @@ const WIDTHS = [320, 360, 390, 430];
 
     /* ── THE CABINET AROUND IT ───────────────────────────────────────────────────────
        A pinned button is worthless if the stage's bottom edge is below the fold. Measured
-       live: the Campaign frame runs document y 205→865 on a phone showing ~664.
-       ⭐ THIS IS A LEDGER, NOT A GREEN LIGHT. Nine other cabinets are still taller than a
-       phone; capping them all resizes nine games nobody has measured. KNOWN is the backlog
-       and the assertion is that it does not GROW. Cap one, delete it from KNOWN. */
-    /* ⚠ no \b before svh: "100svh" has a digit before the s, and a digit is a word
-       character, so \bsvh never matches a real declaration. */
-    const CAPPED = /max-height:[^;{}]*svh/;
-    const TALL = [];
-    for (const f of fs.readdirSync(path.join(ROOT, 'games'), { withFileTypes: true })) {
-      if (!f.isDirectory()) continue;
-      const idx = path.join(ROOT, 'games', f.name, 'index.html');
-      if (!fs.existsSync(idx)) continue;
-      const src = fs.readFileSync(idx, 'utf8');
-      /* the phone height is the LAST `height: Npx` a frame rule declares */
-      const hits = [];
-      /* ⚠ `[^{}]*` BEFORE THE BRACE, not `\s*`. Checker Town shipped its height on a
-         selector LIST (`.ct-frame iframe, .ct-frame #ct-stage {`) and this probe skipped
-         the whole cabinet — passing because the subject was absent, which is the one way
-         this file has been wrong before. */
-      /* ⚠ the lookbehind stops `max-height:`/`min-height:` reading as the frame height — a
-         `max-height: 720px` would otherwise BE the measurement it is supposed to cap. */
-      const re = /-frame\s+iframe\b[^{}]*\{[^}]*(?<![-\w])height:\s*(\d+)px/g;
-      let mm;
-      while ((mm = re.exec(src))) hits.push(+mm[1]);
-      if (!hits.length) continue;                    // aspect-ratio or calc(): not a fixed ceiling
-      const phone = hits[hits.length - 1];
-      if (phone <= 560) continue;                    // already fits the shortest phone
-      if (CAPPED.test(src)) continue;                // has had the pass
-      TALL.push(f.name + ' ' + phone + 'px');
+       live: the Campaign frame ran document y 205→865 on a phone showing ~664.
+
+       ⭐⭐ 2026-09-02 — THIS WAS A LEDGER AND IT IS A MEASUREMENT NOW. It used to name nine
+       cabinets that were taller than a phone and assert the list did not GROW, because
+       capping nine games nobody had measured is [[one-fix-every-instance]]'s other half.
+       All nine have had their stage pass, the list is empty, and an emptied allowlist
+       asserts nothing — so every cabinet on the site is rendered at a phone and asked how
+       tall it is.
+
+       ⚠⚠ WHY A RENDER AND NOT A REGEX. The old probe read `height: Npx` out of a
+       `-frame iframe` rule, and four things it cannot see all exist in this repo today: an
+       `aspect-ratio` cabinet (/games/fork-in-the-road/), a `calc()` one (the Gauntlet), a
+       cap that arrives from the LAYOUT rather than the page (`fits-phone`), and a cabinet on
+       a page outside `games/`. A regex over one directory is not coverage of a site.
+
+       ⚠⚠ AND THE VIEWPORT HEIGHT IS THE VISIBLE HEIGHT, NOT THE DEVICE HEIGHT. Headless
+       Chrome has no toolbars, so `100svh` there IS `innerHeight` — render a 390x844 phone
+       and a 784px cabinet sails through, because the ~180px Safari spends on chrome does not
+       exist here. 664 and 560 are what a 390 and a 320 phone actually SHOW.
+
+       ⚠ The page's own <style> goes in the BODY, where Jekyll puts it, or a page rule that
+       only wins on a tie is measured as if it lost. Same reason PART 2 says so. */
+    {
+      const LAYOUT_CSS = (read('_layouts/game.html')
+        .match(/<style[^>]*>([\s\S]*?)<\/style>/i) || ['', ''])[1];
+      check('the game layout still carries the cabinet CSS', /game-frame-wrap/.test(LAYOUT_CSS),
+        LAYOUT_CSS.length + ' chars of layout style');
+
+      /* Every page that hosts a cabinet, wherever it lives. `game-frame-wrap` is the class
+         the layout styles, so it is the marker — a page that draws a stage some other way
+         is not a cabinet and is not this check's business. */
+      const CABS = SOURCES.filter((f) => /\.(md|html)$/.test(f) && f.indexOf('_site/') !== 0
+        && read(f).indexOf('game-frame-wrap') >= 0 && f !== '_layouts/game.html');
+      check('the cabinet sweep found the game pages', CABS.length >= 15,
+        CABS.length + ' pages carry a .game-frame-wrap');
+
+      /* ⚠ SCRIPTS OUT, `hidden` OFF. Four of these cabinets ship hidden behind a gate the
+         page's own inline script opens (the prototype key, the blindfold unlock); with the
+         scripts stripped, nothing re-hides them and nothing measures a zero-height box. */
+      const strip = (s) => liquid(s)
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/\shidden(?=[\s>])/gi, ' ')
+        .replace(/src="[^"]*"/gi, 'src="about:blank"');
+
+      const tall = [];
+      let rendered = 0;
+      for (const f of CABS) {
+        const src = read(f);
+        const tmp = path.join(os.tmpdir(), 'pjcc_cab_' + Date.now() + '_' + path.basename(f) + '.html');
+        fs.writeFileSync(tmp,
+          '<!doctype html><html><head><meta charset="utf-8">' +
+          '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+          '<style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;background:#1a0f3d}' +
+          '.wrapper{max-width:1100px;margin:0 auto;padding:0 28px}</style>' +   // MEASURED, _pjcc-01-core
+          '<style>' + LAYOUT_CSS + '</style></head>' +
+          '<body><main class="page-content"><div class="wrapper">' +
+          strip(src) + '</div></main></body></html>');
+
+        for (const [w, h] of [[390, 664], [320, 560]]) {
+          await page.setViewport({ width: w, height: h, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+          /* ⚠ THE CAP ONLY EXISTS UNDER `pointer: coarse`, and here `isMobile: true` is what
+             delivers it — not the CDP override PART 2 needs, which a mutation run proved
+             redundant at this call site. The assertion below is what keeps that honest. */
+          await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+          await new Promise((r) => setTimeout(r, 120));
+          const m = await page.evaluate(() => {
+            if (!matchMedia('(pointer: coarse)').matches) return { blind: true };
+            const out = [];
+            document.querySelectorAll('.game-frame-wrap').forEach((wrap) => {
+              /* the stage is the iframe, except where the page builds the iframe on click
+                 and stands a placeholder in for it (Checker Town) */
+              const stage = wrap.querySelector('iframe') || wrap.firstElementChild;
+              if (!stage) return;
+              const r = stage.getBoundingClientRect();
+              if (r.height < 1) return;
+              out.push({ h: Math.round(r.height), w: Math.round(r.width),
+                cls: wrap.className.replace('game-frame-wrap', '').trim() });
+            });
+            return { stages: out, vh: window.innerHeight };
+          });
+          if (m.blind) { tall.push(f + ': the coarse-pointer emulation did not take'); break; }
+          if (!m.stages.length) { tall.push(f + ': no stage rendered — the repro found nothing to measure'); break; }
+          rendered += m.stages.length;
+          for (const st of m.stages) {
+            if (st.h > m.vh) tall.push(f + ' @' + w + 'x' + h + ': ' + st.h + 'px of cabinet in a ' + m.vh + 'px window');
+          }
+        }
+        fs.unlinkSync(tmp);
+      }
+      check('the cabinet sweep really rendered the stages', rendered >= CABS.length * 2,
+        rendered + ' stage renders across ' + CABS.length + ' pages x 2 phones');
+      /* ⛑ THE ONE THAT MATTERS. A cabinet taller than the window has no scroll position that
+         shows its bottom edge, and the drag that would find one is eaten by the game's own
+         scroller. Fix it in the page — a shorter cabinet, an `aspect-ratio`, or `fits-phone`
+         once the game has been driven at 232x505 and 302x616 and come back clean. */
+      check('⚠⚠ NO cabinet on the site is taller than the phone showing it', tall.length === 0,
+        tall.length ? tall.slice(0, 5).join(' · ')
+          : CABS.length + ' cabinets at 390x664 and 320x560, coarse pointer');
     }
-    const KNOWN = ['blindfold-puzzles 760px', 'clearance-delta 620px', 'duel 720px',
-      'notation-run 660px', 'pirc-protocol 784px', 'reading-room 660px', 'shogi-island 900px',
-      'sky-run 640px', 'tower-defense 740px'];
-    check('⚑ the list of cabinets taller than a phone has not grown',
-      TALL.every((t) => KNOWN.indexOf(t) >= 0),
-      TALL.filter((t) => KNOWN.indexOf(t) < 0).join(' · ')
-        || TALL.length + ' known, each owed its own stage pass');
-    check('…and Campaign is off it — the fix is in the page as well as in the game',
-      TALL.indexOf('campaign 660px') < 0
-        && CAPPED.test(fs.readFileSync(path.join(ROOT, 'games/campaign/index.html'), 'utf8')),
-      'games/campaign/index.html caps the frame at 100svh');
 
     server.close();
   }

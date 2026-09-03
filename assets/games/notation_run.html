@@ -225,6 +225,27 @@
     color: #5aa0ff; opacity: 0.15; white-space: nowrap; animation: introDrift linear infinite;
   }
   @keyframes introDrift { from { transform: translateX(0); } to { transform: translateX(-640px); } }
+
+  /* ⚠⚠ THE OVERLAYS ARE THE CANVAS'S SIZE, NOT THE CABINET'S (2026-09-02 stage pass).
+     The canvas is 480x500 and the stage is `min(560px, 100vw)`, so on a 390px phone every
+     screen here is drawn inside 302x315. Measured: the title screen ran 59px past its own
+     box at 302 and 118 at 232, and PRESS START painted over the best-score line — on every
+     phone, nothing to do with the height cap. The attract screen has to FIT (you cannot
+     scroll an attract screen) so it scales; the menu and results are lists, so they scroll.
+     ⚠ `overflow-x: hidden` with it: `overflow-y: auto` makes the other axis `auto` too. */
+  @media (max-width: 560px) {
+    .overlay { padding: 14px 12px; }
+    #title-screen, #results-screen { overflow-y: auto; overflow-x: hidden; justify-content: safe center; }
+    #title-screen > *, #results-screen > * { flex-shrink: 0; }
+    .ov-title { font-size: clamp(20px, 6.4vw, 34px); }
+    .ov-sub { font-size: clamp(12px, 3.4vw, 16px); margin-bottom: 10px; }
+    .intro .ov-eyebrow { margin-bottom: 8px; }
+    .intro-logo .il-1 { font-size: clamp(17px, 7.4vw, 38px); letter-spacing: min(7px, 1.6vw); }
+    .intro-logo .il-2 { font-size: clamp(26px, 12vw, 62px); letter-spacing: min(10px, 2.2vw); }
+    .intro-princess { width: clamp(44px, 17vw, 92px); height: clamp(44px, 17vw, 92px); margin: 10px 0 8px; }
+    .intro-tag { font-size: clamp(10px, 2.9vw, 14px); margin-bottom: 12px; }
+    .intro-start { font-size: clamp(13px, 4.2vw, 20px); padding: 8px 16px; letter-spacing: 2px; }
+  }
 </style>
 </head>
 <body>

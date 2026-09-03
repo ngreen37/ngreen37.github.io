@@ -43,12 +43,10 @@
        laptop with the dev tools open, and there the header is fine — the question being
        asked is "is this a phone on its side", and only the finger answers it.
 
-       ⚠ WHAT THIS DOES NOT FIX, and it is worth knowing: the iframe is still 520px tall
-       (per-game shells set their own), so on a 390px-tall screen the BOARD itself is still
-       taller than the window. Fixing that properly means sizing each game's stage off the
-       viewport height the way /games/the-gauntlet/ already does, and every shell has a
-       different canvas aspect — it is a per-game pass, not a shared rule.
-       Measured on the live pages at 844x390, cabinet top before → after:
+       ⛑ THE PART THIS DOES NOT FIX WAS FIXED ON 2026-09-02, and the note is here because it
+       named the work: the iframe used to keep its own pixel height on a short screen, so the
+       BOARD was still taller than the window. `fits-phone` below is that per-game pass, one
+       game at a time. Measured on the live pages at 844x390, cabinet top before → after:
        the Gauntlet 195 → 118, Puzzles 195 → 118, Sand Mine 172 → 118. */
     @media (max-height: 560px) and (orientation: landscape) and (pointer: coarse) {
       .game-page-header { padding: 0.5rem 0 0.4rem; margin-bottom: 0.7rem; }
@@ -98,6 +96,26 @@
       background: #1a0f3d;
     }
     @media (prefers-reduced-motion: reduce) { .game-frame-wrap::after { animation: none; } }
+
+    /* ══ A CABINET THAT FITS THE PHONE — opt in with `fits-phone` (2026-09-02) ═════════
+       Nate, on Campaign: *"the Campaign button after the dice roll to go to the board
+       can't be scrolled down to."* Pinning that button was half the fix — a control pinned
+       to the cabinet's bottom edge is worthless when that edge is below the fold, and the
+       page scroll that would reach it is the drag the game's own scroller eats. Measured:
+       the frame ran document y 205→865 on a phone showing ~664.
+       ⭐ `svh`, NOT `dvh` (tracks Safari's toolbar sliding and would resize the board
+       mid-move) or `vh` (ignores the toolbars, which IS the bug). ⚠ 48 = the cabinet's 14px
+       of padding a side plus air. Coarse pointer only — a wheel is not captured this way.
+
+       ⚠⚠ IT IS OPT-IN, AND THAT IS THE POINT. Shorter is not automatically safer: Sand
+       Mine's menu buttons already sit 3px below a 320px phone at its shipping 540px
+       cabinet, and 35px of cap makes that worse. The class is the record that a game was
+       driven at 232x505 and 302x616 and came back clean; adding it without doing that is
+       the bug this comment exists to prevent. The floor is measured either way —
+       tests/mobile.check.js renders every cabinet on the site at a phone. */
+    @media (pointer: coarse) {
+      .game-frame-wrap.fits-phone iframe { max-height: calc(100svh - 48px); }
+    }
 
     /* ── THE PLAIN WINDOW — opt in with `is-plain` (2026-08-04) ────────────────────────
        Nate: "Let's make Puzzles not have a home game-like window — make it look closer to

@@ -16,13 +16,25 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
   html, body { height:100%; background:#0d0a1e; font-family:'Trebuchet MS','Segoe UI',sans-serif; color:#efe7ff; overflow-x:hidden; overflow-y:auto; touch-action:manipulation; }
-  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  body { display:flex; align-items:safe center; justify-content:center; min-height:100vh; }
   .jp { font-family:'Hiragino Mincho ProN','Yu Mincho','YuMincho','Yu Gothic','Meiryo','MS PMincho',serif; }
 
-  #app { position:relative; width:100%; max-width:460px; min-height:560px; background:
+  /* ⛑⛑ THE ROOM WAS TALLER THAN ITS CABINET AND CENTERED INSIDE IT — 2026-09-02.
+     Nine decks make the home screen 1371px at a 302px phone and 1124 at 460 on a desktop;
+     `body` centered it and `#app` clipped it, so it overflowed BOTH ends. At the shipping
+     660px cabinet the title sat at y-355 and START at y+1015, with `scrolling="no"` on the
+     frame — the middle of the deck list and nothing else, on every device.
+     ⚠ `min-height` BEATS `max-height` when they disagree, so the 560px floor has to be
+     conditional or the box overflows a 505px stage whatever the cap says.
+     ⚠ overflow-x explicitly: `overflow-y: auto` makes the other axis `auto` too. */
+  #app { position:relative; width:100%; max-width:460px; min-height:min(560px, 100%); background:
       radial-gradient(circle at 50% 0%, #2a1c4e 0%, #14102e 60%, #0d0a1e 100%);
     border:3px solid #d24b4b; border-radius:16px; box-shadow:0 0 44px rgba(210,75,75,0.22);
-    padding:16px 16px 20px; overflow:hidden; }
+    padding:16px 16px 20px; max-height:100%; overflow-y:auto; overflow-x:hidden;
+    overscroll-behavior-y:contain; }
+  /* START sits under a 1036px deck list; pinned, it is where the thumb already is */
+  #home > .row { position:sticky; bottom:-20px; z-index:3; margin-top:12px; padding:10px 0;
+    background:#0d0a1e; box-shadow:0 -8px 14px #0d0a1e; }
   /* faint hanko/seal pattern */
   #app::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:0.05;
     background-image:radial-gradient(circle at 20% 30%, #d24b4b 0 2px, transparent 3px),
