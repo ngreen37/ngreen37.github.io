@@ -998,7 +998,13 @@ const WIDTHS = [320, 360, 390, 430];
       const src = fs.readFileSync(idx, 'utf8');
       /* the phone height is the LAST `height: Npx` a frame rule declares */
       const hits = [];
-      const re = /-frame\s+iframe\s*\{[^}]*height:\s*(\d+)px/g;
+      /* ⚠ `[^{}]*` BEFORE THE BRACE, not `\s*`. Checker Town shipped its height on a
+         selector LIST (`.ct-frame iframe, .ct-frame #ct-stage {`) and this probe skipped
+         the whole cabinet — passing because the subject was absent, which is the one way
+         this file has been wrong before. */
+      /* ⚠ the lookbehind stops `max-height:`/`min-height:` reading as the frame height — a
+         `max-height: 720px` would otherwise BE the measurement it is supposed to cap. */
+      const re = /-frame\s+iframe\b[^{}]*\{[^}]*(?<![-\w])height:\s*(\d+)px/g;
       let mm;
       while ((mm = re.exec(src))) hits.push(+mm[1]);
       if (!hits.length) continue;                    // aspect-ratio or calc(): not a fixed ceiling

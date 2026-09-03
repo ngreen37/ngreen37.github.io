@@ -573,6 +573,41 @@
     return changed;
   }
 
+  /* ══ CHECKER TOWN — the seam the Godot town talks through (2026-09-02) ═══════════════
+     The town is a web-exported Godot build in an iframe; it plays no chess. A challenge
+     opens a Park Tables board, and these two answer the only questions it has.
+     ⚠⚠ EVERY FIELD IS EARNED, so every rule is max/union/sticky and a stale row can never
+     walk progress backwards. [[everything-earned-syncs]] */
+  var TOWN_KEY = 'pjcc.town.v1';
+  function townLocal() {
+    try { var o = JSON.parse(localStorage.getItem(TOWN_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function townMerge(remote) {
+    if (!remote || typeof remote !== 'object') return null;
+    var local = townLocal();
+    local.day = Math.max(+local.day || 0, +remote.day || 0);
+    local.hearts = Math.max(+local.hearts || 0, +remote.hearts || 0);
+    local.ore = Math.max(+local.ore || 0, +remote.ore || 0);
+    local.ceo_beaten = !!(local.ceo_beaten || remote.ceo_beaten);
+    /* the army is SLOT INDICES, so a union needs no arithmetic and two devices that filled
+       different squares keep both */
+    var army = {}, i;
+    (local.army || []).concat(remote.army || []).forEach(function (v) { army[parseInt(v, 10)] = 1; });
+    local.army = Object.keys(army).map(Number).filter(function (n) { return n >= 0; }).sort(function (a, b) { return a - b; });
+    /* ⚠⚠ `beaten` IS A DAY STAMP PER OPPONENT, NOT A SET. Union it naively and the later of
+       two devices hands out a second piece from the same person on the same day, which is
+       the one rule the whole loop rests on. MAX per key. */
+    var beaten = local.beaten || {}, rb = remote.beaten || {};
+    for (i in rb) {
+      if (!rb.hasOwnProperty(i)) continue;
+      beaten[i] = Math.max(+beaten[i] || 0, +rb[i] || 0);
+    }
+    local.beaten = beaten;
+    try { localStorage.setItem(TOWN_KEY, JSON.stringify(local)); } catch (e) {}
+    return local;
+  }
+
   var PJCC = {
     enabled: !!configured,
     ready: null,
@@ -941,6 +976,8 @@
            trip for data already in hand. */
         var bk = (rows || []).find(function (r) { return r.game === 'opening-trainer'; });
         if (bk && bk.data && bk.data.book) trainerBookMerge(bk.data.book);
+        var tw = (rows || []).find(function (r) { return r.game === 'checker-town'; });
+        if (tw && tw.data && tw.data.town) townMerge(tw.data.town);
       })['catch'](function () {});
     } catch (e) {}
   });
@@ -1019,6 +1056,34 @@
     } catch (e) {}
     emit();
     return profile;
+  };
+
+  /* --- Checker Town ----------------------------------------------------------
+     ⚠⚠ THE TOWN CALLS THESE FROM AN IFRAME, so they must exist on `window.PJCC` before
+     the Godot build finishes booting — which it will: the game is 38 MB and this file is
+     in the page head. Both are guarded on the Godot side anyway. [[pjcc-loads-after-content]] */
+  PJCC.mergeTown = function (state) {
+    var merged = townMerge(state);
+    if (!merged) return null;
+    /* rides saveScore like every other banked thing; signed out it writes local only.
+       ⚠ the SCORE is the army size so the row sorts sensibly — the state is in `data`. */
+    try { PJCC.saveScore('checker-town', (merged.army || []).length, { data: { town: merged } }); }
+    catch (e) {}
+    return merged;
+  };
+
+  /* Did this account just beat `key` at the Park Tables? null / true / false.
+     ⚠⚠ `since` IS IN SECONDS because Godot's Time.get_unix_time_from_system() is, and the
+     stamp Park Tables writes is Date.now() in MILLISECONDS. Getting this backwards makes
+     every past win look current, which hands out a piece per visit.
+     ⚠ NOT the beaten list: that is a lifetime set and cannot say "just". */
+  PJCC.townResult = function (key, since) {
+    try {
+      var r = JSON.parse(localStorage.getItem('pjcc.pt.last.v1') || 'null');
+      if (!r || !key || r.bot !== key) return null;
+      if (since && r.at < (+since) * 1000) return null;
+      return !!r.won;
+    } catch (e) { return null; }
   };
 
   // --- scores ----------------------------------------------------------------

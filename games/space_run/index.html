@@ -46,13 +46,11 @@ sitemap: false
 </div>
 
 <script>
-/* ⚑ THE PROTOTYPE SOFT GATE — byte-identical on all four unfinished games (Duel,
-   MARCHLAND, Follow the Dog, Chess City). ONE key opens all four, so the URL is typed
-   once per browser instead of once per game; the legacy per-game stores are still read
-   so a browser that already knows Duel or MARCHLAND stays open. Deliberately tiny and
-   deliberately not clever — see the note at the top of this file.
+/* ⚑ THE PROTOTYPE SOFT GATE — byte-identical on every unfinished game. ONE key opens them
+   all, so the URL is typed once per browser instead of once per game; the legacy per-game
+   stores are still read so a browser that already knows Duel or MARCHLAND stays open.
    ⚠ Inline on purpose: deferred, the page would flash "This one isn't open yet." first.
-   ⚠ tests/proto-gate.check.js fails the build if the four copies drift apart. */
+   ⚠ tests/proto-gate.check.js fails the build if the copies drift apart. */
 (function () {
   var KEY = 'chesswild', STORE = 'pjcc.proto.key', OLD = ['pjcc.duel.key', 'pjcc.marchland.key'];
   var q = '';

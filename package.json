@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Princess and the Journey to Chess City (PJCC) / McPuppy Studios. NOTE: the SITE is built by GitHub Pages (Jekyll) on push — there is no Node build step. Node here is purely for the local dev TOOLING below (tests, the dead-code sweep, the SCSS compile check, asset generators).",
   "scripts": {
-    "test": "npm run test:css && npm run test:tags && npm run test:style && npm run test:doors && npm run test:mobile && npm run test:proto && npm run test:trainer && npm run test:frag && npm run test:regulars && npm run test:live && npm run test:desk && npm run test:pwa && npm run test:godotgame && npm run test:links && npm run sweep",
+    "test": "npm run test:css && npm run test:tags && npm run test:style && npm run test:doors && npm run test:mobile && npm run test:proto && npm run test:town && npm run test:trainer && npm run test:frag && npm run test:regulars && npm run test:live && npm run test:desk && npm run test:pwa && npm run test:godotgame && npm run test:links && npm run sweep",
     "test:desk": "node tests/desk-covers.check.js",
     "test:style": "node tests/style.check.js",
     "test:doors": "node tests/doors.check.js",
@@ -26,6 +26,7 @@
     "gen:city": "node tests/gen-city.js",
     "gen:puzzles": "node tests/gen-front-puzzles.js",
     "gen:marchland": "node tests/gen-marchland-data.js",
+    "gen:checkertown": "node tests/gen-checkertown.js",
     "gen:godotgame": "node tests/gen-godot-game.js",
     "gen:rating": "node tests/gen-rating-puzzles.js",
     "sim:marchland": "node tests/sim-marchland.js",
@@ -60,7 +61,8 @@
     "test:gifts": "node tests/gifts.check.js",
     "test:follows": "node tests/follows.check.js",
     "test:live": "node tests/live.check.js",
-    "test:systems": "node tests/systems.check.js"
+    "test:systems": "node tests/systems.check.js",
+    "test:town": "node tests/town.check.js"
   },
   "repository": {
     "type": "git",

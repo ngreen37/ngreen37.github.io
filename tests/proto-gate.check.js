@@ -50,7 +50,8 @@ const PROTOS = [
   /* The scroller. Not unfinished — SUPERSEDED: the name went to the Godot survivors run on
      2026-08-26 and the game came off the hall rather than being deleted. Same door either
      way, which is the point of there being only one door. */
-  { slug: 'murphys-law',    name: "Murphy's Law",   page: 'games/murphys-law/index.html' }
+  { slug: 'murphys-law',    name: "Murphy's Law",   page: 'games/murphys-law/index.html' },
+  { slug: 'checker-town',   name: 'Checker Town',   page: 'games/checker-town/index.html' }
 ];
 
 const REGISTRY = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');

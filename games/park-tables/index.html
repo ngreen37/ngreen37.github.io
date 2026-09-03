@@ -2161,10 +2161,26 @@ body_class: theme-hall
       awardStar(st.bot, sidePlayed(st), tierEarned(st));
       bankStars();
     }
+    markLast(st);
     // ⚠ AFTER markBeaten(), never before: her "you beat Robert since we last played"
     //   observation compares the beaten list against her own copy of it, so the win has to
     //   be recorded before the log entry that will make her look.
     logFinished(st, ((st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0));
+  }
+
+  /* ⚑ THE LAST RESULT, STAMPED — for Checker Town (2026-09-02).
+     ⚠⚠ THE BEATEN LIST CANNOT ANSWER THIS. It is a lifetime set: it says "have you ever
+     beaten Crockett", and the town has to know "did that game just happen" or it hands out
+     a piece every time you walk past him. Only a timestamp separates the two.
+     ⚠ EVERY ENDING, NOT JUST A WIN. A loss has to clear the town's pending challenge too —
+     it does not spend the day, but it does end the errand.
+     Read by PJCC.townResult(). */
+  function markLast(st){
+    if (!st || !st.bot) return;
+    try {
+      localStorage.setItem('pjcc.pt.last.v1', JSON.stringify({
+        bot: st.bot, result: st.result, won: !!botWon(st), at: Date.now() }));
+    } catch (e) {}
   }
 
   // The opening's name, shown live as a game follows known theory (Nate 2026-07-17:
