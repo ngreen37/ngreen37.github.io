@@ -2211,7 +2211,11 @@ body_class: theme-hall
     if (!st || !st.bot) return;
     try {
       localStorage.setItem('pjcc.pt.last.v1', JSON.stringify({
-        bot: st.bot, result: st.result, won: !!botWon(st), at: Date.now() }));
+        bot: st.bot, result: st.result, won: !!botWon(st),
+        /* ⚠ CLEAN = THE FULL STAR, the same test the bench already uses: no takeback
+           (usedMul) and no analysis board (usedAn). Checker Town's named squares cost a
+           clean win, so this is the difference between a piece and "go again". */
+        clean: tierEarned(st) === 'full', at: Date.now() }));
     } catch (e) {}
   }
 

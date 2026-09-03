@@ -46,6 +46,8 @@ ok(/\bat:\s*Date\.now\(\)/.test(markLast),
   '…stamped with Date.now(), or "did that just happen" has no answer');
 ok(/won:\s*!!botWon\(st\)/.test(markLast),
   '…and records who won  (⚠ botWon() means YOU won — the name reads backwards)');
+ok(/clean:\s*tierEarned\(st\)\s*===\s*'full'/.test(markLast),
+  '…and whether it was CLEAN, off the same full-star test the bench already uses');
 /* ⚠ SLICED FROM THE FUNCTION, never grepped from the file: a call in a comment would
    satisfy a whole-file grep, which is how a check in this repo once passed on prose. */
 ok(/markLast\(st\)/.test(finishAs),
@@ -102,6 +104,13 @@ const server = http.createServer((req, res) => {
       out.newerThanSince = PJCC.townResult('crockett', 4000);
       set({ bot: 'crockett', result: '1-0', won: false, at: 5000 * 1000 });
       out.loss = PJCC.townResult('crockett', 0);
+      out.cleanOnLoss = PJCC.townClean('crockett', 0);
+      set({ bot: 'crockett', result: '0-1', won: true, clean: false, at: 5000 * 1000 });
+      out.helped = PJCC.townClean('crockett', 0);
+      set({ bot: 'crockett', result: '0-1', won: true, clean: true, at: 5000 * 1000 });
+      out.cleanWin = PJCC.townClean('crockett', 0);
+      set({ bot: 'crockett', result: '0-1', won: true, at: 5000 * 1000 });   // pre-09-03 row
+      out.legacy = PJCC.townClean('crockett', 0);
       localStorage.setItem('pjcc.pt.last.v1', 'not json');
       out.garbage = PJCC.townResult('crockett', 0);
       return out;
@@ -117,6 +126,12 @@ const server = http.createServer((req, res) => {
     ok(R.olderThanSince === null,
       'townResult: null when the result predates the challenge  (seconds vs ms)');
     ok(R.newerThanSince === true, '…and answers when the result came after it');
+    ok(R.cleanWin === true, 'townClean: true on an unhelped win — that is what buys a square');
+    ok(R.helped === false, 'townClean: false after a takeback or the analysis board');
+    ok(R.cleanOnLoss === null, 'townClean: null on a loss — there is no win to be clean');
+    /* ⚠ A row banked before the rule existed has no flag, and refusing a square for it would
+       take a piece off somebody for a takeback they never took. */
+    ok(R.legacy === true, 'townClean: a record with no `clean` field reads as clean');
 
     /* ── mergeTown ──────────────────────────────────────────────────────────────── */
     const M = await page.evaluate(() => {
@@ -207,8 +222,12 @@ const server = http.createServer((req, res) => {
       ok(/townResult/.test(gs), '…and it calls PJCC.townResult');
       ok(/"at":\s*Time\.get_unix_time_from_system\(\)/.test(gs),
         '…and begin_challenge stamps the errand, or an old win answers for it');
-      ok(/\?\s*null\s*:\s*\(v\s*\?\s*1\s*:\s*0\)/.test(gs),
-        '…returning 1/0/null, never a bare bool — false and null are one Variant');
+      ok(/return c === false \? 1 : 2;/.test(gs) && /if \(!v\) return 0;/.test(gs),
+        '…returning 2/1/0/null, never a bare bool — false and null are one Variant');
+      ok(/func resolve_challenge\(won: bool, clean: bool = true\)/.test(gs),
+        'a NAMED SQUARE COSTS A CLEAN WIN — difficulty replaced the daily rhythm');
+      ok(/if not clean:[\s\S]{0,200}return -2/.test(gs),
+        '…and a helped win does NOT retire them: sloppy means go again, like a loss');
       ok(/_poll\.timeout\.connect\(_tick\)/.test(gs) && /\bpoll_challenge\(\)/.test(gs),
         '…on a timer: the new tab means the town never reloads, so nothing else asks');
       ok(/if not OS\.has_feature\("web"\):\s*\n\s*add_child\(DevReferee/.test(zone),
@@ -220,6 +239,18 @@ const server = http.createServer((req, res) => {
         '…and merges it by the same rules  (⚠ beaten vs -1: day 0 is a real day)');
       ok(/_pulls_left/.test(gs) && /_poll\.timeout\.connect\(_tick\)/.test(gs),
         '…for the first ticks, so an async myStats() landing late still gets in');
+      /* ⭐ the nine squares nobody in the town can give you */
+      ok(/func check_site_unlocks\(/.test(gs) && /townScore/.test(gs),
+        'the dead squares are won from the REST OF THE SITE — the board can fill at all now');
+      ok(/for \(i = 0; i < gs\.length; i\+\+\)/.test(gs),
+        '…in ONE bridge crossing, not one per square on a 2s tick');
+      ok(/str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)/.test(gs),
+        '…and claimable() counts them, or army_full() locks the CEO behind them');
+      const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
+      /* ⚠ the lectern's own comment said listing Michael "would read as a quest you can
+         start today, and neither of them is anywhere". Making them winnable made that true. */
+      ok(/_owed_elsewhere\(/.test(hall) && /unlock_say/.test(hall),
+        'the lectern separates who you can walk up to from what is waiting on you elsewhere');
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
     }

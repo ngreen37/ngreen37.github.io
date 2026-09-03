@@ -1092,19 +1092,73 @@
     return (t && Object.keys(t).length) ? t : null;
   };
 
+  /* ⭐ THE SQUARES NOBODY IN THE TOWN CAN GIVE YOU. Nine of the Assembly's sixteen are named
+     after people who are not standing in the town — so the board could never fill, and the
+     campaign's own goal was unreachable. These are won from the REST OF THE SITE instead,
+     which is the version worth having: the Assembly becomes the arcade's trophy case rather
+     than a board that only knows about seven people.
+     ⚠ SYNCHRONOUS AND LOCAL ON PURPOSE. It reads the same banked bests every game already
+     writes; the account copy arrives through the existing myStats() pull and lands in the
+     same keys. An await here would make the town wait on the network to draw a square.
+     ⚠ RETURNS A NUMBER, and the ROSTER holds the threshold — the policy belongs where the
+     names are, not in this file. */
+  PJCC.townScore = function (id) {
+    try {
+      if (id === 'trainer-pirc') {
+        /* ⚠ HELD, NOT KNOWN. `known` is an unhelped walk-in; `held` is an unhelped WIN, and
+           Michael's queen should cost the harder one. Black only — the White chair came out
+           the day it shipped. [[opening-trainer]] */
+        var bk = trainerBook(), n = 0, k;
+        for (k in bk) if (bk.hasOwnProperty(k) && bk[k] && bk[k].held) n++;
+        return n;
+      }
+      return PJCC.localBest(id) || 0;
+    } catch (e) { return 0; }
+  };
+
+  /* Who is walking around the town. The town greeted nobody and drew a default purple
+     circle, which is why it read as a game bolted onto the site rather than part of it.
+     ⚠ SIGNED OUT IS A NORMAL ANSWER, not an error: no name, and the aura falls back to mono.
+     player.gd has carried a `## the Forge aura goes here later` on body_color since it was
+     written — this is later. [[earned-auras]] */
+  PJCC.townPlayer = function () {
+    try {
+      var p = profile;
+      var c = PJCC.auraColor(p) || '#c9a7ff';
+      var pip = '';
+      try { var cl = PJCC.clearance(p); pip = (cl && cl.pip) || ''; } catch (e) {}
+      return { name: (p && p.codename) || '', color: c, pip: pip };
+    } catch (e) { return { name: '', color: '#c9a7ff', pip: '' }; }
+  };
+
   /* Did this account just beat `key` at the Park Tables? null / true / false.
      ⚠⚠ `since` IS IN SECONDS because Godot's Time.get_unix_time_from_system() is, and the
      stamp Park Tables writes is Date.now() in MILLISECONDS. Getting this backwards makes
      every past win look current, which hands out a piece per visit.
      ⚠ NOT the beaten list: that is a lifetime set and cannot say "just". */
   PJCC.townResult = function (key, since) {
+    var r = townLast(key, since);
+    return r ? !!r.won : null;
+  };
+
+  /* Was it won without a takeback and without the analysis board — the bench's "full star"?
+     ⚠⚠ A RECORD WRITTEN BEFORE 2026-09-03 HAS NO `clean` FIELD, and the honest reading of a
+     missing flag is CLEAN: refusing a square for a game played before the rule existed would
+     take a piece off somebody for a takeback they did not take. */
+  PJCC.townClean = function (key, since) {
+    var r = townLast(key, since);
+    if (!r || !r.won) return null;
+    return r.clean === undefined ? true : !!r.clean;
+  };
+
+  function townLast(key, since) {
     try {
       var r = JSON.parse(localStorage.getItem('pjcc.pt.last.v1') || 'null');
       if (!r || !key || r.bot !== key) return null;
       if (since && r.at < (+since) * 1000) return null;
-      return !!r.won;
+      return r;
     } catch (e) { return null; }
-  };
+  }
 
   // --- scores ----------------------------------------------------------------
   // Local fallback keys mirror the server so guest progress is never lost.
