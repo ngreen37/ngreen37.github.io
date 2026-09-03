@@ -141,6 +141,22 @@ const server = http.createServer((req, res) => {
     ok(M.m.beaten.kedar === 6, '…and a key only the other device knows is kept');
     ok(M.stored && M.stored.beaten.crockett === 4, '…and the merge is what gets stored');
 
+    /* ── 2b · the way BACK into the game ─────────────────────────────────────────────
+       ⚠⚠ THE TWO STORES ARE NOT ONE STORE. The account's copy is localStorage; the town's
+       own save is Godot's `user://`, which on web is IndexedDB. mergeTown alone shipped a
+       one-way sync: a signed-in player on a new device had their state pulled down and then
+       watched the town boot Day 1 straight over the top of it. */
+    const S = await page.evaluate(() => {
+      localStorage.removeItem('pjcc.town.v1');
+      const empty = PJCC.townState();
+      PJCC.mergeTown({ day: 9, ore: 42, army: [0, 1, 2], beaten: { crockett: 8 } });
+      return { empty: empty, after: PJCC.townState() };
+    });
+    ok(S.empty === null, 'townState: null before anything is known — not an empty object');
+    ok(S.after && S.after.day === 9 && S.after.army.length === 3,
+      'townState: hands back the merged copy for the town to read at boot',
+      'day ' + (S.after || {}).day);
+
     /* ── 3 · the pull rides the existing request ─────────────────────────────────── */
     const PROF = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
     const pull = PROF.slice(PROF.indexOf('PJCC.ready.then('), PROF.indexOf("['catch']"));
@@ -161,10 +177,17 @@ const server = http.createServer((req, res) => {
         '…and begin_challenge stamps the errand, or an old win answers for it');
       ok(/\?\s*null\s*:\s*\(v\s*\?\s*1\s*:\s*0\)/.test(gs),
         '…returning 1/0/null, never a bare bool — false and null are one Variant');
-      ok(/_poll\.timeout\.connect\(poll_challenge\)/.test(gs),
+      ok(/_poll\.timeout\.connect\(_tick\)/.test(gs) && /\bpoll_challenge\(\)/.test(gs),
         '…on a timer: the new tab means the town never reloads, so nothing else asks');
       ok(/if not OS\.has_feature\("web"\):\s*\n\s*add_child\(DevReferee/.test(zone),
         'the DevReferee stand-in is DESKTOP ONLY — on web it would hide a broken seam');
+      /* ⚠ the half that was missing until 2026-09-03: the town has to READ the account */
+      ok(/func pull_from_site\(/.test(gs) && /townState/.test(gs),
+        'GameState.pull_from_site asks the site for the account copy');
+      ok(/func merge_in\(/.test(gs) && /int\(beaten\.get\(k, -1\)\)/.test(gs),
+        '…and merges it by the same rules  (⚠ beaten vs -1: day 0 is a real day)');
+      ok(/_pulls_left/.test(gs) && /_poll\.timeout\.connect\(_tick\)/.test(gs),
+        '…for the first ticks, so an async myStats() landing late still gets in');
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
     }

@@ -1072,6 +1072,16 @@
     return merged;
   };
 
+  /* ⚠⚠ THE TWO STORES ARE NOT THE SAME STORE. The account's copy is here, in localStorage;
+     the town's own save is a file in Godot's emulated filesystem, which on web is IndexedDB.
+     Nothing joins them, so a signed-in player on a new device had their state pulled down by
+     myStats() and then watched Godot boot Day 1 straight over the top of it. GameState calls
+     this at boot and for the first 30s after, which covers the async pull landing late. */
+  PJCC.townState = function () {
+    var t = townLocal();
+    return (t && Object.keys(t).length) ? t : null;
+  };
+
   /* Did this account just beat `key` at the Park Tables? null / true / false.
      ⚠⚠ `since` IS IN SECONDS because Godot's Time.get_unix_time_from_system() is, and the
      stamp Park Tables writes is Date.now() in MILLISECONDS. Getting this backwards makes
