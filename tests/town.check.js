@@ -246,6 +246,30 @@ const server = http.createServer((req, res) => {
         '…in ONE bridge crossing, not one per square on a 2s tick');
       ok(/str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)/.test(gs),
         '…and claimable() counts them, or army_full() locks the CEO behind them');
+      /* ── the three from 2026-09-03 ─────────────────────────────────────────────── */
+      const player = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
+      const door = fs.readFileSync(path.join(GD, 'door.gd'), 'utf8');
+      const town = fs.readFileSync(path.join(GD, 'town.gd'), 'utf8');
+      /* ⚠ TWO BUGS, ONE FIX. `aspect="expand"` shows MORE WORLD on a taller window, and with
+         no bounds you could walk clean off the map into gray nothing. */
+      ok(/world_bounds/.test(zone) && /world_bounds = GROUND_RECT/.test(town),
+        'the map has an edge, and it is the same rect the ground is drawn from');
+      ok(/limit_smoothed = true/.test(player) && /func _keep_inside\(/.test(player),
+        '…the camera stops at it and so do the feet  (⚠ smoothing overshoots without it)');
+      ok(/const GROUND_RECT/.test(town) && !/Rect2\(-1120\.0, -560\.0, 2240\.0, 1780\.0\), GROUND\)/.test(town),
+        '…from ONE constant — two copies of the map size drift into a camera stopping in a field');
+      /* the compounding thing, visible without going indoors */
+      ok(/func _draw_windows\(/.test(door) && /lit_windows/.test(door),
+        'the Assembly wears the board on its face — 16 windows in slot order');
+      ok(/GameState\.army_changed\.connect\(_light_the_hall\)/.test(town),
+        '…and relights them, because a square can fill from another tab');
+      /* sound */
+      const audio = fs.readFileSync(path.join(GD, 'town_audio.gd'), 'utf8');
+      ok(/AudioStreamWAV/.test(audio) && /FORMAT_16_BITS/.test(audio),
+        'there is sound now, synthesized in code — no binary to ship or license');
+      ok(/a\.step\(\)/.test(player) && /_walked/.test(player),
+        '…footsteps paced by DISTANCE, so they stop when you walk into a wall');
+
       const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
       /* ⚠ the lectern's own comment said listing Michael "would read as a quest you can
          start today, and neither of them is anywhere". Making them winnable made that true. */
