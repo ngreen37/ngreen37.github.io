@@ -604,6 +604,16 @@
       beaten[i] = Math.max(+beaten[i] || 0, +rb[i] || 0);
     }
     local.beaten = beaten;
+    /* ⚠ SAME SHAPE, SAME RULE. `scouted` counts the tendencies you have learned about each
+       opponent — earned by losing to them or paid for in ore, so it never goes down. Left
+       out of this merge it would survive in the town's own save and vanish on any device
+       that pulled the account copy down over it. */
+    var scout = local.scouted || {}, rs = remote.scouted || {};
+    for (i in rs) {
+      if (!rs.hasOwnProperty(i)) continue;
+      scout[i] = Math.max(+scout[i] || 0, +rs[i] || 0);
+    }
+    local.scouted = scout;
     try { localStorage.setItem(TOWN_KEY, JSON.stringify(local)); } catch (e) {}
     return local;
   }

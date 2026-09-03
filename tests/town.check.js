@@ -59,6 +59,7 @@ ok(!/if\s*\(\s*botWon\(st\)\s*\)\s*\{[^}]*markLast/.test(finishAs),
 /* ── 2 · the readers, in a real browser against the real file ──────────────────── */
 const PAGE = `<!doctype html><meta charset="utf-8"><title>t</title>
 <script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-systems.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script><body>`;
 
 const TYPES = { '.js': 'text/javascript', '.html': 'text/html' };
@@ -121,11 +122,12 @@ const server = http.createServer((req, res) => {
     const M = await page.evaluate(() => {
       localStorage.removeItem('pjcc.town.v1');
       PJCC.mergeTown({ day: 4, ore: 10, hearts: 3, army: [0, 5], ceo_beaten: false,
-                       beaten: { crockett: 4, argus: 2 } });
+                       beaten: { crockett: 4, argus: 2 }, scouted: { crockett: 3 } });
       const first = JSON.parse(localStorage.getItem('pjcc.town.v1'));
       // the other device: further on in places, BEHIND in others
       const merged = PJCC.mergeTown({ day: 2, ore: 40, hearts: 1, army: [5, 11],
-                                      ceo_beaten: true, beaten: { crockett: 1, kedar: 6 } });
+                                      ceo_beaten: true, beaten: { crockett: 1, kedar: 6 },
+                                      scouted: { crockett: 1, argus: 2 } });
       return { first: first, m: merged, stored: JSON.parse(localStorage.getItem('pjcc.town.v1')) };
     });
     ok(M.first && M.first.day === 4, 'mergeTown: writes pjcc.town.v1');
@@ -140,6 +142,12 @@ const server = http.createServer((req, res) => {
       'crockett=' + M.m.beaten.crockett);
     ok(M.m.beaten.kedar === 6, '…and a key only the other device knows is kept');
     ok(M.stored && M.stored.beaten.crockett === 4, '…and the merge is what gets stored');
+    /* what a loss BOUGHT you. Dropped from this merge it lives only in the town's own save
+       and dies on the first device that pulls the account copy down over it. */
+    ok(M.m.scouted && M.m.scouted.crockett === 3,
+      'mergeTown: scouted is MAX PER KEY too — a tendency you learned stays learned',
+      'crockett=' + ((M.m.scouted || {}).crockett));
+    ok(M.m.scouted && M.m.scouted.argus === 2, '…and a key only the other device knows is kept');
 
     /* ── 2b · the way BACK into the game ─────────────────────────────────────────────
        ⚠⚠ THE TWO STORES ARE NOT ONE STORE. The account's copy is localStorage; the town's
@@ -156,6 +164,30 @@ const server = http.createServer((req, res) => {
     ok(S.after && S.after.day === 9 && S.after.army.length === 3,
       'townState: hands back the merged copy for the town to read at boot',
       'day ' + (S.after || {}).day);
+
+    /* ── 2c · the scouting facts, and whether they can be TRUE ───────────────────────
+       A loss reveals what an opponent plays. That is advice acted on at a real board, so an
+       id in regulars.yml that pjcc-systems.js cannot name produces a BLANK fact — the reveal
+       fires, the row is spent, and the player is told nothing. [[accuracy-above-all]] */
+    const PAGE_SRC = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
+    ok(/id="ct-facts-data"/.test(PAGE_SRC) && /site\.data\.regulars/.test(PAGE_SRC),
+      'the facts island is READ from _data/regulars.yml, never typed');
+    ok(/window\.TOWN_FACTS/.test(PAGE_SRC), 'and it publishes window.TOWN_FACTS for the game');
+
+    const YML = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
+    const sysIds = [...YML.matchAll(/^\s*sys_[wb]:\s*(\S+)\s*$/gm)].map((m) => m[1]);
+    ok(sysIds.length > 0, 'regulars.yml still carries sys_w/sys_b', sysIds.length + ' ids');
+    const named = await page.evaluate((ids) => {
+      const bad = [];
+      for (const id of ids) {
+        const s = window.PJCCSystems && PJCCSystems.get(id);
+        if (!s || !s.name) bad.push(id);
+      }
+      return bad;
+    }, sysIds);
+    ok(named.length === 0,
+      '…and pjcc-systems.js can name every one of them — a blank fact spends the reveal',
+      named.join(' · '));
 
     /* ── 3 · the pull rides the existing request ─────────────────────────────────── */
     const PROF = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');

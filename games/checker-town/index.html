@@ -45,7 +45,6 @@ sitemap: false
 <div id="proto-locked">
   <p class="proto-shut">This one isn't open yet.</p>
 </div>
-
 <style>
   .ct-frame iframe { height: 640px; }
   @media (max-width: 600px) { .ct-frame iframe { height: 560px; } }
@@ -115,5 +114,54 @@ sitemap: false
     var stage = document.getElementById('ct-stage');
     stage.parentNode.replaceChild(f, stage);
   });
+})();
+</script>
+
+{%- comment -%} ══ WHAT THE TOWN IS ALLOWED TO TELL YOU ABOUT A REGULAR ══════════════════
+     Scouting facts for the town's "you lost, but you learned something" reveal. Every row
+     is READ from `_data/regulars.yml`, never typed — the same rule the Academy's roster
+     island follows, and the reason a seat's opening only has to be right in one place.
+
+     ⚠⚠ THE FACTS MUST BE TRUE, because they are advice the player will act on. `sys_w` and
+     `sys_b` are the systems the bench actually plays (pjcc-systems.js turns the id into a
+     name), and `elo` is the seat's real rung. A flattering guess here is a lie the game
+     tells in its own voice. [[accuracy-above-all]]
+     ⚠ Read by GameState.facts_for() through window.parent — so it has to be on the PARENT
+     page, not inside the game.
+     ⛑ AND IT HAS TO SIT BELOW THE GATE SCRIPT. proto-gate.check.js captures the FIRST bare
+     `<script>` that mentions pjcc.proto.key and compares it across all six doors — a bare
+     `<script>` above it lands inside that comparison and reads as drift. Cost me a red
+     build; keep any new bare script tag down here. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-systems.js' | relative_url }}"></script>
+<script id="ct-facts-data" type="application/json">
+  [{%- for r in site.data.regulars -%}
+     {"key":{{ r.key | jsonify }},"name":{{ r.name | jsonify }},"elo":{{ r.elo | default: 0 }},
+      "sys_w":{{ r.sys_w | default: "" | jsonify }},"sys_b":{{ r.sys_b | default: "" | jsonify }}}
+     {%- unless forloop.last -%},{%- endunless -%}
+   {%- endfor -%}]
+</script>
+<script>
+/* The town asks for one seat at a time and gets short, printable lines back. Named on
+   `window` because the game reaches it as `window.parent.TOWN_FACTS` from the iframe. */
+(function () {
+  var rows = [];
+  try { rows = JSON.parse(document.getElementById('ct-facts-data').textContent) || []; }
+  catch (e) { rows = []; }
+  function sysName(id) {
+    try { var s = window.PJCCSystems && PJCCSystems.get(id); return (s && s.name) || ''; }
+    catch (e) { return ''; }
+  }
+  window.TOWN_FACTS = function (key) {
+    var r = null, i;
+    for (i = 0; i < rows.length; i++) if (rows[i].key === key) { r = rows[i]; break; }
+    if (!r) return null;
+    var out = [];
+    /* ⚠ ORDER IS THE REVEAL ORDER, cheapest and bluntest first. */
+    if (r.elo) out.push('Plays around ' + r.elo + '.');
+    var w = sysName(r.sys_w), b = sysName(r.sys_b);
+    if (w) out.push('With White: ' + w + '.');
+    if (b) out.push('With Black: ' + b + '.');
+    return { name: r.name || key, facts: out };
+  };
 })();
 </script>
