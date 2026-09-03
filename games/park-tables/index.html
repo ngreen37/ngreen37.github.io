@@ -1296,14 +1296,27 @@ body_class: theme-hall
      lie. One canonical setting per tier rather than a menu — this is a park bench, not a
      tournament entry form.
 
-     ⚠ "No clock" IS THE DEFAULT AND MUST STAY BYTE-IDENTICAL to how this room has always
-     played. Every regular has been clockless since the bench opened; a clock that arrived
-     switched on would change a game people already know without being asked for. */
+     ⛑⛑ AND ON 2026-09-02 "NO CLOCK" STOPPED BEING THE DEFAULT. Nate, after a game that
+     opened at one minute: *"that's no good. Make it default … to a five minute game with a
+     one second increment."* This REVERSES the paragraph that used to end this block — which
+     argued that a clock arriving switched on changes a game people already know. That cost
+     is real and it is being paid on purpose: see TC_DEFAULT below for who pays it.
+
+     ⭐ INCREMENTS ARE A ROW OF THEIR OWN NOW ("add increment time options to the park
+     tables — a couple to start is fine"). Rapid 10+5 was the only one and nobody would find
+     it there; the two he actually asked for are the two ordinary increment games — 2+1 and
+     5+1 — and they sit next to their zero-increment twins so the difference is the thing
+     you are choosing between. ⚠ The +N in `sub` is the ONLY place the increment is written
+     for a human, and it is not typed twice: `inc` below is what the clock spends. Six rows
+     is the ceiling for a park bench; a seventh wants a menu, and this is not a tournament
+     entry form. */
   var TCS = [
-    { v:'',    name:'No clock', sub:'',      ms:0,      inc:0    },
-    { v:'b1',  name:'Bullet',   sub:'1+0',   ms:60000,  inc:0    },
-    { v:'b5',  name:'Blitz',    sub:'5+0',   ms:300000, inc:0    },
-    { v:'r10', name:'Rapid',    sub:'10+5',  ms:600000, inc:5000 }
+    { v:'',    name:'No clock', sub:'',      ms:0,      inc:0     },
+    { v:'b1',  name:'Bullet',   sub:'1+0',   ms:60000,  inc:0     },
+    { v:'b2i', name:'Bullet',   sub:'2+1',   ms:120000, inc:1000  },
+    { v:'b5',  name:'Blitz',    sub:'5+0',   ms:300000, inc:0     },
+    { v:'b5i', name:'Blitz',    sub:'5+1',   ms:300000, inc:1000  },
+    { v:'r10', name:'Rapid',    sub:'10+5',  ms:600000, inc:5000  }
   ];
   function tcById(v){
     for (var i = 0; i < TCS.length; i++) if (TCS[i].v === (v || '')) return TCS[i];
@@ -1312,9 +1325,22 @@ body_class: theme-hall
   /* The name a control goes by out loud — "Blitz 5+0". Derived from the row, never typed
      twice, so the bench strip and the chip over the board cannot disagree. */
   function tcLabel(tc){ return tc && tc.ms ? tc.name + ' ' + tc.sub : 'No clock'; }
-  var TC_KEY = 'pjcc.pt.tc.v1';
+  /* ⚠⚠ THE DEFAULT LIVES HERE AND NOT IN tcById(). `tcById('')` has to keep answering
+     "No clock" — a board saved with `tc:''` is a clockless game and the chip over it reads
+     that row by name. What changed is only what an UNANSWERED question resolves to.
+     ⛑⛑ THE KEY WENT TO v2 ON PURPOSE, AND IT COSTS EVERY EXISTING PLAYER ONE CLICK. A new
+     default is invisible to anybody whose browser already stored a pick — including Nate's,
+     which held `b1` and is the whole reason this changed — so leaving the key at v1 would
+     have shipped a fix he could not see. The bump drops one remembered choice per browser;
+     it does not touch a game in progress, because the control is stamped onto the board at
+     sit-down and never re-read. Do not bump it again for a taste change. */
+  var TC_KEY = 'pjcc.pt.tc.v2';
+  var TC_DEFAULT = 'b5i';
   function tcPref(){
-    try { return tcById(localStorage.getItem(TC_KEY)).v; } catch (e) { return ''; }
+    try {
+      var v = localStorage.getItem(TC_KEY);
+      return (v === null) ? TC_DEFAULT : tcById(v).v;
+    } catch (e) { return TC_DEFAULT; }
   }
   function saveTcPref(v){ try { localStorage.setItem(TC_KEY, tcById(v).v); } catch (e) {} }
 
@@ -2122,7 +2148,13 @@ body_class: theme-hall
     logPrepFail(st);            // …and after it, because it asks what your repertoire IS
     try {
       if (window.PJCCAuston) {
-        PJCCAuston.logGame({ bot: st.bot, result: st.result, plies: plies, reason: st.reason });
+        /* ⛑⛑ `side` ARRIVED 2026-09-02 AND IT FIXES A SILENT MISCOUNT. Her log stores the
+           PGN result and, until today, every reader of it assumed you were White — so a game
+           you won with the black pieces was banked as a loss in her head-to-head, her streak
+           and the "first time you have beaten me" line. The side picker has existed since
+           08-25, so this has been wrong for half the games played since. */
+        PJCCAuston.logGame({ bot: st.bot, result: st.result, side: sidePlayed(st),
+                             plies: plies, reason: st.reason });
       }
     } catch (e) {}
   }
@@ -2236,6 +2268,29 @@ body_class: theme-hall
     } catch (e) { return ''; }
   }
 
+  /* ══ YOUR RECORD AGAINST THIS SEAT ════════════════════════════════════
+     2026-09-02, Nate, after beating Maxwell one game after losing to him on time: *"We were
+     technically one win each … are we incorporating total standings vs character?"*
+
+     ⭐ THE DATA ALREADY EXISTED AND NOTHING ON THE SITE SAID IT. Every finished bot game has
+     gone into Auston's log since 2026-08-13 — all of them, not just hers — and the only
+     reader was her own head-to-head. `PJCCAuston.vs(id)` is that reader generalized; no new
+     store, no new write, nothing to keep in sync. [[auston-remembers]]
+     ⚠ IT GOES IN THE CHIP ROW, NOT ON THE NAMEPLATE. That row is already the place this page
+     states facts about the game in progress, and it WRAPS — the plate carries a name, a
+     rating, a material chip and a clock, and a fifth thing there is how a plate starts
+     clipping on a phone. [[centered-overflow-clips]]
+     ⚠ SILENT ON THE FIRST GAME. "0–0" is not a standing, it is a seat you have not sat in.
+     ⚠ DRAWS ARE ONLY PRINTED WHEN THERE ARE SOME. "3–1" reads; "3–1–0" reads like a database. */
+  function h2hChip(botId){
+    try {
+      if (!window.PJCCAuston || !PJCCAuston.vs) return '';
+      var r = PJCCAuston.vs(botId);
+      if (!r || !r.games) return '';
+      return ' · you ' + r.w + '–' + r.l + (r.d ? '–' + r.d : '');
+    } catch (e) { return ''; }
+  }
+
   function openingCap(movesStr, mySide){
     var O = window.PJCCOpenings;
     if (!O || !O.classify) return '';
@@ -2253,6 +2308,29 @@ body_class: theme-hall
       out += '<p class="pt-oob">↯ ' + who + ' — move ' + moveNo + '.</p>';
     }
     return out;
+  }
+
+  /* ⛑⛑ THE BOARD MUST NOT MOVE WHEN A CAPTION ARRIVES (2026-09-02). Nate: *"after one
+     move the board moved down to fit the line 'Queen's gambit' and moved again when it says
+     they left the book. I want to keep those lines but not have the game board move down."*
+
+     ⭐ THE FIX IS A RESERVATION, NOT A REMOVAL. Four one-line captions can appear at four
+     different moments — the opening's name, the ply somebody left theory, the regular's
+     system running out, the scout's file — and each arriving as a new block shoved
+     everything under it down a row. They now live in ONE rail that is always in the layout,
+     already two rows tall before a single word is in it, so the first two captions cost the
+     board nothing.
+
+     ⚠ `min-height`, NOT `height`, AND NOTHING IS CLIPPED. Two rows covers the pair he was
+     watching on every width this room supports; a third caption on a narrow phone still
+     grows the rail rather than silently eating the sentence — a caption you cannot read is
+     worse than a board that moved.
+     ⚠⚠ EMITTED EVEN WHEN EMPTY, and that is the entire mechanism. Return '' on no captions
+     and the reservation disappears exactly when it is about to be needed. */
+  function capsRail(){
+    var out = '';
+    for (var i = 0; i < arguments.length; i++) out += (arguments[i] || '');
+    return '<div class="pt-caps">' + out + '</div>';
   }
 
   // Board coordinates (2026-07-17 upgrade) — a file letter on each bottom-visual square,
@@ -2401,7 +2479,10 @@ body_class: theme-hall
       if (!botWon(st)) return '';                    // nothing was earned; do not rub it in
       var how = tier === 'quarter' ? 'a quarter, for the takeback.'
               : tier === 'half'    ? 'a half, for the analysis board.'
-              : 'a full one, taken with nothing but the board.';
+              /* ⛑ THE TAIL CAME OFF, 2026-09-02 (Nate: *"take away 'taken with nothing but
+                 the board'. Doesn't make much sense."*). The full star already IS that fact,
+                 and spelling it out read as an apology for a reward nobody asked one of. */
+              : 'a full one.';
       return '<p class="pt-earned pt-earned--won">' + starNode(sidePlayed(st), tier) +
         ' ' + (sidePlayed(st) === 'w' ? 'White' : 'Black') + ' star earned: ' + how + '</p>';
     }
@@ -2566,7 +2647,7 @@ body_class: theme-hall
          place the words 'Blitz 5+0' are built, shared with the bench strip. */
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · ' +
         esc(tcLabel(tcOf(st) || tcById(''))) + ' · you are ' +
-        (white ? 'White' : 'Black') + '</i></div>' +
+        (white ? 'White' : 'Black') + esc(h2hChip(st.bot)) + '</i></div>' +
       /* THE ROOM CHANGES COLOR, which is the whole of how you know where you are (his
          brief: *"like chess.com where the background changes slightly so you know you are
          in analysis mode"*). One class on one wrapper, cooling the wood and laying a wash
@@ -2577,9 +2658,9 @@ body_class: theme-hall
       estimateLine(st, lab) +
       bubble +
       earnedLine(st) +
-      openingCap(lab ? lab.moves : st.moves, sidePlayed(st)) +
-      (lab ? '' : systemCap(st)) +
-      studiedLine(st) +
+      capsRail(openingCap(lab ? lab.moves : st.moves, sidePlayed(st)),
+               lab ? '' : systemCap(st),
+               studiedLine(st)) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
       // the streaks BRACKET the whole arena — plate, board, plate — so the pair reads as
@@ -3439,7 +3520,7 @@ body_class: theme-hall
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
-      openingCap(m.moves, (m && m.pc === 'b') ? 'b' : (m && m.pc === 'w') ? 'w' : null) +
+      capsRail(openingCap(m.moves, (m && m.pc === 'b') ? 'b' : (m && m.pc === 'w') ? 'w' : null)) +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
       // board (with nameplates + the chat line) LEFT, scoresheet RIGHT (2026-07-17 Nate)
       '<div class="pt-arena"><div class="pt-boardwrap">' +
@@ -4071,13 +4152,27 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   font-size: 0.72rem; letter-spacing: 0.06em; color: #8b93a1; }
 .pt-state { color: #8b93a1; font-size: 0.9rem; margin: 4px 0 10px; }
 .pt-state.go { color: #6bffb8; }
+/* ⛑⛑ THE CAPTION RAIL — the reason the board stops moving (2026-09-02). See capsRail()
+   for the argument; this is the half that does the work. It is in the layout from the first
+   render with nothing in it, two rows tall, so the opening's name and the out-of-book alarm
+   arrive INTO reserved space instead of pushing the arena down a row each.
+   ⚠⚠ THE CHILDREN'S MARGINS HAD TO GO TO ZERO. Each caption used to tuck itself up under
+   the last with a negative top margin; inside a flex column those margins fight the reserve
+   and the rail measures short. The gap here replaces all of them. */
+.pt-caps { display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  min-height: 40px; margin: -6px 0 4px; }
+/* ⚠⚠ THE LINE-HEIGHT IS PART OF THE RESERVATION, not typography. `min-height` above is
+   two of these rows and nothing else, so an inherited line-height would decide how tall the
+   rail has to be from another file. Tightened from the page default to buy back most of the
+   vertical the always-on rail costs a board that has nothing to say yet. */
+.pt-caps > p { margin: 0; line-height: 1.28; }
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
-.pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
+.pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; }
 /* the out-of-book alarm — amber, one line, and it sits tight under the opening name so the
    pair reads as one thought: here is what you were in, here is where you left it */
-.pt-oob { color: #ffb066; font-size: 0.82rem; font-weight: 600; margin: -8px 0 10px; }
+.pt-oob { color: #ffb066; font-size: 0.82rem; font-weight: 600; }
 /* he deviated on purpose, and the board says so once */
-.pt-studied { color: #c9a7ff; font-size: 0.82rem; font-weight: 600; margin: -8px 0 10px; }
+.pt-studied { color: #c9a7ff; font-size: 0.82rem; font-weight: 600; }
 /* the studying seat's mark — the same quiet edge Auston's lamp uses, in his own violet */
 .pt-bot--studies { box-shadow: inset 0 0 0 1px rgba(201,167,255,0.55), 0 0 14px -6px rgba(201,167,255,0.6); }
 
@@ -4412,8 +4507,10 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-ctrl { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; }
 .pt-ctrl-l { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em;
   text-transform: uppercase; color: #8b93a1; font-style: normal; }
-.pt-ctrl-g { display: flex; gap: 6px; }
-.pt-ctrl-b { flex: 1 1 0; min-width: 0; min-height: 44px; display: flex; align-items: center;
+/* ⛑ WRAPS SINCE 2026-09-02, when the clock row went from four rows to six. `1 1 0` with
+   nowrap divided a 360px phone into six 52px buttons and "Bullet 2+1" became two letters. */
+.pt-ctrl-g { display: flex; flex-wrap: wrap; gap: 6px; }
+.pt-ctrl-b { flex: 1 1 92px; min-width: 0; min-height: 44px; display: flex; align-items: center;
   justify-content: center; gap: 6px; padding: 6px 8px; background: var(--surface-2);
   border: 1px solid var(--edge-soft); border-radius: var(--r-sm); color: #dfe4ea;
   font-family: inherit; font-size: 0.86rem; line-height: 1.2; cursor: pointer; }

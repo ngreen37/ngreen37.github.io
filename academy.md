@@ -20,7 +20,7 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
        · a living hero (the pieces rise into formation; the CTA + path evolve with YOUR
          progress and, over time, with the school itself)
        · Lesson 1 — Auston's Bootcamp Basics: a REAL board at /academy/bootcamp/
-       · Lesson 2 — Notation Blitz with Crockett: building
+       · Lesson 2 — Notation Blitz with Crockett: open 2026-09-02
      Adding a lesson = one more `.ac-lesson` anchor here + its own page. No shared belt
      math to keep in sync any more. {% endcomment %}
 
@@ -62,23 +62,39 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
     <span class="ac-lesson-state" id="ac-l1-state">Start ▸</span>
   </a>
 
-  <div class="ac-lesson ac-lesson--soon">
+  {%- comment -%} LESSON 2 OPENED 2026-09-02. Nate: *"Go ahead and open up Notation Blitz in
+       the Academy w/ Crockett for business."*
+
+       ⛑ IT WAS `--soon` FOR SEVEN WEEKS WHILE THE GAME WAS FINISHED THE WHOLE TIME. The
+       note on Lesson 3 below draws the line this card was on the wrong side of: `--soon` is
+       for a lesson that does not exist and a card that leads nowhere. Notation Blitz has been
+       playable at /games/notation-run/ since long before the Academy was rebuilt — what was
+       missing was a teacher and a reason, which is what /academy/notation/ now is.
+       ⚠ NO DEV TAG EITHER. Lesson 3 wears one because it is genuinely half-built; this one
+       is a finished game with a lesson wrapped round it, so it opens like Lesson 1.
+       ⚠⚠ AND IT LINKS INTO THE GAMES HALL ON PURPOSE, not to an /academy/ page of its own.
+       The cabinet's bezel and its phone-landscape sizing live in `_layouts/game.html`; a
+       lesson page on `layout: page` renders the board with neither. The lesson went to the
+       game instead — the crumb and Crockett are on that page. See its header for the whole
+       argument. {%- endcomment -%}
+  <a class="ac-lesson ac-lesson--open" href="{{ '/games/notation-run/' | relative_url }}">
     <span class="ac-lesson-n">02</span>
     <span class="ac-lesson-ico" aria-hidden="true">♟</span>
     <span class="ac-lesson-main">
       <b>Notation Blitz with Crockett</b>
       <small>Read the board out loud — name any square at a glance.</small>
     </span>
-    <span class="ac-soon">Building</span>
-  </div>
+    <span class="ac-lesson-state">Start ▸</span>
+  </a>
 
   {%- comment -%} LESSON 3 — THE OPENING TRAINER (2026-08-31). Nate: "a trainer where you get
        into the main line (and variations like Lions Jaw, etc) so you can hit it hard … We'll
        add it to the Academy as IN DEVELOPMENT."
 
        ⚠ IT IS AN OPEN LESSON WEARING A DEV TAG, NOT A `--soon` CARD, and the distinction is
-       the honest one: Lesson 2 is `--soon` because it does not exist yet and the card leads
-       nowhere. This one is finished enough to teach with today — six variations, six
+       the honest one: `--soon` is for a lesson that does not exist and a card that leads
+       nowhere — which since 2026-09-02 is no card on this page at all. This one is finished
+       enough to teach with today — six variations, six
        opponents, a real board — so shutting the door would be a lie in the other direction.
        The tag says what it is; the link works. [[positivity-check]] {%- endcomment -%}
   <a class="ac-lesson ac-lesson--open" href="{{ '/academy/opening-trainer/' | relative_url }}">
@@ -187,6 +203,11 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
   background: rgba(23,42,30,0.7); border: 1px solid #2c4636;
   border-left: 3px solid #e08a3c; border-radius: var(--r-sm, 8px); transition: border-color 0.15s, background 0.15s; }
 .ac-lesson--open:hover { border-color: #e08a3c; background: rgba(28,52,37,0.85); }
+/* ⚠ `--soon` AND `.ac-soon` HAVE NO CARD ON THIS PAGE SINCE 2026-09-02, when Lesson 2
+   opened. They are KEPT, not dead code: the next lesson to be announced before it exists
+   wears them, and the alternative is retyping this pill from memory the day that happens.
+   The pair is written together so a future tidy sees both halves at once.
+   [[silent-css-deletions]] [[read-before-you-delete]] */
 .ac-lesson--soon { border-left-color: rgba(143,174,148,0.45); background: rgba(23,42,30,0.35); }
 .ac-lesson-n { font-family: 'Share Tech Mono', monospace; font-size: 1.05rem; font-weight: 700; color: #5d7a63; flex: 0 0 auto; }
 .ac-lesson-ico { font-size: 26px; flex: 0 0 auto; }

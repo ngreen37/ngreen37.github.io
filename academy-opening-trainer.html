@@ -203,7 +203,6 @@ White comes at you, pick who you are playing, and go.</p>
       </div>
 
       <div class="ot-actions">
-        <a class="ot-btn ot-btn--go" id="ot-table" hidden>Go and Play Him ▸</a>
         <button class="ot-btn" id="ot-hint" type="button">Show Me the Move</button>
         <button class="ot-btn" id="ot-take" type="button" hidden>↶ Take Back</button>
         <button class="ot-btn ot-btn-ghost" id="ot-again" type="button">↻ Start Over</button>
@@ -263,7 +262,6 @@ White comes at you, pick who you are playing, and go.</p>
       elRegs  = document.getElementById('ot-regs'),
       elRegsSub = document.getElementById('ot-regs-sub'),
       elTabs  = document.querySelector('.ot-tabs'),
-      elTable = document.getElementById('ot-table'),
       elBoard = document.getElementById('ot-board'),
       elStat  = document.getElementById('ot-status'),
       elMoves = document.getElementById('ot-moves'),
@@ -670,25 +668,10 @@ White comes at you, pick who you are playing, and go.</p>
     elWhyH.textContent = 'Why This Line';
     elWhy.hidden = !why;
 
-    /* ⭐ THE LOOP CLOSES HERE — the drill sends you to the real seat (idea #1). Only for a
-       seat you can actually sit at: the two locked rungs can be PREPARED for long before
-       they open, which is motivating, but a door to a seat that refuses you is a dead end.
-       ⚠ A plain literal href, built once: tests/links.check.js reads hrefs out of the
-       source, and a path spliced together in an attribute reads to it as a broken link. */
-    if (elTable) {
-      var canSit = !!(reg && reg.open);
-      elTable.hidden = !canSit;
-      if (canSit) {
-        /* ⚠ &side= NAMES THE CHAIR YOU JUST TRAINED IN, for that one game. Without it the
-           bench's Random default deals a coin at the far end of the door and half of every
-           prepared walk-through arrives as White, where his book does not run at all. It
-           does NOT change his preference — see askedForSide() at the tables.
-           ⚠ FROM `USER` RATHER THAN 'b', so the anti-Pirc room inherits a working door. */
-        elTable.href = '/games/park-tables/?table=' + encodeURIComponent(reg.key) +
-                       '&side=' + USER;
-        elTable.textContent = 'Go and Play ' + reg.name + ' ▸';
-      }
-    }
+    /* ⛑ THE DOOR TO THE REAL SEAT CAME OUT, 2026-09-02 (Nate: *"The Go and Play Him
+       button.. just take it out."*). The drill is the room; sending somebody out of it
+       mid-lesson was the trainer arguing against itself. The bench is one nav click away
+       and does not need a shortcut wired through here. */
     elYou.textContent = 'You · Black';
     elBoard.setAttribute('aria-label', 'The trainer board — you are Black, playing up the screen');
 
@@ -1320,11 +1303,6 @@ White comes at you, pick who you are playing, and go.</p>
 .ot-reg-t b { color: #f2eddd; font-size: 0.94rem; }
 .ot-reg-t small { color: #8fae94; font-size: 0.76rem; }
 .ot-reg-elo { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: #e08a3c; }
-/* the door back to the real seat — the only anchor among the room's buttons, so it says so */
-.ot-btn--go { text-decoration: none; display: inline-flex; align-items: center;
-  border-color: #e08a3c; color: #ffd7a8; }
-.ot-btn--go:hover { background: rgba(224,138,60,0.16); color: #fff3e2; }
-
 /* ── the six opponents ─────────────────────────────────────────────────────────── */
 .ot-levels { display: flex; flex-direction: column; gap: 7px; max-width: 560px; }
 .ot-levels[hidden] { display: none; }   /* the same pair — see the note over .ot-regs */

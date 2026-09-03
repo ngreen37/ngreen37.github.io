@@ -725,23 +725,27 @@ section('12 · preparing for a named regular');
      '…and the engine reads the dial the game was built with',
      'a fresh BOOK.dial(0) would quietly hand back Fresh Recruit');
 
-  /* the loop closes, and only where it can */
-  ok(/var canSit = !!\(reg && reg\.open\);/.test(OT),
-     'the door to the tables opens only for a seat you can sit at',
-     'the two locked rungs can be prepped for long before they open');
-  ok(OT.indexOf("'/games/park-tables/?table=' + encodeURIComponent(reg.key)") > -1,
-     '…and it goes to that seat\'s own table');
-  /* ⛑⛑ AND IT NAMES THE CHAIR, WHICH IS THE SEAM BETWEEN THIS ROOM AND THE OTHER ONE.
-     Shipped broken for a few hours on 2026-09-01 by two changes that were each correct:
-     this door was built while the bench defaulted to White, and the bench then moved to
-     Random. Half of every prepared walk-through arrived as WHITE — where the regular's book
-     does not run at all — so the room taught a defense and then tossed a coin over whether
-     any of it applied. Neither file changed in a way its own gate could see, because the
-     defect lived in the space between them. Both ends are pinned now: the href here, and
-     the arrival in test:parktables. */
-  ok(/'&side=' \+ USER;/.test(OT),
-     '…and it names the chair the student just trained in',
-     'from USER, so the anti-Pirc room inherits a working door');
+  /* ⛑⛑ THE DOOR TO THE TABLES WAS TAKEN OUT ON 2026-09-02 — Nate: *"The Go and Play Him
+     button.. just take it out."* — AND THE THREE CHECKS THAT GUARDED IT ARE REPLACED BY ONE
+     THAT GUARDS ITS ABSENCE. Deleting them outright would have left the room free to grow a
+     second, worse version of the same shortcut; this is the cheap way to keep the decision.
+
+     What went with it: `canSit`, the `?table=` href and the `&side=` that named the chair.
+     That last one had shipped broken for a few hours on 2026-09-01 (the bench moved to a
+     Random default under a door built for White, so half of every prepared walk-through
+     arrived in the chair the regular's book does not answer). ⚠ THE ARRIVAL HALF OF THAT
+     SEAM IS STILL PINNED, in test:parktables — `?table=` and `&side=` are a real contract
+     that other pages use, and only this room's shortcut to it went away. */
+  /* ⚠ MATCHED AGAINST THE CODE WITH THE COMMENTS STRIPPED. The note explaining WHY the
+     button went away necessarily quotes its label, and a check that goes red on its own
+     explanation forces the next person to delete the explanation to get green. Same strip,
+     same reason, as ladders.check.js §1. [[green-must-name-what-ran]] */
+  const OT_CODE = OT.replace(/\/\*[\s\S]*?\*\//g, '')
+                    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '')
+                    .replace(/^\s*\/\/.*$/gm, '');
+  ok(OT_CODE.indexOf('ot-table') === -1 && OT_CODE.indexOf('Go and Play') === -1,
+     'the room does not offer a shortcut out to the tables mid-lesson',
+     'the drill is the room; the bench is one nav click away');
 
   /* ⚠ THE THREE PICKERS ARE NOT INDEPENDENT. Choosing a line or a rung by hand means you
      have stopped preparing for him, and the state has to say so or the screen lies. */

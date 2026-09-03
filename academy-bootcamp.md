@@ -23,11 +23,11 @@ body_class: theme-academy
 
 <h1 class="page-title">Auston's Bootcamp Basics</h1>
 
-<div class="bc-coach">
-  <div class="bc-coach-ico" aria-hidden="true">💣</div>
-  <div class="bc-coach-body">
-    <div class="bc-coach-who">Auston &middot; your drill sergeant</div>
-    <p class="bc-coach-say" id="bc-say">Welcome to Bootcamp. Before you win anything, you gotta know where everybody moves. Pick a piece and I'll show you — then tap the glowing squares to walk it around.</p>
+<div class="ac-coach">
+  <div class="ac-coach-ico" aria-hidden="true">💣</div>
+  <div class="ac-coach-body">
+    <div class="ac-coach-who">Auston &middot; your drill sergeant</div>
+    <p class="ac-coach-say" id="bc-say">Welcome to Bootcamp. Before you win anything, you gotta know where everybody moves. Pick a piece and I'll show you — then tap the glowing squares to walk it around.</p>
   </div>
 </div>
 
@@ -250,7 +250,10 @@ body_class: theme-academy
     renderPicker(); renderProg();
     if (PIECES.every(function (d) { return learned[d.k]; }) && gradEl.hidden) {
       document.getElementById('bc-grad-p').textContent =
-        "You know where every piece goes now — and that's the ground under everything else you'll ever learn here. Next up: reading the board out loud, square by square, with Crockett. He's still off fetching the ball, so that one is still being built.";
+        /* ⛑ SHE STOPPED SAYING "STILL BEING BUILT" ON 2026-09-02, the day Lesson 2 opened.
+           A graduation line that hands you off to a locked door is the one place on the site
+           where a stale sentence is guaranteed to be read. */
+        "You know where every piece goes now — and that's the ground under everything else you'll ever learn here. Next up: reading the board out loud, square by square, with Crockett. He's waiting for you.";
       gradEl.hidden = false;
       if (!reduce) gradEl.classList.add('bc-rise');
     }
@@ -286,13 +289,10 @@ body_class: theme-academy
 .page-body > .page-title { margin: 10px -44px 18px; border-radius: 0; }
 @media (max-width: 700px) { .page-body > .page-title { margin: 8px -20px 14px; } }
 
-/* Auston, speaking */
-.bc-coach { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px;
-  background: linear-gradient(135deg, #172a1e, #1e3626); border: 1px solid rgba(224,138,60,0.35);
-  border-left: 4px solid #e08a3c; border-radius: var(--r-md, 12px); padding: 12px 15px; }
-.bc-coach-ico { font-size: 30px; line-height: 1; flex: 0 0 auto; }
-.bc-coach-who { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #ffb347; font-weight: 700; margin-bottom: 3px; }
-.bc-coach-say { margin: 0; color: #eee9d8; font-size: 0.96rem; line-height: 1.55; }
+/* ⛑ THE COACH CARD MOVED OUT 2026-09-02 — `.ac-coach*` in _sass/_pjcc-30-academy.scss.
+   Crockett needed the same card for Lesson 2, and five declarations copied onto a second
+   page is what that partial exists to prevent. Only the FLASH is still local: it is this
+   page's drill feedback, not something a teacher's card does. */
 .bc-flash { animation: bcFlash 0.5s ease; }
 @keyframes bcFlash { 0% { color: #ffb347; } 100% { color: #eee9d8; } }
 

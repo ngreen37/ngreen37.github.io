@@ -37,6 +37,16 @@
  * furniture belongs to one page and reads from these tokens, exactly the split the
  * front door uses for `.mc-*` (see _pjcc-25-front-door.scss). What is shared is the
  * THEME; what is local is the room.
+ *
+ * ⛑ ONE EXCEPTION SINCE 2026-09-02: `.ac-coach`, the card a lesson's teacher speaks
+ * from. It stopped being furniture the day it belonged to two rooms — Nate opened
+ * Lesson 2 ("Notation Blitz in the Academy w/ Crockett for business") and Crockett needed
+ * the card Auston already had. It was `.bc-*` inside academy-bootcamp.md's own <style>;
+ * copying five declarations onto a second page is precisely the thing this file was
+ * created to undo. The rule stands for everything else: a class earns a place here by
+ * being wanted in TWO rooms, not by looking reusable in one.
+ * ⚠ AND IT IS THE ONE UNSCOPED RULE IN THE FILE — the second room is a `layout: game`
+ * page with no body_class. The block itself says why.
  * ========================================================================== */
 
 body.theme-academy .page-card {
@@ -66,3 +76,26 @@ body.theme-academy .town-sky {
 body.theme-academy .ts-horizon {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(224, 138, 60, 0.09) 74%, rgba(224, 138, 60, 0.15));
 }
+
+/* ── THE TEACHER'S CARD ────────────────────────────────────────────────────────────
+   Auston in Lesson 1, Crockett in Lesson 2. ⚠ The left rule is the ember accent and the
+   ICON is the only thing that changes between them — a lesson taught by somebody is the
+   Academy's whole shape, so it reads the same in every room.
+
+   ⚠⚠ UNSCOPED, AND IT IS THE ONLY RULE IN THIS FILE THAT IS. Everything else here is
+   `body.theme-academy …` because it repaints a page; this one is a CARD, and Lesson 2 lives
+   at /games/notation-run/ under `layout: game`, which has no body_class to hang a theme on.
+   Every color below is written out rather than inherited, so the card carries the Academy
+   with it onto a page painted in arcade violet. ⚠ Scope it and Crockett's card goes
+   unstyled with nothing on screen saying so. [[self-contained-means-intrinsic]] */
+.ac-coach {
+  display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px;
+  background: linear-gradient(135deg, #172a1e, #1e3626);
+  border: 1px solid rgba(224, 138, 60, 0.35);
+  border-left: 4px solid #e08a3c;
+  border-radius: var(--r-md, 12px); padding: 12px 15px;
+}
+.ac-coach-ico { font-size: 30px; line-height: 1; flex: 0 0 auto; }
+.ac-coach-who { font-size: 0.62rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #ffb347; font-weight: 700; margin-bottom: 3px; }
+.ac-coach-say { margin: 0; color: #eee9d8; font-size: 0.96rem; line-height: 1.55; }

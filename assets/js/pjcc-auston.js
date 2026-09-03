@@ -377,15 +377,27 @@
      Every finished bot game against ANY regular, because "it knows what happened in
      other games with other opponents" is half of what makes her worth talking to.
      Keys are one letter because this is localStorage and it is written on every game:
-       b=bot id · r=result (from YOUR side, you are always White) · n=plies · w=why · t=when
+       b=bot id · r=result, IN PGN · p=the chair YOU had · n=plies · w=why · t=when
      ⚠ Newest FIRST. Everything downstream assumes that, and a reversal would silently
-       turn "your last game" into "your fortieth game ago". */
+       turn "your last game" into "your fortieth game ago".
+
+     ⛑⛑ `p` ARRIVED 2026-09-02 AND IT IS A BUG FIX, NOT A FEATURE. The old note here read
+     "from YOUR side, you are always White", and the whole file believed it: `r === '1-0'`
+     meant you won. It has been possible to sit down as Black since the side picker shipped
+     (2026-08-25), so every game you won with the black pieces was counted as a LOSS — her
+     head-to-head, her streak, her "first time you have beaten me" line and the resignation
+     branch in farewell() were all reading the result backwards for half the bench. Nothing
+     ever looked broken, because a wrong record still prints a plausible number.
+     ⚠ ENTRIES WRITTEN BEFORE TODAY HAVE NO `p` AND ARE READ AS WHITE, which is exactly what
+     the code already assumed — so the fix cannot make an existing log worse, and it cannot
+     retroactively repair one either. Say so rather than pretending the history is clean. */
   function log() { var a = readJSON(LOG_KEY, []); return Array.isArray(a) ? a : []; }
 
   function logGame(rec) {
     if (!rec || !rec.bot || !rec.result) return;
     var a = log();
-    a.unshift({ b: String(rec.bot), r: String(rec.result), n: rec.plies | 0,
+    a.unshift({ b: String(rec.bot), r: String(rec.result), p: rec.side === 'b' ? 'b' : 'w',
+                n: rec.plies | 0,
                 w: String(rec.reason || ''), t: Date.now() });
     if (a.length > LOG_CAP) a.length = LOG_CAP;
     writeJSON(LOG_KEY, a);
@@ -425,23 +437,38 @@
      counters in the ledger. A counter and a log can disagree; a derived number cannot
      be wrong about its own source. It is the same rule the bench's unlock set follows,
      and the same one that keeps the leaderboard legend honest. */
-  function vsHer() {
-    var mine = log().filter(function (g) { return g.b === 'auston'; });
+  /* ⚠⚠ THE ONLY TWO PLACES A PGN RESULT IS TURNED INTO "YOU WON". Every other reading of
+     `g.r` in this file goes through these, so the chair you were sitting in cannot be
+     forgotten in one branch and remembered in another — which is precisely how the bug above
+     survived. A missing `p` is White, the historic assumption. */
+  function youWon(g)  { return !!g && g.r === (g.p === 'b' ? '0-1' : '1-0'); }
+  function youLost(g) { return !!g && g.r === (g.p === 'b' ? '1-0' : '0-1'); }
+
+  /* ⭐ GENERALIZED FROM vsHer() ON 2026-09-02. The log has always held every regular — only
+     the reader was hers. Nate: *"we were technically one win each … are we incorporating
+     total standings vs character?"* The answer was "the data is, the site is not"; this is
+     the half that was missing, and the Park Tables chip row prints it. */
+  /* ⚠ NAMED vsBot, NOT vs. Two long-standing locals in this file are already called `vs`
+     (observe() and farewell() both hold `var vs = vsHer()`), and a module function with the
+     same name would be shadowed inside exactly the two places most likely to want it. */
+  function vsBot(botId) {
+    var mine = log().filter(function (g) { return g.b === botId; });
     var w = 0, l = 0, d = 0, streak = 0, dir = 0;
     mine.forEach(function (g) {
-      if (g.r === '1-0') w++; else if (g.r === '0-1') l++; else d++;
+      if (youWon(g)) w++; else if (youLost(g)) l++; else d++;
     });
     // the streak runs from the newest game back until the result changes
     for (var i = 0; i < mine.length; i++) {
-      var r = mine[i].r;
-      if (r === '1/2-1/2') break;
-      var s = r === '1-0' ? 1 : -1;
+      if (mine[i].r === '1/2-1/2') break;
+      var s = youWon(mine[i]) ? 1 : -1;
       if (dir === 0) dir = s;
       if (s !== dir) break;
       streak++;
     }
     return { games: mine.length, w: w, l: l, d: d, streak: streak * dir, last: mine[0] || null };
   }
+
+  function vsHer() { return vsBot(WHO); }
 
   /* ══ THE OBSERVER ═══════════════════════════════════════════════════════════════
      Produces every TRUE observation, each with a weight. Nothing here knows any words.
@@ -695,12 +722,12 @@
       var vs = vsHer(), g = vs.last;
       if (!g) return null;
       var kind;
-      if (g.w === 'resignation' && g.r === '0-1') kind = 'end_resign';
-      else if (g.r === '1-0') {
+      if (g.w === 'resignation' && youLost(g)) kind = 'end_resign';
+      else if (youWon(g)) {
         // her first loss to you is the one moment worth marking above everything else
         if (vs.w === 1) kind = 'end_first_win';
         else if (vs.games > 1 && log().filter(function (x) { return x.b === WHO; })[1] &&
-                 log().filter(function (x) { return x.b === WHO; })[1].r === '0-1') kind = 'end_revenge';
+                 youLost(log().filter(function (x) { return x.b === WHO; })[1])) kind = 'end_revenge';
         else kind = 'end_win_you';
       }
       else if (g.r === '1/2-1/2') kind = 'end_draw';
@@ -795,6 +822,9 @@
     LOOK: LOOK,
 
     logGame: logGame,
+    /* ⭐ YOUR RECORD AGAINST ANY REGULAR, derived from the log she already keeps. ⚠ READ-ONLY
+       AND IT COMMITS NOTHING — unlike greet(), a page may ask this on every render. */
+    vs: vsBot,
     speaks: function (botId) { return botId === WHO; },
 
     /* ── HAS SHE MET YOU? ──────────────────────────────────────────────────────────

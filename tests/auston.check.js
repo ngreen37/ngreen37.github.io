@@ -158,6 +158,41 @@ console.log('\n── AUSTON ─────────────────
   check('…and a malformed game is refused rather than logged', A.debug().log.length === 5);
 }
 
+/* ── 6b. THE CHAIR YOU SAT IN IS PART OF THE RESULT ──────────────────────────
+   ⛑⛑ THE BUG THIS SECTION EXISTS FOR SHIPPED ON 2026-08-25 AND WAS INVISIBLE FOR A WEEK.
+   Her log stores the PGN result, and every reader of it assumed you were White: `r === '1-0'`
+   meant "you won". The side picker made Black a real option, so a game won with the black
+   pieces was banked as a LOSS — in her head-to-head, in her streak, and in the "first time
+   you have beaten me" line, which could therefore fire on a game you lost. Nothing looked
+   broken, because a record that is wrong still prints a plausible number.
+   ⚠ ASSERTED BOTH WAYS ROUND. A fix that only reads `p` would pass a Black-only check and
+   still be wrong for White, and White is what every existing row in every existing log is. */
+{
+  const { A } = world(null);
+  A.logGame({ bot: 'argus', result: '1-0', side: 'w', plies: 30, reason: 'checkmate' });
+  A.logGame({ bot: 'argus', result: '0-1', side: 'b', plies: 30, reason: 'checkmate' });
+  let r = A.vs('argus');
+  check('⭐⭐ a win as Black is a win, and so is a win as White', r.w === 2 && r.l === 0,
+    `${r.w}W ${r.l}L over ${r.games}`);
+
+  A.logGame({ bot: 'argus', result: '1-0', side: 'b', plies: 30, reason: 'checkmate' });
+  r = A.vs('argus');
+  check('…and losing as Black is a loss, not a third win', r.w === 2 && r.l === 1,
+    `${r.w}W ${r.l}L over ${r.games}`);
+  check('…so the streak turns over with it', r.streak === -1, r.streak);
+
+  /* ⚠ A ROW WRITTEN BEFORE `p` EXISTED READS AS WHITE — the historic assumption, kept on
+     purpose. The fix must not make an old log worse, and it cannot repair one either. */
+  const { A: B } = world(null);
+  B.logGame({ bot: 'nate', result: '1-0', plies: 30, reason: 'checkmate' });
+  check('…and a game logged with no side at all is still read as White',
+    B.vs('nate').w === 1, JSON.stringify(B.vs('nate')));
+
+  check('…and the record is available for any regular, not only for her',
+    typeof A.vs === 'function' && A.vs('robert').games === 0,
+    'vs() answers for a seat you have never sat at');
+}
+
 /* ── 7. SHE DOES NOT REPEAT HERSELF ──────────────────────────────────────────────── */
 {
   const prof = { credits: 5000, pjcc_rating: 900, puzzle_rating: 700, companion: { owned: [] } };

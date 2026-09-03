@@ -5,6 +5,34 @@ description: "A rhythm drill for reading chess coordinates at speed — a fixed 
 permalink: /games/notation-run/
 ---
 
+{%- comment -%} ⛑⛑ THIS IS ALSO ACADEMY LESSON 2 NOW, AND IT IS STILL ONE PAGE (2026-09-02).
+     Nate: *"Go ahead and open up Notation Blitz in the Academy w/ Crockett for business."*
+
+     ⚠⚠ THE OBVIOUS BUILD — a second page at /academy/notation/ wrapping the same game — WAS
+     WRITTEN AND THEN THROWN AWAY, and the reason is worth keeping. `.game-frame-wrap` and,
+     more importantly, `.game-frame-wrap.fits-phone` live ONLY in `_layouts/game.html`. A
+     lesson page on `layout: page` would have rendered the cabinet with no bezel and, on a
+     phone held sideways, a board taller than the window — undoing one of the nine cabinets
+     that were only just finished. [[mobile-window-slide]] [[shipped-but-never-loaded]]
+
+     ⭐ SO THE LESSON CAME TO THE GAME. Lesson 1 and Lesson 3 have their own /academy/ pages
+     because those rooms exist nowhere else; this one has been playable in the games hall
+     since long before the Academy was rebuilt. What was missing was never a URL — it was a
+     teacher and a reason, and both of those are twelve lines of markup. One cabinet, one
+     door, one set of scores under the slug `notation-run`. [[gauntlet-door-one-file]] {%- endcomment -%}
+
+<p class="nb-crumb"><a href="{{ '/academy/' | relative_url }}">← The Academy</a> &middot; Lesson 2</p>
+
+{%- comment -%} ⚠ CROCKETT'S WORDS ARE PLACEHELD AND ARE NATE'S TO WRITE. The card's shape
+     is mine, the voice is his. [[text-changes-need-approval]] {%- endcomment -%}
+<div class="ac-coach">
+  <div class="ac-coach-ico" aria-hidden="true">🐶</div>
+  <div class="ac-coach-body">
+    <div class="ac-coach-who">Crockett &middot; your reading partner</div>
+    <p class="ac-coach-say">Every square on this board has a name, and once you know them the game starts talking to you. A name rides in on the beat — tap the square it belongs to. Miss one, we go again. I have all day.</p>
+  </div>
+</div>
+
 <div class="game-frame-wrap fits-phone nb-frame">
   <iframe
     src="{{ '/assets/games/notation_run.html' | relative_url }}"
@@ -19,8 +47,26 @@ permalink: /games/notation-run/
 .nb-frame { max-width: 640px; }
 .nb-frame iframe { height: 760px; }
 @media (max-width: 600px) { .nb-frame iframe { height: 660px; } }
+
+/* the way back up the ladder — this page is a games-hall door and a lesson at once */
+.nb-crumb { font-size: 0.8rem; color: #9a7fd4; margin: 0 0 10px; }
+.nb-crumb a { color: #c9a7ff; text-decoration: none; }
+.nb-crumb a:hover { color: #F5C518; }
+.ac-coach { max-width: 860px; margin: 0 auto 16px; }
+
+/* ⚠⚠ A PHONE HELD SIDEWAYS LOSES BOTH OF THEM, and it is the same media query, for the
+   same reason, as `.game-page-header p` in _layouts/game.html: at 844x390 the furniture
+   above the cabinet decides whether the board is on screen at all. The crumb and Crockett
+   are worth ~110px, which is a quarter of that viewport — enough to push the thing being
+   introduced below the fold. They are untouched in portrait, on desktop and in the DOM.
+   ⚠ SCOPED WITH `pointer: coarse` AS WELL AS THE HEIGHT: a short viewport is also a laptop
+   with the dev tools open, where the lesson framing is fine. [[mobile-window-slide]] */
+@media (max-height: 560px) and (orientation: landscape) and (pointer: coarse) {
+  .nb-crumb, .ac-coach { display: none; }
+}
 </style>
 
 <div class="game-info">
   <p><strong>How to play.</strong> A square name rides in on the beat — click that square at the gate. Dead-on taps score Perfect.</p>
+  <p><strong>Why it matters.</strong> Every book, every video and every game you will ever replay is written in square names. Reading them at a glance is the difference between following a game and decoding one. Next: <a href="{{ '/academy/opening-trainer/' | relative_url }}">Lesson 3 — The Opening Trainer</a>.</p>
 </div>

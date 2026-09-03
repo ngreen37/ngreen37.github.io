@@ -569,14 +569,32 @@ const BOT = 'maxwell';
   await backToPark();
 
   ok('the bench offers a clock as well as a color',
-     await p.evaluate(() => document.querySelectorAll('.pt-bench-set [data-tc]').length === 4));
-  /* ⚠⚠ "No clock" IS THE DEFAULT AND THAT IS THE COMPATIBILITY PROMISE. Every regular has
-     been clockless since the bench opened; a clock that arrived switched on would change a
-     game people already know without being asked for. */
-  ok('…and No clock is the one already selected',
-     await p.evaluate(() => document.querySelector('.pt-bench-set [data-tc=""]').classList.contains('on')));
-  ok('…so a clockless board still carries no clock at all, exactly as before',
-     await p.evaluate(() => document.querySelectorAll('[data-clock]').length === 0));
+     await p.evaluate(() => document.querySelectorAll('.pt-bench-set [data-tc]').length === 6));
+  /* ⛑⛑ THE DEFAULT CHANGED ON 2026-09-02 AND THIS CHECK CHANGED WITH IT. It used to assert
+     "No clock" and call that the compatibility promise; Nate reversed it after a game opened
+     at one minute — *"Make it default … to a five minute game with a one second increment."*
+     ⚠ ASSERTED ON A CLEARED KEY, which is the only state where a default is observable at
+     all. Every other clock case in this file sets `pjcc.pt.tc.v2` explicitly, so a regression
+     to "No clock" would be invisible everywhere but here. */
+  await p.evaluate(() => localStorage.removeItem('pjcc.pt.tc.v2'));
+  await backToPark();
+  ok('…and Blitz 5+1 is the one already selected on a browser that has never picked',
+     await p.evaluate(() => {
+       const on = document.querySelector('.pt-bench-set [data-tc].on');
+       return !!on && on.getAttribute('data-tc') === 'b5i';
+     }),
+     await p.evaluate(() => {
+       const on = document.querySelector('.pt-bench-set [data-tc].on');
+       return on ? on.getAttribute('data-tc') : 'nothing is lit';
+     }));
+  /* ⭐ AND THE +1 IS REAL, not a label. `sub` is what a human reads and `inc` is what the
+     clock spends, and the two live in the same row precisely so they cannot disagree — so
+     the check reads the row the page will actually play under. */
+  ok('…and the row it names actually carries a one-second increment',
+     await p.evaluate(() => {
+       const b = document.querySelector('.pt-bench-set [data-tc="b5i"]');
+       return !!b && /5\+1/.test(b.textContent);
+     }));
 
   /* ── the control is stamped onto the board at sit-down ─────────────────────────── */
   await pickCtl('data-tc', 'b5');
@@ -695,7 +713,7 @@ const BOT = 'maxwell';
      2026-08-20, Nate: *"You can also turn Bot clock off if you choose (an option available
      IN-GAME)."* You keep your clock; the regular plays untimed. */
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
-                           localStorage.setItem('pjcc.pt.tc.v1', ''); });
+                           localStorage.setItem('pjcc.pt.tc.v2', ''); });
   await backToPark();
   await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
   await sleep(400);
@@ -706,7 +724,7 @@ const BOT = 'maxwell';
      await p.evaluate(() => !document.getElementById('pt-bot-clock')));
 
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
-                           localStorage.setItem('pjcc.pt.tc.v1', 'b5'); });
+                           localStorage.setItem('pjcc.pt.tc.v2', 'b5'); });
   await backToPark();
   await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
   await sleep(400);
@@ -793,8 +811,106 @@ const BOT = 'maxwell';
      'you have ' + ck.mw + 'ms');
   await shot('10-bot-clock-off');
 
+  /* ══ 10b. THE INCREMENT IS PAID, NOT PRINTED (2026-09-02) ══════════════════
+     Blitz 5+1 is the DEFAULT control now, which makes the increment the first thing a new
+     player meets — and until today nothing in this file had ever watched one get paid.
+     `sub: '5+1'` and `inc: 1000` are two fields on one row and a check that reads the label
+     proves only that somebody typed it.
+
+     ⭐ THE ASSERTION IS THAT THE BANK GOES UP PAST ITS OWN STARTING NUMBER, which is the
+     one outcome arithmetic cannot fake: spend 300ms on a move, be credited 1000, and 5:00
+     becomes 5:00-and-change. A "spent less than we expected" check would pass on a machine
+     under load with the increment deleted.
+     ⚠ THE FIRST MOVE IS FREE AND PAYS NOTHING — the stopwatch is not running yet, so
+     clockBank() returns before it can credit. It takes the SECOND move to see one. */
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
-                           localStorage.setItem('pjcc.pt.tc.v1', ''); });
+                           localStorage.setItem('pjcc.pt.tc.v2', 'b5i'); });
+  await backToPark();
+  await pickCtl('data-side', 'w');
+  await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
+  await sleep(400);
+  ck = await clockState();
+  ok('the default control sits down as a five-minute game',
+     ck.tc === 'b5i' && ck.mw === 300000, 'tc=' + ck.tc + ' mw=' + ck.mw);
+  /* ⚠⚠ playOne() IS NOT USABLE HERE and the reason is the measurement. It waits 1.4s for
+     the regular to answer, and every one of those milliseconds runs on YOUR clock once the
+     reply lands — so a paid increment arrives and is immediately outspent, which is exactly
+     how the first cut of this check failed while the feature worked. Move fast, then read. */
+  const fastMove = async () => {
+    const mv = await p.evaluate(() => {
+      const st = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+      const g = PJCCMatch.replayGame(st.moves || ''), L = PJCCChess.legalMoves(g.S);
+      return { from: L[0].from, to: L[0].to };
+    });
+    await tapSq(mv.from); await tapSq(mv.to);
+  };
+  const waitPlies = async (n) => {
+    for (let i = 0; i < 40; i++) {
+      if ((await moves()).split(/\s+/).filter(Boolean).length >= n) return true;
+      await sleep(100);
+    }
+    return false;
+  };
+  await fastMove();                        // the opener — free, and credits nothing
+  ok('the regular answers the opening move', await waitPlies(2));
+  ck = await clockState();
+  ok('⚠ the free opening move earns no increment either',
+     ck.mw === 300000, 'you have ' + ck.mw + 'ms after the first move');
+  await fastMove();                        // a real move, played the instant it is our turn
+  await sleep(200);
+  ck = await clockState();
+  ok('⭐ a fast move under 5+1 leaves you with MORE than you started with',
+     ck.mw > 300000, 'you have ' + ck.mw + 'ms — started at 300000');
+
+  /* ══ 10c. THE BOARD DOES NOT MOVE WHEN A CAPTION ARRIVES (2026-09-02) ═══════════
+     Nate: *"after one move the board moved down to fit the line 'Queen's gambit' and moved
+     again when it says they left the book. I want to keep those lines but not have the game
+     board move down."*
+
+     ⚠⚠ MEASURED ON THE REAL PAGE, TWICE, WITH A RULER — the board's own top edge in the
+     viewport, on a board with no captions and then on one carrying two. A check that only
+     asserted `.pt-caps` exists would pass with the rail's min-height deleted, which is the
+     entire fix. [[measure-the-real-page]]
+     ⭐ THE POSITION IS SEEDED, NOT PLAYED, because the caption has to be a KNOWN one: legal
+     junk moves classify as nothing, and this needs an opening with a name on it. 1.d4 d5
+     2.c4 e6 is the Queen's Gambit Declined — his own example, near enough. */
+  const boardTop = () => p.evaluate(() => {
+    const b = document.querySelector('.pt-board');
+    return b ? Math.round(b.getBoundingClientRect().top) : -1;
+  });
+  const seedBoard = async (mv) => {
+    await p.evaluate(m => localStorage.setItem('pjcc.park.bot.v1', JSON.stringify({
+      bot: 'maxwell', moves: m, done: 0, pc: 'w', tc: '', logged: 1 })), mv);
+    await backToPark();
+    await p.evaluate(() => document.querySelector('[data-bot="maxwell"]').click());
+    await sleep(500);
+  };
+
+  await seedBoard('');
+  const topEmpty = await boardTop();
+  ok('a board with nothing to say still reserves the caption rail',
+     await p.evaluate(() => {
+       const r = document.querySelector('.pt-caps');
+       return !!r && r.getBoundingClientRect().height >= 40;
+     }),
+     await p.evaluate(() => {
+       const r = document.querySelector('.pt-caps');
+       return r ? Math.round(r.getBoundingClientRect().height) + 'px tall' : 'no rail at all';
+     }));
+
+  await seedBoard('d2d4 d7d5 c2c4 e7e6 b1c3 g8f6 c1g5 f8e7 e2e3 e8g8 g1f3 h7h6');
+  ok('…and a named opening really does turn up in it',
+     /\S/.test(await p.evaluate(() => (document.querySelector('.pt-caps .pt-open') || {}).textContent || '')),
+     await p.evaluate(() => (document.querySelector('.pt-caps') || {}).textContent || '(empty)'));
+  const topCapped = await boardTop();
+  ok('⭐⭐ …and the board is in exactly the same place it was',
+     topCapped === topEmpty && topEmpty > 0,
+     'empty ' + topEmpty + 'px → captioned ' + topCapped + 'px · rail ' +
+     await p.evaluate(() => Math.round(document.querySelector('.pt-caps').getBoundingClientRect().height)) + 'px');
+  await shot('10c-caption-rail');
+
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.setItem('pjcc.pt.tc.v2', ''); });
 
   /* ── 11. RANDOM STAYS RANDOM ──────────────────────────────────────────────────────
      ⛑⛑ THE BUG THIS SECTION EXISTS FOR SHIPPED AND WAS INVISIBLE. "Other side" ended with
