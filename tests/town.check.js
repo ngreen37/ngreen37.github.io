@@ -366,10 +366,13 @@ const server = http.createServer((req, res) => {
         '…and the room has walls, or you walk out into black');
 
       const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
-      /* ⚠ the lectern's own comment said listing Michael "would read as a quest you can
-         start today, and neither of them is anywhere". Making them winnable made that true. */
-      ok(/_owed_elsewhere\(/.test(hall) && /unlock_say/.test(hall),
-        'the lectern separates who you can walk up to from what is waiting on you elsewhere');
+      /* ⛑⛑ SUPERSEDED 2026-09-04. This guarded the lectern reading out a to-do list of
+         names, split into "here" and "elsewhere". Nate: *"the message to the left of the
+         assembly board NOT read the names of those who are not there yet (it should be a
+         mystery) but instead a cryptic line."* The replacement is in section 9 and it is
+         the OPPOSITE assertion: that the Lectern block mentions no holder at all. */
+      ok(/func _owed\(\)/.test(hall),
+        'the lectern still reads the BOARD  (⚠ cryptic is not random — a riddle still points somewhere)');
 
       /* ══ 5 · MONKEY ISLAND: THE LINE LEFT THE BOX (2026-09-03) ══════════════════════
          ⛑⛑ THE WORDS LEFT THE WORLD ON 09-02 BECAUSE THREE LABELS SHARED ONE PATCH OF MAP.
@@ -391,10 +394,13 @@ const server = http.createServer((req, res) => {
         '…and anything taller than its radius raises the line clear of its own picture');
       ok(/var look: int = IDLE if \(_mode == SAY and _bubbled\) else _mode/.test(ui),
         '…a bubbled one-liner leaves the box LOOKING idle, so the prompt does not blink out');
-      ok(/sp\.speaker\(\) != self/.test(npc),
-        '…the nameplate yields to the words  (⛑ the exact 09-02 stacking, one layer up)');
-      ok(/sp\.speaker\(\) != null/.test(fs.readFileSync(path.join(GD, 'npc_card.gd'), 'utf8')),
-        '…and so does the relationship card');
+      /* ⛑ REWORDED 2026-09-04, not weakened. speaker() answered "who is talking", which
+         only made sense while exactly one person could be. There are two mouths now, so the
+         nameplate asks about ITSELF and the card asks about anybody — two questions, and
+         one answer for both would hide every nameplate in the zone. Section 8 has them. */
+      ok(/func speaking\(who: Node2D\) -> bool:/.test(
+        fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8')),
+        '…a speaker can be asked about, one at a time');
       /* ⚠⚠ THE BOX IS NOT DEAD CODE. The zone speaks for results that landed in another tab
          and those have no mouth on screen; a "bubble everything" refactor would silence them. */
       ok(/_ui\.say\("Word travels/.test(zone) && /func _bubble\(from: Node2D/.test(ui),
@@ -412,8 +418,11 @@ const server = http.createServer((req, res) => {
       ok(/if not won or f == null or who == "":\s*\n\s*return/.test(hall),
         '…and an unwon square is written on by nothing');
 
-      /* the testing speed, and the two things that had to move with it */
-      ok(/@export var speed: float = 1180\.0/.test(player), 'the walk is at his 09-03 number');
+      /* the testing speed, and the two things that had to move with it.
+         ⛑ 1180 → 700 on 09-04. His correction: *"we were in the 500s and you sent me into
+         the 1000s but your second-guess was correct."* The number is checked in section 13;
+         what stays here is the pair of things that are DERIVED from it, which is the part
+         that silently rots when the number moves. */
       ok(/position_smoothing_speed = maxf\(7\.0, speed \/ /.test(player),
         '…the camera is DERIVED from it, or you outrun your own view');
       ok(/_walked >= speed \* /.test(player),
@@ -483,8 +492,10 @@ const server = http.createServer((req, res) => {
          only knows the answers it was given cannot see a THIRD door added later pointing at
          nothing. Both spellings are matched — the literal `url = "…"` and `_add_door(name, "…")`.
          [[dead-game-links-trap]] */
-      const doors = [...(isl + town2).matchAll(/url = "(\/[^"]+)"/g)].map((m) => m[1])
-        .concat([...town2.matchAll(/_add_door\([^,]+,\s*"(\/[^"]+)"/g)].map((m) => m[1]));
+      const arc = fs.readFileSync(path.join(GD, 'arcade.gd'), 'utf8');
+      const doors = [...(isl + town2 + arc).matchAll(/url = "(\/[^"]+)"/g)].map((m) => m[1])
+        .concat([...town2.matchAll(/_add_door\([^,]+,\s*"(\/[^"]+)"/g)].map((m) => m[1]))
+        .concat([...arc.matchAll(/"url": "(\/[^"]+)"/g)].map((m) => m[1]));
       ok(doors.length >= 5, 'the town opens real site pages', doors.length + ' doors read from source');
       for (const u of [...new Set(doors)]) {
         ok(permalinks.has(u), 'the door to ' + u + ' is a real page, not a 404');
@@ -566,6 +577,180 @@ const server = http.createServer((req, res) => {
         '…in their own words, asked of the person rather than stored in the room');
       ok(/for k in \(d\.get\("razzed", \{\}\) as Dictionary\)/.test(gs),
         '…and it is a UNION across devices, or the phone says it again');
+
+      /* ⚠ ITS OWN SCOPE. Everything below re-reads files this suite already read
+         hundreds of lines up, under the same obvious names — `hall`, `door`, `arc`.
+         One brace pair is the whole fix; renaming them all would make every check
+         read `hall2`, which is how a gate stops being readable. */
+      {
+
+      /* ══ 8 · TWO MOUTHS AT ONCE ═════════════════════════════════════════════════════
+         2026-09-04, Nate: *"find a way to have the user's character dialogue in white, above
+         the character, without overlapping dialogue. the goodbye quote can end the
+         conversation, but the user can move as well with the response of the character
+         remaining visible for the proper amount of time."*
+         ⚠⚠ THE WHOLE FEATURE RESTS ON ONE INVARIANT: nothing else may be drawn above a head.
+         Two of the three labels that collided on 09-02 are gone for good and the third, the
+         nameplate, yields — so these checks are on the CONDITIONS, not on the bubble. */
+      const sp = fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8');
+      const tui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
+      const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
+      ok(/var _bubbles: Array/.test(sp) && /func _find\(who: Node2D\) -> Bubble:/.test(sp),
+        'Speech holds MORE THAN ONE bubble — you and them, on screen together');
+      ok(/func _unstack\(/.test(sp) && /up\.position\.y = maxf\(TOP, want\)/.test(sp),
+        '…and an overlapping pair is resolved by pushing the HIGHER one UP',
+        'down is where the head that said it is');
+      ok(/func _height\(/.test(sp) && /get_multiline_string_size/.test(sp),
+        '…off the MEASURED text, not a fixed rect — a one-liner must not reserve three lines');
+      ok(/const YOU := Color\("ffffff"\)/.test(tui) && /_you_say\(said\)/.test(tui),
+        'YOUR line is white and it goes up when you pick the row');
+      ok(/func _pick\(id: String, said: String = ""\)/.test(tui)
+        && /b\.set_meta\("said", said\)/.test(tui),
+        '…carried on the row, so a menu label and a spoken line can differ');
+      ok(/_pick\(str\(b\.get_meta\("id", ""\)\), str\(b\.get_meta\("said", ""\)\)\)/.test(tui),
+        '…and the NUMBER KEYS say it too, not only the mouse');
+      ok(/func close_saying\(/.test(tui) && !/func close_saying[\s\S]{0,400}_drop_bubble\(\)/.test(tui),
+        'the goodbye closes the menu WITHOUT clearing the bubbles',
+        '⚠ _drop_bubble() in here would wipe the answer he asked to keep');
+      ok(/func end_talk_saying\(/.test(inter) && /u\.chose\.disconnect\(_on_chose\)/.test(inter),
+        '…through the same exit, so the listener is still disconnected');
+      ok(/end_talk_saying\(_bye\(\), /.test(npc) && /func _bye\(\) -> String:/.test(npc),
+        '…and "I\'ll let you get on." is answered rather than swallowed');
+      ok(/func box_top\(\) -> float:/.test(tui) && /func _box_top\(\) -> float:/.test(sp),
+        'a bubble asks the BOX where its top edge is, so it can never land inside an open menu');
+      ok(/if u != null and u\.has_method\("box_top"\)/.test(sp),
+        '…duck-typed, because naming TownUI from Speech is a cyclic class reference',
+        'a parse error a web export does NOT report');
+      ok(/if sp == null or not sp\.speaking\(self\):/.test(npc),
+        'the nameplate still yields — per speaker, not for anybody talking anywhere');
+      ok(/sp\.anyone\(\)/.test(card),
+        '…and the relationship card still stands down for a conversation');
+      ok(/func speech_color\(\) -> Color:[\s\S]{0,120}ffffff/.test(player),
+        'the player has a mouth of their own, and it is NOT the Forge aura',
+        'a signed-in player can pick a color you cannot read');
+
+      /* ══ 9 · A ROOM WITH EDGES, WALLS AND A WAY OUT ═════════════════════════════════
+         *"limit the space on the inside of the assembly so you can't endlessly walk"*,
+         *"there should be walls on the insides of the buildings"*,
+         *"the exit door should be a different symbol rather than a house"*. */
+      const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
+      const xit = fs.readFileSync(path.join(GD, 'exit_door.gd'), 'utf8');
+      ok(/world_bounds = ROOM\.grow\(-WALL_T\)/.test(hall),
+        'the Assembly has an edge — you could walk off it into flat violet for eight seconds');
+      ok(/static func draw_walls\(/.test(zone),
+        'there is ONE wall, and both interiors draw it');
+      ok(/TownZone\.draw_walls\(self, ROOM/.test(hall)
+        && /TownZone\.draw_walls\(self, Rect2\(-W/.test(acad)
+        && /TownZone\.draw_walls\(self, ROOM/.test(arc),
+        '…the Assembly, the Academy and the Arcade');
+      /* ⚠ ANCHORED. Unanchored, this passed a build whose class was renamed TownExitX —
+         a prefix match is not an identity test. */
+      ok(/^class_name TownExit$/m.test(xit) && /func _arch\(/.test(xit),
+        'the way out is a DOORWAY, not a cottage with a pitched roof');
+      ok(/var out := TownExit\.new\(\)/.test(hall) && /var out := TownExit\.new\(\)/.test(acad),
+        '…in both interiors  (⛑ asked once, fixed everywhere)');
+      ok(/func _init\(\) -> void:[\s\S]{0,120}radius = 78\.0/.test(xit),
+        '…and its radius is set in _init, not _ready_extra',
+        '⚠ Interactable builds its shape BEFORE _ready_extra runs');
+      ok(!/of 16 \u2014 and %d of the %d/.test(hall) && !/_won_claimable/.test(hall),
+        'the "1 of 16… to win today" line is off the bottom of the Assembly');
+      ok(/func _riddle\(slot: int\) -> String:/.test(hall),
+        '…and the lectern speaks in riddles now');
+      const lect = hall.slice(hall.indexOf('class Lectern'));
+      ok(!/holder_at/.test(lect),
+        '…that name NOBODY  (⚠ it read out a to-do list of the cast until today)',
+        'the blank nameplates are the point');
+      ok(/GameState\.square_name\(slot\)/.test(lect) && /GameState\.key_at\(slot\)/.test(lect),
+        '…but are still read off the board, so a riddle still points somewhere');
+
+      /* ══ 10 · THE LIGHT OUTSIDE LINES UP WITH THE PIECE INSIDE ══════════════════════
+         *"let's line up the light on the outside to the piece you unlocked."* It did not:
+         two mappings, disagreeing on BOTH axes. */
+      ok(/static func board_cell\(slot: int\) -> Vector2i:/.test(gs),
+        'ONE function turns a slot into a cell on the board');
+      ok(/GameState\.board_cell\(slot\)/.test(hall) && /GameState\.board_cell\(slot\)/.test(door),
+        '…and the Assembly AND the building\'s face both read it');
+      ok(!/func _col\(/.test(hall) && !/window_cols/.test(door),
+        '…neither keeps a private copy  (⚠ the private copy is what got them mirrored)');
+      ok(/@export var camera_bounds: Rect2/.test(zone) && /player\.view = camera_bounds/.test(zone),
+        'what you can SEE and what you can STAND ON are two rects now');
+      ok(/var lim: Rect2 = view if view\.size\.x > 0\.0/.test(player),
+        '…and the camera takes its limits from the first one');
+      ok(/@export var camera_offset: Vector2/.test(zone) && /cam\.position = cam_offset/.test(player),
+        '…and a room whose subject is on the back wall can aim the camera up at it');
+
+      /* ══ 11 · THREE PUZZLES, AND A KEY TO TEST THEM WITH ════════════════════════════ */
+      const dev = fs.readFileSync(path.join(GD, 'dev_referee.gd'), 'utf8');
+      ok(/func puzzle_report\(clean: bool/.test(gs),
+        'ONE path settles a puzzle, won or lost');
+      ok(/puzzle_report\(int\(rec\.get\("c", 0\)\) == 1/.test(gs),
+        '…the live poll comes down it');
+      ok(/GameState\.puzzle_report\(clean, Time\.get_unix_time_from_system\(\)\)/.test(dev),
+        '…and so do the Y/N test keys  (⚠ a test key with its own copy of the rule tests itself)');
+      ok(/GameState\.puzzle_running\(\) and \(k\.keycode == KEY_Y or k\.keycode == KEY_N\)/.test(dev),
+        '…gated on a run being open, so Y does not settle a puzzle nobody set');
+      ok(/puzzle %d of %d/.test(dev),
+        '…and the bar says which one you are on');
+      ok(/for i in GameState\.PUZZLE_RUN:/.test(town2) && /puzzle_streak\(\)/.test(town2),
+        'the Champ WEARS the run — three pips, filled as you go');
+      ok(/GameState\.puzzle_run\.connect\([\s\S]{0,90}queue_redraw\(\)\)/.test(town2),
+        '…and redraws on it, or the count updates when you happen to walk past');
+
+      /* ══ 12 · THE PLACE NAME IS AN ARRIVAL ══════════════════════════════════════════
+         *"the text saying Sand Mines gets in the way of the dialogue — that text shouldn't
+         be permanently visible."* Crockett stands 14px from where it was nailed down. */
+      /* ⚠ THE `:=` IS THE ANCHOR. Without it, renaming the constant kept this green. */
+      ok(/const NAME_SECONDS :=/.test(town2) && /_place_left -= delta/.test(town2),
+        'the place name arrives and goes');
+      ok(/if sp != null and sp\.anyone\(\):[\s\S]{0,60}_place_left = 0\.0/.test(town2),
+        '…and goes INSTANTLY when anybody speaks',
+        '⚠ the timer alone is not a guarantee — you can talk within two seconds of arriving');
+      ok(/if f == null or _place < 0 or _place_left <= 0\.0:/.test(town2),
+        '…and draws nothing at all the rest of the time');
+
+      /* ══ 13 · THE ARCADE ════════════════════════════════════════════════════════════
+         *"take a different building and really go big on it."* */
+      ok(/scene_path = "res:\/\/arcade\.tscn"/.test(town2) && !/_add_door\("Arcade"/.test(town2),
+        'the Arcade is a ROOM, not a link that opens a hall page in a new tab');
+      ok(fs.existsSync(path.join(GD, 'arcade.tscn')), '…and the scene exists');
+      /* ⭐⭐ THE STRONGEST CHECK IN THIS FILE: the cabinets are derived from the site's own
+         registry, from the other side. A fourth machine for a game that is not in the arcade,
+         or a game leaving the arcade and keeping its cabinet, is red here. */
+      const REG = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
+      const inArcade = [...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'[^\n]*cat:'arcade'/gm)]
+        .map((m) => m[1]).sort();
+      const cabs = [...arc.matchAll(/"slug": "([a-z-]+)"/g)].map((m) => m[1]).sort();
+      ok(inArcade.length >= 3, 'the site has an arcade to be in', inArcade.join(' '));
+      ok(JSON.stringify(cabs) === JSON.stringify(inArcade),
+        '…and the cabinets ARE the site\'s arcade, both ways',
+        'cabinets: ' + cabs.join(' ') + '  |  registry: ' + inArcade.join(' '));
+      ok(/func slot_for_game\(game: String\) -> int:/.test(gs)
+        && /func unlock_need\(slot: int\) -> int:/.test(gs),
+        'a machine can ask the ROSTER which square its score buys, and for how much');
+      ok(/GameState\.unlock_need\(_slot\)/.test(arc) && !/300|500|"un":/.test(arc),
+        '…and carries no threshold of its own',
+        '⚠ two copies of a price is a machine promising a piece it cannot give');
+      ok(/draw_set_transform\(r\.position, 0\.0, Vector2\(m, m\)\)/.test(arc)
+        && /draw_set_transform\(Vector2\.ZERO, 0\.0, Vector2\.ONE\)/.test(arc),
+        'the attract screens are drawn in unit space, and the transform is RESET after');
+      ok(/draw_set_transform\(Vector2\.ZERO, 0\.0, Vector2\.ONE\)\s*\n\s*_attract_over\(r\)/.test(arc),
+        '…and anything with a STROKE is drawn after the reset',
+        '⚠⚠ a 3px outline under a scale of 80 arrives 240px thick — it covered a whole cabinet');
+      ok(/func _box\(aspect: float, r: Rect2\) -> Rect2:/.test(arc)
+        && /_box\(aspect, Rect2\(x, y, 0\.19/.test(arc),
+        '…and a sprite that scrolls off a screen is clipped, not painted on the next cabinet');
+      /* ⚠⚠ `.new()`, NOT THE BARE CLASS NAME. Both of these are named in this file's own
+         header, so the first draft went green on PROSE: swapping the CanvasModulate for a
+         ColorRect left the room unlit and the check happy. Ask what the gate does when the
+         subject is ABSENT. [[green-must-name-what-ran]] */
+      ok(/static var _glow: Texture2D/.test(arc) && /GradientTexture2D\.new\(\)/.test(arc)
+        && /PointLight2D\.new\(\)/.test(arc) && /CanvasModulate\.new\(\)/.test(arc),
+        'the room is dark and the machines light it — real 2D lights, one shared texture');
+      ok(/if not inner\.encloses\(Rect2\(at, Vector2\(cell, cell\)\)\):/.test(arc),
+        '…and the carpet stops at the wall  (⚠ ceil() overruns and there is no clip rect)');
+      ok(/@export var speed: float = 700\.0/.test(player),
+        'the feet are back down to 700  (⛑ 1180 was mine and it was a misread percentage)');
+      }
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
     }
