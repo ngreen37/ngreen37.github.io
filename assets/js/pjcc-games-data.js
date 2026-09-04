@@ -23,11 +23,15 @@ window.PJCC_GAMES = [
   // orphan every score anybody has already banked. Same rule the two-brand split runs on:
   // display text changes, identifiers keep the old spelling. [[site-two-brand-split]]
   { slug:'pirc-protocol',     name:'Tabiya',             cryptic:'Learn the book by heart',          icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
-  // Shogi Island — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating 将 icon on the splash. Restore by uncommenting.
-  // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war',      icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },
+  // ⛑⛑ SLOW-ROLLED 2026-07-04, OPENED 2026-09-03 (Nate: *"let's open up the japanese games on
+  // Shogi island - it's time - let's just do it."*). It spent two months reachable only from a
+  // floating 将 glyph on the splash, which meant the `isle` hall at /games/isle/ existed and was
+  // EMPTY — both of its cards were these two lines. ⚠ Re-commenting them empties that hall again.
+  { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war',      icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },
   { slug:'clearance-delta',   name:'Clearance: DELTA',   cryptic:'Chess Trivia game',              icon:'Δ', accent:'#ff77a8', cat:'learn',  score:['clearance-delta','score'] },
-  // Reading Room — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating あ icon on the splash. Restore by uncommenting.
-  // { slug:'reading-room',      name:'The Reading Room',   cryptic:'Learn to read, one mark at a time',    icon:'あ', accent:'#ff5050', cat:'isle', soon:true, score:['reading-room','score'], neu:'2026-06-22' },
+  // ⛑ OPENED IN THE SAME BREATH, and `soon:true` came OFF with it — the room shipped
+  // 2026-06-22 and a "coming soon" ribbon on a finished game is the card lying about itself.
+  { slug:'reading-room',      name:'The Reading Room',   cryptic:'Learn to read, one mark at a time',    icon:'あ', accent:'#ff5050', cat:'isle', score:['reading-room','score'] },
   { slug:'sky-run',           name:'Sky Run',            cryptic:'Do a barrel roll!',              icon:'♞', accent:'#3cbcfc', cat:'arcade', score:['sky-run','score'] },
   // The Park Tables — LIVE, but NOT an arcade card (Nate 2026-07-14): it stands beside
   // the Gauntlet as a featured entrance on games.md and has its own splash glyph. Don't re-add here.

@@ -213,6 +213,21 @@ const server = http.createServer((req, res) => {
     ok(/townMerge\(/.test(pull), '…and merges what comes back rather than overwriting');
 
 
+    /* ⛑ THE TWO JAPANESE ROOMS CAME OFF THE SLOW-ROLL, 2026-09-03 (*"it's time - let's just
+       do it"*). They were commented out of the registry on 07-04, which left the `isle` hall
+       at /games/isle/ rendering an EMPTY grid for two months — those two lines were its only
+       cards. ⚠ Re-commenting them empties that hall again. [[removed-not-forgotten]] */
+    const GD_DATA = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
+    const listed = (slug) => new RegExp("^\\s*\\{ slug:'" + slug + "'", 'm').test(GD_DATA);
+    ok(listed('shogi-island'), 'Shogi Island is listed in the games registry, not commented out');
+    ok(listed('reading-room'), '…and so is the Reading Room');
+    ok(!/reading-room'[^\n]*soon:true/.test(GD_DATA),
+      '…without a "coming soon" ribbon on a game that shipped in June');
+    for (const g of ['shogi-island', 'reading-room']) {
+      ok(!/^noindex:\s*true/m.test(fs.readFileSync(path.join(ROOT, 'games/' + g + '/index.html'), 'utf8')),
+        '…and /games/' + g + '/ no longer hides from search  (no live game carries noindex)');
+    }
+
     /* the head-to-head, before you sit down (2026-09-03) */
     ok(/function h2hWords\(/.test(PT) && /h2hWords\(id\)/.test(PT),
       'the bench card shows your record against a seat — ONE reader, two shapes');
@@ -406,14 +421,21 @@ const server = http.createServer((req, res) => {
 
       /* ══ 6 · SHOGI ISLAND, BY BOAT ══════════════════════════════════════════════════ */
       const isl = fs.readFileSync(path.join(GD, 'island.gd'), 'utf8');
-      /* ⚠ IT READS CODE, NOT PROSE. The first cut grepped the whole file for the shogi
-         room's path and went red on the header comment saying the island must not open it —
-         a gate that cannot tell a rule from a violation of it. */
-      ok(!/\burl\s*=\s*"[^"]*shogi-island/.test(isl) && !/_add_door\([^)]*shogi/.test(isl),
-        'the island is a PLACE — nothing on it opens the shogi room  (he said so in the ask)');
+      /* ⛑⛑ THIS CHECK USED TO ASSERT THE OPPOSITE, and the reversal is his: *"let's open up
+         the japanese games on Shogi island - it's time - let's just do it."* For one day the
+         island deliberately refused to open the shogi room and this gate enforced the refusal.
+         ⚠ DO NOT "RESTORE" IT. [[removed-not-forgotten]]
+         ⚠ IT READS CODE, NOT PROSE — the first version grepped the whole file for the path and
+         went red on the header comment describing the rule, a gate that could not tell a rule
+         from a violation of it. */
+      ok(/\burl\s*=\s*"\/games\/shogi-island\/"/.test(isl),
+        'the island OPENS the shogi room now  (⛑ the 09-03 reversal, his call)');
       ok(/world_bounds = Rect2/.test(isl), '…and it has an edge');
-      ok(/"who": "Kaede"/.test(roster) && !/Shogi Island",\s*"key"/.test(roster),
-        '…and the d-pawn is a person now, not a place name on a chessboard');
+      /* ⚠ THE SQUARE FOLLOWS THE GAME THAT WINS IT. It is unlocked by solving five on Shogi
+         Island, and shogi is Matsu's — he is the one who never left. It briefly said "Kaede"
+         and before that "Shogi Island", which was a PLACE on a board full of people. */
+      ok(/"who": "Matsu"/.test(roster) && !/Shogi Island",\s*"key"/.test(roster),
+        '…and the d-pawn belongs to whoever\'s game wins it');
       /* ⚠⚠ MEASURED, NOT ASSUMED: Godot's built-in font has no kana. Without the subset every
          line he speaks renders as nothing at all — silently, with no error anywhere. */
       const fontAt = path.join(GD, 'kaede_jp.ttf');
@@ -448,6 +470,92 @@ const server = http.createServer((req, res) => {
         'the boat refuses until the oars are won');
       ok(/class PuzzleChamp extends TownNPC/.test(town) && !/class PuzzleChamp extends TownChallenger/.test(town),
         '…and the Champ is NOT a challenger — he has no bench key and must never be given one');
+
+      /* ══ 6b · THE JAPANESE LANE, OPENED 2026-09-03 ═════════════════════════════════
+         *"let's open up the japanese games on Shogi island - it's time - let's just do it. Get
+         Kaede's sibling on the map too and let's do both japanese game (reading room and
+         shogi) - let's do what we can to teach the user japanese if they wish."* */
+      const town2 = town;
+      ok(/url = "\/games\/reading-room\/"/.test(town2),
+        'the Reading Room is a building in Checker Town');
+      /* ⚠⚠ EVERY SITE URL THE TOWN OPENS, PULLED OUT OF THE TOWN. Naming the two Japanese
+         ones here would be the same defect the Academy's lesson check already had: a gate that
+         only knows the answers it was given cannot see a THIRD door added later pointing at
+         nothing. Both spellings are matched — the literal `url = "…"` and `_add_door(name, "…")`.
+         [[dead-game-links-trap]] */
+      const doors = [...(isl + town2).matchAll(/url = "(\/[^"]+)"/g)].map((m) => m[1])
+        .concat([...town2.matchAll(/_add_door\([^,]+,\s*"(\/[^"]+)"/g)].map((m) => m[1]));
+      ok(doors.length >= 5, 'the town opens real site pages', doors.length + ' doors read from source');
+      for (const u of [...new Set(doors)]) {
+        ok(permalinks.has(u), 'the door to ' + u + ' is a real page, not a 404');
+      }
+      /* ⚠⚠ CANON PUTS THEM IN DIFFERENT PLACES AND THE ASK DID NOT. `_characters/kaede.md` is
+         `last_seen: CHECKER TOWN` and she runs the library; `_characters/matsu.md` is
+         `last_seen: SHOGI ISLAND` and "never left". A check on the FILES, so a later tidy that
+         swaps them has to argue with his own character sheets. */
+      const kmd = fs.readFileSync(path.join(ROOT, '_characters/kaede.md'), 'utf8');
+      const mmd = fs.readFileSync(path.join(ROOT, '_characters/matsu.md'), 'utf8');
+      ok(/last_seen:\s*CHECKER TOWN/.test(kmd) && /kaede\.who = "Kaede"/.test(town2),
+        'Kaede is in Checker Town, where her own character file puts her');
+      ok(/last_seen:\s*SHOGI ISLAND/.test(mmd) && /matsu\.who = "Matsu"/.test(isl),
+        '…and Matsu is on the island, where his does');
+      ok(/matsu\.no_english = true/.test(isl),
+        '…he speaks no English, and the card says so rather than leaving you to guess');
+      ok(/kaede\.teaches_words = true/.test(town2) && /"id": "word"/.test(npc),
+        'the teaching is ONE OPT-IN MENU ROW  ("if they wish")');
+      ok(/const WORDS := \[/.test(gs) && /func learn_word\(/.test(gs),
+        '…backed by a fixed list, handed out in order');
+      ok(/if not words\.has\(jp\):/.test(gs),
+        '…never the same word twice  (⚠ a random pick makes the sixteenth take forty asks)');
+      ok(/for k in \(d\.get\("words", \{\}\) as Dictionary\)/.test(gs),
+        '…and a word learned on the phone is learned here');
+
+      /* ⭐⭐ THE FONT COVERS WHAT THE SCRIPTS SAY. This is the check that makes the whole
+         Japanese lane safe to edit: Godot's built-in font has no kana and no kanji, and a
+         character missing from the subset draws as NOTHING — no tofu, no warning, no error.
+         So the gate reads every CJK character out of the .gd files and looks each one up in
+         the font's own cmap. Add a kanji and forget to rerun make_font.py, and this goes red
+         with the character in the message. */
+      const cover = (() => {
+        const b = fs.readFileSync(fontAt);
+        const num = b.readUInt16BE(4);
+        let cmap = 0;
+        for (let i = 0; i < num; i++) {
+          const o = 12 + i * 16;
+          if (b.toString('latin1', o, o + 4) === 'cmap') cmap = b.readUInt32BE(o + 8);
+        }
+        if (!cmap) return null;
+        const set = new Set();
+        const n = b.readUInt16BE(cmap + 2);
+        for (let i = 0; i < n; i++) {
+          const off = cmap + b.readUInt32BE(cmap + 4 + i * 8 + 4);
+          if (b.readUInt16BE(off) !== 4) continue;          // format 4 covers the BMP
+          const segX2 = b.readUInt16BE(off + 6), seg = segX2 / 2;
+          const ends = off + 14, starts = ends + segX2 + 2, deltas = starts + segX2;
+          for (let sgi = 0; sgi < seg; sgi++) {
+            const e = b.readUInt16BE(ends + sgi * 2), st = b.readUInt16BE(starts + sgi * 2);
+            if (st === 0xFFFF) continue;
+            for (let c = st; c <= e && c !== 0x10000; c++) set.add(c);
+          }
+        }
+        return set;
+      })();
+      ok(cover && cover.size > 200, 'the font\'s cmap is readable', cover ? cover.size + ' codepoints' : 'unreadable');
+      if (cover) {
+        const said = new Set();
+        for (const f of fs.readdirSync(GD)) {
+          if (!f.endsWith('.gd')) continue;
+          for (const ch of fs.readFileSync(path.join(GD, f), 'utf8')) {
+            const o = ch.codePointAt(0);
+            if ((o >= 0x3000 && o <= 0x30FF) || (o >= 0x4E00 && o <= 0x9FFF)) said.add(ch);
+          }
+        }
+        const missing = [...said].filter((ch) => !cover.has(ch.codePointAt(0)));
+        ok(said.size > 20, 'the town actually says something in Japanese', said.size + ' characters');
+        ok(missing.length === 0,
+          '…and the font can draw EVERY one of them  (⚠ a missing glyph is silent — rerun make_font.py)',
+          missing.length ? 'MISSING: ' + missing.join('') : said.size + ' checked');
+      }
 
       /* ══ 7 · REWARD AND DEFEAT ══════════════════════════════════════════════════════ */
       ok(/func cost\(\) -> int:/.test(chal) && !/GameState\.spend\(energy_cost\)/.test(chal),
