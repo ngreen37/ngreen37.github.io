@@ -270,6 +270,72 @@ const server = http.createServer((req, res) => {
       ok(/a\.step\(\)/.test(player) && /_walked/.test(player),
         '…footsteps paced by DISTANCE, so they stop when you walk into a wall');
 
+      /* ── the cast, and the four squares that had no way in ─────────────────────── */
+      /* ⚠ SLICED TO `\n]`, NOT THE FIRST `]`. Rows carry `"un": ["shogi-island", 5]` now, so
+         the first bracket is four rows in — the first draft of this check read a third of the
+         roster and reported Robert missing from it. */
+      const rStart = gs.indexOf('const ROSTER');
+      const roster = gs.slice(rStart, gs.indexOf('\n]', rStart));
+      ok(!/"key": ""\s*\}/.test(roster.replace(/"un":[^}]*/g, '')) || /"un"/.test(roster),
+        'no square is a dead end — every one has a key or an "un"');
+      ok(/"who": "Robert",\s*"key": "robert"/.test(roster),
+        '⛑ Robert has a square — he stood in the town owning nothing you could win');
+      ok(/_add_challenger\("Vince", "brother"/.test(town),
+        '⛑ Vince is ON THE MAP — he owned the a-rook and was nowhere');
+      ok(/_add_challenger\("Princess", "princess"/.test(town),
+        '…and Princess stands outside the Assembly she gates');
+      /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once */
+      const yml = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
+      const keys = [...roster.matchAll(/"key": "([a-z]+)"/g)].map((m) => m[1]);
+      const real = [...yml.matchAll(/^- key:\s*(\S+)/gm)].map((m) => m[1]);
+      ok(keys.every((k) => real.includes(k)),
+        '…and every key is a REAL bench seat — a made-up key is a dead door',
+        keys.filter((k) => !real.includes(k)).join(' ') || keys.length + ' checked');
+
+      /* six hearts, and a card that works without a mouse */
+      ok(/const HEART_CAP := 6/.test(gs), 'hearts cap at six, not ten');
+      ok(/clampi\(int\(hearts\[k\]\), 0, HEART_CAP\)/.test(gs),
+        '…and a save from before today is clamped, or six pips sit beside a nine');
+      const card = fs.readFileSync(path.join(GD, 'npc_card.gd'), 'utf8');
+      ok(/get_mouse_position/.test(card) && /active_npc\(\)/.test(card),
+        'the relationship card has TWO ways in — hover, and standing there  (he is on iOS)');
+
+      /* the Academy is a place */
+      const acad = fs.readFileSync(path.join(GD, 'academy.gd'), 'utf8');
+      ok(/scene_path = "res:\/\/academy.tscn"/.test(town),
+        'the Academy is a building you enter, not a link');
+      /* ⚠⚠ A ROOM THAT OPENS ONTO A 404 IS THE WHOLE POINT OF THIS CHECK, so it resolves the
+         URL the way Jekyll does — a page lives at its `permalink:`, NOT at a folder matching
+         its path. /academy/bootcamp/ is `academy-bootcamp.md`. Checking for a directory
+         reported two real pages missing. [[dead-game-links-trap]] */
+      const permalinks = new Set();
+      const walk = (dir) => {
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+          if (e.name === 'node_modules' || e.name === '.git' || e.name === '_site') continue;
+          const f = path.join(dir, e.name);
+          if (e.isDirectory()) { walk(f); continue; }
+          if (!/\.(md|html)$/.test(e.name)) continue;
+          const head = fs.readFileSync(f, 'utf8').slice(0, 900);
+          const m = head.match(/^permalink:\s*(\S+)\s*$/m);
+          if (m) permalinks.add(m[1].replace(/^["']|["']$/g, ''));
+          if (e.name === 'index.html' || e.name === 'index.md') {
+            permalinks.add('/' + path.relative(ROOT, dir).replace(/\\/g, '/') + '/');
+          }
+        }
+      };
+      walk(ROOT);
+      /* ⚠⚠ THE ROOMS ARE READ OUT OF THE FILE, NOT LISTED HERE. The first draft checked three
+         hard-coded URLs, which cannot see a FOURTH room added later pointing at nothing — it
+         passed a mutation that repointed a room at /academy/lesson-four/. A gate that only
+         knows the answers it was given is not a gate. */
+      const rooms = [...acad.matchAll(/_lesson\("[^"]*",\s*"([^"]+)"/g)].map((m) => m[1]);
+      ok(rooms.length >= 3, 'the Academy has its lesson rooms', rooms.length + ' found');
+      for (const u of rooms) {
+        ok(permalinks.has(u), 'the room for ' + u + ' is a real page, not a 404');
+      }
+      ok(/world_bounds = Rect2/.test(acad),
+        '…and the room has walls, or you walk out into black');
+
       const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
       /* ⚠ the lectern's own comment said listing Michael "would read as a quest you can
          start today, and neither of them is anywhere". Making them winnable made that true. */
