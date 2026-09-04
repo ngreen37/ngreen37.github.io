@@ -26,6 +26,7 @@ const ok = (cond, msg, detail) => results.push({ pass: !!cond, msg: msg + (detai
 
 /* ── 1 · the writer: Park Tables has to stamp the result at all ────────────────── */
 const PT = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
+const PROF = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
 
 function fn(src, name) {
   const a = src.indexOf('function ' + name + '(');
@@ -211,6 +212,19 @@ const server = http.createServer((req, res) => {
       'the town rides the ONE myStats() pull — no second round trip', 'in PJCC.ready.then');
     ok(/townMerge\(/.test(pull), '…and merges what comes back rather than overwriting');
 
+
+    /* the head-to-head, before you sit down (2026-09-03) */
+    ok(/function h2hWords\(/.test(PT) && /h2hWords\(id\)/.test(PT),
+      'the bench card shows your record against a seat — ONE reader, two shapes');
+    ok(/var rec = resume \? '' : h2hWords\(id\);/.test(PT),
+      '…resume outranks it, and neither is glued onto the rating  (⚠ a 143px card wraps)');
+    ok(/localStorage\.setItem\('pjcc\.puz\.log\.v1'/.test(fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_fork.html'), 'utf8')),
+      'the puzzle room logs each result for the town');
+    ok(/PJCC\.puzzleResult = function \(since\)/.test(PROF) && /JSON\.stringify\(out\)/.test(PROF),
+      '…and the profile hands it over as a STRING — a JS array does not cross the bridge');
+    ok(/local\.island_open = !!\(local\.island_open \|\| remote\.island_open\)/.test(PROF),
+      '…the oars merge by OR, like every other earned thing');
+
     ok(errs.length === 0, 'no page errors', errs.join(' | '));
 
     /* ── 4 · the Godot half asks, and the stand-in is off on web ─────────────────── */
@@ -341,6 +355,109 @@ const server = http.createServer((req, res) => {
          start today, and neither of them is anywhere". Making them winnable made that true. */
       ok(/_owed_elsewhere\(/.test(hall) && /unlock_say/.test(hall),
         'the lectern separates who you can walk up to from what is waiting on you elsewhere');
+
+      /* ══ 5 · MONKEY ISLAND: THE LINE LEFT THE BOX (2026-09-03) ══════════════════════
+         ⛑⛑ THE WORDS LEFT THE WORLD ON 09-02 BECAUSE THREE LABELS SHARED ONE PATCH OF MAP.
+         Putting one of them back is only safe while the other two stay gone, so these check
+         the CONDITIONS rather than the feature: the box is still the fallback, the nameplate
+         still yields, and the card still gets out of the way. */
+      const speech = fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8');
+      const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
+      const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
+      const npc = fs.readFileSync(path.join(GD, 'npc.gd'), 'utf8');
+      const chal = fs.readFileSync(path.join(GD, 'challenger.gd'), 'utf8');
+
+      ok(/extends CanvasLayer/.test(speech) && /get_screen_center_position/.test(speech),
+        'the line is drawn over the speaker — a layer that PROJECTS, not a Label in the world',
+        '(a parented label at the map edge is drawn where the camera cannot reach)');
+      ok(/u\.say\(text, seconds, self\)/.test(inter) && /u\.talk\(speaker, line, options, self\)/.test(inter),
+        '…and every interactable names its own mouth');
+      ok(/func speech_top\(/.test(chal) && /func speech_top\(/.test(npc),
+        '…and anything taller than its radius raises the line clear of its own picture');
+      ok(/var look: int = IDLE if \(_mode == SAY and _bubbled\) else _mode/.test(ui),
+        '…a bubbled one-liner leaves the box LOOKING idle, so the prompt does not blink out');
+      ok(/sp\.speaker\(\) != self/.test(npc),
+        '…the nameplate yields to the words  (⛑ the exact 09-02 stacking, one layer up)');
+      ok(/sp\.speaker\(\) != null/.test(fs.readFileSync(path.join(GD, 'npc_card.gd'), 'utf8')),
+        '…and so does the relationship card');
+      /* ⚠⚠ THE BOX IS NOT DEAD CODE. The zone speaks for results that landed in another tab
+         and those have no mouth on screen; a "bubble everything" refactor would silence them. */
+      ok(/_ui\.say\("Word travels/.test(zone) && /func _bubble\(from: Node2D/.test(ui),
+        '…and the BOX still answers when nobody on screen is speaking');
+
+      /* the big fight — the only line in the town that knows the board's total */
+      ok(/"id": "big"/.test(chal) && /GameState\.has_slot\(GameState\.slot_for_key\(key\)\)/.test(chal),
+        'a regular whose square you hold offers the big fight');
+      ok(/func _big_fight_line\(/.test(chal) && /GameState\.claimable\(\)/.test(chal),
+        '…and reads the answer OFF THE BOARD, so it changes as the board fills');
+
+      /* ⛑ the names came off the Assembly, 2026-09-03 */
+      ok(/func _draw_plate\(/.test(hall) && !/NAME_OFF/.test(hall),
+        'the Assembly wears blank NAMEPLATES — the name is the prize, not the label');
+      ok(/if not won or f == null or who == "":\s*\n\s*return/.test(hall),
+        '…and an unwon square is written on by nothing');
+
+      /* the testing speed, and the two things that had to move with it */
+      ok(/@export var speed: float = 1180\.0/.test(player), 'the walk is at his 09-03 number');
+      ok(/position_smoothing_speed = maxf\(7\.0, speed \/ /.test(player),
+        '…the camera is DERIVED from it, or you outrun your own view');
+      ok(/_walked >= speed \* /.test(player),
+        '…and so is the footstep, or the cadence is 15 a second');
+
+      /* ══ 6 · SHOGI ISLAND, BY BOAT ══════════════════════════════════════════════════ */
+      const isl = fs.readFileSync(path.join(GD, 'island.gd'), 'utf8');
+      /* ⚠ IT READS CODE, NOT PROSE. The first cut grepped the whole file for the shogi
+         room's path and went red on the header comment saying the island must not open it —
+         a gate that cannot tell a rule from a violation of it. */
+      ok(!/\burl\s*=\s*"[^"]*shogi-island/.test(isl) && !/_add_door\([^)]*shogi/.test(isl),
+        'the island is a PLACE — nothing on it opens the shogi room  (he said so in the ask)');
+      ok(/world_bounds = Rect2/.test(isl), '…and it has an edge');
+      ok(/"who": "Kaede"/.test(roster) && !/Shogi Island",\s*"key"/.test(roster),
+        '…and the d-pawn is a person now, not a place name on a chessboard');
+      /* ⚠⚠ MEASURED, NOT ASSUMED: Godot's built-in font has no kana. Without the subset every
+         line he speaks renders as nothing at all — silently, with no error anywhere. */
+      const fontAt = path.join(GD, 'kaede_jp.ttf');
+      ok(fs.existsSync(fontAt), 'a font that can draw kana ships with the town');
+      if (fs.existsSync(fontAt)) {
+        ok(fs.statSync(fontAt).size < 200 * 1024,
+          '…and it is a SUBSET, not a 9 MB CJK face', Math.round(fs.statSync(fontAt).size / 1024) + ' kB');
+      }
+      ok(/fv\.base_font = ThemeDB\.fallback_font/.test(speech) && /fv\.fallbacks = \[jp\]/.test(speech),
+        '…as a FALLBACK, so the rest of the town does not change typeface');
+      ok(/if jp == null:\s*\n\s*return null/.test(speech),
+        '…and a missing font loses Kaede, not the English  [[down-never-stuck]]');
+      ok(/no_seat_say/.test(chal) && /no_seat_say = /.test(isl),
+        'his chess row is grayed and SAYS WHY — no bench seat was invented for him');
+
+      /* the three-in-a-row gate */
+      ok(/const PUZZLE_RUN := 3/.test(gs) && /func poll_puzzle\(/.test(gs),
+        'the Puzzle Champ keeps the oars until three clean in a row');
+      ok(/poll_challenge\(\)\s*\n\s*poll_puzzle\(\)/.test(gs),
+        '…counted on the SAME 2s tick, not a second timer');
+      ok(/if typeof\(got\) != TYPE_ARRAY:/.test(gs),
+        '…reading an ARRAY of results, or two puzzles inside one tick lose one  (⚠ the streak would never finish)');
+      ok(/puz = \{ "failed_day": day \}/.test(gs),
+        '…and one wrong answer ends it until tomorrow');
+      ok(/func puzzle_more\(/.test(gs) && /NOT puzzle_begin/.test(gs),
+        '…while "set me another" mid-run does NOT reset the count to zero');
+      /* ⚠ IT NAMES THE REFUSAL, not the flag. `if not GameState.island_open:` appears twice in
+         the Rowboat — once to refuse and once to decide whether to draw the oars — so a check
+         on the flag alone passed a mutation that let anybody row out. */
+      ok(/class Rowboat extends TownDoor/.test(town) &&
+         /if not GameState\.island_open:\s*\n\s*say\("No oars/.test(town),
+        'the boat refuses until the oars are won');
+      ok(/class PuzzleChamp extends TownNPC/.test(town) && !/class PuzzleChamp extends TownChallenger/.test(town),
+        '…and the Champ is NOT a challenger — he has no bench key and must never be given one');
+
+      /* ══ 7 · REWARD AND DEFEAT ══════════════════════════════════════════════════════ */
+      ok(/func cost\(\) -> int:/.test(chal) && !/GameState\.spend\(energy_cost\)/.test(chal),
+        'a rematch with somebody whose square you hold is FREE — and sit-down reads the same price');
+      ok(/not razzed\.has\(key\)/.test(gs) && /razzed\[key\] = 1/.test(gs),
+        '…and they notice the loss ONCE, ever  ("you don\'t have to hear it twice")');
+      ok(/slot == -3\b/.test(zone) && /_razz_of\(who\)/.test(zone),
+        '…in their own words, asked of the person rather than stored in the room');
+      ok(/for k in \(d\.get\("razzed", \{\}\) as Dictionary\)/.test(gs),
+        '…and it is a UNION across devices, or the phone says it again');
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
     }

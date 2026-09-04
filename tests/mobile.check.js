@@ -511,7 +511,11 @@ const WIDTHS = [320, 360, 390, 430];
      renamed or restructured makes this check fail rather than quietly test a fossil. */
   {
     const bench = read('games/park-tables/index.html');
-    const botCard = (bench.match(/'<button class="pt-card pt-bot'[\s\S]{0,400}?<\/span><\/button>'/) || [''])[0];
+    /* ⚠ THE WINDOW IS A GUESS AND IT RAN OUT (2026-09-03, at 461 chars). Adding the
+       head-to-head badge pushed the card's template past a hard 400, and the probe reported
+       "NO BENCH CARD" for a card that was perfectly fine — a length limit dressed as an
+       assertion. 900 is the same guess with room; the check below is what actually matters. */
+    const botCard = (bench.match(/'<button class="pt-card pt-bot'[\s\S]{0,900}?<\/span><\/button>'/) || [''])[0];
     const dsr = read('dossier.md');
     const achOwn = (dsr.match(/\.dsr-ach-grid[\s\S]*?\n\}/) || [''])[0];
     /* ⛑⛑ THE BENCH IS TWO RAILS NOW, ONE ROW EACH (2026-08-20). Nate: *"can the rows slide

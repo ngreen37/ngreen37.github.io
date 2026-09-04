@@ -590,6 +590,10 @@
     local.hearts = Math.max(+local.hearts || 0, +remote.hearts || 0);
     local.ore = Math.max(+local.ore || 0, +remote.ore || 0);
     local.ceo_beaten = !!(local.ceo_beaten || remote.ceo_beaten);
+    /* ⚠ EARNED, SO IT IS AN OR — three clean puzzles in a row bought the oars once and
+       they do not un-buy on another device. A run IN PROGRESS is deliberately not here:
+       it is not earned yet and it belongs to the tab it was started in. */
+    local.island_open = !!(local.island_open || remote.island_open);
     /* the army is SLOT INDICES, so a union needs no arithmetic and two devices that filled
        different squares keep both */
     var army = {}, i;
@@ -1149,6 +1153,25 @@
     var r = townLast(key, since);
     if (!r || !r.won) return null;
     return r.clean === undefined ? true : !!r.clean;
+  };
+
+  /* ⭐ THE OARS TO SHOGI ISLAND. The Puzzle Champ wants three clean solves in a row; the town
+     owns that count and this hands it the raw results, oldest first, since a timestamp.
+     ⚠⚠ AN ARRAY, NOT THE LATEST ONE. Two puzzles can settle inside the town's 2s tick and a
+     "most recent" reading would drop the first — on a three-in-a-row gate that is a streak
+     that will not finish, with nothing on screen to explain it.
+     ⚠ A STRING, NOT AN ARRAY, ACROSS THE BRIDGE. JavaScriptBridge.eval returns a Variant and
+     a JS array does not survive it; every other call in this seam already answers with JSON
+     or a small integer for the same reason. "" means nothing new.
+     ⚠ `since` IS IN SECONDS because Time.get_unix_time_from_system() is; the log is in ms. */
+  PJCC.puzzleResult = function (since) {
+    try {
+      var a = JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]');
+      if (!Array.isArray(a)) return '';
+      var cut = (+since || 0) * 1000, out = [], i;
+      for (i = 0; i < a.length; i++) if (a[i] && a[i].at > cut) out.push(a[i]);
+      return out.length ? JSON.stringify(out) : '';
+    } catch (e) { return ''; }
   };
 
   function townLast(key, since) {

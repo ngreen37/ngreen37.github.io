@@ -1430,6 +1430,27 @@ const CAT_ORDER = ['fork','skewer','material','discovered','pin','mate'];
 // Per-tactic accuracy, tracked across all runs (shown on the summary + the Dossier).
 function loadTactics(){ try { return JSON.parse(localStorage.getItem(TACT_KEY)) || {}; } catch(e){ return {}; } }
 function saveTactics(t){ try { localStorage.setItem(TACT_KEY, JSON.stringify(t)); } catch(e){} }
+/* ══ A LOG CHECKER TOWN CAN READ ═══════════════════════════════════
+   2026-09-03. The Puzzle Champ down at the Sea keeps the oars to Shogi Island and wants three
+   clean in a row; the town counts them, and this is the only thing that can tell it.
+
+   ⚠⚠ A LOG, NOT A "LAST RESULT". The town polls every two seconds and two puzzles can settle
+   inside one tick — a single `last` field would silently drop the first, which on a
+   three-in-a-row gate is a streak that never finishes and no way to see why.
+   ⚠ `earned` IS THIS ROOM'S OWN WORD FOR CLEAN and it is reused deliberately: aced, no
+   reveal, no hint. Inventing a second definition of a clean solve is how two counters that
+   should agree stop agreeing.
+   ⚠ EIGHT ENTRIES. Long enough that a slow poll cannot miss one, short enough that this is
+   never a place anybody stores anything. Local only — it is a transcript, not progress. */
+function logForTown(earned){
+  try {
+    var a = JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]');
+    if (!Array.isArray(a)) a = [];
+    a.push({ c: earned ? 1 : 0, at: Date.now() });
+    localStorage.setItem('pjcc.puz.log.v1', JSON.stringify(a.slice(-8)));
+  } catch (e) {}
+}
+
 function recordTactic(cat, clean){
   if (!cat) return;
   const t = loadTactics(); const e = t[cat] || { seen:0, clean:0 };
@@ -1728,6 +1749,7 @@ function puzzleSolved(){
   recordTactic(G.p.cat, earned);
   if (earned) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
   else { run.stats.streak = 0; queueRetry(G.p); }
+  logForTown(earned);
   if (run.ladder){ if (G.revealed) run.slipped = true; else run.rungs = (run.rungs||0) + 1; }
 
   /* ── THE RATING SETTLES, AND IT IS NOW THE DIFFICULTY DIAL (2026-08-03, priority #2) ──

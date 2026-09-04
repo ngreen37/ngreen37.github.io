@@ -1769,11 +1769,17 @@ body_class: theme-hall
          advertised or spoiled; it is TRUE rather than decorative; and it disappears if the
          browser is cleared, because then he genuinely has not watched you play. */
       var hasFile = !!b.studies && !!(repFavorite('w') || repFavorite('b'));
+      /* ⚠ SILENT ON THE FIRST GAME, same rule as the chip over the board: "0–0" is not a
+         standing, it is a seat you have not sat in. ⚠ AND RESUME OUTRANKS IT — one badge line,
+         and "there is a game waiting here" is the more urgent of the two. */
+      var rec = resume ? '' : h2hWords(id);
       return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') +
         (hasFile ? ' pt-bot--studies' : '') + '" data-bot="' + id + '"' + tint(b) + '>' +
         '<span class="pt-card-icon">' + glyph + '</span>' +
         '<span class="pt-card-t">' + esc(b.name) + stars + '<br><i>' + esc(meta) + '</i>' +
-        (resume ? '<b class="pt-bot-go">resume</b>' : '') + '</span></button>';
+        (resume ? '<b class="pt-bot-go">resume</b>' : '') +
+        (rec ? '<b class="pt-bot-go pt-bot-rec">you ' + esc(rec) + '</b>' : '') +
+        '</span></button>';
     }
   }
   function wireBots(){
@@ -2287,11 +2293,23 @@ body_class: theme-hall
      ⚠ SILENT ON THE FIRST GAME. "0–0" is not a standing, it is a seat you have not sat in.
      ⚠ DRAWS ARE ONLY PRINTED WHEN THERE ARE SOME. "3–1" reads; "3–1–0" reads like a database. */
   function h2hChip(botId){
+    var r = h2hWords(botId);
+    return r ? ' · you ' + r : '';
+  }
+
+  /* ⭐ AND IT GOES ON THE BENCH CARD TOO, 2026-09-03 (Nate: *"the head-to-head that's now over
+     the board should show on the bench card too, so you can see the score before you sit
+     down."*). One reader, two shapes — the chip above wants a clause, the card wants a badge.
+     ⚠⚠ IT IS A BADGE ON ITS OWN LINE, NOT A THIRD CLAUSE ON THE RATING, and that is a bug this
+     file has already had: the card is 143px wide and gluing anything onto "Beginner · 400"
+     breaks the wrap between a number and its label. `resume` sits on its own line for exactly
+     this reason and says so in its own note. */
+  function h2hWords(botId){
     try {
       if (!window.PJCCAuston || !PJCCAuston.vs) return '';
       var r = PJCCAuston.vs(botId);
       if (!r || !r.games) return '';
-      return ' · you ' + r.w + '–' + r.l + (r.d ? '–' + r.d : '');
+      return r.w + '–' + r.l + (r.d ? '–' + r.d : '');
     } catch (e) { return ''; }
   }
 
@@ -3849,6 +3867,10 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
   font-weight: 400; color: #6bffb8; }
 .pt-bots .pt-card.pt-bot--locked .pt-bot-go { color: #79818e; }
+/* ⚠ DIMMER THAN `resume` ON PURPOSE. They share a line's worth of styling but not a job:
+   resume is something to do, a record is something to know. Same green would read as a
+   second button. */
+.pt-bot-rec { color: var(--ink-3, #9aa3b2); letter-spacing: 0.08em; }
 
 /* ══ THE BENCH SLIDES SIDEWAYS ON A PHONE (2026-08-20) ════════════════════════
    Nate: “The characters are still showing vertical” — the same ask the cast rail answered
