@@ -32,7 +32,17 @@ const path = require('path');
 const puppeteer = require('puppeteer-core');
 const { findChrome } = require('./harness');
 const ROOT = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+/* ⛑⛑ CRLF NORMALIZED AT THE DOOR, 2026-09-04. `core.autocrlf` is true on Windows and
+   there is no .gitattributes, so a FRESH CLONE checks these files out with 
+ — and the
+   slicers below anchor on `
+` (`^ {2}\}
+(?=...)`, `
+  \];`). They found nothing, the file
+   exited 1, and it had nothing to do with the Forge. It only ever passed because tooling
+   had rewritten the working copy as LF; restoring a file to its COMMITTED state exposed it.
+   ⚠ Normalize where the text enters, not in nine regexes. */
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
 
 const CREATOR = read('assets/js/pjcc-creator.js');
 const FACE = read('assets/js/pjcc-face-art.js');

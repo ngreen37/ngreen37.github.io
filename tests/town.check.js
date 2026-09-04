@@ -311,7 +311,11 @@ const server = http.createServer((req, res) => {
         '⛑ Robert has a square — he stood in the town owning nothing you could win');
       ok(/_add_challenger\("Vince", "brother"/.test(town),
         '⛑ Vince is ON THE MAP — he owned the a-rook and was nowhere');
-      ok(/_add_challenger\("Princess", "princess"/.test(town),
+      /* ⛑ SHE IS A TownDog SINCE 2026-09-04 and no longer goes through _add_challenger, but
+         the rule this check exists for is unchanged: she is placed OUTSIDE the Assembly she
+         gates, and she still owns the c-bishop. Both halves, or the spelling change would have
+         quietly taken her off the map. */
+      ok(/dog\.key = "princess"/.test(town) && /dog\.position = HALL_AT \+/.test(town),
         '…and Princess stands outside the Assembly she gates');
       /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once */
       const yml = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
@@ -1035,6 +1039,163 @@ const server = http.createServer((req, res) => {
           'the Arcade is wide enough for every cabinet in it',
           n + ' machines reach ' + reach + ', the wall is at ' + half);
       }
+
+      /* ══ 19 · NIGHT ═════════════════════════════════════════════════════════════════
+         *"the town after dark is a different town."* */
+      const clk = fs.readFileSync(path.join(GD, 'clock.gd'), 'utf8');
+      /* ⚠ ANCHORED. Unanchored this passed a build whose class was renamed TownClockX;
+         a prefix match is not an identity test, and this is the third one. */
+      ok(/^class_name TownClock$/m.test(clk), 'there is a clock');
+      /* ⚠⚠ THE WALL CLOCK AND THE GAME'S DAY COUNTER ARE DIFFERENT THINGS. `day` counts
+         VISITS and is what the bed advances; this is what time it is where the player is
+         sitting, and the whole value of night is that it changes while you are NOT looking. */
+      /* ⛑ COMMENTS STRIPPED FIRST. The header of clock.gd explains at length that it must NOT
+         read GameState.day, which means the word is in the file and a whole-file grep is
+         asking about prose. Seventh time in this repo; the first time it went RED rather than
+         green, because the claim happened to be a negative. [[green-must-name-what-ran]] */
+      const clkCode = clk.split('\n').filter((l) => !l.trim().startsWith('#')).join('\n');
+      ok(!/GameState/.test(clkCode),
+        '…and it is the WALL clock — no line of it can see GameState.day',
+        '⚠⚠ sleeping in a bed must not make it morning');
+      /* ⚠ THE ABSENCE IS THE CHECK. hour() and weekday() both call this, so asking whether
+         `(false)` appears anywhere still passed with one of them flipped to UTC. */
+      ok(/get_datetime_dict_from_system\(false\)/.test(clk)
+        && !/get_datetime_dict_from_system\(true\)/.test(clk),
+        '…in LOCAL time, in BOTH readers  (⚠ `true` is UTC: midnight here at four in the afternoon)');
+      /* the darkest tint still has to be a town you can cross */
+      const nightTint = /NIGHT: return Color\(([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(clk);
+      ok(nightTint && Math.max(+nightTint[1], +nightTint[2], +nightTint[3]) >= 0.35,
+        '…and the darkest tint still leaves a walkable map  [[down-never-stuck]]',
+        nightTint && nightTint.slice(1).join(', '));
+      ok(/_sky\.color = TownClock\.tint\(\)/.test(town2) && /CanvasModulate\.new\(\)/.test(town2),
+        'the map is tinted by the hour');
+      ok(/_clock\.wait_time = 60\.0/.test(town2) && /_clock\.timeout\.connect\(_retime\)/.test(town2),
+        '…on a minute\'s tick, because the hour arrives while the tab is open');
+      ok(/func retime\(\) -> void:/.test(town2) && /n\.call\("retime"\)/.test(town2),
+        '…and ONE function tells everything that cares',
+        '⚠ three listeners on three timers is three chances to be in a different hour');
+      ok(/_light\.energy = 0\.5 if dark else 0\.0/.test(town2),
+        'a street lamp is a REAL light after dark and dark in the day');
+      ok(/func _draw_lit\(/.test(door) && /if board_face or not TownClock\.is_dark\(\)/.test(door),
+        '…and a building shows a light on — but never the Assembly',
+        '⚠ that face already wears sixteen windows that MEAN something');
+
+      /* ══ 20 · THE DOG ═══════════════════════════════════════════════════════════════
+         *"the dog is in the town — she follows you, and she finds things."* */
+      const dog = fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8');
+      ok(/^class_name TownDog$/m.test(dog) && /extends TownChallenger/.test(dog),
+        'the dog is a CHALLENGER with legs, not a new kind of thing');
+      /* ⚠⚠ NO CHARACTER WAS INVENTED, and this is the check that says so. Follow the Dog runs
+         on updatePrincess() and her own file calls her a dog; if either of those stops being
+         true, the reason she is the one following you has gone. [[slow-roll-cast]] */
+      const FTD = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_space_run.html'), 'utf8');
+      const pmd = fs.readFileSync(path.join(ROOT, '_characters/princess.md'), 'utf8');
+      ok(/function updatePrincess\(/.test(FTD) && /a dog who can learn/.test(pmd)
+        && /dog\.who = "Princess"/.test(town2),
+        '…and she is PRINCESS, because Follow the Dog is her game',
+        '⚑ Crockett is the other dog and his file says "always around" — one word moves it');
+      /* ⚠⚠ ANCHORED TO THE END OF THE LINE. `0.0` is a PREFIX of `0.09`, so the first draft
+         of this passed with her away one day in eleven — the same defect as `-3` matching
+         `-33`, which this file has now had twice. ⚠ AND `$` IS NOT THE ANCHOR TO REACH FOR:
+         the line carries a trailing comment, so end-of-line failed on the truth. A lookahead
+         for a digit is the one that asks the real question. [[green-must-name-what-ran]] */
+      ok(/dog\.elo = 2100/.test(town2) && /dog\.away_chance = 0\.0(?!\d)/.test(town2),
+        '…keeping her seat, and never randomly missing  (a companion who vanishes reads as a bug)');
+      ok(/_follow = GameState\.hearts_for\(who\) > 0/.test(dog),
+        '…and she does not follow a stranger');
+      /* ⭐ she says only true things, and every one is read off state that already exists */
+      ok(/npc\.away\(\)/.test(dog) && /GameState\.claimable\(\)/.test(dog)
+        && /GameState\.island_open/.test(dog) && !/randf/.test(dog),
+        '⭐ every word she says is TRUE — who is out, what is owed, whether the boat is yours',
+        '⚠ a companion who says "I smell something" and means nothing is one you stop asking');
+      ok(/func away\(\) -> bool:/.test(npc),
+        '…asked of the person, so she keeps no second copy of a roll salted by the day');
+      ok(!/ChessArt/.test(dog),
+        '…and she is DRAWN as a dog, not as her bench glyph over a nameplate');
+
+      /* ══ 21 · THE PIECES TALK ═══════════════════════════════════════════════════════ */
+      const says = [...roster.matchAll(/"say": "/g)].length;
+      const whos = [...roster.matchAll(/"who": "/g)].length;
+      ok(says === whos && whos === 16,
+        'all sixteen squares carry the line their piece says', says + ' of ' + whos);
+      ok(/func square_says\(slot: int\) -> String:/.test(gs) && /not has_slot\(slot\)/.test(gs),
+        '…and an UNWON square says nothing  (nobody has lost it yet)');
+      ok(/class Square extends Interactable/.test(hall) && /sq\.slot = slot/.test(hall),
+        'one mouth per square, standing where the piece stands');
+      ok(/monitoring = won/.test(hall),
+        '…switched OFF until it is won, or an empty square takes the prompt off the Lectern');
+      ok(!/func _draw\(\)/.test(hall.slice(hall.indexOf('class Square'),
+                                           hall.indexOf('class Lectern'))),
+        '…and it draws NOTHING — the room paints the board in one pass over the roster');
+
+      /* ══ 22 · THE ROAD WEST ═════════════════════════════════════════════════════════
+         *"5 (but make it West instead of North)"* */
+      ok(/class CityGate extends TownDoor/.test(town2) && /url = "\/games\/chess-city\/"/.test(town2),
+        'the road west ends at a gate onto Chess City');
+      ok(/if not GameState\.ceo_beaten:[\s\S]{0,120}Barred from the other side/.test(town2),
+        '…barred until the far chair is taken, and it SAYS what would open it',
+        '⚠ "Locked for now" is a door refusing to name its own price');
+      /* ⛑ the map grew and one loop had the old corners typed into it */
+      const gRect = /const GROUND_RECT := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/
+        .exec(town2);
+      const gateX = /const GATE_AT := Vector2\((-?[\d.]+),/.exec(town2);
+      ok(gRect && gateX && +gateX[1] - 120 > +gRect[1],
+        '…and the map reaches past it, so the gate is not standing in the edge',
+        gateX && ('gate at ' + gateX[1] + ', edge at ' + gRect[1]));
+      ok(/while x <= GROUND_RECT\.end\.x:/.test(town2) && !/while x <= 1120\.0:/.test(town2),
+        '…and the grid is drawn off the RECT, not off four typed corners',
+        '⛑ it had -1120 in it and would have stopped 280 units short of the new edge');
+
+      /* ══ 23 · THE VISITOR ON A REAL DAY ═════════════════════════════════════════════
+         *"6 (make it Auston)"* */
+      ok(/@export var away_days: Array\[int\] = \[\]/.test(npc)
+        && /if not away_days\.is_empty\(\):[\s\S]{0,80}TownClock\.weekday\(\)/.test(npc),
+        'somebody can be out on a REAL weekday');
+      ok(/auston\.away_chance = 0\.0(?!\d)/.test(town2) && /auston\.away_days = \[2, 4\]/.test(town2),
+        '…and the calendar REPLACES the dice for her, it does not add to it',
+        '⚠ two rules deciding whether she is here is a bug you cannot tell from a feature');
+      ok(/auston\.gift_day = 0/.test(town2) && /It's %s\. Anything for me\?/.test(npc),
+        '…and on her day the row says WHOSE day it is');
+      /* ⚠⚠ A REAL DATE, NOT `day` — the whole point is that it is actually Sunday */
+      ok(/func take_gift\(\) -> String:/.test(gs) && /last_gift = today\(\)/.test(gs)
+        && /Time\.get_date_string_from_system\(false\)/.test(gs),
+        '…stamped with the real DATE, so it is once a week and not once a sleep');
+      ok(/if str\(d\.get\("last_gift", ""\)\) > last_gift:/.test(gs),
+        '…and the LATER date wins on a merge, or every device hands out its own copy');
+      ok(/func recheck_attendance\(\) -> void:/.test(npc)
+        && /n\.call\("recheck_attendance"\)/.test(town2),
+        '…and midnight arriving with the tab open moves her');
+
+      /* ══ 24 · THE STALL, AND THE BOARD YOU LEAVE A MOVE ON ══════════════════════════
+         *"7 (just use ore as currency for now)"* and *"8"*. */
+      ok(/const HATS := \[/.test(gs) && /"ore":/.test(gs),
+        'ore buys something now  (it had exactly one use and the mine paid into a number)');
+      /* ⚠⚠ COSMETIC IS A HOUSE RULE. Nothing may READ the worn hat except the two places that
+         draw it — the day something else does, this stall is a different kind of shop.
+         [[game-monetization-ethics]] */
+      const wearers = ['player.gd', 'town.gd'];
+      const readsHat = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+        .filter((f) => !wearers.includes(f) && f !== 'game_state.gd')
+        .filter((f) => /GameState\.hat\b/.test(fs.readFileSync(path.join(GD, f), 'utf8')));
+      ok(readsHat.length === 0,
+        '…and NOTHING reads what you are wearing except the two things that draw it',
+        readsHat.join(' ') || 'cosmetic only');
+      ok(/func buy_hat\(/.test(gs) && /func wear_hat\(/.test(gs),
+        'buying and wearing are two verbs');
+      ok(/for k in \(d\.get\("hats", \{\}\) as Dictionary\):/.test(gs)
+        && /if hat == "" and str\(d\.get\("hat", ""\)\) != ""/.test(gs),
+        '…and they SYNC differently: owning is a union, wearing is a preference',
+        '⚠⚠ a union on the worn hat puts it back on every time you take it off');
+      ok(/TownPlayer\.draw_hat\(self, str\(_row\(\)\["id"\]\)/.test(town2)
+        && /TownPlayer\.draw_hat\(self, GameState\.hat/.test(player),
+        '⭐ the stall draws its stock with the function that draws it on your head');
+      ok(/func _row\(\) -> Dictionary:/.test(town2) && /"id": "next", "text": "Show me another\."/.test(town2),
+        '…one hat on the counter at a time, because the box has room for four rows');
+      ok(/class PostBoard extends Interactable/.test(town2)
+        && /const URL := "\/games\/park-tables\/"/.test(town2),
+        'there is a board you leave a move on, and it opens the LOBBY');
+      ok(!/\?table=/.test(town2.slice(town2.indexOf('class PostBoard'))),
+        '…not a bot seat  (⚠ every table in the Pavilion is a bot; this one is a person)');
       }
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
