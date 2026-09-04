@@ -64,7 +64,17 @@ window.PJCC_GAMES = [
   // makes pjcc-hall.js render a <div> instead of an <a>, so the card shows in the Building
   // hall with no route in; the page itself is key-gated (see games/marchland/index.html).
   // Flip `playable` to true and delete the gate script when it's ready to open.
-  { slug:'marchland',         name:'ChessWild: Campaign',cryptic:'Ten holdings and a border that moves',  icon:'⚄', accent:'#c9a7ff', cat:'dev', playable:false },
+  /* ⛑ dev → arcade, 2026-09-04 (Nate: *"move Campaign into Arcade, but locked
+     until half the assembly is lit up"*). The lock he is describing is a Checker Town
+     condition and lives there — this hall has no idea what the Assembly is. What moves
+     here is only which room the card files under, and `playable:false` is untouched, so
+     a stranger still meets a card with no route in rather than a shut door.
+     ⚠ THE ARCADE'S BLURB SAYS "action, chases, and run-and-gun" AND THIS IS A MAP
+     GAME. His call, flagged rather than quietly reworded — the blurb is live copy.
+     ⚠⚠ AND IT IS NOW LOAD-BEARING IN TWO REPOS: `test:town` derives the Arcade room's
+     cabinets from `cat:'arcade'` here and fails BOTH WAYS, so moving this line back
+     without taking the cabinet out is red. */
+  { slug:'marchland',         name:'ChessWild: Campaign',cryptic:'Ten holdings and a border that moves',  icon:'⚄', accent:'#c9a7ff', cat:'arcade', playable:false },
   // Duel Mode — the same soft-gated shape; the page is at games/duel/index.html.
   { slug:'duel',              name:'Duel Mode',          cryptic:'Say something about the position',       icon:'⚔', accent:'#9fe8ff', cat:'dev', playable:false },
   // Checker Town (2026-09-02) — the Godot town, web-exported. Same soft gate; the page is at

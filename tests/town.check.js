@@ -493,9 +493,19 @@ const server = http.createServer((req, res) => {
          nothing. Both spellings are matched — the literal `url = "…"` and `_add_door(name, "…")`.
          [[dead-game-links-trap]] */
       const arc = fs.readFileSync(path.join(GD, 'arcade.gd'), 'utf8');
-      const doors = [...(isl + town2 + arc).matchAll(/url = "(\/[^"]+)"/g)].map((m) => m[1])
-        .concat([...town2.matchAll(/_add_door\([^,]+,\s*"(\/[^"]+)"/g)].map((m) => m[1]))
-        .concat([...arc.matchAll(/"url": "(\/[^"]+)"/g)].map((m) => m[1]));
+      const park = fs.readFileSync(path.join(GD, 'park.gd'), 'utf8');
+      const pit = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
+      const stair = fs.readFileSync(path.join(GD, 'stairwell.gd'), 'utf8');
+      /* ⛑⛑ AND THE SPELLINGS CHANGED UNDER IT, 2026-09-04. Three rooms shipped that day and
+         two of them name their page a new way — `const URL :=` in the stairwell, `const
+         TABLE_URL :=` in GameState — so a derivation that knew only `url = "…"` and
+         `_add_door(…)` would have gone green while three doors it had never read pointed
+         wherever they liked. `_add_door` no longer exists; every spelling that does is here.
+         ⚠ THE QUERY IS CUT: /games/park-tables/?table=maxwell is that page, and a permalink
+         set has never heard of a query string. */
+      const doors = [...(isl + town2 + arc + park + pit + stair + gs)
+        .matchAll(/(?:\burl = |"url": |\b[A-Z_]*URL :?= )"(\/[^"]+)"/g)]
+        .map((m) => m[1].split('?')[0]);
       ok(doors.length >= 5, 'the town opens real site pages', doors.length + ' doors read from source');
       for (const u of [...new Set(doors)]) {
         ok(permalinks.has(u), 'the door to ' + u + ' is a real page, not a 404');
@@ -743,13 +753,288 @@ const server = http.createServer((req, res) => {
          header, so the first draft went green on PROSE: swapping the CanvasModulate for a
          ColorRect left the room unlit and the check happy. Ask what the gate does when the
          subject is ABSENT. [[green-must-name-what-ran]] */
-      ok(/static var _glow: Texture2D/.test(arc) && /GradientTexture2D\.new\(\)/.test(arc)
+      /* ⛑ THE TEXTURE MOVED TO TownZone ON 2026-09-04, when the third room wanted it. The
+         check follows the code: `_glow` is the zone's now and the Arcade asks for it. */
+      ok(/static var _glow: Texture2D/.test(zone) && /GradientTexture2D\.new\(\)/.test(zone)
+        && /TownZone\.glow\(\)/.test(arc)
         && /PointLight2D\.new\(\)/.test(arc) && /CanvasModulate\.new\(\)/.test(arc),
         'the room is dark and the machines light it — real 2D lights, one shared texture');
+      ok(!/static func glow\(\)/.test(arc),
+        '…and there is only ONE of that texture, not one per room that wanted one');
       ok(/if not inner\.encloses\(Rect2\(at, Vector2\(cell, cell\)\)\):/.test(arc),
         '…and the carpet stops at the wall  (⚠ ceil() overruns and there is no clip rect)');
       ok(/@export var speed: float = 700\.0/.test(player),
         'the feet are back down to 700  (⛑ 1180 was mine and it was a misread percentage)');
+
+      /* ══ 14 · THE PARK TABLES ARE A ROOM ════════════════════════════════════════════
+         *"yes do Park Tables and The Depths."* */
+      ok(/scene_path = "res:\/\/park\.tscn"/.test(town2)
+        && !/url = "\/games\/park-tables\/"/.test(town2),
+        'the Park Tables is a ROOM, not a link that opens the lobby in a new tab');
+      ok(fs.existsSync(path.join(GD, 'park.tscn')), '…and the scene exists');
+      /* ⭐⭐ THE SAME TRICK THE ARCADE PLAYS ON THE GAMES REGISTRY, aimed at the bench: the ten
+         tables are derived from `_data/regulars.yml` and checked from BOTH SIDES. A table for a
+         seat that does not exist, or a seat with no table, is red here. */
+      const benchKeys = [...yml.matchAll(/^- key:\s*(\S+)/gm)].map((m) => m[1]).sort();
+      const tableKeys = [...park.matchAll(/\{ "key": "([a-z]+)"/g)].map((m) => m[1]).sort();
+      ok(JSON.stringify(tableKeys) === JSON.stringify(benchKeys),
+        '…and the ten tables ARE the bench, both ways',
+        'tables: ' + tableKeys.join(' ') + '  |  bench: ' + benchKeys.join(' '));
+      /* every row, field for field, against the YAML the site prints from */
+      const ymlRows = {};
+      for (const m of yml.matchAll(
+        /^- key:\s*(\S+)\s*\n\s*name:\s*(.+?)\s*\n\s*icon:\s*"(.)"\s*\n\s*elo:\s*(\d+)/gm)) {
+        ymlRows[m[1]] = { name: m[2], icon: m[3], elo: +m[4] };
+      }
+      /* ⚠ THE GLYPH IS THE PIECE. The bench wears ♖/♜ and ChessArt speaks "r"; without this
+         map the `piece` field is the one column in that table nobody is checking. */
+      const GLYPH = { '♖': 'r', '♜': 'r', '♘': 'n', '♞': 'n', '♗': 'b', '♝': 'b',
+                      '♕': 'q', '♛': 'q', '♔': 'k', '♚': 'k', '♙': 'p', '♟': 'p' };
+      const rows = [...park.matchAll(
+        /\{ "key": "([a-z]+)",\s*"who": "([^"]+)",\s*"elo": (\d+),\s*"piece": "([a-z])"/g)];
+      ok(rows.length === benchKeys.length,
+        '…and every row was readable', rows.length + ' of ' + benchKeys.length);
+      const wrong = rows.filter(([, k, who, elo, pc]) => {
+        const r = ymlRows[k];
+        /* ⚠ AUSTON'S 1200 IS THE DIAL'S INVISIBLE SEED, not a rating, so the room prints
+           "Adapts" and carries 0. That is the one row allowed to disagree on elo. */
+        if (!r) return true;
+        if (r.name !== who) return true;
+        if (GLYPH[r.icon] !== pc) return true;
+        return +elo !== r.elo && +elo !== 0;
+      }).map((m) => m[1]);
+      ok(wrong.length === 0,
+        '…name, rating and PIECE all match the bench', wrong.join(' ') || rows.length + ' rows');
+      ok(/"key": "auston"/.test(park.slice(park.indexOf('const OFF')))
+        && /"key": "brother"/.test(park.slice(park.indexOf('const OFF')))
+        && /adaptive: true/.test(PT) && /offLadder: true/.test(PT),
+        '…and the two seats drawn OFF the ladder here are the two the bench draws off it');
+      /* ⭐ y-sort, and the trap that comes with it */
+      ok(/y_sort_enabled = true/.test(park),
+        '⭐ the pavilion is Y-SORTED — you walk behind the far tables');
+      ok(/ground\.z_index = -1/.test(park) && /class Ground extends Node2D/.test(park),
+        '…with the floor a CHILD at z_index -1',
+        '⚠⚠ a y-sorted node draws its OWN art at its own Y — the zone\'s _draw() would cover the room');
+      ok(/out\.z_index = -1/.test(park) && /_board\.z_index = -1/.test(park),
+        '…and anything hung on a wall drops out of the sort too');
+      /* ⭐⭐ ONE PLACE SITS YOU DOWN */
+      ok(/func sit_down\(who: String, key: String, cost: int\) -> String:/.test(gs)
+        && /if beaten_today\(key\):/.test(gs),
+        '⭐ ONE function sits you down, and it owns the once-a-day stamp');
+      ok(/GameState\.sit_down\(who, key, cost\(\)\)/.test(chal)
+        && /GameState\.sit_down\(who, key, _cost\(\)\)/.test(park),
+        '…and BOTH ways of taking a seat come down it',
+        '⚠⚠ two copies of the daily rule is two pieces off Maxwell in one evening');
+      /* ⚠ READING THE RULE IS NOT COPYING IT. Both files ask `beaten_today` to gray a row and
+         to write a prompt, which is what a sign does. What neither may do is ENFORCE it: the
+         three calls that make a seat happen — the day stamp, the energy and the errand — belong
+         to sit_down and nowhere else. */
+      ok(!/begin_challenge/.test(chal) && !/GameState\.spend\(/.test(chal)
+        && !/retire_for_today/.test(chal),
+        '…neither ENFORCES it  (⛑ the challenger had all three inline until today)');
+      ok(!/begin_challenge/.test(park) && !/GameState\.spend\(/.test(park)
+        && !/retire_for_today/.test(park),
+        '…and the table never had them');
+      /* ⚠ the lock is a SIGN. The first cut said so in a comment and returned early anyway. */
+      ok(/func _locked\(\) -> bool:/.test(park)
+        && /the tables want a clean win over %s first/.test(park),
+        'a locked seat says the price on the sign');
+      const sitBody = park.slice(park.indexOf('\tfunc interact(_player: Node) -> void:'));
+      ok(!/_locked\(\)/.test(sitBody.slice(0, sitBody.indexOf('func _lock_who'))),
+        '…and still opens, because the STAR TABLE that really gates it is the site\'s',
+        '⚠⚠ a door refusing on a copy of somebody else\'s rule is confidently wrong');
+      /* ⭐ the room empties as you win */
+      ok(/_mine = _slot >= 0 and GameState\.has_slot\(_slot\)/.test(park)
+        && /theirs, pushed in/.test(park),
+        '⭐ a seat whose square is yours has an empty chair and their piece on the table');
+      ok(/func _cost\(\) -> int:\s*\n\s*return 0 if _mine else 10/.test(park),
+        '…and a rematch there is free, the same rule as the person outside');
+      ok(/GameState\.army_changed\.connect/.test(park)
+        && /GameState\.site_slot_won\.connect/.test(park)
+        && /GameState\.challenge_resolved\.connect/.test(park),
+        '…and every table notices, because you played in another tab');
+      /* ⛑⛑ THE ARITHMETIC, NOT A COMMENT. Five times now something in this game has been drawn
+         under the HUD's stat row. The camera's LOWEST position is ROOM.end.y - 324, so the
+         highest thing in the room has a computable screen y from there, and it must clear the
+         stat row. [[audit-numbers-can-be-wrong]] [[mobile-window-slide]] */
+      const pRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(park);
+      const pRung = /const RUNG_Y := (-?[\d.]+)/.exec(park);
+      /* ⛑ ALL OF THEM, NOT .exec()'s FIRST. A table draws a piece twice — seated when they
+         still owe you the square, lying on the board once they do not — and the first draft
+         measured whichever came first in the file. It happened to be the low one, so moving
+         the SEATED piece a hundred units up the wall changed nothing and the check stayed
+         green. Take the highest thing a table draws, whichever call it came from. */
+      const pSeats = [...park.matchAll(
+        /ChessArt\.draw_piece\(self, piece, Vector2\(0\.0, (-?[\d.]+)\), ([\d.]+),\s*tint/g)]
+        .map((m) => +m[1] - +m[2] / 2);
+      ok(pRoom && pRung && pSeats.length >= 2,
+        'the pavilion\'s frame is readable from source', pSeats.length + ' pieces measured');
+      if (pRoom && pRung && pSeats.length) {
+        const roomTop = +pRoom[2], roomBottom = +pRoom[2] + +pRoom[4];
+        const camLowest = Math.max(roomTop, roomBottom - 648);   /* the base viewport is 1152x648 */
+        const pieceTop = +pRung[1] + Math.min(...pSeats);
+        ok(pieceTop - camLowest >= 56,
+          '…and the seated pieces clear the HUD from the camera\'s lowest position',
+          'screen y ' + Math.round(pieceTop - camLowest) + ', the stat row ends at 50');
+      }
+
+      /* ══ 15 · THE DEPTHS IS THE CAMP ABOVE THE SHAFT ════════════════════════════════ */
+      ok(/scene_path = "res:\/\/depths\.tscn"/.test(town2)
+        && !/shaft\.energy_cost = 20/.test(town2),
+        'the shaft is a ROOM, and the energy moved inside with the cage');
+      ok(fs.existsSync(path.join(GD, 'depths.tscn')), '…and the scene exists');
+      ok(/energy_cost = 20/.test(pit),
+        '…charged ONCE, by the cage  (⚠ leaving it on the door too would charge you twice)');
+      /* ⭐⭐ REAL SHADOWS — the technique this room exists to show */
+      ok(/shadow_enabled = true/.test(pit) && /LightOccluder2D\.new\(\)/.test(pit)
+        && /OccluderPolygon2D\.new\(\)/.test(pit),
+        '⭐ the pit head has REAL cast shadows — a light with shadows and an occluder per post');
+      ok(/poly\.closed = true/.test(pit),
+        '…and the occluder is CLOSED, or it casts from its edges and lights its own middle');
+      ok(/_lamp\.position\.x = sin\(/.test(pit),
+        '…and the lamp swings, so every shadow in the room sweeps');
+      ok(/class Prop extends StaticBody2D/.test(pit) && /CollisionShape2D\.new\(\)/.test(pit),
+        '…and the timber stops you  (⛑ scenery you walk through says the room is a picture)');
+      ok(/CanvasModulate\.new\(\)/.test(pit) && /dim\.color = Color\(0\.5/.test(pit),
+        '…and the room is still legible with the lights off  [[down-never-stuck]]');
+      /* ⭐ the sentence neither the mine nor the site can say */
+      ok(/GameState\.slot_for_game\("sand-mine-depths"\)/.test(pit)
+        && /GameState\.unlock_need\(_slot\)/.test(pit) && !/\b300\b/.test(pit),
+        '⭐ the Martyr\'s stone says his square is bought in the ARCADE, and asks the roster how much',
+        '⚠ two mines share a name: the shaft pays ore, the machine pays the g-pawn');
+      /* the run has to come back where you came in */
+      ok(/var mine_return: String/.test(gs)
+        && /GameState\.mine_return = "res:\/\/depths\.tscn"/.test(pit),
+        'the shaft run knows which door it came through');
+      const mineGd = fs.readFileSync(path.join(GD, 'mine.gd'), 'utf8');
+      ok(/GameState\.mine_return if GameState\.mine_return != "" else town_scene/.test(mineGd),
+        '…and reads it, with the old export still the fallback',
+        '⚠ an @export is read from the SCENE FILE — the caller cannot set it');
+
+      /* ══ 16 · THE GAUNTLET IS A STAIRWELL ═══════════════════════════════════════════
+         *"make the Gauntlet a Stairwell."* */
+      ok(/scene_path = "res:\/\/stairwell\.tscn"/.test(town2)
+        && !/url = "\/games\/the-gauntlet\/"/.test(town2),
+        'the Gauntlet is a STAIRWELL');
+      ok(fs.existsSync(path.join(GD, 'stairwell.tscn')), '…and the scene exists');
+      /* ⚠ TEN FLOORS, ONE PAGE. A landing per floor with a door on each would be ten doors
+         onto one URL — dead-game-links-trap in a new shape. */
+      ok([...stair.matchAll(/"\/games\/[^"]+"/g)].length === 1,
+        '…with exactly ONE door in it, because the Gauntlet is one URL');
+      /* ⭐⭐ THE TEN ARE THE GAUNTLET'S TEN, derived from the game itself, both ways. */
+      const GAUNT = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_gauntlet.html'), 'utf8');
+      const realFloors = [...GAUNT.matchAll(/\{ name:'([^']+)',[^\n]*?elo:(\d+),(\s*secret:true)?/g)]
+        .map((m) => ({ who: m[1], elo: +m[2], secret: !!m[3] }));
+      const publicFloors = realFloors.filter((f) => !f.secret);
+      const drawn = [...stair.matchAll(/\{ "who": "([^"]+)",\s*"elo": (\d+) \}/g)]
+        .map((m) => ({ who: m[1], elo: +m[2] }));
+      ok(publicFloors.length === 10 && realFloors.length === 13,
+        'the Gauntlet still has ten public floors and three secret ones',
+        publicFloors.length + ' public, ' + (realFloors.length - publicFloors.length) + ' secret');
+      ok(JSON.stringify(drawn) === JSON.stringify(publicFloors.map((f) => ({ who: f.who, elo: f.elo }))),
+        '…and the stairwell draws exactly those ten, in order, with their real ratings',
+        drawn.length + ' landings');
+      /* ⚠⚠ the secret floors must NOT be in here: a stairwell with thirteen landings has
+         already told you there are thirteen */
+      const secretNames = realFloors.filter((f) => f.secret).map((f) => f.who);
+      ok(secretNames.length > 0 && !secretNames.some((n) => stair.includes(n)),
+        '…and NONE of the secret ones  [[gauntlet-secret-floors]]',
+        secretNames.join(' · '));
+      /* ⭐⭐ the light you carry */
+      ok(/player\.add_child\(lamp\)/.test(stair) && /CanvasModulate\.new\(\)/.test(stair),
+        '⭐ you carry the light up a dark stairwell — the lighting IS the fog of war');
+      ok(/energy = 0\.85 if i < _cleared else 0\.0/.test(stair),
+        '…and a landing is lit only if you have cleared it');
+      ok(/_known = idx <= got or \(_slot >= 0 and idx \+ 1 == _need\)/.test(stair),
+        '…so a floor you have not reached has no NAME on it either');
+      ok(/_slot = GameState\.slot_for_game\(Stairwell\.GAME\)/.test(stair)
+        && /_need = GameState\.unlock_need\(_slot\)/.test(stair),
+        '…except the one that owes a square, and which floor that is comes off the ROSTER');
+      ok(!/idx \+ 1 == 4|_need = 4/.test(stair),
+        '…never typed  (⚠ a fourth-floor constant here is a second copy of the price)');
+      const gameId = /const GAME := "([a-z-]+)"/.exec(stair);
+      ok(gameId && gs.includes('"un": ["' + gameId[1] + '"'),
+        '…and the id it asks with is the one the ROSTER pays on', gameId && gameId[1]);
+      /* ⭐ narrow floor, wide room — the two rects, the other way round */
+      ok(/world_bounds = WELL/.test(stair) && /camera_bounds = ROOM/.test(stair),
+        '⭐ the well you walk in is narrow and the room the camera sees is wide');
+      const sRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(stair);
+      ok(sRoom && +sRoom[3] >= 1152,
+        '…and wide enough for the window, or the camera pins and shows the gray outside',
+        sRoom && sRoom[3] + ' units');
+      ok(/_poll\.wait_time = 2\.5/.test(stair) && /func _recheck\(\)/.test(stair),
+        'this room polls, because the floor count MOVES THE DOOR');
+
+      /* ══ 17 · THE CLIMB IS A NUMBER THE TOWN CAN READ ══════════════════════════════
+         The ROSTER pays the h-rook for ['the-gauntlet', 4] and the Stairwell draws its brass
+         off the same number, so both of them rest on the Gauntlet banking its climb somewhere
+         PJCC.townScore can find it.
+         ⛑⛑ I SPENT AN HOUR FIXING THIS BECAUSE IT WAS NOT BROKEN. `games/the-gauntlet/` is a
+         nine-line wrapper around an iframe; the game is assets/games/pjcc_gauntlet.html, and
+         grepping the wrapper for "saveScore" found nothing, which I read as "nothing banks it"
+         instead of "I grepped the wrong file". The patch I wrote read the game's private save
+         directly and would have LOST the account copy that localBest picks up from myStats on a
+         second device — a real regression, shipped to fix an imaginary bug. The checks below
+         are what should have been written first: prove the path exists, do not assume it does
+         not. [[accuracy-above-all]] */
+      /* ⚠ SLICED TO THE FUNCTION, never grepped from the whole file: pjcc-profile.js is 1500
+         lines and "gauntlet" appears in prose in it. */
+      const scoreFn = PROF.slice(PROF.indexOf('PJCC.townScore ='),
+        PROF.indexOf('PJCC.townPlayer ='));
+      ok(/PJCC\.saveScore\('the-gauntlet',/.test(GAUNT),
+        'the Gauntlet banks its climb under the id the ROSTER asks for');
+      ok(/PJCC\.saveScore\('the-gauntlet', Object\.keys\(prog\.beaten\)\.length,/.test(GAUNT),
+        '…and what it banks is a COUNT OF FLOORS, which is what "climb to the fourth" means',
+        '⚠ a rating or a score here and the roster would be comparing 4 against 1250');
+      ok(/prog\.beaten\[G\.idx\] = true;/.test(GAUNT)
+        && GAUNT.indexOf('prog.beaten[G.idx] = true;') > GAUNT.indexOf('if (playerWon){'),
+        '…and a floor only joins that count on a WIN');
+      ok(/return PJCC\.localBest\(id\) \|\| 0;/.test(scoreFn)
+        && !/gauntlet/.test(scoreFn),
+        '…and townScore reads it by the ORDINARY path, with no special case of its own',
+        '⚠⚠ a direct read of the game\'s private save would miss the account copy from myStats');
+      const need = /"un": \["the-gauntlet", (\d+)\]/.exec(gs);
+      ok(need && +need[1] <= publicFloors.length,
+        '…so the h-rook is reachable: the roster asks for a floor inside the public ten',
+        need && ('floor ' + need[1] + ' of ' + publicFloors.length));
+
+      /* ══ 18 · THE CAMPAIGN CABINET ══════════════════════════════════════════════════
+         *"move Campaign into Arcade, but locked until half the assembly is lit up."* */
+      ok(/slug:'marchland'[^\n]*cat:'arcade'/.test(REG),
+        'Campaign files under the Arcade on the site now',
+        '⚠ the cabinets/registry check above is what makes this load-bearing in both repos');
+      ok(/func assembly_half\(\) -> bool:\s*\n\s*return army_count\(\) \* 2 >= ROSTER\.size\(\)/.test(gs),
+        '⭐ "half the Assembly" is ONE function');
+      ok(!/claimable/.test(/func assembly_half[\s\S]{0,200}/.exec(gs)[0]),
+        '…counted off the WHOLE roster',
+        '⚠ tying it to what is currently winnable makes the lock cheaper every time a character lands');
+      ok(/GameState\.assembly_half\(\)/.test(arc) && !/army_count\(\) \* 2/.test(arc),
+        '…and the cabinet asks it rather than doing the arithmetic again');
+      ok(/"half": true/.test(arc) && /cab\.half = bool\(d\.get\("half", false\)\)/.test(arc),
+        '…on exactly one machine, off a field  (⚠ not an `if slug ==`)');
+      ok(/_light\.energy = 0\.0 if _dark/.test(arc)
+        && /if _dark:\s*\n\s*return[^\n]*\n\s*var m: float = r\.size\.y/.test(arc),
+        '…and a locked machine is genuinely dark: no light, no attract frame');
+      ok(/dark until half the Assembly is lit  \(%d of %d\)/.test(arc),
+        '…but it says its own price AND how far you have got',
+        '⚠ "Locked" alone is a door refusing to say what it wants');
+      ok(/Color\("8a82b4"\) if _dark else/.test(arc),
+        '…and you can still read its NAME  (⛑ the first render had a nameless black cabinet)');
+      /* ⛑ THE ARITHMETIC AGAIN: a fifth cabinet standing inside the west wall is red here
+         rather than on a render. */
+      const aRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(arc);
+      const aSpread = /const SPREAD := ([\d.]+)/.exec(arc);
+      const aWall = /const WALL_T := ([\d.]+)/.exec(arc);
+      const aSize = /size = Vector2\(([\d.]+), [\d.]+\)\s*\n\n\tfunc _ready_extra/.exec(arc);
+      ok(aRoom && aSpread && aWall && aSize, 'the Arcade\'s frame is readable from source');
+      if (aRoom && aSpread && aWall && aSize) {
+        const n = cabs.length;
+        const half = +aRoom[3] / 2;
+        const reach = +aSpread[1] * (n - 1) + (+aSize[1]) / 2 + (+aWall[1]);
+        ok(reach <= half,
+          'the Arcade is wide enough for every cabinet in it',
+          n + ' machines reach ' + reach + ', the wall is at ' + half);
+      }
       }
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
