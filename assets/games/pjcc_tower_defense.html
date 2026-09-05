@@ -968,6 +968,16 @@ function endGame(won) {
   if (window.PJCC && PJCC.saveScore) {
     PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won, endless: !!G.endless, muts: Object.keys(G.muts) } });
     if (G.endless) PJCC.saveScore('siege-endless', G.wave, { credits: 0, data: { map: curMap.id, score: G.score, kills: G.kills } });
+    /* ⭐ WAVES HELD, AS A NUMBER SOMETHING CAN ASK FOR (2026-09-04). Checker Town buys the
+       Seaboard Representative's bishop with "hold three waves at Chess City" and had nothing
+       to read but `tower-defense`, which is the SCORE — a hundred a wave plus ten a kill, so
+       a threshold of three was met by walking in. The score is the score and stays the score;
+       this is the count the sentence was always about.
+       ⚠ EVERY MODE, not just Endless: `siege-endless` has banked waves since it shipped but
+       only for the endless run, and the campaign is where somebody would go to hold three.
+       ⚠ credits 0 — the run has already paid out above; this is a measurement, not a reward,
+       and it is not in pjcc-games-data.js, so no leaderboard grows a row for it. */
+    PJCC.saveScore('siege-waves', G.wave, { credits: 0, data: { map: curMap.id, endless: !!G.endless } });
   }
   var ovl = document.getElementById('ovl');
   var mutTag = G.mutBonus ? ' · mutators +' + Math.round(G.mutBonus*100) + '% Crowns' : '';

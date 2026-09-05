@@ -53,11 +53,17 @@
 
   function db() { return window.PJCC && PJCC.db ? PJCC.db() : null; }
 
-  /* Replay a UCI move list from the start, validating every move with the real engine.
+  /* Replay a UCI move list, validating every move with the real engine.
      Returns { S, sans, valid, result } — result is set when the position is terminal.
-     PURE (no DOM, no network) so it's testable in Node. */
-  function replayGame(movesStr) {
-    var S = C.parseFEN(C.START_FEN), sans = [], reps = {};
+     PURE (no DOM, no network) so it's testable in Node.
+
+     ⭐ `startFen` (2026-09-04) — a game that does not begin at the beginning. The Park
+     Tables set you an endgame study once you have played somebody enough times, and a
+     study is an ordinary game in every respect except where the pieces start.
+     ⚠ OMITTED MEANS THE STANDARD START, so every caller written before studies existed is
+     unchanged and none of them had to be revisited. */
+  function replayGame(movesStr, startFen) {
+    var S = C.parseFEN(startFen || C.START_FEN), sans = [], reps = {};
     reps[C.posKey(S)] = 1;
     var list = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
     for (var i = 0; i < list.length; i++) {

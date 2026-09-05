@@ -537,8 +537,14 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
          analysis board open does not open Princess's seat. */
   const finishBody = PT.slice(PT.indexOf('function botFinish('), PT.indexOf('function openingCap('));
   check('…and a win is what records the unlock — decided by the SIDE YOU PLAYED',
-    /if \(botWon\(st\)\) \{[\s\S]{0,900}markBeaten\(st\.bot\)/.test(finishBody),
+    /if \(botWon\(st\)(?: && !isStudy\(st\))?\) \{[\s\S]{0,900}markBeaten\(st\.bot\)/.test(finishBody),
     'botFinish writes the win that opens the next door');
+  /* ⚠⚠ AND A STUDY IS NOT A WIN OVER THAT PERSON (2026-09-04). Checker Town sends you here
+     to solve a position somebody set you; recording it as a win would open the next seat on
+     the bench for an endgame exercise, which is a door nobody walked through. */
+  check('…and an endgame study never opens a seat',
+    /!isStudy\(st\)/.test(finishBody),
+    'a position you were set is not a game you beat them at');
   check('…never by a bare result string, which only reads right from the white side',
     !/if \s*\(\s*st\.result\s*===\s*'1-0'\s*\)/.test(finishBody),
     "a '1-0' literal here would hand Black's wins to the opponent");

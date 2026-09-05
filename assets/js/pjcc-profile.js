@@ -1140,17 +1140,30 @@
      stamp Park Tables writes is Date.now() in MILLISECONDS. Getting this backwards makes
      every past win look current, which hands out a piece per visit.
      ⚠ NOT the beaten list: that is a lifetime set and cannot say "just". */
-  PJCC.townResult = function (key, since) {
-    var r = townLast(key, since);
+  PJCC.townResult = function (key, since, pos) {
+    var r = townLast(key, since, pos);
     return r ? !!r.won : null;
+  };
+
+  /* ⭐ THE GAME THAT WON A SQUARE (2026-09-04). Tap a filled square in the Assembly and the
+     town asks whether there is anything to play back; Park Tables banks the last clean win
+     against each regular under pjcc.pt.games.v1.
+     ⚠ TRUTHY OR NULL, never a thrown error: the town treats any failure as "no game", which
+     is the same answer as a device that has never played that person. */
+  PJCC.townGame = function (key) {
+    try {
+      var all = JSON.parse(localStorage.getItem('pjcc.pt.games.v1') || 'null');
+      var g = (all && typeof all === 'object') ? all[key] : null;
+      return (g && g.moves) ? g : null;
+    } catch (e) { return null; }
   };
 
   /* Was it won without a takeback and without the analysis board — the bench's "full star"?
      ⚠⚠ A RECORD WRITTEN BEFORE 2026-09-03 HAS NO `clean` FIELD, and the honest reading of a
      missing flag is CLEAN: refusing a square for a game played before the rule existed would
      take a piece off somebody for a takeback they did not take. */
-  PJCC.townClean = function (key, since) {
-    var r = townLast(key, since);
+  PJCC.townClean = function (key, since, pos) {
+    var r = townLast(key, since, pos);
     if (!r || !r.won) return null;
     return r.clean === undefined ? true : !!r.clean;
   };
@@ -1174,11 +1187,18 @@
     } catch (e) { return ''; }
   };
 
-  function townLast(key, since) {
+  function townLast(key, since, pos) {
     try {
       var r = JSON.parse(localStorage.getItem('pjcc.pt.last.v1') || 'null');
       if (!r || !key || r.bot !== key) return null;
       if (since && r.at < (+since) * 1000) return null;
+      /* ⚠⚠ AN ERRAND IS A PAIR, NOT A NAME. A study and an ordinary game against the same
+         regular land in this one record, so without this a study win filled that person's
+         square in the Assembly — which is the one thing a study must never do.
+         ⚠ `undefined` MEANS "DON'T CARE" so every caller written before studies existed is
+         unchanged; the town always passes a value, and "" is a real one meaning "the plain
+         game". */
+      if (pos !== undefined && String(r.pos || '') !== String(pos || '')) return null;
       return r;
     } catch (e) { return null; }
   }

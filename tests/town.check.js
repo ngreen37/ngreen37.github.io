@@ -39,14 +39,32 @@ function fn(src, name) {
   return '';
 }
 
+/* The same idea for GDScript: a function is its header plus every line indented under it. */
+function fnGd(src, name) {
+  const a = src.indexOf('func ' + name + '(');
+  if (a < 0) return '';
+  const lines = src.slice(a).split('\n');
+  const out = [lines[0]];
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() !== '' && !/^[\t ]/.test(lines[i])) break;
+    out.push(lines[i]);
+  }
+  return out.join('\n');
+}
+
 const markLast = fn(PT, 'markLast');
 const finishAs = fn(PT, 'botFinishAs');
 ok(markLast, 'Park Tables has a markLast()');
 ok(/pjcc\.pt\.last\.v1/.test(markLast), '…and it writes pjcc.pt.last.v1');
 ok(/\bat:\s*Date\.now\(\)/.test(markLast),
   '…stamped with Date.now(), or "did that just happen" has no answer');
-ok(/won:\s*!!botWon\(st\)/.test(markLast),
+ok(/won:\s*studyOK\(st\)/.test(markLast),
   '…and records who won  (⚠ botWon() means YOU won — the name reads backwards)');
+/* ⚠⚠ A DRAW CAN BE THE WIN. Philidor is "you are a pawn down and still holding", so the
+   study's goal decides — botWon() alone would report a held draw as a failure. */
+ok(/function studyOK/.test(PT) && /goal === 'draw'/.test(fn(PT, 'studyOK'))
+  && /'1\/2-1\/2'/.test(fn(PT, 'studyOK')),
+  '…and a study whose goal is a DRAW counts a draw as done');
 ok(/clean:\s*tierEarned\(st\)\s*===\s*'full'/.test(markLast),
   '…and whether it was CLEAN, off the same full-star test the bench already uses');
 /* ⚠ SLICED FROM THE FUNCTION, never grepped from the file: a call in a comment would
@@ -1173,6 +1191,10 @@ const server = http.createServer((req, res) => {
       /* ⚠⚠ COSMETIC IS A HOUSE RULE. Nothing may READ the worn hat except the two places that
          draw it — the day something else does, this stall is a different kind of shop.
          [[game-monetization-ethics]] */
+      /* ⚠ THE JOURNAL IS NOT ON THIS LIST AND MUST NOT BE ADDED TO IT. It prints what you
+         are wearing, and it does that through GameState.hat_name() — a getter that can only
+         ever produce a label. The raw variable stays readable by the two things that DRAW a
+         hat, so nothing can branch on it, which is the whole rule. */
       const wearers = ['player.gd', 'town.gd'];
       const readsHat = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
         .filter((f) => !wearers.includes(f) && f !== 'game_state.gd')
@@ -1196,6 +1218,462 @@ const server = http.createServer((req, res) => {
         'there is a board you leave a move on, and it opens the LOBBY');
       ok(!/\?table=/.test(town2.slice(town2.indexOf('class PostBoard'))),
         '…not a bot seat  (⚠ every table in the Pavilion is a bot; this one is a person)');
+
+      /* ══ 25 · THE JOURNAL ═════════════════════════════════════════════════════════════
+         2026-09-04, next-steps #2: *"sixteen squares, sixteen different prices, and no
+         single place that lists them."* */
+      const jrn = fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8');
+      const pad = fs.readFileSync(path.join(GD, 'touch_pad.gd'), 'utf8');
+      ok(/^class_name TownJournal$/m.test(jrn), 'there is a journal');
+      ok(/_journal = TownJournal\.new\(\)/.test(zone) && /add_child\(_journal\)/.test(zone),
+        '…and every room builds one  (the board is the same board from any room)',
+        '⚠ in zone.gd, not in town.gd — a panel you can open in one building you look at once');
+      ok(/k\.keycode == KEY_J/.test(jrn), '…J opens it');
+      ok(/func _journal_tab\(\) -> Control:/.test(zone) && /b\.text = "Journal"/.test(zone),
+        '…and so does a tab in the corner, because he is on a phone',
+        '[[hover-is-three-inputs]]');
+      {
+        /* 44px, measured off the offsets rather than trusted. */
+        const top = /b\.offset_top = ([\d.]+)/.exec(zone);
+        const bot = /b\.offset_bottom = ([\d.]+)/.exec(zone);
+        ok(top && bot && (parseFloat(bot[1]) - parseFloat(top[1])) >= 44,
+          '…and the tab is a real tap target',
+          top && bot ? (parseFloat(bot[1]) - parseFloat(top[1])) + 'px tall' : 'no offsets');
+        ok(/b\.anchor_right = 1\.0/.test(zone) && !/b\.position = /.test(zone),
+          '…anchored, not positioned  (⚠ a Control position under a moved anchor is off-screen on every phone but mine)');
+      }
+      ok(/if k\.keycode == KEY_J and not _talking\(\)/.test(jrn),
+        '…and it will not open over a conversation  (two things listening for 1-4 at once)');
+      ok(/TownJournal\.is_open\(get_tree\(\)\)/.test(player)
+        && /TownJournal\.is_open\(get_tree\(\)\)/.test(pad),
+        '…the player and the pad both stand down while it is up');
+      ok(/func is_open\(t: SceneTree\) -> bool:/.test(jrn),
+        '…and they ask ONE function, not two copies of the flag');
+      {
+        /* ⚠⚠ THE MYSTERY SURVIVES. He took the names off the nameplates and off the Lectern
+           on 09-03 — "it should be a mystery" — so a panel that listed all sixteen would put
+           the checklist straight back one room away. holder_at() appears in the board tab
+           exactly once and only inside the branch that already knows you won it. */
+        const rows = jrn.slice(jrn.indexOf('func _board_rows'), jrn.indexOf('func _progress'));
+        const hits = (rows.match(/holder_at/g) || []).length;
+        ok(hits === 1 && /if won:\s*\n\s*row\["b"\] = GameState\.holder_at\(i\)/.test(rows),
+          '⭐ an unwon square still names NOBODY  (⚠⚠ do not "fix" this — [[removed-not-forgotten]])',
+          hits + ' mention(s) of holder_at in the board tab');
+        ok(/somebody in this town/.test(rows),
+          '…it says a person is behind it without saying which person');
+      }
+      ok(/GameState\.unlock_say\(i\)/.test(jrn) && /row\["c"\] = _progress\(i\)/.test(jrn),
+        '…and it prints the PRICE, which is the half of #2 nothing else showed');
+      ok(/return "of %d" % need/.test(jrn) && /return "%d \/ %d"/.test(jrn),
+        '⚠ an unknown score prints "of 20", never "0 / 20"',
+        'off the site there is nothing to ask, and 0 is a different claim');
+      ok(!/ScrollContainer/.test(jrn) && /clampf\(\(_body\.size\.y - 26\.0 \* k\) \/ float\(rows\.size\(\)\)/.test(jrn),
+        '⚠⚠ NOTHING SCROLLS — the pitch shrinks instead',
+        'the town is an iframe and a drag inside it belongs to the page [[mobile-window-slide]]');
+      ok(/_journal\.shown\.connect/.test(zone) && /_hud\.visible = not on/.test(zone),
+        '…and the HUD stands down, or "Day 1 · Energy" prints through the title');
+
+      /* One crossing, one door. */
+      ok(/func site_scores\(ids: Array\) -> Dictionary:/.test(gs),
+        'the site is asked for many scores in ONE crossing');
+      ok((gs.match(/P\.townScore\(/g) || []).length === 1,
+        '…and there is exactly one copy of that JavaScript in the whole project',
+        'there were two before today and the journal would have been the third');
+      ok(/if ids\.is_empty\(\) or not OS\.has_feature\("web"\):\s*\n\s*return \{\}/.test(gs),
+        '…{} means NOT ASKED, which is not the same answer as zero');
+      ok(/return int\(site_scores\(\[id\]\)\.get\(id, 0\)\)/.test(gs),
+        '…and the single-score read goes through the same door');
+      ok(/func game_at\(slot: int\) -> String:/.test(gs)
+        && /return str\(\(r\["un"\] as Array\)\[0\]\) if r\.has\("un"\) else ""/.test(gs),
+        '…the journal and slot_for_game read the SAME field, in opposite directions');
+
+      /* ══ 26 · THE GAME THAT WON THE SQUARE ════════════════════════════════════════════
+         next-steps #3. ⚠⚠ THE BACKLOG SAID THE SITE ALREADY STORED THE PGN OF EVERY PARK
+         TABLE GAME. IT DID NOT — pjcc.pt.last.v1 is a result and a timestamp, and the board
+         carrying the moves is deleted when you get up. That is what these checks are for. */
+      ok(/var GAMES_KEY = 'pjcc\.pt\.games\.v1'/.test(PT), 'Park Tables banks a finished game');
+      {
+        const bank = fn(PT, 'bankGame');
+        ok(/isStudy\(st\)/.test(bank), '…never a study  (it won no square, so it is nobody\u2019s record)');
+        ok(/!botWon\(st\)/.test(bank) && /tierEarned\(st\) !== 'full'/.test(bank),
+          '…and only a CLEAN WIN, which is exactly what a square costs');
+        ok(/all\[st\.bot\] = \{ moves: st\.moves/.test(bank),
+          '…one per regular, keyed by who you beat');
+      }
+      ok(/markLast\(st\);\s*\n\s*bankGame\(st\);/.test(PT),
+        '…and botFinishAs calls it on every ending');
+      ok(/PJCC\.townGame = function \(key\)/.test(PROF) && /pjcc\.pt\.games\.v1/.test(PROF),
+        'the site will hand the town that game');
+      ok(/func has_replay\(key: String\) -> bool:/.test(gs) && /P\.townGame/.test(gs),
+        '…and the town asks rather than storing one');
+      ok(/const REPLAY_URL := "\/games\/park-tables\/\?replay="/.test(gs),
+        '…and opens the room that can draw it');
+      {
+        const sq = hall.slice(hall.indexOf('class Square extends Interactable'));
+        ok(/if key == "" or not GameState\.has_replay\(key\):/.test(sq),
+          '…a square won off the rest of the site offers no game back',
+          '⚠ the row is ABSENT, not grayed — there was never a game at this board');
+        ok(/GameState\.watch_replay\(GameState\.key_at\(slot\)\)/.test(sq),
+          '…and the one that was, does');
+      }
+      ok(/function askedForReplay/.test(PT) && /if \(rep\) showReplay\(rep\)/.test(PT),
+        'Park Tables answers ?replay=');
+      {
+        const show = fn(PT, 'showReplay');
+        const cut = show.indexOf('replaceState');
+        ok(cut > 0 && cut < show.indexOf('PJCCReview'),
+          '…and strips the parameter BEFORE opening anything',
+          '⚠ route() can run twice on one load and would stack two overlays');
+        ok(/PJCCReview/.test(show) && /PJCCAnalysis/.test(show),
+          '…on the review board, falling back to the analysis board');
+      }
+
+      /* ══ 27 · SIX HEARTS BUYS A POSITION ══════════════════════════════════════════════
+         next-steps #4, and the feature he asked for in August. Hearts were tracked, capped,
+         drawn on the card and gated absolutely nothing. */
+      const STUD = require(path.join(ROOT, 'assets/js/pjcc-studies.js'));
+      {
+        const ids = STUD.all().map((r) => r.id).sort();
+        const gdIds = [];
+        const block = gs.slice(gs.indexOf('const STUDIES := ['), gs.indexOf('\nvar positions'));
+        let m, re = /"id": "([a-z]+)"/g;
+        while ((m = re.exec(block))) gdIds.push(m[1]);
+        gdIds.sort();
+        ok(ids.length === 7 && gdIds.join(',') === ids.join(','),
+          '⭐⭐ the town names the same seven studies the site sets up',
+          gdIds.join(',') + '  vs  ' + ids.join(','));
+        /* ⚠⚠ NEITHER HALF CARRIES THE OTHER'S. Godot plays no chess, so no FEN may exist in
+           it; the site does not know who offers what, so no character may exist in there. */
+        const gdFiles = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+          .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n');
+        ok(!STUD.all().some((r) => gdFiles.includes(r.fen)),
+          '⚠⚠ and NOT ONE FEN lives in the Godot project  [[godot-starter-code]]');
+        const js = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-studies.js'), 'utf8');
+        ok(!/who:|ask:|ore:/.test(js) && !/crockett|maxwell|robert/.test(js),
+          '…and the site half names nobody: the ids are the joint');
+      }
+      {
+        /* ⚠⚠ EVERY POSITION IS PROVED WITH THE PERFT-VERIFIED REFEREE. A study captioned
+           "beat me from here" that is illegal, already over, or the wrong side to move is the
+           exact defect next-steps #1 exists to hunt. What no test can prove is that a win is
+           a win — those seven are textbook margins. [[accuracy-above-all]] */
+        const CH = require(path.join(ROOT, 'assets/js/pjcc-chess.js'));
+        const WANT = { lucena: 'KRP|kr', philidor: 'KR|krp', ladder: 'KRR|k',
+                       backrank: 'KR|krppp', qvp: 'KQ|kp', rookmate: 'KR|k',
+                       bishops: 'KBB|k' };
+        let bad = [];
+        for (const r of STUD.all()) {
+          let S = null;
+          try { S = CH.parseFEN(r.fen); } catch (e) { bad.push(r.id + ':parse'); continue; }
+          const tally = {};
+          for (const p of S.b) if (p) tally[p] = (tally[p] || 0) + 1;
+          const mat = 'K' + 'QRBNP'.split('').map((p) => p.repeat(tally[p] || 0)).join('') +
+                      '|k' + 'qrbnp'.split('').map((p) => p.repeat(tally[p] || 0)).join('');
+          if (S.turn !== r.side) bad.push(r.id + ':turn');
+          if (CH.legalMoves(S).length === 0) bad.push(r.id + ':nomoves');
+          if (CH.gameResult(S, 1)) bad.push(r.id + ':over');
+          if (CH.inCheck(S, S.turn === 'w' ? 'b' : 'w')) bad.push(r.id + ':illegal');
+          if (mat !== WANT[r.id]) bad.push(r.id + ':' + mat);
+        }
+        ok(bad.length === 0,
+          '⭐⭐ every study position is legal, live, the right side to move, and the material it claims',
+          bad.length ? bad.join(' ') : 'all seven');
+        ok(STUD.get('qvp').fen.indexOf('3p4') > 0,
+          '⚠ the queen study uses a d-PAWN  (queen against a rook or bishop pawn on the seventh is a DRAW)');
+      }
+      ok(/hearts_for\(who\) < HEART_CAP/.test(gs),
+        '…offered at six hearts, which is the number the card actually shows you reaching');
+      ok(/positions\.has\(str\(row\["id"\]\)\)/.test(gs), '…and only until you have beaten it');
+      {
+        const sit = gs.slice(gs.indexOf('func sit_study'), gs.indexOf('func win_study'));
+        ok(!/spend\(/.test(sit),
+          '⚠ FREE — six hearts is the price and it took a dozen games to pay');
+        ok(/TABLE_URL \+ key \+ "&pos=" \+ str\(row\["id"\]\)/.test(sit),
+          '…and the link names the position');
+      }
+      {
+        /* ⚠⚠ THE ERRAND IS A PAIR. A study and an ordinary game against the same person land
+           in one record; without the filter, beating Crockett from the Lucena position filled
+           Crockett's square — the one thing a study must never do. */
+        const tl = fn(PROF, 'townLast');
+        ok(/String\(r\.pos \|\| ''\) !== String\(pos \|\| ''\)/.test(tl),
+          '⭐⭐ the site will not answer a game with a study, or a study with a game');
+        const tr = PROF.slice(PROF.indexOf('PJCC.townResult ='), PROF.indexOf('PJCC.townGame ='));
+        const tcl = PROF.slice(PROF.indexOf('PJCC.townClean ='), PROF.indexOf('PJCC.puzzleResult ='));
+        ok(/townLast\(key, since, \w+\)/.test(tr) && /townLast\(key, since, \w+\)/.test(tcl),
+          '…both readers FORWARD it to townLast()',
+          '⚠ dropping the third argument silently reopens the door — the filter just stops running');
+        ok(/JSON\.stringify\(str\(pending\.get\("pos", ""\)\)\)/.test(gs),
+          '…and the town always sends one, "" included');
+        ok(/bot: st\.bot, result: st\.result, won: studyOK\(st\), pos: st\.pos \|\| ''/.test(PT),
+          '…because Park Tables stamps which errand it was');
+      }
+      {
+        const rc = gs.slice(gs.indexOf('func resolve_challenge'), gs.indexOf('func _fill_their_slot'));
+        const posAt = rc.indexOf('if pos != "":');
+        ok(posAt > 0 && posAt < rc.indexOf('played(who, won)'),
+          '⚠⚠ a study is settled BEFORE any of the lines about a game');
+        const branch = rc.slice(posAt, rc.indexOf('played(who, won)'));
+        ok(!/retire_for_today|_fill_their_slot|learn\(/.test(branch),
+          '…so it fills no square, spends no day and buys no reveal',
+          'the reward is the ore and a mark in the journal');
+        ok(/return -4 if won and clean else -5/.test(branch),
+          '…and reports itself as -4 or -5');
+      }
+      ok(/if slot == -4:/.test(zone) && /if slot == -5:/.test(zone),
+        '…which the room knows how to say out loud');
+      ok(/if \(botWon\(st\) && !isStudy\(st\)\) \{/.test(PT),
+        '⚠⚠ a study awards no star, no beaten list and no day stamp');
+      ok(/if \(botAdapt && !isStudy\(st\)\)/.test(PT), '…and does not move the adaptive dial');
+      {
+        for (const [f, why] of [['logRepertoire', 'a study has no opening'],
+                                ['logPrepFail', 'and no prep to fail'],
+                                ['studyMove', 'and Vince cannot answer an endgame with a first move'],
+                                ['botSystemMove', 'and a setup is not a technique']]) {
+          ok(/isStudy\(st\)/.test(fn(PT, f)), '…' + why, f + '()');
+        }
+      }
+      ok(/var tc0 = study \? tcById\(''\) : tcById\(tcPref\(\)\)/.test(PT),
+        '⚠ and it has no clock  (the default is Blitz 5+1 and an endgame under five minutes is a different exercise)');
+      ok(/if \(saved && \(saved\.pos \|\| ''\) !== \(study \? study\.id : ''\)\) saved = null;/.test(PT),
+        '⚠⚠ a resume must be the SAME errand, or a study quietly becomes a game that can take a square');
+      {
+        /* ⚠⚠ EVERY BOT-SIDE REBUILD GOES THROUGH botGame(). A call site still asking the
+           referee directly rebuilds a study from the standard start and draws it as if it
+           were right — no throw, no error, just the wrong pieces. */
+        /* ⚠ COMMENTS STRIPPED FIRST. The block comment over botGame() names the very call
+           it exists to forbid, so a raw line scan reports the warning as the violation. */
+        const code = PT.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+        const stray = code.split('\n').filter((ln) =>
+          /M\.replayGame\(/.test(ln) && !/M\.replayGame\(m\.moves/.test(ln)
+          && !/moves === undefined/.test(ln));
+        ok(stray.length === 0,
+          '⭐⭐ every bot-side rebuild goes through botGame(); the only bare calls left are the correspondence tables',
+          stray.length ? stray[0].trim().slice(0, 60) : 'clean');
+        const MATCH = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-match.js'), 'utf8');
+        ok(/function replayGame\(movesStr, startFen\)/.test(MATCH)
+          && /C\.parseFEN\(startFen \|\| C\.START_FEN\)/.test(MATCH),
+          '…and the referee will start somewhere else, defaulting to the start');
+      }
+      ok(/for k in \(d\.get\("positions", \{\}\) as Dictionary\):/.test(gs),
+        '…a study beaten on the phone is beaten here  (a union, like everything earned)');
+      {
+        const win = fnGd(gs, 'win_study');
+        ok(/add_ore\(int\(\(row as Dictionary\)\.get\("ore", 0\)\)\)/.test(win)
+          && !/army\.append|hearts\[|retire_for_today/.test(win),
+          '⚠ the ore is the whole prize — no square, and no heart it could not raise anyway');
+      }
+
+      /* ══ 28 · THE AIR ═════════════════════════════════════════════════════════════════
+         next-steps #9: *"one ambient bed per region."* ⚠ NOT MUSIC — no key, no tempo, no
+         melody. That line is his and this keeps it. */
+      ok(/const BEDS := \{/.test(audio) && /"town":|"night":|"deep":|"sea":|"room":/.test(audio),
+        'there is a bed for each kind of place');
+      {
+        const beds = audio.slice(audio.indexOf('const BEDS := {'), audio.indexOf('static func bed('));
+        const ids = (beds.match(/"(town|night|room|deep|sea)":\s*\{/g) || []).length;
+        ok(ids === 5, '…five of them', ids + ' found');
+        /* ⚠⚠ WHOLE CYCLES PER BUFFER, NOT FREQUENCIES. A tone that does not complete an exact
+           number of cycles in the loop beats against its own seam once every three seconds. */
+        const hz = [...beds.matchAll(/\[(\d+), [\d.]+\]/g)].map((x) => parseInt(x[1], 10));
+        ok(hz.length >= 6 && hz.every((n) => Number.isInteger(n) && n > 0),
+          '…and every tone is a whole number of cycles per loop', hz.join(' '));
+      }
+      ok(/loop_mode = AudioStreamWAV\.LOOP_FORWARD/.test(audio) && /loop_end = count - 1/.test(audio),
+        '…they loop');
+      ok(/const BED_FADE/.test(audio) && /buf\[i\] = buf\[i\] \* w \+ buf\[count \+ i\] \* \(1\.0 - w\)/.test(audio),
+        '⚠⚠ …and the seam is cross-faded, because noise cannot join itself',
+        'the last sample and the first are unrelated numbers');
+      ok(/if not is_instance_valid\(_amb\) or id == _bed_id:/.test(audio),
+        '…asking for the bed that is already playing does nothing',
+        '⚠ town.gd asks again every sixty seconds and a restart would BE a seam');
+      ok(/or not GameState\.sound_on:/.test(fnGd(audio, '_play')),
+        '…and the mute silences the footsteps too');
+      ok(/func set_sound\(on: bool\) -> void:/.test(gs) && /sound_changed\.emit\(on\)/.test(gs),
+        'the journal can turn it off');
+      {
+        const push = gs.slice(gs.indexOf('func push_to_site'), gs.indexOf('func open_url'));
+        const merge = gs.slice(gs.indexOf('func merge_in'), gs.indexOf('const SCOUT_ORE'));
+        ok(!/sound_on/.test(push) && !/sound_on/.test(merge),
+          '⚠⚠ and the mute is a DEVICE preference — it never syncs',
+          'muting the phone you play on the bus must not mute the desk [[everything-earned-syncs]]');
+      }
+      ok(/func _bed_now\(\) -> String:/.test(town2)
+        && /au\.play_bed\(_bed_now\(\)\)/.test(town2) && /ambient = _bed_now\(\)/.test(town2),
+        '⭐ the air changes with the light, on the same minute the sky does');
+      {
+        /* Every room names a bed that exists. */
+        const known = ['town', 'night', 'room', 'deep', 'sea'];
+        const named = [...fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+          .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n')
+          .matchAll(/ambient = "([a-z]+)"/g)].map((x) => x[1]);
+        ok(named.length >= 3 && named.every((n) => known.includes(n)),
+          '…and no room asks for air that does not exist', named.join(' '));
+      }
+
+      /* ══ 29 · THE PRICES ══════════════════════════════════════════════════════════════
+         next-steps #1. ⛑⛑ ONE OF THE SEVEN WAS MEASURABLY WRONG: the Seaboard Rep's bishop
+         read `tower-defense`, which is the SCORE — a hundred a wave plus ten a kill — against
+         a threshold of 3. Any run at all cleared it, and the sentence under it said "hold
+         three waves", so the number and the promise were measuring different things. */
+      {
+        const games = [];
+        let m, re = /"un": \["([a-z-]+)", (\d+)\]/g;
+        while ((m = re.exec(gs))) games.push([m[1], parseInt(m[2], 10)]);
+        ok(games.length === 7, 'seven squares are bought off the rest of the site', games.length + '');
+        /* ⭐⭐ EVERY ONE OF THEM MUST BE A NUMBER SOMETHING ACTUALLY BANKS. A square whose id
+           nothing writes is a square that can never be won, and nothing in the game says so —
+           this is the whole of #1's correctness half. */
+        const bankers = fs.readdirSync(path.join(ROOT, 'assets/games'))
+          .filter((f) => f.endsWith('.html'))
+          .map((f) => fs.readFileSync(path.join(ROOT, 'assets/games', f), 'utf8'))
+          .concat([fs.readFileSync(path.join(ROOT, 'academy-opening-trainer.html'), 'utf8'), PROF])
+          .join('\n');
+        const dead = games.map((g) => g[0]).filter((id) =>
+          !bankers.includes("saveScore('" + id + "'") && !bankers.includes("id === '" + id + "'"));
+        ok(dead.length === 0,
+          '⭐⭐ …and every one of them is a score something actually banks',
+          dead.length ? 'UNWINNABLE: ' + dead.join(' ') : 'all seven have a writer');
+        ok(!games.some((g) => g[0] === 'tower-defense'),
+          '⛑ the bishop no longer costs a SCORE of three on a game that scores in the hundreds');
+        ok(games.some((g) => g[0] === 'siege-waves' && g[1] === 3),
+          '…it costs three WAVES, which is what its sentence always said');
+        ok(/PJCC\.saveScore\('siege-waves', G\.wave/.test(
+             fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_tower_defense.html'), 'utf8')),
+          '…and Siege on Chess City banks that number');
+        {
+          const td = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_tower_defense.html'), 'utf8');
+          const line = td.split('\n').find((l) => /saveScore\('siege-waves'/.test(l)) || '';
+          ok(!/G\.endless/.test(line.slice(0, line.indexOf('saveScore'))),
+            '⚠ in EVERY mode, not only Endless  (the campaign is where you would go to hold three)');
+        }
+        ok(/"un_say": "beat four floors of the Gauntlet"/.test(gs),
+          '⚠ and the Gauntlet sentence counts what the Gauntlet banks',
+          'it banks floors BEATEN, so four of them means you are standing on the fifth');
+      }
+
+      /* ══ 30 · THE PHONE ═══════════════════════════════════════════════════════════════
+         next-steps #10: *"measure it on a phone."* It was worth measuring, and it found two
+         things at once, both from the same cause. The cabinet is about 352x560 there and
+         `window/stretch/aspect="expand"` turns that into roughly 1152x1833 of VIEWPORT:
+
+           · a room whose camera rect is shorter than that cannot fill the screen, so the
+             Pavilion sat in a gray field with a band above it and a band below;
+           · and a CanvasLayer is drawn in viewport units, so every UI number in the game —
+             the stat row, the conversation box, the pad, the journal — arrived at 30% of
+             the size it was written at. A 14-unit font is FOUR PIXELS.
+
+         Measured on renders at 352x560 and 320x520, not reasoned about. */
+      ok(/const BASE_H := 648\.0/.test(zone) && /static func ui_scale\(n: Node\) -> float:/.test(zone),
+        'there is ONE number for how big a UI pixel is');
+      ok(/return maxf\(1\.0, v \/ BASE_H\)/.test(zone),
+        '\u26a0\u26a0 …and it is exactly 1.0 on a desktop  (648 / 648 \u2014 nothing about this machine changed)');
+      ok(/n\.get_viewport\(\)\.get_visible_rect\(\)\.size\.y/.test(zone),
+        '\u26a0 asked of the VIEWPORT, not of a CanvasItem rect  (a CanvasLayer is not a CanvasItem)');
+      {
+        /* Everything that draws UI has to be on the lever, or it is the one thing on screen
+           still four pixels tall. */
+        for (const [f, src] of [['zone.gd', zone], ['town_ui.gd',
+              fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8')],
+              ['journal.gd', jrn], ['touch_pad.gd', pad]]) {
+          ok(/TownZone\.ui_scale\(/.test(src), '…' + f + ' is on it');
+        }
+      }
+      ok(/func _fit_camera\(lim: Rect2\) -> void:/.test(player)
+        && /_cam\.zoom = Vector2\(z, z\)/.test(player),
+        '\u2b50 the camera zooms to fit the window it is in');
+      ok(/get_viewport\(\)\.size_changed\.connect\(func\(\) -> void: _fit_camera\(lim\)\)/.test(player),
+        '…and again when the window changes  (rotating a phone asks for a different amount of world)');
+      {
+        /* ⭐⭐ AND IT IS ARITHMETIC, NOT A PROMISE. Every camera rect in the game is at least
+           as big as the base viewport, so on a desktop every ratio _fit_camera takes is below
+           1 and the zoom comes out exactly 1.0. The day somebody adds a room smaller than the
+           window, this says so before the render does. */
+        const BASE = { w: 1152, h: 648 };
+        const rects = [];
+        for (const f of fs.readdirSync(GD).filter((x) => x.endsWith('.gd'))) {
+          const src = fs.readFileSync(path.join(GD, f), 'utf8');
+          const m = /^const (?:ROOM|GROUND_RECT) := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/m.exec(src);
+          if (m) rects.push({ f: f, w: parseFloat(m[3]), h: parseFloat(m[4]) });
+        }
+        const small = rects.filter((r) => r.w < BASE.w || r.h < BASE.h);
+        ok(rects.length >= 6 && small.length === 0,
+          '\u2b50\u2b50 …and on a desktop it is a NO-OP: every room is at least as big as the 1152x648 window',
+          small.length ? small.map((r) => r.f + ' ' + r.w + 'x' + r.h).join(' · ')
+                       : rects.length + ' rooms, smallest ' +
+                         Math.min(...rects.map((r) => r.w)) + 'x' + Math.min(...rects.map((r) => r.h)));
+        /* ⚠ AND THE PROJECT MUST NOT MOVE THAT WINDOW. BASE_H is 648 because that is Godot's
+           default viewport height and project.godot does not override it; if it ever does,
+           the one number above becomes a guess. */
+        const proj = fs.existsSync(path.join(GD, 'project.godot'))
+          ? fs.readFileSync(path.join(GD, 'project.godot'), 'utf8') : '';
+        ok(!/window\/size\/viewport_height/.test(proj),
+          '…and nothing has moved the base viewport out from under that 648');
+      }
+      {
+        const town3 = town2;
+        const gr = /const GROUND_RECT := Rect2\([^,]+, [^,]+, [\d.]+, ([\d.]+)\)/.exec(town3);
+        const cap = /max_view = Vector2\(0\.0, ([\d.]+)\)/.exec(town3);
+        ok(gr && cap && parseFloat(cap[1]) < parseFloat(gr[1]),
+          '\u26a0\u26a0 the map does not hand over its whole length on a tall screen',
+          gr && cap ? 'shows at most ' + cap[1] + ' of ' + gr[1] + ' deep'
+                    : 'no GROUND_RECT or no cap');
+        ok(/@export var max_view: Vector2 = Vector2\.ZERO/.test(zone),
+          '…and every other room is uncapped, which is what ZERO means');
+      }
+      ok(/var wrap: bool = TownZone\.ui_scale\(self\) > 1\.4/.test(zone)
+        && /"Ore %d"/.test(zone),
+        '\u26a0 the stat row folds in two when the window is narrow  (one row ran under the Journal tab)');
+      ok(/b\.clip_text = true/.test(fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8')),
+        '\u26a0 and a long menu row is clipped rather than bled off the edge of the screen');
+      ok(/var narrow: bool = w \/ k < 520\.0/.test(jrn),
+        '\u26a0\u26a0 the journal asks "is this narrow" in BASE units, not viewport units',
+        'w has already been multiplied — asking in viewport units is asking about a desktop');
+
+      /* ══ 31 · THE FRONT OF THE ARCADE ═════════════════════════════════════════════════
+         2026-09-04, Nate: *"build out the outside of the arcade building. Make it look
+         nice."* ⚠⚠ EVERY OTHER BUILDING ON THIS MAP IS THE SAME COTTAGE, ON PURPOSE — that
+         is what makes them read as one town, and the doors were unified in August so that a
+         change to one is a change to all. This is the ONE that is not a house. */
+      ok(/class ArcadeFront extends TownDoor:/.test(town2)
+        && /var arc := ArcadeFront\.new\(\)/.test(town2),
+        'the Arcade has a front of its own');
+      {
+        /* …and exactly one building does. A second subclass is a town coming apart. */
+        const subs = (town2.match(/extends TownDoor:/g) || []).length;
+        ok(subs === 3, '…and it is the only building that is not the shared cottage',
+          subs + ' TownDoor subclasses (ArcadeFront, CityGate, Rowboat)');
+      }
+      ok(/sign_text = ""/.test(town2.slice(town2.indexOf('class ArcadeFront'))),
+        '\u26a0 the marquee IS the sign, so the name is not also floating over the roof');
+      {
+        const front = town2.slice(town2.indexOf('class ArcadeFront'),
+                                  town2.indexOf('# ══ THE STALL AND THE BOARD'));
+        ok(/var cabs: Array = Arcade\.CABS/.test(front),
+          '\u2b50\u2b50 what you see through the glass is read off the ROOM\u2019S OWN cabinet list',
+          'a fifth machine puts itself in the window; nothing here can advertise a machine that is not in there');
+        /* ⚠⚠ AND NOT A COPY OF IT. The four accents live in arcade.gd; a hex typed into this
+           file would be a second palette that drifts the first time one is retinted. */
+        const hexes = [...arc.matchAll(/"hex": "([0-9a-f]{6})"/g)].map((m) => m[1]);
+        ok(hexes.length >= 4 && !hexes.some((h) => front.includes(h)),
+          '…and not one of their colors is typed into the front',
+          hexes.join(' '));
+        ok(/bool\(cab\.get\("half", false\)\) and not GameState\.assembly_half\(\)/.test(front),
+          '\u26a0 the locked machine is dark in the window, on the same gate the cabinet reads');
+        ok(/int\(_t \* 8\.0\) % BULBS/.test(front),
+          '\u26a0 the bulbs chase at 8 frames a second, not 60',
+          'sixty redraws a second to move six circles is a bill with nothing on it [[ambient-layer-cost]]');
+        ok(/func retime\(\) -> void:/.test(front) && /TownClock\.is_dark\(\)/.test(front),
+          '…and it is asked by the same minute tick as every other lit thing on the map');
+        ok(/_spill\.energy = 0\.85 if TownClock\.is_dark\(\) else 0\.0/.test(front),
+          '\u26a0 the light on the pavement is night-only');
+        /* ⚠ FOUR-SIDED PIECES, NOT ONE STRIPED SHAPE. draw_colored_polygon renders a concave
+           polygon wrong and silently, and an awning is exactly the shape that tempts you.
+           [[godot-draw-and-save-traps]] */
+        const poly = front.slice(front.indexOf('func _draw_entrance'));
+        ok(/for i in 5:/.test(poly) && (poly.match(/PackedVector2Array\(\[/g) || []).length === 1,
+          '\u26a0\u26a0 the awning is built from convex quads in a loop, never one concave polygon');
+      }
       }
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');

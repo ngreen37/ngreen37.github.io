@@ -57,6 +57,10 @@ body_class: theme-hall
 {%- endcomment -%}
 <script src="{{ '/assets/js/pjcc-systems.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
+{% comment %} The endgame positions a regular sets you at six hearts (Checker Town's #4).
+     Data only — no DOM, no dependency, and the bench plays exactly as before without it.
+{% endcomment %}
+<script src="{{ '/assets/js/pjcc-studies.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
@@ -279,6 +283,22 @@ body_class: theme-hall
     var m = /[?&]side=(w|b)(?:&|$)/.exec(location.search);
     return m ? m[1] : null;
   }
+  /* ⭐ &pos=<id> — SIT DOWN TO A POSITION RATHER THAN A GAME (2026-09-04). Checker Town
+     sends you here when a regular you have six hearts with sets you one.
+     ⚠ IT IS ONLY EVER HONORED ALONGSIDE ?table=, because a position is somebody's position.
+     ⚠ AN UNKNOWN ID IS NULL, not a thrown error and not an empty board: the library is one
+     <script> among a dozen and a bench that cannot open a game because a data file was slow
+     is worse than a bench with no studies. [[down-never-stuck]] */
+  function askedForStudy(){
+    var m = /[?&]pos=([A-Za-z0-9_-]+)/.exec(location.search);
+    if (!m || !window.PJCCStudies) return null;
+    return PJCCStudies.get(m[1]);
+  }
+  /* ⭐ ?replay=<bot> — WATCH THE GAME THAT WON THE SQUARE (2026-09-04, Checker Town #3). */
+  function askedForReplay(){
+    var m = /[?&]replay=([A-Za-z0-9_-]+)/.exec(location.search);
+    return m ? m[1] : null;
+  }
   /* ⚠ `BOTS &&` IS LOAD-BEARING, NOT DEFENSIVE NOISE. `var BOTS = {…}` is declared ~150
      lines BELOW this, so it is hoisted-but-undefined for every caller that runs during
      module setup — and the stand-down guard at the top of the file is exactly such a
@@ -429,6 +449,10 @@ body_class: theme-hall
        sign-in gate on purpose: the regulars need no account (the bot gate), so bouncing
        someone off their own bookmarked board and onto an email form would undo the whole
        point of that route order. */
+    /* ⚠ NOT A RETURN. The replay is an overlay over the lobby, not a room — routing has
+       to carry on and paint something behind it. */
+    var rep = askedForReplay();
+    if (rep) showReplay(rep);
     var want = askedForTable();
     if (!inRoom && wantedBot()) return botSitDown(wantedBot());
     if (!uid()) return gateSignIn();            // needs only the profile layer, which is up
@@ -1211,6 +1235,24 @@ body_class: theme-hall
      today — so `sidePlayed()` reads a missing field as 'w' and a half-played game survives
      the update instead of turning its board around under somebody mid-move. */
   function sidePlayed(st){ return (st && st.pc === 'b') ? 'b' : 'w'; }
+  /* ⚠⚠ EVERY BOT-SIDE REBUILD GOES THROUGH HERE. A study does not start from the start, so
+     a call site still asking M.replayGame() directly would rebuild the wrong board and draw
+     it as though it were right — no error, no throw, just the wrong pieces. There are
+     exactly TWO bare M.replayGame() calls left in this file and both are correspondence
+     tables, which always start from the start; test:parktables counts them. */
+  function botGame(st, moves){
+    return M.replayGame(moves === undefined ? ((st && st.moves) || '') : moves,
+                        st && st.fen0);
+  }
+  function isStudy(st){ return !!(st && st.fen0); }
+  /* ⚠⚠ A DRAW CAN BE THE WIN. Philidor's whole lesson is that you are a pawn down and still
+     holding, so the study's own goal decides what "you did it" means — botWon() alone
+     reports a held draw as a failure, which is the opposite of the truth. */
+  function studyOK(st){
+    var sd = (st && st.pos && window.PJCCStudies) ? PJCCStudies.get(st.pos) : null;
+    if (sd && sd.goal === 'draw') return st.result === '1/2-1/2' || botWon(st);
+    return !!botWon(st);
+  }
   /* Did you win this one? The result is in PGN terms ('1-0' is White's win whoever that
      was), so every caller that used to compare against '1-0' has to come through here now. */
   function botWon(st){ return st && st.result === (sidePlayed(st) === 'w' ? '1-0' : '0-1'); }
@@ -1849,15 +1891,21 @@ body_class: theme-hall
      one person who kept the link is the one person the feature never applies to. */
   function botSitDown(id){
     if (!BOTS[id]) return;
+    var study = askedForStudy();
     var saved = botLoad();
+    /* ⚠⚠ A RESUME MUST BE THE SAME ERRAND. A saved study and a saved game are both "this
+       bot's unfinished board", and resuming one when the link asked for the other drops you
+       back into an endgame you thought you had left — or, worse, quietly turns the study
+       you were sent for into an ordinary game that CAN take a square. */
+    if (saved && (saved.pos || '') !== (study ? study.id : '')) saved = null;
     var mine = saved && saved.bot === id && !saved.done && (saved.moves || '').trim() &&
-               M.replayGame(saved.moves || '').valid;
+               botGame(saved).valid;
     try {
       if (window.PJCCAuston && PJCCAuston.speaks(id) && PJCCAuston.awayToday(!!mine)) {
         exitRoom(); safeRoute(); return;
       }
     } catch (e) {}
-    if (mine) return botStart(id, sidePlayed(saved));
+    if (mine) return botStart(id, sidePlayed(saved), study);
     /* ⭐ THE PREFERENCE IS READ AT THE MOMENT OF SITTING, NOT CACHED. 'r' is still a
        question here — botStart() is the one place that resolves it, and it resolves it
        once, so Random means a fresh coin per game rather than one coin remembered.
@@ -1884,7 +1932,7 @@ body_class: theme-hall
     if (wantSide && saved && saved.bot === id && !saved.done && !(saved.moves || '').trim()) {
       try { localStorage.removeItem(BOT_KEY); } catch (e) {}
     }
-    botStart(id, wantSide || sidePref());
+    botStart(id, wantSide || sidePref(), study);
   }
 
   /* ══ THE BENCH STRIP — one choice, above every seat ════════════════════════════════
@@ -2007,7 +2055,7 @@ body_class: theme-hall
      keeps the side already saved, because the pieces are already where they are. Callers:
      sideSheet (the player picked), botSitDown (a resume, passing the saved side back in),
      and the two rematch buttons on a finished board. */
-  function botStart(id, side){
+  function botStart(id, side, study){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
     botSay = null; botBye = null; botAdapt = null; botMid = null; botMidAt = 0;
     botLab = null;
@@ -2016,7 +2064,8 @@ body_class: theme-hall
     var saved = botLoad();
     if (BOTS[id]) enterRoom('bot', id, BOTS[id].name);   // you're at the table now, not on the page
     // resume an unfinished game against the same regular; otherwise a fresh board
-    if (!(saved && saved.bot === id && !saved.done && M.replayGame(saved.moves || '').valid)) {
+    if (!(saved && saved.bot === id && !saved.done &&
+          (saved.pos || '') === (study ? study.id : '') && botGame(saved).valid)) {
       /* ⚠ THE SIDE IS RESOLVED ONCE, HERE, AND WRITTEN DOWN. 'r' is a question, not an
          answer — storing it would re-roll the board's orientation on every render and
          every reload, which is the same class of bug as a seeded sky that forgets its
@@ -2026,9 +2075,13 @@ body_class: theme-hall
          the strip mid-game would reach back into a board already in progress and hand
          somebody a different amount of time than they have been playing with. Same
          reasoning as `pc` two lines up: the question is asked once, the answer is saved. */
-      var tc0 = tcById(tcPref());
-      saved = { bot: id, moves: '', done: 0, pc: resolveSide(side),
+      /* ⚠⚠ A STUDY HAS NO CLOCK AND DOES NOT DEAL A COLOR. The default control is Blitz
+         5+1 and an endgame technique under five minutes is a different, meaner exercise
+         than the one being set; and the position itself says which side you are. */
+      var tc0 = study ? tcById('') : tcById(tcPref());
+      saved = { bot: id, moves: '', done: 0, pc: study ? study.side : resolveSide(side),
                 tc: tc0.v, mw: tc0.ms, mb: tc0.ms };
+      if (study) { saved.fen0 = study.fen; saved.pos = study.id; }
       clockRunAt = 0;
       botSave(saved);
       try { PJCCGauntletEngine.newGame(); } catch (e) {}
@@ -2047,7 +2100,7 @@ body_class: theme-hall
     /* Not your move and no engine in flight — kick the think. TWO cases now, and they
        arrive here identically: a refresh while the regular was thinking, and the opening
        move of a game you are playing as Black. */
-    var g0 = M.replayGame(saved.moves || '');
+    var g0 = botGame(saved);
     if (!saved.done && g0.valid && !g0.result && g0.S.turn !== sidePlayed(saved)) botThink(saved, g0.S);
     else botRender();
   }
@@ -2084,7 +2137,7 @@ body_class: theme-hall
   function repSave(o){ try { localStorage.setItem(REP_KEY, JSON.stringify(o)); } catch (e) {} }
   function logRepertoire(st){
     var O = window.PJCCOpenings, moves = (st && st.moves || '').trim();
-    if (!O || !O.classify || !moves) return;
+    if (!O || !O.classify || !moves || isStudy(st)) return;   // a study has no opening
     try {
       var c = O.classify(moves);
       if (!c.name || c.bookPlies < 4) return;
@@ -2131,7 +2184,7 @@ body_class: theme-hall
   var PREP_KEY = 'pjcc.pt.prep.v1';
   function logPrepFail(st){
     try {
-      if (!st || botWon(st) || st.result === '1/2-1/2') return;
+      if (!st || isStudy(st) || botWon(st) || st.result === '1/2-1/2') return;
       var O = window.PJCCOpenings, moves = (st.moves || '').trim();
       if (!O || !O.classify || !moves) return;
       var c = O.classify(moves);
@@ -2185,9 +2238,13 @@ body_class: theme-hall
     /* Where she settled is where she starts next time. `settled()` rather than `level()`
        — the last few moves of a decided game describe the mop-up, not the contest, and
        seeding tomorrow from a mop-up would drift her a little further off you every game. */
-    if (botAdapt) { try { saveAdaptSeed(st.bot, botAdapt.settled()); } catch (e) {} }
+    if (botAdapt && !isStudy(st)) { try { saveAdaptSeed(st.bot, botAdapt.settled()); } catch (e) {} }
     botSave(st);
-    if (botWon(st)) {
+    /* ⚠⚠ A STUDY AWARDS NOTHING A GAME AWARDS. No day stamp, no beaten list, no star, no
+       adaptive seed — you did not beat this person, you solved a position they set you, and
+       every one of those records would go on to mean you had. What it does earn is written
+       down in Checker Town, off the stamp markLast() leaves below. */
+    if (botWon(st) && !isStudy(st)) {
       markWin();
       /* ⚠ THE BEATEN LIST STILL TAKES EVERY WIN, INCLUDING A HELPED ONE, and that is not
          an oversight in the new gate. Two different questions read it: the locked seats
@@ -2200,10 +2257,63 @@ body_class: theme-hall
       bankStars();
     }
     markLast(st);
+    bankGame(st);
     // ⚠ AFTER markBeaten(), never before: her "you beat Robert since we last played"
     //   observation compares the beaten list against her own copy of it, so the win has to
     //   be recorded before the log entry that will make her look.
     logFinished(st, ((st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0));
+  }
+
+  /* ⭐ THE GAME THAT WON THE SQUARE — for Checker Town (2026-09-04, next-steps #3).
+     ⚠⚠ NOTHING STORED THE MOVES BEFORE TODAY. `pjcc.pt.last.v1` is a result and a
+     timestamp; the in-progress board carries `moves` and is deleted the moment you get up.
+     So "tap a filled square and watch the game that won it" had nothing to play back, and
+     the backlog said otherwise. It does now.
+     ⚠ THE LAST CLEAN WIN, ONE PER REGULAR, AND THAT IS EXACTLY THE RIGHT GAME: a square in
+     the Assembly costs a clean win off that person, so the game kept here is the game that
+     took it. A later loss does not overwrite it, because a later loss did not take anything.
+     ⚠ A STUDY IS NEVER BANKED. It won no square; there is nothing for it to be the record of.
+     ⚠ LOCAL, AND HONESTLY SO. This is one string per regular in this browser's storage — it
+     does not ride the account sync, so the game plays back on the device it was won on. */
+  var GAMES_KEY = 'pjcc.pt.games.v1';
+  function gamesAll(){
+    try { var o = JSON.parse(localStorage.getItem(GAMES_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function bankedGame(key){ var g = gamesAll()[key]; return (g && g.moves) ? g : null; }
+  function bankGame(st){
+    if (!st || !st.bot || isStudy(st)) return;
+    if (!botWon(st) || tierEarned(st) !== 'full' || !(st.moves || '').trim()) return;
+    try {
+      var all = gamesAll();
+      all[st.bot] = { moves: st.moves, result: st.result, pc: sidePlayed(st), at: Date.now() };
+      localStorage.setItem(GAMES_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+
+  /* ⭐ AND THE DOOR THE TOWN OPENS. ?replay=<bot> plays the banked game back on the review
+     board this page already gives every finished correspondence game.
+     ⚠ THE PARAMETER IS STRIPPED FIRST. route() can run twice on one load (see its header)
+     and a second pass would open a second overlay on top of the first. */
+  function showReplay(key){
+    var rec = bankedGame(key);
+    try { history.replaceState({}, '', location.pathname); } catch (e) {}
+    if (!rec) { toast('Nothing banked from that game yet.'); return; }
+    var them = (BOTS[key] && BOTS[key].name) || key;
+    var iAmWhite = rec.pc !== 'b';
+    var meta = { whiteName: iAmWhite ? 'You' : them, blackName: iAmWhite ? them : 'You',
+                 result: rec.result };
+    // a beat, so the overlay opens over a painted lobby rather than an empty one
+    setTimeout(function(){
+      try {
+        if (window.PJCCReview && PJCCReview.enabled() && PJCCReview.available()) {
+          PJCCReview.open(rec.moves, meta);
+        } else if (window.PJCCAnalysis && PJCCAnalysis.available()) {
+          PJCCAnalysis.open({ moves: rec.moves, flip: !iAmWhite,
+            subtitle: meta.whiteName + ' vs ' + meta.blackName + ' · ' + (rec.result || '') });
+        } else { toast('No board here to play it back on.'); }
+      } catch (e) { toast('That game would not play back.'); }
+    }, 60);
   }
 
   /* ⚑ THE LAST RESULT, STAMPED — for Checker Town (2026-09-02).
@@ -2217,7 +2327,11 @@ body_class: theme-hall
     if (!st || !st.bot) return;
     try {
       localStorage.setItem('pjcc.pt.last.v1', JSON.stringify({
-        bot: st.bot, result: st.result, won: !!botWon(st),
+        /* ⚠⚠ `pos` IS WHICH ERRAND THIS WAS, "" for an ordinary game. Checker Town waits on
+           one specific errand at a time and both land in this one record; without the field
+           a study win against Crockett would have filled Crockett's square, which is the one
+           thing a study must never do. */
+        bot: st.bot, result: st.result, won: studyOK(st), pos: st.pos || '',
         /* ⚠ CLEAN = THE FULL STAR, the same test the bench already uses: no takeback
            (usedMul) and no analysis board (usedAn). Checker Town's named squares cost a
            clean win, so this is the difference between a piece and "go again". */
@@ -2465,7 +2579,7 @@ body_class: theme-hall
   }
   function botMulligan(){
     var st = botCur; if (!st) return;
-    var g = M.replayGame(st.moves || '');
+    var g = botGame(st);
     if (!canMulligan(st, g)) return;
     if (!confirm('Take that move back? You get one a game, and it turns this game’s star into a quarter.')) return;
     var list = st.moves.trim().split(/\s+/);
@@ -2578,7 +2692,7 @@ body_class: theme-hall
     var st = botCur; if (!st) return;
     var lab = botLab;                                   // non-null = you are in the sandbox
     var white = sidePlayed(st) === 'w';                 // which way the board faces
-    var bot = BOTS[st.bot], g = M.replayGame(lab ? lab.moves : (st.moves || ''));
+    var bot = BOTS[st.bot], g = botGame(st, lab ? lab.moves : (st.moves || ''));
     /* ⚠ exitRoom() BEFORE safeRoute() — a corrupt save is the one case that has to put
        you back on your feet, and route() now stands down while you are seated. Without
        this the unreadable board would simply stay on screen.
@@ -2607,6 +2721,15 @@ body_class: theme-hall
     }
     else if (botThinking) state = esc(bot.name) + ' is thinking…';
     else state = 'Your move.';
+    /* ⚠ THE BOARD HAS TO SAY WHAT IS BEING ASKED OF IT. A position with "Your move." over it
+       and no other explanation is a game that appears to have started in the wrong place. */
+    if (isStudy(st) && !lab) {
+      var sd = window.PJCCStudies ? PJCCStudies.get(st.pos) : null;
+      if (sd) {
+        state = esc(sd.name) + ' — ' + (sd.goal === 'draw' ? 'hold the draw' : 'win it') +
+          '. Nothing here touches the ladder.  ·  ' + state;
+      }
+    }
 
     /* ── HER LINE ────────────────────────────────────────────────────────────────
        The farewell is computed on the FIRST render after the game ends (botBye holds
@@ -2851,7 +2974,7 @@ body_class: theme-hall
     var st = botCur; if (!st) return;
     var lab = botLab;
     if (!lab && (st.done || botThinking)) return;
-    var g = M.replayGame(lab ? lab.moves : (st.moves || '')), S = g.S;
+    var g = botGame(st, lab ? lab.moves : (st.moves || '')), S = g.S;
     if (lab && g.result) return;                       // the line you were trying is over
     /* ⚠ WHOSE PIECES ARE PICKABLE. In the game, only the side you sat down on, and only
        on your turn. In the sandbox, whichever side is to move — that is the whole feature,
@@ -2888,7 +3011,7 @@ body_class: theme-hall
     clockBank(st, true);
     st.moves = ((st.moves || '') + ' ' + uci).trim();
     botSave(st);
-    var g2 = M.replayGame(st.moves);
+    var g2 = botGame(st);
     if (g2.result) { botFinish(st, g2); return botRender(); }
     botThink(st, g2.S);
   }
@@ -2950,7 +3073,7 @@ body_class: theme-hall
      legalMoves(), and this is the second lock on the same door. */
   function botSystemMove(st, S){
     try {
-      if (!S || !window.PJCCSystems) return null;
+      if (!S || !window.PJCCSystems || isStudy(st)) return null;   // an endgame is not a setup
       if (S.turn === sidePlayed(st)) return null;          // only ever on his own turn
       var id = botSystem(st.bot, S.turn);
       if (!id) return null;
@@ -2971,6 +3094,11 @@ body_class: theme-hall
   function studyMove(st, S){
     var bot = BOTS[st.bot];
     if (!bot || !bot.studies) return null;
+    /* ⚠⚠ NOT IN A POSITION GAME. This picks a first move out of an OPENING pool; the move
+       list of a study is empty on move one but the board is an endgame, so without this
+       Vince would answer the Lucena with a queen's-pawn opening move. (An unhappy collision
+       of names: `bot.studies` is his scouting flag, `st.pos` is the endgame.) */
+    if (isStudy(st)) return null;
     /* ⚠ ONLY EVER ON HIS OWN TURN. botThink() is reachable from the path that lands YOUR
        move, so without this a deviation could be played on your behalf. */
     if (!S || S.turn === sidePlayed(st)) return null;
@@ -3094,13 +3222,13 @@ body_class: theme-hall
           st.cpPrev = (typeof st.cp === 'number') ? st.cp : null;
           st.cp = mv.evalCp;
         }
-        if (!mv) { botFinish(st, M.replayGame(st.moves)); return botRender(); }
+        if (!mv) { botFinish(st, botGame(st)); return botRender(); }
         // the regular's own think comes off the regular's own clock — same punch, same order
         clockBank(st, true);
         var uci = C.nameFromSq(mv.from) + C.nameFromSq(mv.to) + (mv.promo || '');
         st.moves = (st.moves + ' ' + uci).trim();
         botSave(st);
-        var g = M.replayGame(st.moves);
+        var g = botGame(st);
         if (g.result) botFinish(st, g);
         /* ── DOES SHE HAVE ANYTHING TO SAY ───────────────────────────────────────
            ⚠⚠ HERE, NOT IN botRender, AND THE REASON IS THE SAME ONE THAT KEEPS greet()
