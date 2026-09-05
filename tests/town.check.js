@@ -1157,8 +1157,10 @@ const server = http.createServer((req, res) => {
          the board position, not to the slot, so a piece you have moved takes its line with it. */
       ok(/class Cell extends Interactable/.test(hall) && /sq\.f = f/.test(hall),
         'one mouth per square, standing where the piece stands');
-      ok(/monitoring = slot >= 0 or carry >= 0/.test(hall),
-        '…switched OFF unless something is on it, or an empty square takes the prompt off the Lectern');
+      ok(/monitoring = slot >= 0 or legal/.test(hall),
+        '…switched OFF unless something is on it OR you may legally move there',
+        'forty-odd live cells take the prompt off the Lectern, and forty that offer a move '
+        + 'and then refuse it are worse');
       ok(!/func _draw\(\)/.test(hall.slice(hall.indexOf('class Cell'),
                                            hall.indexOf('class Lectern'))),
         '…and it draws NOTHING — the room paints the board in one pass over the roster');
@@ -1729,59 +1731,143 @@ const server = http.createServer((req, res) => {
         '\u2b50 and the journal prints how many you have left today',
         'a pacing rule nobody can see the edge of is not a pacing rule');
 
-      /* ══ 33 · YESTERDAY'S GHOST ═══════════════════════════════════════════════════════ */
-      ok(/func track\(at: Vector2\) -> void:/.test(gs)
-        && /if dx \* dx \+ dy \* dy < trail_step \* trail_step:/.test(gs),
-        'the day is sampled by DISTANCE, not by a timer',
-        '\u26a0 on a timer the ghost is a dense knot wherever you stood still reading a message');
-      ok(/trail = thin/.test(gs) && /trail_step \*= 2\.0/.test(gs),
-        '\u26a0\u26a0 …and a long day DECIMATES rather than truncating',
-        'a cap that stops recording draws a path that ends in the middle of a field');
-      ok(/"trail_step": trail_step/.test(gs),
-        '…the stride is saved with it, or a reload starts packing points in again');
-      {
-        const sl = fnGd(gs, 'sleep');
-        ok(/ghost = trail/.test(sl) && /trail = \[\]/.test(sl),
-          '\u2b50 the day you just had becomes the faint one, and only one deep');
-      }
-      {
-        const push = gs.slice(gs.indexOf('func push_to_site'), gs.indexOf('func open_url'));
-        ok(!/trail|ghost/.test(push),
-          '\u26a0\u26a0 and it does not sync \u2014 a diary of one device, not a thing earned');
-      }
-      ok(/func _draw_ghost\(\) -> void:/.test(town2)
-        && town2.indexOf('_draw_ghost()') < town2.indexOf('func _draw_ghost'),
-        '…drawn at the end of the map\u2019s own _draw, so every building paints over it');
-      ok(/if g\.size\(\) < 6:/.test(town2),
-        '\u26a0 two points is a twitch, not a day  (and draw_polyline errors under two)');
+      /* ══ 33 · THE BOARD IS AN OPENING YOU PLAY INTO ═══════════════════════════════════
+         2026-09-05, his correction: *"you should only be able to make legal moves and you
+         can't attack the enemy. Basically, you can set up your opening."*
+         ⚠ THE GHOST'S SECTION WAS HERE AND IS GONE — *"doesn't feel right for what I'm
+         going for."* Its checks went with it rather than being left green over nothing. */
+      ok(!/func track\(|var ghost|_draw_ghost|trail_step/.test(gs + town2),
+        '⛑ yesterday\u2019s ghost is gone from the state AND from the map',
+        'a removal that leaves the recorder running is a save still growing for nothing');
 
-      /* ══ 34 · THE BOARD IS YOURS TO ARRANGE ═══════════════════════════════════════════
-         2026-09-05, off-the-wall #3. */
-      ok(/func place_piece\(slot: int, f: int, r: int\) -> bool:/.test(gs)
-        && /r < ARRANGE_LO or r > ARRANGE_HI/.test(gs),
-        'a piece may be stood on ranks 2-7',
-        '\u26a0 the far two are the opponent\u2019s complete set; yours on his king is a picture of nothing');
-      ok(/if taken >= 0 and taken != slot:\s*\n\s*return false/.test(gs),
-        '\u26a0\u26a0 …and never on a square that is taken',
-        'the banner draws by cell and the second piece would simply be invisible');
-      ok(/board_layout\.erase\(str\(slot\)\)/.test(gs),
-        '\u26a0 back home is the ABSENCE of an entry, so an untouched board saves nothing',
-        '…and the layout survives the roster being reordered, which its own header requires');
+      ok(/func legal_moves\(slot: int\) -> Array:/.test(gs)
+        && /func move_piece\(slot: int, f: int, r: int\) -> bool:/.test(gs)
+        && !/func place_piece\(/.test(gs),
+        'a piece MOVES rather than being placed, and free placement is gone',
+        'two ways to put a piece on a square is two sets of rules');
+      ok(/if not legal_moves\(slot\)\.has\(to\):\s*\n\s*return false/.test(gs),
+        '⚠⚠ …and the legality is asked in ONE place',
+        'the room lights the squares from the same list, so a cell can only offer a move '
+        + 'this function would allow');
+      ok(/for m in GameState\.legal_moves\(_carry\):/.test(hall),
+        '…and the room LIGHTS that same list rather than holding a second opinion',
+        'a room that lights a square the rules refuse is worse than a room that lights none');
+      ok(/func open_at\(f: int, r: int\) -> bool:/.test(gs)
+        && /r >= ARRANGE_LO and r <= ARRANGE_HI/.test(gs)
+        && /slot_at\(f, r\) < 0/.test(gs),
+        '⚠ "you cannot attack the enemy" is a WALL, not a rule',
+        'there are no captures at all and their two ranks are simply not squares — nothing '
+        + 'has to know a white piece exists');
       {
-        const cells = /for r in range\(GameState\.ARRANGE_LO, GameState\.ARRANGE_HI \+ 1\):/.test(hall)
-          && /var sq := Cell\.new\(\)/.test(hall);
-        ok(cells, 'the Assembly has a cell per square, not a square per slot');
-        ok(!/class Square extends Interactable/.test(hall),
-          '…and the old per-slot object is gone rather than left beside it');
-        ok(/var cell: Vector2i = GameState\.cell_of\(slot\) if won else GameState\.home_cell\(slot\)/.test(hall),
-          '\u26a0 the piece AND its nameplate are drawn where you stood it',
-          'a name left on the home square is a second, older claim about where somebody is');
-        ok(/func pick_up\(slot: int\) -> void:/.test(hall) && /func drop_at\(/.test(hall)
-          && /var _carry: int = -1/.test(hall),
-          '…you pick one up, walk, and put it down');
-        ok(/from\.say\("Somebody is already standing there\."/.test(hall),
-          '\u26a0 the refusal comes out of the square you tried, not out of the room');
+        const lm = fnGd(gs, 'legal_moves');
+        ok(/at\.y == PAWN_RANK and open_at\(at\.x, at\.y - 2\)/.test(lm),
+          '⚠ forward is r MINUS one, and two only from home',
+          'we sit on the black side: our pawns walk toward rank one');
+        ok(!/at\.x [+-] 1, at\.y - 1/.test(lm),
+          '…and a pawn has no diagonal at all, because nothing can be taken');
+        ok(/"n":[\s\S]{0,400}Vector2i\(1, 2\)[\s\S]{0,300}Vector2i\(-1, 2\)/.test(lm),
+          'a knight has all eight jumps');
+        /* ⚠⚠ EACH BRANCH PINNED TO ITS OWN LINE. The first version allowed 120 characters of
+           anything between the case and the loop, which reached past the queen into the KING's
+           branch — it has the same `diag + orth` — so gutting the queen went green.
+           [[green-must-name-what-ran]] */
+        ok(/"b":\s*\n\s*for d in diag:/.test(lm) && /"r":\s*\n\s*for d in orth:/.test(lm)
+          && /"q":\s*\n\s*for d in diag \+ orth:/.test(lm)
+          && /_ray\(out, at, d\.x, d\.y\)/.test(lm),
+          '…and the sliders are rays that stop where something stands');
       }
+      ok(/func castle_ready\(\) -> bool:/.test(gs)
+        && /cell_of\(4\) == Vector2i\(3, HOME_RANK\)/.test(gs)
+        && /cell_of\(7\) == Vector2i\(0, HOME_RANK\)/.test(gs)
+        && /open_at\(1, HOME_RANK\) and open_at\(2, HOME_RANK\)/.test(gs),
+        '⭐ castling is in, kingside only, from the two home squares',
+        'the Pirc needs it — and there is no check to be in, so those halves of the rule '
+        + 'have nothing here to test');
+      ok(/_put\(7, Vector2i\(2, HOME_RANK\)\)/.test(gs),
+        '⚠⚠ …and it moves the ROOK too, as one move',
+        'a king walking e8-f8-g8 is two moves and opens nothing, which is correct');
+      ok(/func reset_board\(\) -> void:/.test(gs) && /board_layout\.clear\(\)/.test(gs)
+        && /setup_moves = 0/.test(gs),
+        '⭐ and there is a way back — a pawn cannot walk backwards',
+        'without it a board you have pushed around is a board you are stuck with');
+      ok(/"id": "reset", "text": "Put every piece back\."/.test(hall)
+        && /GameState\.reset_board\(\)/.test(hall),
+        '…offered by the Lectern, and only once something has moved',
+        'on an untouched board that object behaves exactly as it did before');
+      ok(/board_layout\.erase\(str\(slot\)\)/.test(gs),
+        '⚠ back home is the ABSENCE of an entry, so an untouched board saves nothing',
+        '…and the layout survives the roster being reordered, which its own header requires');
+
+      /* ══ 34 · THE PIRC OPENS A DOOR ═══════════════════════════════════════════════════
+         *"If you set up the pirc (at least 6 moves in) you can enter a secret room."* */
+      {
+        const sysj = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-systems.js'), 'utf8');
+        /* ⭐⭐ THE TOWN INVENTS NO CHESS, AND THIS IS WHAT THAT COSTS TO PROVE. The seven
+           squares in GameState.PIRC are read out and compared against the site's OWN Pirc
+           row — PJCCSystems.SYS.pircb — in UCI. Change the book and this file fails, rather
+           than the town quietly disagreeing with the Academy about what a Pirc is. */
+        const row = (sysj.match(/pircb:[\s\S]{0,400}?'\*':\s*\[([^\]]+)\]/) || [])[1] || '';
+        const book = row.split(',').map((x) => x.trim().replace(/'/g, ''))
+          .filter(Boolean).slice(0, 6);
+        const pirc = [...gs.matchAll(/\n\t(\d+): Vector2i\((\d), (\d)\),\s+# ([a-z-]+\s*\S*)/g)]
+          .map((m) => ({ slot: +m[1], f: +m[2], r: +m[3] }));
+        /* the town's (f, r) back into a board square: we sit on the black side, so file 0 is
+           the h-file and rank 0 is rank one. Same flip as pjcc-banner.js. */
+        const sq = (f, r) => 'hgfedcba'[f] + (r + 1);
+        const homes = { 4: 'e8', 5: 'f8', 6: 'g8', 7: 'h8', 10: 'c7', 11: 'd7', 14: 'g7' };
+        const got = pirc.map((p) => homes[p.slot] + sq(p.f, p.r)).sort();
+        /* O-O is one book move and two of the town's squares — the rook's is implied by it. */
+        const want = book.filter((m) => m !== 'e8g8').concat(['e8g8', 'h8f8']).sort();
+        ok(pirc.length === 7 && got.length === 7 && got.join(' ') === want.join(' '),
+          '⭐⭐ the town\u2019s Pirc IS the site\u2019s Pirc, square for square',
+          got.join(' ') + (got.join(' ') === want.join(' ') ? '' : '   want: ' + want.join(' ')));
+        ok(/const PIRC_MOVES := 6/.test(gs)
+          && /if setup_moves < PIRC_MOVES:\s*\n\s*return false/.test(gs),
+          '…and it wants six moves as well as seven squares',
+          'his words: "at least 6 moves in"');
+        ok(/func pirc_progress\(\) -> int:/.test(gs),
+          '⚠ progress counts SQUARES, not moves',
+          'five squares right is four moves, and "4 of 6" would be a lie');
+      }
+      {
+        const sec = fs.readFileSync(path.join(GD, 'secret.gd'), 'utf8');
+        const scn = fs.readFileSync(path.join(GD, 'secret.tscn'), 'utf8');
+        ok(/class_name SecretRoom\s*\n/.test(sec) && /extends TownZone/.test(sec)
+          && /path="res:\/\/secret\.gd"/.test(scn),
+          'the room behind the west wall exists, and its scene loads it');
+        ok(/scene_path = "res:\/\/secret\.tscn"/.test(hall)
+          && /_secret\.visible = false/.test(hall),
+          '⚠⚠ …and the door is INVISIBLE until the opening is set, not locked',
+          'a door you can see and cannot open is a puzzle announcing itself');
+        ok(/var found := GameState\.pirc_set\(\)/.test(hall)
+          && /GameState\.board_changed\.connect\(_refresh\)/.test(hall),
+          '…and it appears on the move that opens it, without leaving the room');
+        ok(/if found and not _secret\.visible:/.test(hall),
+          '⚠ the line is said ONCE',
+          'a banner every time you walk past a door you have found is the room nagging you');
+        ok(/scene_path = "res:\/\/hall\.tscn"/.test(sec) && /TownExit\.new\(\)/.test(sec),
+          '…and there is a way out of it');
+        /* ⛑ SLICED TO THE FUNCTION. The first version tested the whole file, and the file's
+           own header comment says "read live out of GameState.PIRC" — so emptying the loop
+           left the check reading the paragraph that described it. */
+        const stone = sec.slice(sec.indexOf('func _draw_stone'));
+        ok(/for slot in GameState\.PIRC:/.test(stone) && /ChessArt\.draw_piece/.test(stone),
+          '⭐ the one thing in it is the board that opened it, read live from the rule',
+          'a picture, not lore — the naming and the contents are his');
+        /* ⛔ AND NOTHING IN IT IS INVENTED. No name, no sign, no character: he said "to be
+           named later" and this asserts that nobody named it in the meantime. */
+        const signs = [...sec.matchAll(/sign_text = "([^"]*)"/g)].map((m) => m[1]);
+        ok(signs.every((x) => x === 'Out') && !/TownNPC|TownChallenger/.test(sec),
+          '⛔ …and it names nobody and says nothing that is his to write',
+          'signs in the room: ' + (signs.join(', ') || 'none'));
+        ok(!/_secret\.sign_text/.test(hall),
+          '…nor does the door wear a sign, which would be a secret announcing itself');
+        ok(/const ROOM := Rect2\(-576\.0, -450\.0, 1152\.0, 900\.0\)/.test(sec),
+          '⚠⚠ …in a room exactly as wide as the window',
+          'narrower shows gray down both sides; wider pans the camera off the walls and '
+          + 'the room reads as a void with a stone in it');
+      }
+
       {
         /* ⚠⚠ THE SYNC CONTRACT, AND IT WAS BROKEN IN BOTH DIRECTIONS FOR THREE BATCHES.
            townMerge() writes the fields it knows and DROPS the rest, so a field the town

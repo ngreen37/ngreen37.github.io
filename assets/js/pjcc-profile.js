@@ -635,9 +635,17 @@
        other device's only when this one has none: a union would put a hat you took off back
        on your head, and would build a board arrangement nobody made. */
     if (!local.hat && remote.hat) local.hat = String(remote.hat);
+    /* ⚠⚠ AND THE COUNT COMES WITH IT, IN THE SAME BRANCH. `setup_moves` is how many moves
+       built that arrangement, and the secret door asks for six of them — an arrangement from
+       one device beside a count from the other is a board lying about how far in it is. Two
+       fields, one decision. [[everything-earned-syncs]] */
     if (!local.board_layout || !Object.keys(local.board_layout).length) {
-      if (remote.board_layout && Object.keys(remote.board_layout).length) local.board_layout = remote.board_layout;
+      if (remote.board_layout && Object.keys(remote.board_layout).length) {
+        local.board_layout = remote.board_layout;
+        local.setup_moves = +remote.setup_moves || 0;
+      }
     }
+    if (typeof local.setup_moves !== 'number') local.setup_moves = +remote.setup_moves || 0;
     /* ⚠ `board` IS DERIVED (piece + name + square, for the banner), so it is not merged — the
        fuller of the two wins, which is the device that has won more squares. */
     if (Array.isArray(remote.board) &&
