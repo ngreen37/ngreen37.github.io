@@ -145,7 +145,7 @@ permalink: /games/
    COLUMN here, like the splash and the hero: arch on top, the ten lift-pips BELOW it.
 
    2026-07-21: the ~110 lines of .gdoor LOOK that stood here are gone. They were a
-   hand-maintained copy of _sass/_pjcc-21-gauntlet-door.scss, labelled "kept in sync"
+   hand-maintained copy of _sass/_pjcc-21-gauntlet-door.scss, labeled "kept in sync"
    in both files, and they had already drifted apart. The partial is the single source
    now; _layouts/home.html dropped its copy in the same pass.
 

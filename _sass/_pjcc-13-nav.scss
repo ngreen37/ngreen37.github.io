@@ -567,7 +567,7 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      rail), but the hamburger's default padding put its bars' center at x≈53. Pull it 20px
      left so it sits DIRECTLY above the icon column it toggles. (Only the hamburger lives in
      .header-top-left; the logo is the center grid column, so this moves nothing else. When
-     the rail is expanded its labelled icons sit a touch right of this — the collapsed column
+     the rail is expanded its labeled icons sit a touch right of this — the collapsed column
      is the one the eye lines up against, and this alignment is measured to it.) */
   .header-top-left { transform: translateX(-20px); }
   /* push the page + footer to the right of the rail (the header stays full-width on top).

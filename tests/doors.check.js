@@ -11,7 +11,7 @@
  * needs the door to behave slightly differently, copies the transforms it needs into its own
  * <style>, and the copy is a twin from that moment on. It has happened three times
  * ([[gauntlet-door-one-file]]) — the home hero and the games hall each carried a full copy
- * labelled "kept in sync" while they had already drifted, and the front door started down
+ * labeled "kept in sync" while they had already drifted, and the front door started down
  * the same road on the day this test was written. So: NO FILE except the partial may write a
  * transform for `.gdoor-door`. A page that needs to be the hover target wears `.gdoor-host`.
  *
@@ -102,7 +102,7 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
      had been proving a fact about a file no visitor could reach.
      ⚑⚑ AND LATER THE SAME DAY THE LIST BECAME ONE ENTRY, because the three survivors became
      one file. index.md, games.md and _layouts/home.html each carried their own NAMES /
-     ACCENTS / GLYPHS and their own hydration, all three labelled "keep in sync"; they now
+     ACCENTS / GLYPHS and their own hydration, all three labeled "keep in sync"; they now
      load /assets/js/pjcc-gauntlet-door.js. Every question below is still asked — of the one
      file that can now answer for every door on the site.
      ⚠ IT IS STILL A LIST, AND IT HAS TO STAY ONE ENTRY LONG. All three previous copies began

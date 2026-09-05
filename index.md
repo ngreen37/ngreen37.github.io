@@ -1394,7 +1394,7 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; visibility: v
    10th's 16%. ⚠ 480 IS A FLOOR, NOT A TASTE. Shrink-to-content lands at 338px, which is
    NARROWER than the 355px paper doors below it — the page's lead would become its smallest
    card and "it is BIGGER" quietly stops being true. Anything under ~460 crosses that line by
-   area. Picked from a labelled candidate render at his own window size (1512 wide, rail
+   area. Picked from a labeled candidate render at his own window size (1512 wide, rail
    docked), where his 582 reproduced to the pixel ([[pick-visual-values-from-a-render]]).
 
    ⚑⚑ 420 AND SHORTER, 2026-08-11 THIRD PASS. He drew a red line on a screenshot: "trim the
@@ -2327,7 +2327,7 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
 
      ⚑ THE SCRIPT MOVED OUT ON 2026-08-19, to /assets/js/pjcc-gauntlet-door.js, and it took
      the ladder names, the ten accents and the ten glyphs with it. This page and games.md
-     each carried their own copy of all four, both labelled "keep in sync" — and the fix
+     each carried their own copy of all four, both labeled "keep in sync" — and the fix
      Nate asked for that day (the door should open at the floor the ACCOUNT reached, not the
      one this browser remembers) would have had to be written twice and drift twice.
      The LOOK was already one file (_sass/_pjcc-21-gauntlet-door.scss); the STATE is now too.

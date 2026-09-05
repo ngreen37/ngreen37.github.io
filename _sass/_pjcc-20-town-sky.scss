@@ -359,7 +359,7 @@ html.sky-night.moon-new .ts-orb { display: none; }
    instead of its gold one. Nobody ever reported it, because a slightly duller sun looks
    like a sun. Anything keyed to `moon-*` must be scoped to `html.sky-night`.
 
-   20px · 0.45 WAS PICKED FROM A PICTURE, not reasoned: a labelled 4×3 grid (blur 8/14/20/28
+   20px · 0.45 WAS PICKED FROM A PICTURE, not reasoned: a labeled 4×3 grid (blur 8/14/20/28
    × alpha 0.30/0.45/0.60) rendered at crescent, first quarter and full on the real night
    gradient. 8px hugs the limb and reads as an outline again — the exact failure being fixed.
    28px·0.30 is a bloom with no moon in it. 20px·0.45 is the one that glows without ringing.

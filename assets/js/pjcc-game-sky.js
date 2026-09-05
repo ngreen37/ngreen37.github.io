@@ -23,7 +23,7 @@
  * and the gate will tell you if you forgot.
  *
  * ⚠ THE STRENGTH (0.03–0.12 alpha) IS A CEILING, NOT A TASTE — AND IT WAS MEASURED.
- * The wash is subtle. It was tried louder first: a labelled ×1/×2/×3/×4 render said ×3
+ * The wash is subtle. It was tried louder first: a labeled ×1/×2/×3/×4 render said ×3
  * was where "it is daytime outside" actually reads. Then every visible text node in all
  * sixteen shells was measured against the background it really sits on, before and after
  * the wash composites over both:

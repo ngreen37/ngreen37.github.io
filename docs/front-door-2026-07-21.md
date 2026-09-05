@@ -49,7 +49,7 @@ URL each page answers to — which is genuinely a two-line front-matter change, 
 `index.md` and `pjcc.md` are five-line shells whose only meaningful content is
 `permalink:`. All the substance lives in the layouts. The rollback is the same two lines.
 
-Three of four judges picked this. The dissent is worth reading — see *The judgement call*
+Three of four judges picked this. The dissent is worth reading — see *The judgment call*
 below.
 
 The end state:
@@ -206,7 +206,7 @@ the ports, the permalink flip, the PWA and JSON-LD changes.
 
 ---
 
-## The judgement call you might want to overrule
+## The judgment call you might want to overrule
 
 Three judges picked the merge. The **engineering** judge dissented, and made a real case:
 your stated problem is "two home pages," but the *mechanism* causing that feeling is

@@ -28,6 +28,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const ROOT = path.join(__dirname, '..');
 
 /* Third-party source, build output, and Nate's own writing. Lore and blog posts are HIS
@@ -58,6 +59,15 @@ const BRITISH = [
   'organise', 'organised', 'recognise', 'recognised', 'apologise', 'apologising',
   'realise', 'realised', 'emphasise', 'emphasised', 'summarise',
   'towards', 'afterwards', 'whilst',
+  /* ⭐⭐ ADDED 2026-09-05 after a wrap-time grep found 40 of these, 17 of them in the
+     repo this file was already walking. The list had `cancelled` and `travelling` but not
+     `labelled`; it had six -ise verbs but not `optimise` or `normalise`. A word list is a
+     net with holes in exactly the shapes nobody has been bitten by yet. */
+  'labelled', 'labelling', 'mislabelled', 'judgement', 'judgemental',
+  'optimise', 'optimised', 'optimising', 'normalise', 'normalised', 'normalising',
+  'initialise', 'initialised', 'utilise', 'utilised', 'minimise', 'maximise',
+  'customise', 'customised', 'specialise', 'prioritise', 'visualise', 'standardise',
+  'neighbourhood', 'signalled', 'fuelled', 'programme', 'programmes',
   /* ⚠ `analyse` and `catalogue` are NOT here, on purpose. Both appear as identifiers
      (`data-analyse`, `pt-bot-analyse`, `pgr-analyse`, and a `.catalogue` property read from
      four files), and `-` / `.` are non-word characters, so a boundary match would hit them.
@@ -86,13 +96,32 @@ function walk(d, out) {
 const rel = (f) => path.relative(ROOT, f).split('\\').join('/');
 const FILES = walk(ROOT, []);
 
+/* ⭐⭐ AND IT READS THE MEMORY DIRECTORY (2026-09-05). Nineteen British spellings were
+   living in `~/.claude/projects/<slug>/memory` — the one place prose gets written every
+   single session and the one place no gate could see, which is why the note in there ends
+   "grep before wrapping". A grep somebody has to remember is not a gate. The slug is
+   derived from ROOT and the path is guarded by an existence check, so this is a silent
+   no-op on any other machine and in CI.
+   ⚠ `american-spelling.md` is skipped: it is the tally, and it names every word here. */
+const MEM = (() => {
+  const slug = ROOT.replace(/^([A-Za-z]):/, (m, d) => d.toLowerCase() + '-')
+    .replace(/[\\\\/.]/g, '-');
+  const p = path.join(os.homedir(), '.claude', 'projects', slug, 'memory');
+  return fs.existsSync(p) ? p : null;
+})();
+
 console.log('\n── HOUSE RULES ───────────────────────────────────────────\n');
 
 /* ── 1. AMERICAN SPELLING, COMMENTS INCLUDED ──────────────────────────────────── */
 {
   const found = [];
-  for (const f of FILES) {
+  /* ⚠ ONLY THIS SECTION READS the memory files. Title Case below judges HEADERS, and a
+     memory note's headings are prose written for one reader; flattening those is not this
+     file's job. */
+  const SPELL = FILES.concat(MEM ? walk(MEM, []) : []);
+  for (const f of SPELL) {
     if (rel(f) === 'tests/style.check.js') continue;      // this file names them all
+    if (path.basename(f) === 'american-spelling.md') continue;   // the tally names them too
     const src = fs.readFileSync(f, 'utf8');
     for (const w of BRITISH) {
       const re = new RegExp(String.raw`\b${w}\b`, 'gi');
@@ -101,7 +130,8 @@ console.log('\n── HOUSE RULES ───────────────�
     }
   }
   check('no British spelling anywhere in source (comments included)', found.length === 0,
-    found.length ? '\n      ' + found.slice(0, 12).join('\n      ') : FILES.length + ' files clean');
+    found.length ? '\n      ' + found.slice(0, 12).join('\n      ')
+      : SPELL.length + ' files clean' + (MEM ? ', memory included' : ''));
 }
 
 /* ── 2. TITLE CASE ON HEADERS AND PICKER LABELS ───────────────────────────────────

@@ -505,7 +505,7 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
     bots.filter(b => b.adaptive || b.offLadder).every(b => b.elo > 0),
     bots.filter(b => b.adaptive).map(b => b.name + ' seeds at ' + b.elo).join(' · ') || 'none');
 
-  /* THE REGRESSION ITSELF. A seat labelled Easy or Medium that lands at skill 1 or more is
+  /* THE REGRESSION ITSELF. A seat labeled Easy or Medium that lands at skill 1 or more is
      1400+ by definition — i.e. stronger than the Gauntlet's Vice President, on a card that
      says "Medium". That is exactly what he ran into. */
   const tooStrong = bots.filter(b => /Easy|Medium/.test(b.diff) && E.skillForElo(b.elo) > 0);

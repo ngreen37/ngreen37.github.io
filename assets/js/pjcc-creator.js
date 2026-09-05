@@ -86,7 +86,7 @@
      The Forge's own preview was right, which is exactly why it read as a sync problem.
 
      ⭐⭐ THE PICKER OWNED THE PICTURE. What a crown LOOKS LIKE is drawing data. The picker —
-     which hats exist, in what order, labelled how — is still this file's job, and it reads
+     which hats exist, in what order, labeled how — is still this file's job, and it reads
      the glyph from the module that draws it. The full note is over there.
      ⚠ READ THROUGH art(), NEVER CAPTURED AT LOAD. pjcc-face-art.js is a separate script and
      this one must not assume it has run; a missing dependency then draws an EMPTY picker,
@@ -810,7 +810,7 @@
       var open = P.auraUnlocked ? P.auraUnlocked(k, accountProfile()) : true;
       var who  = from ? (BOT_NAMES[from] || from) : '';
       /* ⚠ THE FALLBACK IS THE NAME, NOT THE RAW KEY. `mono`/`azure`/`rose`/`lime` belong to
-         nobody and carry no word, and a swatch labelled with a bare lowercase key reads as
+         nobody and carry no word, and a swatch labeled with a bare lowercase key reads as
          a variable that leaked. */
       /* ⛑⛑ IT NOW SAYS WHERE, AND WHAT "NO HELP" MEANS — 2026-08-25.
          Nate: *"The locked auras are great. Make sure we understand WHY they are locked (in

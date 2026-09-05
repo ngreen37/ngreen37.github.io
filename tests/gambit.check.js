@@ -21,7 +21,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-/* ⚠ NORMALISE LINE ENDINGS. These files are checked out CRLF on Windows, so every
+/* ⚠ NORMALIZE LINE ENDINGS. These files are checked out CRLF on Windows, so every
    multi-line anchor below would miss against the raw text — and miss SILENTLY, as a
    "the script changed shape" abort that sends you looking at the wrong file. */
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');

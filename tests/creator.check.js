@@ -522,9 +522,9 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     check('…including Princess’s, whichever apostrophe it renders with',
       /beginner.{1,3}s heart/.test(auraText), 'matched around the apostrophe');
 
-    /* ⚠ AND THE FOUR FREE COLORS FALL BACK TO A NAME, NEVER A RAW KEY. A swatch labelled
+    /* ⚠ AND THE FOUR FREE COLORS FALL BACK TO A NAME, NEVER A RAW KEY. A swatch labeled
        `mono` reads as a variable that leaked onto the page. */
-    check('…while an unowned color is labelled with its NAME, not its key',
+    check('…while an unowned color is labeled with its NAME, not its key',
       /mono/i.test(auraText) && !/"mono"/.test(auraText) &&
       /Mono|Azure|Rose|Lime/.test(await page.evaluate(() =>
         [...document.querySelectorAll('[data-aura]')].map((e) => e.getAttribute('aria-label') || '').join(' | '))),

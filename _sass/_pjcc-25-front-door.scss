@@ -131,7 +131,7 @@ body.theme-chess {
 
      So the sheet is `rgba(251,243,224,0.78)` — a real warm parchment instead of a
      near-neutral white, and the six points of alpha are what pay for it (ink-3 lands at
-     5.16, a margin rather than a rounding error). Picked from a labelled six-candidate
+     5.16, a margin rather than a rounding error). Picked from a labeled six-candidate
      render against the real night sky, per [[pick-visual-values-from-a-render]], because at
      0.72 the current sheet does not look white at all — it looks gray-lavender, which is the
      sky coming through, and THAT is what he was reacting to.
@@ -331,7 +331,7 @@ body.theme-chess {
      edge lands at 22% of the card unscrolled, 49% halfway down, and 76% at the foot. A
      gradient painted onto the CARD would therefore be correct at exactly one scroll
      position and wrong everywhere else. Anchored to the viewport it is right at all of
-     them — and it costs nothing in judgement, because the sky's own geometry already
+     them — and it costs nothing in judgment, because the sky's own geometry already
      separates the two things he named: the moon's arc and the stars live in the top half,
      the city lives in the bottom 52vh. Transparent up top, opaque down low IS
      "moon and stars yes, city lights no."
