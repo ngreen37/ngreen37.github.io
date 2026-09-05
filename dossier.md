@@ -175,6 +175,13 @@ permalink: /dossier/
      already above, which is the dependency the card's Companion section needs.
      {%- endcomment -%}
 <script src="{{ '/assets/js/pjcc-gift.js' | relative_url }}"></script>
+{%- comment -%} THE BOARD YOU BUILT (2026-09-05) — Checker Town's sixteen squares, arranged
+     however you stood them, drawn small under The Journey. ⚠ pjcc-pieces.js first: the banner
+     asks it for the glyphs and falls back to plain discs without it, which is a picture of
+     the right board in the wrong hand. ⚠ It removes its own block when you have won nothing,
+     so this page gains nothing until it means something. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-pieces.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-banner.js' | relative_url }}"></script>
 <script>
 /* The Identity Forge card — renders instantly for everyone (guest, offline, or
    signed-in); re-renders when the account loads so it can prefer your synced look. */
@@ -441,6 +448,21 @@ permalink: /dossier/
       }
     } catch (e) {}
 
+    /* ── THE BOARD YOU BUILT (2026-09-05, off-the-wall #3) ─────────────────────
+       A third road under The Journey, and the only one of the three with a picture: every
+       piece you have taken off somebody, standing where you stood it in the Assembly.
+       ⚠⚠ IT IS DRAWN AFTER THE HTML LANDS, not built into this string — it is a canvas, so
+       the element has to exist before anything can paint on it. The mount removes its own
+       block when the board is empty, so a player who has never opened the town sees no
+       change to this page at all. [[declutter-north-star]] */
+    var boardRows = [];
+    try { boardRows = (window.PJCC && PJCC.townBoard) ? PJCC.townBoard() : []; } catch (e) { boardRows = []; }
+    if (boardRows.length) {
+      html += '<div class="dsr-board"><p class="dsr-board-cap">Your board — <b>' +
+        boardRows.length + ' of 16</b>, where you stood them</p>' +
+        '<div id="dsr-board-mount"></div></div>';
+    }
+
     html += '<h2 class="dsr-h">Achievements</h2><div class="dsr-ach-grid">';
     PJCC.earnedAchievements(prof, stats).forEach(function (a) {
       html += '<div class="dsr-ach ' + (a.earned ? 'got' : 'locked') + '">' +
@@ -572,6 +594,9 @@ permalink: /dossier/
     // header now, so leaving a line here would just be a third box saying hello.
     setTop('');
     el.innerHTML = html;   // the record → below the one identity card, one continuous flow
+    // the canvas exists now — see the note above the block that made it
+    try { if (window.PJCCBanner) PJCCBanner.mount(document.getElementById('dsr-board-mount'), boardRows); }
+    catch (e) {}
 
     // repaint the card so the account strip lands inside it (and re-lands after any edit)
     var forgeMount = document.getElementById('forge-mount');
@@ -648,6 +673,15 @@ permalink: /dossier/
 /* ---- operative profile ---- */
 .dsr-card { background: var(--surface-2); border: 1px solid #6b5fa0; border-radius: var(--r-md); padding: 1.2rem 1.4rem; max-width: 560px; }
 .dsr-h { color: #F5C518; margin: 1.6rem 0 0.6rem; font-size: 1.05rem; }
+
+/* ---- the board you built (2026-09-05) — Checker Town's sixteen, where you stood them.
+       ⚠ A CANVAS SIZES ITSELF IN JS and the module writes both dimensions, so nothing here
+       may set a width: the two would fight and the loser is the crisp one on a phone. What
+       this owns is the space around it and the caption over it. ---- */
+.dsr-board { margin: 0.9rem 0 0.2rem; }
+.dsr-board-cap { color: #b9a8e6; font-size: 0.88rem; margin: 0 0 0.5rem; }
+.dsr-board-cap b { color: #F5C518; }
+.pjb-board { display: block; border-radius: 6px; max-width: 100%; height: auto; }
 
 /* a foldable section — the service record (shut by default; see the note in the renderer).
    Styled to read as a heading you can press, NOT as a card: same gold, same weight, same

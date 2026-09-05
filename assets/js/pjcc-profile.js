@@ -587,8 +587,12 @@
     if (!remote || typeof remote !== 'object') return null;
     var local = townLocal();
     local.day = Math.max(+local.day || 0, +remote.day || 0);
-    local.hearts = Math.max(+local.hearts || 0, +remote.hearts || 0);
     local.ore = Math.max(+local.ore || 0, +remote.ore || 0);
+    /* ⛑⛑ `hearts` IS A DICTIONARY OF PERSON → COUNT, NOT A NUMBER, and until 2026-09-05 this
+       line read `Math.max(+local.hearts || 0, +remote.hearts || 0)`. `+{"Auston":4}` is NaN,
+       so every push wrote the integer **0** over the account's hearts — and the town then
+       tried to iterate an int as a Dictionary on the way back down. MAX PER PERSON. */
+    local.hearts = maxPerKey(local.hearts, remote.hearts);
     local.ceo_beaten = !!(local.ceo_beaten || remote.ceo_beaten);
     /* ⚠ EARNED, SO IT IS AN OR — three clean puzzles in a row bought the oars once and
        they do not un-buy on another device. A run IN PROGRESS is deliberately not here:
@@ -618,8 +622,43 @@
       scout[i] = Math.max(+scout[i] || 0, +rs[i] || 0);
     }
     local.scouted = scout;
+    /* ⚠⚠ EVERY OTHER FIELD THE TOWN SENDS, AND THE LIST HAS TO STAY COMPLETE. This function
+       writes the fields it knows and DROPS the rest, so a field added to the town's push and
+       not added here is a feature that silently does not sync — which is exactly what
+       happened to `razzed`, `words` and `positions`. test:town diffs the two key sets. */
+    local.razzed = union(local.razzed, remote.razzed);
+    local.words = union(local.words, remote.words);
+    local.hats = union(local.hats, remote.hats);
+    /* a study beaten is a thing earned, like a word learned */
+    local.positions = union(local.positions, remote.positions);
+    /* ⚠ WEARING A HAT AND ARRANGING A BOARD ARE PREFERENCES, NOT THINGS EARNED. Take the
+       other device's only when this one has none: a union would put a hat you took off back
+       on your head, and would build a board arrangement nobody made. */
+    if (!local.hat && remote.hat) local.hat = String(remote.hat);
+    if (!local.board_layout || !Object.keys(local.board_layout).length) {
+      if (remote.board_layout && Object.keys(remote.board_layout).length) local.board_layout = remote.board_layout;
+    }
+    /* ⚠ `board` IS DERIVED (piece + name + square, for the banner), so it is not merged — the
+       fuller of the two wins, which is the device that has won more squares. */
+    if (Array.isArray(remote.board) &&
+        remote.board.length >= ((local.board && local.board.length) || 0)) local.board = remote.board;
     try { localStorage.setItem(TOWN_KEY, JSON.stringify(local)); } catch (e) {}
     return local;
+  }
+
+  /* {a:1} ∪ {b:1} — for the sets the town keeps of things that have happened to you. */
+  function union(a, b) {
+    var out = (a && typeof a === 'object') ? a : {}, k;
+    if (b && typeof b === 'object') for (k in b) if (b.hasOwnProperty(k)) out[k] = 1;
+    return out;
+  }
+  /* {who: n} with the larger n per person. */
+  function maxPerKey(a, b) {
+    var out = (a && typeof a === 'object') ? a : {}, k;
+    if (b && typeof b === 'object') {
+      for (k in b) if (b.hasOwnProperty(k)) out[k] = Math.max(+out[k] || 0, +b[k] || 0);
+    }
+    return out;
   }
 
   var PJCC = {
@@ -1091,6 +1130,18 @@
      Nothing joins them, so a signed-in player on a new device had their state pulled down by
      myStats() and then watched Godot boot Day 1 straight over the top of it. GameState calls
      this at boot and for the first 30s after, which covers the async pull landing late. */
+  /* ⭐ THE BOARD AS YOU ARRANGED IT (2026-09-05, off-the-wall #3). An array of
+     { p, who, f, r } — piece letter, the name under it, and the square it stands on.
+     ⚠⚠ THE TOWN SENDS ALL THREE. The site holds no copy of the roster, so a character
+     renamed in Godot is renamed in the banner and there is nothing here to fall out of step.
+     ⚠ [] IS A NORMAL ANSWER: nobody has won a square yet, and the banner draws nothing. */
+  PJCC.townBoard = function () {
+    try {
+      var b = townLocal().board;
+      return Array.isArray(b) ? b : [];
+    } catch (e) { return []; }
+  };
+
   PJCC.townState = function () {
     var t = townLocal();
     return (t && Object.keys(t).length) ? t : null;

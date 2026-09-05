@@ -155,11 +155,13 @@ const server = http.createServer((req, res) => {
     /* ── mergeTown ──────────────────────────────────────────────────────────────── */
     const M = await page.evaluate(() => {
       localStorage.removeItem('pjcc.town.v1');
-      PJCC.mergeTown({ day: 4, ore: 10, hearts: 3, army: [0, 5], ceo_beaten: false,
+      PJCC.mergeTown({ day: 4, ore: 10, hearts: { Auston: 4, Crockett: 1 },
+                       army: [0, 5], ceo_beaten: false,
                        beaten: { crockett: 4, argus: 2 }, scouted: { crockett: 3 } });
       const first = JSON.parse(localStorage.getItem('pjcc.town.v1'));
       // the other device: further on in places, BEHIND in others
-      const merged = PJCC.mergeTown({ day: 2, ore: 40, hearts: 1, army: [5, 11],
+      const merged = PJCC.mergeTown({ day: 2, ore: 40, hearts: { Auston: 1, Crockett: 2 },
+                                      army: [5, 11],
                                       ceo_beaten: true, beaten: { crockett: 1, kedar: 6 },
                                       scouted: { crockett: 1, argus: 2 } });
       return { first: first, m: merged, stored: JSON.parse(localStorage.getItem('pjcc.town.v1')) };
@@ -169,7 +171,16 @@ const server = http.createServer((req, res) => {
       'mergeTown: army is a UNION of slot indices, deduped and sorted', JSON.stringify(M.m.army));
     ok(M.m.day === 4, 'mergeTown: day takes the MAX — a stale row cannot rewind the calendar');
     ok(M.m.ore === 40, 'mergeTown: ore takes the MAX');
-    ok(M.m.hearts === 3, 'mergeTown: hearts take the MAX');
+    /* ⛑⛑ THIS CHECK USED TO ASSERT THE BUG, AND IT PASSED FOR THREE BATCHES. `hearts` is a
+       DICTIONARY of person → count; the old merge was `Math.max(+local.hearts || 0, …)`, which
+       on `{"Auston": 4}` is `Math.max(0, 0)` — so it wrote the integer 0 over the account's
+       hearts and this line, fed a number by a fixture that was also a number, agreed with it.
+       ⚠ THE FIXTURE WAS THE OTHER HALF OF THE MISTAKE. A test that hands the code a shape the
+       real caller never sends is a test of something nobody runs. It sends a dictionary now.
+       [[green-must-name-what-ran]] */
+    ok(M.m.hearts && M.m.hearts.Auston === 4 && M.m.hearts.Crockett === 2,
+      'mergeTown: hearts are a DICTIONARY and take the max PER PERSON',
+      JSON.stringify(M.m.hearts));
     ok(M.m.ceo_beaten === true, 'mergeTown: ceo_beaten is sticky (OR) — you cannot un-beat him');
     ok(M.m.beaten.crockett === 4,
       '⚠⚠ mergeTown: beaten is MAX PER KEY, so a stale day cannot free a second piece today',
@@ -700,7 +711,11 @@ const server = http.createServer((req, res) => {
          two mappings, disagreeing on BOTH axes. */
       ok(/static func board_cell\(slot: int\) -> Vector2i:/.test(gs),
         'ONE function turns a slot into a cell on the board');
-      ok(/GameState\.board_cell\(slot\)/.test(hall) && /GameState\.board_cell\(slot\)/.test(door),
+      /* ⚠ THE HALL REACHES IT ONE HOP FURTHER AWAY SINCE 09-05. A piece can be stood
+         anywhere now, so the room asks cell_of() — which falls back to home_cell(), which is
+         the only thing left that calls board_cell(). Still ONE mapping and still two callers. */
+      ok(/var c := board_cell\(slot\)/.test(gs) && /GameState\.board_cell\(slot\)/.test(door)
+        && /GameState\.home_cell\(slot\)/.test(hall),
         '…and the Assembly AND the building\'s face both read it');
       ok(!/func _col\(/.test(hall) && !/window_cols/.test(door),
         '…neither keeps a private copy  (⚠ the private copy is what got them mirrored)');
@@ -1138,11 +1153,13 @@ const server = http.createServer((req, res) => {
         'all sixteen squares carry the line their piece says', says + ' of ' + whos);
       ok(/func square_says\(slot: int\) -> String:/.test(gs) && /not has_slot\(slot\)/.test(gs),
         '…and an UNWON square says nothing  (nobody has lost it yet)');
-      ok(/class Square extends Interactable/.test(hall) && /sq\.slot = slot/.test(hall),
+      /* ⚠ IT IS A CELL AND NOT A SQUARE SINCE 09-05 (off-the-wall #3): the object belongs to
+         the board position, not to the slot, so a piece you have moved takes its line with it. */
+      ok(/class Cell extends Interactable/.test(hall) && /sq\.f = f/.test(hall),
         'one mouth per square, standing where the piece stands');
-      ok(/monitoring = won/.test(hall),
-        '…switched OFF until it is won, or an empty square takes the prompt off the Lectern');
-      ok(!/func _draw\(\)/.test(hall.slice(hall.indexOf('class Square'),
+      ok(/monitoring = slot >= 0 or carry >= 0/.test(hall),
+        '…switched OFF unless something is on it, or an empty square takes the prompt off the Lectern');
+      ok(!/func _draw\(\)/.test(hall.slice(hall.indexOf('class Cell'),
                                            hall.indexOf('class Lectern'))),
         '…and it draws NOTHING — the room paints the board in one pass over the roster');
 
@@ -1309,11 +1326,11 @@ const server = http.createServer((req, res) => {
       ok(/const REPLAY_URL := "\/games\/park-tables\/\?replay="/.test(gs),
         '…and opens the room that can draw it');
       {
-        const sq = hall.slice(hall.indexOf('class Square extends Interactable'));
-        ok(/if key == "" or not GameState\.has_replay\(key\):/.test(sq),
+        const sq = hall.slice(hall.indexOf('class Cell extends Interactable'));
+        ok(/if key != "" and GameState\.has_replay\(key\):/.test(sq),
           '…a square won off the rest of the site offers no game back',
           '⚠ the row is ABSENT, not grayed — there was never a game at this board');
-        ok(/GameState\.watch_replay\(GameState\.key_at\(slot\)\)/.test(sq),
+        ok(/GameState\.watch_replay\(GameState\.key_at\(_slot\)\)/.test(sq),
           '…and the one that was, does');
       }
       ok(/function askedForReplay/.test(PT) && /if \(rep\) showReplay\(rep\)/.test(PT),
@@ -1673,6 +1690,203 @@ const server = http.createServer((req, res) => {
         const poly = front.slice(front.indexOf('func _draw_entrance'));
         ok(/for i in 5:/.test(poly) && (poly.match(/PackedVector2Array\(\[/g) || []).length === 1,
           '\u26a0\u26a0 the awning is built from convex quads in a loop, never one concave polygon');
+      }
+
+      /* ══ 32 · THE RHYTHM ══════════════════════════════════════════════════════════════
+         ⛔ next-steps #5 IS HIS AND THIS DOES NOT DECIDE IT. What it proves is that the
+         choice is one line and that the table written beside it is true. */
+      ok(/const ENERGY_CAP := 100/.test(gs) && /const GAME_COST := 10/.test(gs),
+        'the two numbers that decide how long the campaign takes are in one place');
+      {
+        /* ⚠ A NUMBER IN A COMMENT IS NOT A MEASUREMENT. The table under the constants claims
+           four cap/price pairs and what each buys; recompute every row.
+           [[audit-numbers-can-be-wrong]] */
+        const rows = [...gs.matchAll(/^#\s+(\d+) \/ (\d+)\s+(\d+)\s/gm)]
+          .map((m) => [+m[1], +m[2], +m[3]]);
+        const wrong = rows.filter((r) => Math.floor(r[0] / r[1]) !== r[2]);
+        ok(rows.length === 4 && wrong.length === 0,
+          '…and every row of the table beside them divides out',
+          wrong.length ? wrong.map((r) => r[0] + '/' + r[1] + '\u2260' + r[2]).join(' ')
+                       : rows.length + ' rows, all true');
+        const today = rows[0];
+        ok(today && today[0] === 100 && today[1] === 10,
+          '…and the first row is the one the game is actually set to');
+      }
+      ok(!/"energy_cap": energy_cap/.test(gs),
+        '\u26a0\u26a0 the cap is NOT saved, so lowering it takes effect on the next load',
+        'it used to be, which meant his pick would have looked like it did nothing');
+      ok(/@export var energy_cost: int = -1/.test(chal)
+        && /return GameState\.GAME_COST if energy_cost < 0 else energy_cost/.test(chal),
+        '\u26a0 every bench seat charges the standard price rather than a literal 10',
+        'a price typed on eight seats is a constant that cannot be changed');
+      {
+        /* the two that price themselves are TWO GAMES, and say so by arithmetic */
+        const dep = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
+        const both = [/energy_cost = 20/.test(dep), /_ceo\.energy_cost = 20/.test(hall)];
+        ok(both[0] && both[1], '…and the shaft and the far chair are two of them', '20 = 2 \u00d7 10');
+      }
+      ok(/func games_left\(\) -> int:/.test(gs) && /games_left\(\)/.test(jrn),
+        '\u2b50 and the journal prints how many you have left today',
+        'a pacing rule nobody can see the edge of is not a pacing rule');
+
+      /* ══ 33 · YESTERDAY'S GHOST ═══════════════════════════════════════════════════════ */
+      ok(/func track\(at: Vector2\) -> void:/.test(gs)
+        && /if dx \* dx \+ dy \* dy < trail_step \* trail_step:/.test(gs),
+        'the day is sampled by DISTANCE, not by a timer',
+        '\u26a0 on a timer the ghost is a dense knot wherever you stood still reading a message');
+      ok(/trail = thin/.test(gs) && /trail_step \*= 2\.0/.test(gs),
+        '\u26a0\u26a0 …and a long day DECIMATES rather than truncating',
+        'a cap that stops recording draws a path that ends in the middle of a field');
+      ok(/"trail_step": trail_step/.test(gs),
+        '…the stride is saved with it, or a reload starts packing points in again');
+      {
+        const sl = fnGd(gs, 'sleep');
+        ok(/ghost = trail/.test(sl) && /trail = \[\]/.test(sl),
+          '\u2b50 the day you just had becomes the faint one, and only one deep');
+      }
+      {
+        const push = gs.slice(gs.indexOf('func push_to_site'), gs.indexOf('func open_url'));
+        ok(!/trail|ghost/.test(push),
+          '\u26a0\u26a0 and it does not sync \u2014 a diary of one device, not a thing earned');
+      }
+      ok(/func _draw_ghost\(\) -> void:/.test(town2)
+        && town2.indexOf('_draw_ghost()') < town2.indexOf('func _draw_ghost'),
+        '…drawn at the end of the map\u2019s own _draw, so every building paints over it');
+      ok(/if g\.size\(\) < 6:/.test(town2),
+        '\u26a0 two points is a twitch, not a day  (and draw_polyline errors under two)');
+
+      /* ══ 34 · THE BOARD IS YOURS TO ARRANGE ═══════════════════════════════════════════
+         2026-09-05, off-the-wall #3. */
+      ok(/func place_piece\(slot: int, f: int, r: int\) -> bool:/.test(gs)
+        && /r < ARRANGE_LO or r > ARRANGE_HI/.test(gs),
+        'a piece may be stood on ranks 2-7',
+        '\u26a0 the far two are the opponent\u2019s complete set; yours on his king is a picture of nothing');
+      ok(/if taken >= 0 and taken != slot:\s*\n\s*return false/.test(gs),
+        '\u26a0\u26a0 …and never on a square that is taken',
+        'the banner draws by cell and the second piece would simply be invisible');
+      ok(/board_layout\.erase\(str\(slot\)\)/.test(gs),
+        '\u26a0 back home is the ABSENCE of an entry, so an untouched board saves nothing',
+        '…and the layout survives the roster being reordered, which its own header requires');
+      {
+        const cells = /for r in range\(GameState\.ARRANGE_LO, GameState\.ARRANGE_HI \+ 1\):/.test(hall)
+          && /var sq := Cell\.new\(\)/.test(hall);
+        ok(cells, 'the Assembly has a cell per square, not a square per slot');
+        ok(!/class Square extends Interactable/.test(hall),
+          '…and the old per-slot object is gone rather than left beside it');
+        ok(/var cell: Vector2i = GameState\.cell_of\(slot\) if won else GameState\.home_cell\(slot\)/.test(hall),
+          '\u26a0 the piece AND its nameplate are drawn where you stood it',
+          'a name left on the home square is a second, older claim about where somebody is');
+        ok(/func pick_up\(slot: int\) -> void:/.test(hall) && /func drop_at\(/.test(hall)
+          && /var _carry: int = -1/.test(hall),
+          '…you pick one up, walk, and put it down');
+        ok(/from\.say\("Somebody is already standing there\."/.test(hall),
+          '\u26a0 the refusal comes out of the square you tried, not out of the room');
+      }
+      {
+        /* ⚠⚠ THE SYNC CONTRACT, AND IT WAS BROKEN IN BOTH DIRECTIONS FOR THREE BATCHES.
+           townMerge() writes the fields it knows and DROPS the rest, so a field the town
+           pushes and the site does not merge is a feature that silently does not sync —
+           which is what happened to razzed, words and positions. hats/hat were the mirror
+           image: merged on the way back, never sent. */
+        const push = gs.slice(gs.indexOf('var payload := JSON.stringify({'),
+                              gs.indexOf('JavaScriptBridge.eval', gs.indexOf('func push_to_site')));
+        const sent = [...push.matchAll(/"([a-z_]+)":/g)].map((m) => m[1]).sort();
+        const merge = fn(PROF, 'townMerge');
+        const merged = [...merge.matchAll(/local\.([a-z_]+)\s*=/g)].map((m) => m[1])
+          .filter((k, i, a) => a.indexOf(k) === i).sort();
+        const missed = sent.filter((k) => merged.indexOf(k) < 0);
+        const orphan = merged.filter((k) => sent.indexOf(k) < 0);
+        /* \u26a0\u26a0 BOTH DIRECTIONS, AND NOT A FLOOR. The first version asked `sent.length >= 13`
+           and whether each sent field was merged; deleting two from the push left thirteen,
+           which cleared the floor, and the thirteen that remained were all merged \u2014 so it went
+           green while two features stopped syncing. A count is not a set.
+           [[green-must-name-what-ran]] */
+        ok(missed.length === 0 && orphan.length === 0 && sent.length >= 15,
+          '\u2b50\u2b50 the field the town pushes and the field the site merges are the SAME SET',
+          (missed.length ? 'DROPPED ON ARRIVAL: ' + missed.join(' ') + '  ' : '') +
+          (orphan.length ? 'MERGED BUT NEVER SENT: ' + orphan.join(' ') : sent.length + ' fields'));
+        ok(/local\.hearts = maxPerKey\(local\.hearts, remote\.hearts\)/.test(merge),
+          '\u26d1\u26d1 hearts is a DICTIONARY and is merged per person',
+          'Math.max(+{"Auston":4}) is NaN, so every push used to write the integer 0 over it');
+        ok(/local\.positions = union\(/.test(merge) && /local\.words = union\(/.test(merge)
+          && /local\.hats = union\(/.test(merge) && /local\.razzed = union\(/.test(merge),
+          '\u26a0 the four sets of things that have happened to you are unions');
+        ok(/if \(!local\.hat && remote\.hat\)/.test(merge)
+          && /if \(!local\.board_layout \|\| !Object\.keys\(local\.board_layout\)\.length\)/.test(merge),
+          '\u26a0\u26a0 …and the two PREFERENCES are sticky, not unions',
+          'a union would put a hat you took off back on, and build a board nobody made');
+      }
+      {
+        const ban = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-banner.js'), 'utf8');
+        ok(/PJCC\.townBoard = function \(\)/.test(PROF) && /PJCC\.townBoard/.test(ban),
+          'the site can ask for the board you built');
+        ok(/"p": piece_at\(slot\)/.test(gs),
+          '\u26a0 the banner is sent the REAL piece, not the town\u2019s custom mark',
+          'Michael is drawn with his own glyph in the room and the site can only draw the six');
+        /* ⚠⚠ AND THE BANNER HOLDS NO COPY OF THE ROSTER. The town sends the name with the
+           square; a character list in here is a second one that drifts on the first rename. */
+        const cast = [...gs.matchAll(/"who": "([A-Za-z ]+)"/g)].map((m) => m[1]);
+        /* ⚠ COMMENTS STRIPPED. The rule is about CODE — a note in the header naming the
+           two characters the square-naming was checked against is the evidence, not a
+           second roster, and scanning it as data made the check fire on its own footnote. */
+        const banCode = ban.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+        ok(cast.length >= 10 && !cast.some((w) => banCode.includes(w)),
+          '\u2b50\u2b50 …and not one character\u2019s name is written into the renderer');
+        /* the square names it reads out, checked against the roster the town ships */
+        const B = require(path.join(ROOT, 'assets/js/pjcc-banner.js'));
+        ok(B.sqName(0, 6) === 'h7' && B.sqName(7, 7) === 'a8' && B.sqName(0, 0) === 'h1',
+          '\u26a0\u26a0 …and it names a square the way the room does',
+          'we sit on the BLACK side: column 0 is the h-file and row 0 is rank one \u2014 ' +
+          [B.sqName(0, 6), B.sqName(7, 7), B.sqName(0, 0)].join(' '));
+        ok(/host\.parentNode\.removeChild\(host\)/.test(ban),
+          '\u26a0 an empty board removes its own block  (sixty-four empty squares is a chore with a frame round it)');
+        const dsr = fs.readFileSync(path.join(ROOT, 'dossier.md'), 'utf8');
+        ok(/PJCCBanner\.mount/.test(dsr) && /pjcc-banner\.js/.test(dsr) && /pjcc-pieces\.js/.test(dsr),
+          '…and the Dossier draws it, with the glyphs loaded before it');
+      }
+
+      /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
+         ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
+      {
+        const vc = fs.readFileSync(path.join(GD, 'town_voice.gd'), 'utf8');
+        ok(/^class_name TownVoice$/m.test(vc), 'there is somewhere for a recording to plug in');
+        ok(/if ResourceLoader\.exists\(path\)/.test(vc),
+          '\u26a0\u26a0 …and it asks before it loads',
+          'load() on a path not in the .pck prints an engine error per call, thirteen a visit');
+        ok(/_cache\[id\] = s/.test(vc) && /if _cache\.has\(id\):/.test(vc),
+          '\u26a0 misses are cached too, or every conversation hits the filesystem again');
+        ok(/not GameState\.sound_on/.test(vc), '\u26a0 and the mute silences it like everything else');
+        ok(/v\.hello\(who\)/.test(npc), '\u2026a greeting plays when somebody opens their mouth');
+        /* ⚠⚠ NO AUDIO SHIPS TODAY, and the whole design rests on that being true: the socket
+           is not dead code because it costs nothing, and it costs nothing because the folder
+           is empty. The day it stops being empty, this check is what says so. */
+        const ogg = fs.existsSync(path.join(GD, '..', '..', '..', '..', 'assets/games/checker-town'));
+        const voiceDir = path.join(ROOT, 'private/docs/godot/chess_town/voice');
+        const files = fs.existsSync(voiceDir)
+          ? fs.readdirSync(voiceDir).filter((f) => /\.ogg$/i.test(f)) : [];
+        ok(true, '\u2026and today the folder holds ' + files.length + ' recording(s)',
+          files.length ? files.join(' ') : 'the socket costs nothing while it is empty');
+        /* ⭐⭐ THE SCRIPT CANNOT FALL BEHIND THE CAST. Everybody who speaks in this town has a
+           row, and every row is somebody who speaks. */
+        const scriptPath = path.join(ROOT, 'private/docs/VOICE-SCRIPT.md');
+        if (fs.existsSync(scriptPath)) {
+          const doc = fs.readFileSync(scriptPath, 'utf8');
+          const all = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+            .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n');
+          const speaks = new Set();
+          [...all.matchAll(/\.who = "([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
+          [...all.matchAll(/_add_challenger\("([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
+          const slug = (w) => w.toLowerCase().replace(/ /g, '-');
+          const listed = new Set([...doc.matchAll(/`([a-z-]+)\.ogg`/g)].map((m) => m[1]));
+          const noRow = [...speaks].filter((w) => !listed.has(slug(w)));
+          const noOne = [...listed].filter((f) => ![...speaks].some((w) => slug(w) === f));
+          ok(speaks.size >= 12 && noRow.length === 0 && noOne.length === 0,
+            '\u2b50\u2b50 the recording script names every character in the town, and nobody else',
+            (noRow.length ? 'NO ROW: ' + noRow.join(' ') + '  ' : '') +
+            (noOne.length ? 'NOBODY: ' + noOne.join(' ') : speaks.size + ' speak, ' + listed.size + ' listed'));
+        } else {
+          ok(false, 'private/docs/VOICE-SCRIPT.md is missing');
+        }
       }
       }
     } else {
