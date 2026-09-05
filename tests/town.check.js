@@ -1843,6 +1843,49 @@ const server = http.createServer((req, res) => {
         const dsr = fs.readFileSync(path.join(ROOT, 'dossier.md'), 'utf8');
         ok(/PJCCBanner\.mount/.test(dsr) && /pjcc-banner\.js/.test(dsr) && /pjcc-pieces\.js/.test(dsr),
           '…and the Dossier draws it, with the glyphs loaded before it');
+        /* ⚠⚠ AND IT IS RUN, NOT JUST READ. There is no local Jekyll, so /dossier/ does not
+           exist to load — but the renderer is a plain module and this file already has a
+           browser open. Draw a real board on a real canvas and count what came out: two
+           square colors and a frame is an empty board, and a piece adds its own.
+           [[measure-the-real-page]] */
+        const shot = await page.evaluate((srcs) => {
+          srcs.forEach((src) => {
+            const el = document.createElement('script');
+            el.textContent = src;
+            document.head.appendChild(el);
+          });
+          const board = [{ p: 'r', who: 'Vince', f: 7, r: 7 },
+                         { p: 'p', who: 'Crockett', f: 0, r: 6 },
+                         { p: 'q', who: 'Michael', f: 3, r: 3 }];
+          function paint(rows) {
+            const c = document.createElement('canvas');
+            document.body.appendChild(c);
+            const drew = window.PJCCBanner.draw(c, rows, { cell: 30 });
+            const g = c.getContext('2d');
+            const d = g.getImageData(0, 0, c.width, c.height).data;
+            const seen = {};
+            for (let i = 0; i < d.length; i += 4) seen[d[i] + ',' + d[i + 1] + ',' + d[i + 2]] = 1;
+            return { drew: drew, colors: Object.keys(seen).length, w: c.width, h: c.height };
+          }
+          const bare = paint([]);
+          const full = paint(board);
+          return { bare: bare, full: full, glyphs: !!window.PJCCPieces,
+                   label: window.PJCCBanner.label(board) };
+        }, [fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-pieces.js'), 'utf8'),
+            fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-banner.js'), 'utf8')]);
+        ok(shot.glyphs === true,
+          '\u26a0 …with the real glyph module loaded, not the plain-disc fallback',
+          'the first version of this check injected only the banner, so the branch it was ' +
+          'aiming at was dead code in the page and the mutation went blind');
+        /* ⭐⭐ DIFFERENTIAL, so a frame with nothing in it can never satisfy it: an empty board
+           is three flat colors and every piece adds its own. */
+        ok(shot.full.drew === true && shot.full.colors > shot.bare.colors + 4,
+          '\u2b50\u2b50 …and the renderer actually paints PIECES in a browser',
+          shot.bare.colors + ' colors empty \u2192 ' + shot.full.colors + ' with three pieces, on ' +
+          shot.full.w + '\u00d7' + shot.full.h);
+        ok(shot.label === 'Your Assembly board, 3 of 16: Vince on a8, Crockett on h7, Michael on e4.',
+          '…and reads itself out in board squares for anybody who cannot see it',
+          shot.label);
       }
 
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
