@@ -333,29 +333,10 @@ body.theme-bw .about-contact-btn {
 
 
 
-/* Flair 2: CSS typewriter on headline */
-
-
-
-
-
-
-
-
-.contact-calc-cursor {
-  display: inline-block;
-  width: 9px;
-  height: 1em;
-  background: #00ff41;
-  margin-left: 2px;
-  vertical-align: text-bottom;
-  animation: calc-cursor-blink 0.65s step-end infinite;
-}
-
-@keyframes calc-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
+/* Flair 2 was the Contact page's typewriter caret (.contact-calc-cursor + its blink). It
+   went with the "Opening the line…" type-out on 2026-09-07, when that page was made formal
+   — and the keyframes had to go in the same edit, or the sweep would just report an
+   animation nothing animates. `git show` before that commit has both. */
 
 /* Flair 3: breathing glow on email address */
 

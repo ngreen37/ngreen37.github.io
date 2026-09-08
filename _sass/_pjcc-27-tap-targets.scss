@@ -161,13 +161,14 @@
      .pjcc-input     199 x 40   the email field in every sign-in surface
      .pt-in          226 x 41   the Park Tables gate's email field
      .idn-edit-btn    67 x 34   "Tweak" / "✦ Customize" on /dossier/
-     .hello-copy      67 x 34   "Copy" on /contact/
 
-   ⚠ TWO OF THEM ARE STYLED IN A PAGE'S OWN <style>, WHICH SITS IN THE BODY AND THEREFORE
-   BEATS THIS FILE ON A TIE. `.hello-copy` even declares `min-height: 32px` itself. A media
-   query carries NO specificity ([[front-door-palette]]), so wrapping this in `(pointer:
-   coarse)` does not help — the tag qualifier is what wins, and it is why these two are
-   written `button.hello-copy` / `input.pt-in` rather than as bare classes.
+   (`.hello-copy`, "Copy" on /contact/, was the fourth until 2026-09-07 — the page lost its
+   address and both Copy buttons when it was made formal.)
+
+   ⚠ ONE OF THEM IS STYLED IN A PAGE'S OWN <style>, WHICH SITS IN THE BODY AND THEREFORE
+   BEATS THIS FILE ON A TIE. A media query carries NO specificity ([[front-door-palette]]), so
+   wrapping this in `(pointer: coarse)` does not help — the tag qualifier is what wins, and
+   it is why it is written `input.pt-in` rather than as a bare class.
 
    ⚠ NOT ON THIS LIST, AND ON PURPOSE:
      · `.ghub-reset` (211x26, /games/) — "↺ Reset Local Game Progress" wipes a climb. A
@@ -217,8 +218,7 @@
   input.pt-in {
     min-height: 44px;
   }
-  .idn-edit-btn,
-  button.hello-copy {
+  .idn-edit-btn {
     min-height: 44px;
   }
 

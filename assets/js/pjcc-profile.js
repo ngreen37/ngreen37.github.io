@@ -573,6 +573,23 @@
     return changed;
   }
 
+  /* ══ THE QUIET MARK — earned, so it syncs (2026-09-07, Nate: *"put it on the myStats
+     pull"*) ═════════════════════════════════════════════════════════════════════════
+     `pjcc.nrun.clean` is a ONE-TIME EVENT, so the rule is **sticky true** and the merge only
+     ever SETS. The push side only ever asserts `true` for the same reason: a browser that has
+     never earned it sends no key at all, because sending `false` from a fresh device would
+     wipe the account's mark. [[everything-earned-syncs]]
+     ⚠ It says nothing about what it opens — here or anywhere else. */
+  var NRUN_KEY = 'pjcc.nrun.clean';
+  function nrunClean() {
+    try { return localStorage.getItem(NRUN_KEY) === '1'; } catch (e) { return false; }
+  }
+  function nrunCleanMerge(remote) {
+    if (!remote || nrunClean()) return false;
+    try { localStorage.setItem(NRUN_KEY, '1'); } catch (e) { return false; }
+    return true;
+  }
+
   /* ══ CHECKER TOWN — the seam the Godot town talks through (2026-09-02) ═══════════════
      The town is a web-exported Godot build in an iframe; it plays no chess. A challenge
      opens a Park Tables board, and these two answer the only questions it has.
@@ -1039,6 +1056,14 @@
         if (bk && bk.data && bk.data.book) trainerBookMerge(bk.data.book);
         var tw = (rows || []).find(function (r) { return r.game === 'checker-town'; });
         if (tw && tw.data && tw.data.town) townMerge(tw.data.town);
+        var nr = (rows || []).find(function (r) { return r.game === 'notation-run'; });
+        /* ⭐ THE HALL IS ALREADY PAINTED BY THE TIME THIS LANDS. pjcc-hall.js issues its OWN
+           myStats() call, so which of the two resolves first is a race — without the event a
+           player who earned the mark on their phone meets a padlock on the desktop until the
+           next page load, which is the exact case this pull exists for. */
+        if (nr && nr.data && nr.data.clean && nrunCleanMerge(true)) {
+          try { window.dispatchEvent(new Event('pjcc:unlocks')); } catch (e) {}
+        }
       })['catch'](function () {});
     } catch (e) {}
   });
@@ -1300,7 +1325,12 @@
         user_id: u.id, game: game,
         best_score: Math.max(prev.best_score || 0, score),
         plays: (prev.plays || 0) + 1,
-        data: extras.data || prev.data || {},
+        /* ⛑⛑ MERGE, NOT REPLACE — 2026-09-07. This read `extras.data || prev.data` and
+           `data` is ONE jsonb blob per (user, game), so every ordinary Notation Blitz run
+           wrote {mode,diff,rank} straight over the `clean` mark an earlier run had banked.
+           A caller still overwrites the keys it names; it can no longer silently drop the
+           ones it has never heard of. [[everything-earned-syncs]] */
+        data: Object.assign({}, prev.data || {}, extras.data || {}),
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id,game' });
 

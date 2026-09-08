@@ -133,6 +133,10 @@
   }
 
   render();
+  /* ⚠ THE ACCOUNT CAN ARRIVE AFTER THE PAINT. pjcc-profile.js merges the earned mark off its
+     own myStats() pull and fires this; without it a padlock earned on another device stays
+     drawn until the next page load. */
+  window.addEventListener('pjcc:unlocks', render);
   // refresh best chips once the profile/server bests load
   if (window.PJCC && PJCC.ready) PJCC.ready.then(function () { return PJCC.myStats ? PJCC.myStats() : []; })
     .then(render).catch(function () {});

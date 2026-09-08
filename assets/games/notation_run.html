@@ -1488,8 +1488,21 @@ function finish() {
   if (isBest) bestEl.innerHTML = '<b style="color:#6bffb8;">✨ NEW BEST! ✨</b>';
   else bestEl.innerHTML = 'Best: <b style="color:#ffd60a;">' + prev.rank + '</b> · ' + prev.score;
   updateTitleBest();
+  /* ⭐ THE QUIET MARK — a flawless run at Medium or better opens Campaign and Checker Town.
+     ⚠⚠ SILENT ON PURPOSE (Nate: *"don't say that anywhere"*). The Blindfold unlock below
+     announces itself on screen; a line here is the bug, and test:proto §6 fails on one.
+     ⚠ 'hard' counts: it is the strictly harder run, so clearing it and still finding the door
+     shut reads as a bug. Named for what it RECORDS — a third door is one line in pjcc-hall.js.
+     ⚠ BANKED BEFORE saveScore RUNS, so the same push carries it to the account. */
+  if (!G.endless && !G.freestyle && !G.dual && (G.diff === 'medium' || G.diff === 'hard') && rank === 'S') {
+    try { localStorage.setItem('pjcc.nrun.clean', '1'); } catch (e) {}
+  }
   if (window.PJCC) {
-    PJCC.saveScore('notation-run', G.score, { credits: 1, data: { mode: G.mode, diff: G.diff, rank: rank } });
+    var pay = { mode: G.mode, diff: G.diff, rank: rank };
+    /* ⚠ ONLY EVER ASSERTED TRUE. A browser that has not earned it sends no key at all —
+       pushing `false` from a fresh device would wipe the account's mark. */
+    try { if (localStorage.getItem('pjcc.nrun.clean') === '1') pay.clean = true; } catch (e) {}
+    PJCC.saveScore('notation-run', G.score, { credits: 1, data: pay });
   }
   // Perfect Sprint (rank S on the hardest tempo, Drill) unlocks Blindfold Puzzles.
   if (!G.endless && !G.freestyle && !G.dual && G.diff === 'hard' && rank === 'S') {
@@ -1500,15 +1513,6 @@ function finish() {
       }
     } catch (e) {}
   }
-  /* ⭐ THE QUIET MARK — a flawless run at Medium or better opens Campaign and Checker Town.
-     ⚠⚠ SILENT ON PURPOSE (Nate: *"don't say that anywhere"*). The Blindfold unlock directly
-     above announces itself on screen; a line here is the bug, and test:proto §6 fails on one.
-     ⚠ 'hard' counts: it is the strictly harder run, so clearing it and still finding the door
-     shut reads as a bug. Named for what it RECORDS — a third door is one line in pjcc-hall.js. */
-  if (!G.endless && !G.freestyle && !G.dual && (G.diff === 'medium' || G.diff === 'hard') && rank === 'S') {
-    try { localStorage.setItem('pjcc.nrun.clean', '1'); } catch (e) {}
-  }
-
   document.getElementById('results-screen').classList.remove('hidden');
 }
 

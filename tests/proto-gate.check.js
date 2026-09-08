@@ -25,6 +25,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 
 let PASS = 0, FAIL = 0;
@@ -212,6 +213,101 @@ ok(/rank === 'S'/.test(markBlock) && /G\.diff === 'hard'/.test(markBlock),
    results screen — which is the thing he asked for the absence of. */
 ok(!/innerHTML|textContent|getElementById/.test(markBlock),
    '…and says nothing on screen when it does');
+
+/* ── 7 · THE MARK IS EARNED, SO IT SYNCS ───────────────────────────────────────
+   2026-09-07, Nate: *"Yes put it on the myStats pull."* A push payload and a merge are two
+   halves of one contract and something has to DIFF them, or one half ships alone and the
+   feature silently does not sync. [[everything-earned-syncs]] */
+const PROF = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+
+/* the two halves, each read out of its own file and compared to the other */
+const pushKey = (NRUN.match(/pay\.(\w+) = true/) || [])[1];
+ok(!!pushKey, 'Notation Blitz pushes a field for the mark', 'data.' + pushKey);
+ok(!!pushKey && new RegExp('nr\\.data\\.' + pushKey + '\\b').test(PROF),
+   '…and pjcc-profile.js reads the SAME field back', 'data.' + pushKey);
+ok(/r\.game === 'notation-run'/.test(PROF),
+   '…off the row the game actually writes');
+
+/* ⚠ THE PUSH ONLY EVER ASSERTS TRUE. Sending `false` from a browser that has never earned it
+   is how signing in on a new device wipes the account's mark. */
+/* ⚠ the comment above the guard says the word 'false' on purpose — strip prose first */
+const push = stripComments((NRUN.match(/var pay = \{[\s\S]*?saveScore\('notation-run'[^\n]*/) || [''])[0]);
+ok(/getItem\('pjcc\.nrun\.clean'\) === '1'\)\s*pay\.clean = true/.test(push),
+   '…and only asserts it when this browser has actually earned it');
+ok(push !== '' && !/false/.test(push),
+   '…never the word false, which is the shape that wipes an account');
+/* ⛑ AND IT IS BANKED BEFORE THE PUSH. Written after saveScore, the qualifying run would only
+   reach the account on the NEXT run — the one place this could be a whole batch late. */
+const iMark = NRUN.indexOf("setItem('pjcc.nrun.clean'");
+const iPush = NRUN.indexOf("saveScore('notation-run'");
+/* ⚠ BOTH HAVE TO EXIST. `-1 < n` is true, so a version of this that only compared the
+   two indexes went green when the whole block was deleted. */
+ok(iMark > 0 && iPush > 0 && iMark < iPush,
+   '…and banked before the push, not after it', 'mark ' + iMark + ' / push ' + iPush);
+
+/* ⛑⛑ `data` IS ONE jsonb BLOB PER (user, game) AND saveScore USED TO REPLACE IT. Every
+   ordinary run pushes {mode,diff,rank}; with a replace, the very next run after the good one
+   wiped the mark off the account and nothing anywhere said so. */
+ok(/data: Object\.assign\(\{\}, prev\.data \|\| \{\}, extras\.data \|\| \{\}\)/.test(PROF),
+   'saveScore MERGES the jsonb blob rather than replacing it',
+   '⚠ a replace loses every key the caller has not heard of');
+
+/* ⭐ ONE PULL, NOT A SECOND ROUND TRIP. myStats() already returns every row this account
+   owns; a pull of its own for one boolean would be a request for data in hand. */
+const pulls = (PROF.match(/PJCC\.myStats\(\)/g) || []).length;
+ok(pulls === 1, '…and the pull rides the myStats() call that was already there',
+   pulls + ' myStats() call(s) in pjcc-profile.js');
+
+/* ⚠ THE HALL HAS TO HEAR ABOUT IT. It issues its own myStats(), so which request lands first
+   is a race; both halves of the event name are read from source, never typed twice. */
+const HALLSRC = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-hall.js'), 'utf8');
+const evt = (PROF.match(/dispatchEvent\(new Event\('([^']+)'\)\)/) || [])[1];
+ok(!!evt && HALLSRC.includes("addEventListener('" + evt + "'"),
+   'the hall repaints on the event the merge fires', evt);
+
+/* ── the merge, actually executed ─────────────────────────────────────────────
+   ⭐ A merge is a claim about two devices; the only honest check hands it two states.
+   Same trick as tests/trainer.check.js §10. */
+{
+  const src = PROF.slice(PROF.indexOf('var NRUN_KEY ='));
+  const cut = src.indexOf('var TOWN_KEY');
+  const sandbox = {
+    store: {},
+    localStorage: {
+      getItem(k) { return Object.prototype.hasOwnProperty.call(sandbox.store, k) ? sandbox.store[k] : null; },
+      setItem(k, v) { sandbox.store[k] = String(v); },
+      removeItem(k) { delete sandbox.store[k]; }
+    },
+    out: null
+  };
+  ok(cut > 0, 'the merge was found in pjcc-profile.js  (it sits above var TOWN_KEY)');
+  if (cut > 0) {
+    try {
+      vm.createContext(sandbox);
+      vm.runInContext(src.slice(0, cut) + '\n out = { on: nrunClean, merge: nrunCleanMerge };', sandbox);
+    } catch (e) { ok(false, 'the merge parses on its own', e.message); }
+    const M = sandbox.out;
+    ok(!!(M && M.merge), 'and it runs outside a browser');
+    if (M && M.merge) {
+      sandbox.store = {};
+      ok(M.merge(true) === true && M.on() === true,
+         'an account that has the mark hands it to a device that does not');
+      ok(M.merge(true) === false,
+         '…and reports no change the second time  (the hall repaints once, not on every pull)');
+      /* ⚠⚠ STICKY TRUE IS THE WHOLE RULE. It is a one-time event: a row that has never heard
+         of it must not be able to take it back, or a stale device un-earns your run. */
+      ok(M.merge(false) === false && M.on() === true,
+         'a remote with no news cannot un-earn it');
+      sandbox.store = {};
+      ok(M.merge(false) === false && M.on() === false,
+         '…and cannot invent it either');
+      let survived = true;
+      try { M.merge(null); M.merge(undefined); M.merge('nope'); M.merge({}); }
+      catch (e) { survived = false; }
+      ok(survived, 'and junk from the wire is ignored rather than thrown', 'null · undefined · string · object');
+    }
+  }
+}
 
 console.log('\n' + (FAIL === 0
   ? 'RESULT: PASS (' + PASS + ' checks)\n'
