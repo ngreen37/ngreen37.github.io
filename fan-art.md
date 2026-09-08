@@ -53,7 +53,7 @@ sitemap: false
   <div class="fa-submit-head">Happy with it? Send it to McPuppy.</div>
   <div class="fa-submit-row">
     <input id="fa-title" class="fa-input" type="text" maxlength="60" placeholder="Title (optional)">
-    <input id="fa-by" class="fa-input" type="text" maxlength="30" placeholder="Your name or codename (optional)">
+    <input id="fa-by" class="fa-input" type="text" maxlength="30" placeholder="Your name or handle (optional)">
   </div>
   <button class="fa-btn fa-btn--gold" id="fa-send" type="button">Submit to McPuppy ▸</button>
   <div class="fa-send-msg" id="fa-send-msg" role="status"></div>

@@ -761,16 +761,36 @@ const server = http.createServer((req, res) => {
         'the Arcade is a ROOM, not a link that opens a hall page in a new tab');
       ok(fs.existsSync(path.join(GD, 'arcade.tscn')), '…and the scene exists');
       /* ⭐⭐ THE STRONGEST CHECK IN THIS FILE: the cabinets are derived from the site's own
-         registry, from the other side. A fourth machine for a game that is not in the arcade,
-         or a game leaving the arcade and keeping its cabinet, is red here. */
+         registry, from the other side.
+         ⛑ IT WAS ONE STRICT EQUALITY UNTIL 2026-09-07, when Campaign moved to the site's
+         WORKBENCH (Nate: *"put the campaign on the workbench"*) and kept the cabinet he asked
+         for three days before that. A room is allowed to hold a machine for a game that files
+         elsewhere on the site — so the equality is three rules now: every arcade game has a
+         machine, every machine is a game the site still has, and any machine that is NEITHER
+         is named in OFF_HALL, one line each. ⚠ THAT LAST LIST IS WHAT KEEPS THIS AS STRONG AS
+         THE EQUALITY WAS. An accidental extra cabinet is still red; it just has to be argued
+         for in writing first. */
       const REG = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
       const inArcade = [...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'[^\n]*cat:'arcade'/gm)]
         .map((m) => m[1]).sort();
+      const live = new Set([...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'(?![^\n]*cat:'terminated')/gm)]
+        .map((m) => m[1]));
       const cabs = [...arc.matchAll(/"slug": "([a-z-]+)"/g)].map((m) => m[1]).sort();
+      /* Campaign: cat:'dev' on the site since 2026-09-07, a machine in this room since 09-04. */
+      const OFF_HALL = ['marchland'];
       ok(inArcade.length >= 3, 'the site has an arcade to be in', inArcade.join(' '));
-      ok(JSON.stringify(cabs) === JSON.stringify(inArcade),
-        '…and the cabinets ARE the site\'s arcade, both ways',
-        'cabinets: ' + cabs.join(' ') + '  |  registry: ' + inArcade.join(' '));
+      const ghosts = cabs.filter((s) => !live.has(s));
+      ok(ghosts.length === 0,
+        '…and every cabinet is a game the site still has',
+        ghosts.length ? 'nothing to play: ' + ghosts.join(' ') : cabs.join(' '));
+      const missing = inArcade.filter((s) => !cabs.includes(s));
+      ok(missing.length === 0,
+        '…and every game in the site\'s arcade has a machine',
+        missing.length ? 'no cabinet: ' + missing.join(' ') : inArcade.join(' '));
+      const extra = cabs.filter((s) => !inArcade.includes(s));
+      ok(JSON.stringify(extra) === JSON.stringify(OFF_HALL.slice().sort()),
+        '…and the machines that are not the site\'s arcade are the ones named here',
+        'extra: ' + (extra.join(' ') || '(none)') + '  |  named: ' + OFF_HALL.join(' '));
       ok(/func slot_for_game\(game: String\) -> int:/.test(gs)
         && /func unlock_need\(slot: int\) -> int:/.test(gs),
         'a machine can ask the ROSTER which square its score buys, and for how much');
@@ -1037,9 +1057,13 @@ const server = http.createServer((req, res) => {
 
       /* ══ 18 · THE CAMPAIGN CABINET ══════════════════════════════════════════════════
          *"move Campaign into Arcade, but locked until half the assembly is lit up."* */
-      ok(/slug:'marchland'[^\n]*cat:'arcade'/.test(REG),
-        'Campaign files under the Arcade on the site now',
-        '⚠ the cabinets/registry check above is what makes this load-bearing in both repos');
+      /* ⛑ 2026-09-07: *"put the campaign on the workbench"*. The site side of this moved
+         — Campaign is `cat:'dev'` there and shut behind a mark Notation Blitz banks — and the
+         cabinet stayed, which is the whole reason §13's OFF_HALL list exists. The town's lock
+         and the site's lock are different locks on purpose: this one is the Assembly. */
+      ok(/slug:'marchland'[^\n]*cat:'dev'[^\n]*gate:'nrun'/.test(REG),
+        'Campaign files under the WORKBENCH on the site now, behind its own earned gate',
+        '⚠ §13 is what keeps its cabinet in here from becoming a link to nothing');
       ok(/func assembly_half\(\) -> bool:\s*\n\s*return army_count\(\) \* 2 >= ROSTER\.size\(\)/.test(gs),
         '⭐ "half the Assembly" is ONE function');
       ok(!/claimable/.test(/func assembly_half[\s\S]{0,200}/.exec(gs)[0]),

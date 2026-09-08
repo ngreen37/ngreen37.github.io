@@ -112,12 +112,22 @@ permalink: /games/
    floating over a small stone altar. Amber accent = the wager (never real money). ---- */
 .gmdoor { display:flex; align-items:center; justify-content:center;
   text-decoration:none; --acc:#e8b34a; }
-/* THE GAMBIT ALTAR IN THE GRID (2026-07-24 Nate: "put it down there … don't give it a box") —
-   the altar is now the LAST item of the games grid, next to Blindfold Puzzles. No card box; it
-   fills its cell height, centers, and is scaled up a little so it reads at grid scale. Placed +
-   kept in the grid by the small script at the foot of this file. */
-.ghub-all .gmdoor--grid { height:100%; min-height:130px; }
-.ghub-all .gmdoor--grid .gm-scene { transform:scale(1.2); transform-origin:center; }
+/* ⛑ OUT OF THE GRID, INTO A ROW OF ITS OWN — 2026-09-07 (Nate: *"move the altar to the
+   center and make it bigger"*). It spent since 2026-07-24 as the last CELL of the games grid,
+   which put it in the bottom-right corner — the one spot on a wide screen nobody looks at. It
+   stands centered now, between the finished games and the workbench.
+   ⭐ AND IT STOPPED NEEDING A SCRIPT. As a grid cell it had to be re-appended by a
+   MutationObserver every time pjcc-hall.js rebuilt the grid (twice a load, again when the
+   bests arrive). A sibling of .cat-games is written once and never moves — the workbench row
+   is appended to the same parent after it and lands below, which is the order wanted.
+   ⚠ scale() DOES NOT CHANGE THE LAYOUT BOX, so the row carries the scaled height itself or
+   the altar overlaps what follows: 92px × 2.6 is the min-height, and the two move together.
+   ⭐ 2.6 PICKED FROM A RENDER OF FOUR (1.6 / 2 / 2.6 / 3.2) at the row’s real 940px width, not
+   guessed: 2 still read as a grid tile that had wandered, and by 3.2 the stone’s 1px rim is a
+   3px band and the coin floats too far off it. */
+.gm-shrine { display:flex; justify-content:center; align-items:center;
+  min-height:239px; margin:1.6rem 0 0.4rem; }
+.gm-shrine .gm-scene { transform:scale(2.6); transform-origin:center; }
 .gm-scene { position:relative; width:72px; height:92px; }
 .gm-altar { position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
   width:40px; height:22px; background:linear-gradient(180deg,#3a2d5a,#221936);
@@ -138,6 +148,8 @@ permalink: /games/
 @media (max-width:480px){
   .gm-scene { width:58px; height:78px; }
   .gm-coin { font-size:23px; top:6px; } .gm-altar { width:34px; }
+  /* the scene is shorter here, so the row it reserves has to be: 78 × 2.6 */
+  .gm-shrine { min-height:203px; }
 }
 /* ── THE GAUNTLET DOOR on the games hall — SIZE ONLY ──────────────────────────────
    2026-07-16 evening: plate parity, the plate + sub caption rows are gone.
@@ -251,6 +263,10 @@ permalink: /games/
 .wb-chip .wb-ico { font-size: 1rem; line-height: 1; color: var(--accent); }
 .wb-chip:hover, .wb-chip:focus-visible { background: #1d4462; border-color: var(--accent);
   transform: translateY(-1px); }
+/* ⚠⚠ A SHUT CHIP SAYS NOTHING ABOUT WHY. Nate: *"but don't say that anywhere."* The padlock
+   is pjcc-hall.js's; all this does is stop the chip claiming to be a live door — no tooltip,
+   no `title=`, no sub-line. #a8c6dc on #143046 = 7.1:1, so it is quieter, not dimmer. */
+.wb-chip.is-shut { color: #a8c6dc; border-style: dashed; }
 @media (prefers-reduced-motion: reduce) { .wb-chip:hover, .wb-chip:focus-visible { transform: none; } }
 
 /* ═══ UNIQUE BOX DESIGNS — the five working games (2026-07-24, Nate: "give the working
@@ -405,17 +421,16 @@ permalink: /games/
          site drawer now, so the games hall no longer duplicates it. The .ptdoor CSS above is
          left in place (harmless, unused) in case the entrance is ever restored. {%- endcomment -%}
 
-    {%- comment -%} THE GAMBIT ALTAR moved OUT of this featured row 2026-07-24 (Nate: "move the
-         altar into the bottom right corner next to Blindfold Puzzles — don't give it a box, just
-         put it down there"). It's appended as the last item of the games grid below by the small
-         script at the foot of this file. The featured row is Leaderboards + the Gauntlet now. {%- endcomment -%}
+    {%- comment -%} THE GAMBIT ALTAR is not in this row: out 2026-07-24 to the grid's last cell,
+         then out of the grid 2026-09-07 to .gm-shrine, its own centered row under the games.
+         The featured row is Leaderboards + the Gauntlet. {%- endcomment -%}
 
   </div>
 
   <div class="ghub-head">
     {%- comment -%} "Choose Your Hall" removed 2026-07-16 (Nate). The eyebrow is the
          page's h1 now so the hall keeps a real heading. {%- endcomment -%}
-    <h1 class="ghub-eyebrow" data-hb>◆ The P&JCC Arcade</h1>
+    <h1 class="ghub-eyebrow" data-hb>◆ The ChessWild Arcade</h1>
     {%- comment -%} "· works offline" added 2026-08-12 (Nate: "say 'works offline' in the games
          hall, per your advice"). The front door has carried this fact since 2026-08-04 and the
          ticker says it about the arcade specifically, but the HALL — the page a visitor is
@@ -427,7 +442,7 @@ permalink: /games/
          Wi-Fi off even if you never opened them. Said once, plainly, in the sub — not repeated
          on every card, which is how five true "BUILDING" labels once turned this hall into a
          construction site. {%- endcomment -%}
-    <p class="ghub-sub" data-hb>Claim a codename · climb the global boards · works offline</p>
+    <p class="ghub-sub" data-hb>Claim a handle · climb the global boards · works offline</p>
     <!-- the gold rule. Two real elements, not a pseudo: the outer one is the track and clips,
          the inner one is the shimmer and slides. See the note by @ghub-shimmer. -->
     <div class="ghub-rule" aria-hidden="true"><i></i></div>
@@ -440,6 +455,12 @@ permalink: /games/
        the vault game shows locked, and the terminated roster is dropped entirely. ── -->
   <div id="games-hall" class="ghub-all hall--default" data-hall="all" data-base="{{ '/games/' | relative_url }}">
     <div class="cat-games"></div>
+    <div class="gm-shrine">
+      <a class="gmdoor gmdoor--shrine" href="{{ '/the-gambit/' | relative_url }}"
+         aria-label="The Gambit — wager what you’ve earned; the board sometimes gives back more. Never real money.">
+        <span class="gm-scene" aria-hidden="true"><i class="gm-glow"></i><b class="gm-coin">♟</b><i class="gm-altar"></i></span>
+      </a>
+    </div>
   </div>
 
   {%- comment -%} 2026-07-16 (Nate: "A reset button for all games, really… Make sure
@@ -457,22 +478,6 @@ permalink: /games/
 <!-- the combined grid: pjcc-hall.js reads data-hall="all" and lists every playable game
      (in-dev tagged, vault locked, terminated dropped) — replaces the old category portals. -->
 <script src="{{ '/assets/js/pjcc-hall.js' | relative_url }}"></script>
-<!-- THE GAMBIT ALTAR in the grid (2026-07-24) — append it as the LAST grid item, so it always
-     lands in the cell after the final game (bottom-right). No .gcard = no box; no title. pjcc-hall
-     renders the grid TWICE (initial, then again once the profile bests load), so an observer
-     re-places the altar whenever the grid's children are rebuilt. -->
-<script>
-(function () {
-  var grid = document.querySelector('#games-hall .cat-games');
-  if (!grid) return;
-  var HTML = '<a class="gmdoor gmdoor--grid" href="{{ '/the-gambit/' | relative_url }}"' +
-    ' aria-label="The Gambit — wager what you’ve earned; the board sometimes gives back more. Never real money.">' +
-    '<span class="gm-scene" aria-hidden="true"><i class="gm-glow"></i><b class="gm-coin">♟</b><i class="gm-altar"></i></span></a>';
-  function place() { if (!grid.querySelector('.gmdoor--grid')) grid.insertAdjacentHTML('beforeend', HTML); }
-  place();
-  new MutationObserver(place).observe(grid, { childList: true });
-})();
-</script>
 {%- comment -%} THE DOOR's resume state — the same climb the game reads.
      ⚑ MOVED OUT 2026-08-19 to /assets/js/pjcc-gauntlet-door.js, together with the copy of
      the ladder names / accents / glyphs that used to live here and a second copy of the

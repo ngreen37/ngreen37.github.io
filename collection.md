@@ -115,7 +115,7 @@ the pieces you earn, and the ones only the altar gives back. <b>Collect them all
        here, not that they need one to look. */
     $('col-note').innerHTML = prof
       ? (n.held === n.total ? 'The case is full. 👑' : esc(n.total - n.held) + ' still out there')
-      : 'Signed out — <a href="/dossier/">claim a codename</a> to keep a case of your own.';
+      : 'Signed out — <a href="/dossier/">claim a handle</a> to keep a case of your own.';
 
     var html = '';
     SHELVES.forEach(function (s) {

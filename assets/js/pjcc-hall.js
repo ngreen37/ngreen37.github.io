@@ -13,6 +13,17 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
   function url(slug) { return base + '/' + slug + '/'; }
   function unlocked() { try { return localStorage.getItem('pjcc.blindfold.unlocked') === '1'; } catch (e) { return false; } }
+  /* ⭐ THE EARNED GATE (2026-09-07). A `gate:'nrun'` game is on the hall and shut until you
+     have banked one flawless Notation Blitz run at Medium or better — the same mark the game
+     itself writes, read here by the ordinary path.
+     ⚠⚠ IT SAYS NOTHING ABOUT ITSELF. Nate: *"but don't say that anywhere."* The vault game
+     prints its condition; this one prints a padlock and no sentence, so the `descHtml` and
+     `tag` branches below have to keep skipping it. A helpful hint here is the bug. */
+  var GATES = { nrun: 'pjcc.nrun.clean' };
+  function shut(g) {
+    if (!g.gate || !GATES[g.gate]) return false;
+    try { return localStorage.getItem(GATES[g.gate]) !== '1'; } catch (e) { return false; }
+  }
   function best(g) {
     if (!g.score) return 0;
     try { return (window.PJCC && PJCC.localBest) ? PJCC.localBest(g.score[0]) : (parseInt(localStorage.getItem('pjcc.best.' + g.score[0]), 10) || 0); } catch (e) { return 0; }
@@ -71,7 +82,7 @@
       // quiet, honest mark: this game's chess content is re-proved in CI
       // (tests/validate-chess.js — perft-verified referee + a Stockfish second opinion).
       var eng = g.engine ? '<span class="gcard-engine" title="Every puzzle here is re-proved against a perft-verified referee — with Stockfish as a second opinion — in CI.">⚙ engine-verified</span>' : '';
-      var icon = dead ? g.icon : (locked ? '🔒' : g.icon);
+      var icon = dead ? g.icon : ((locked || shut(g)) ? '🔒' : g.icon);
       // Short descriptions were removed from the halls as a declutter — but each WORKING
       // (playable, shipped, non-dev) game gets its cryptic line back as a flavor tag, so
       // the combined grid reads as a set of distinct little worlds instead of a uniform
@@ -80,12 +91,12 @@
       // in-dev tiles keep the caution-tape watermark, locked/dead keep their hint.
       var descHtml = dead ? '<p>Non-playable — ' + esc(g.cryptic) + '</p>'
         : (locked ? '<p>Locked — flawless Fast run in Notation Blitz to unlock</p>' : '');
-      var tag = (!dead && !locked && !g.soon && g.cat !== 'dev' && g.cryptic)
+      var tag = (!dead && !locked && !shut(g) && !g.soon && g.cat !== 'dev' && g.cryptic)
         ? '<p class="gcard-tag">' + esc(g.cryptic) + '</p>' : '';
       var inner = neu + soon + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
         '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + tag + chip + eng + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
-      return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
+      return '<a class="gcard' + ((locked || shut(g)) ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
         '" style="--accent:' + g.accent + '" data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' + inner + '</a>';
     }).join('');
 
@@ -105,9 +116,10 @@
           esc(cat.tag || 'On the Workbench') + '</h2>' +
         '<p class="wb-sub">' + esc(cat.blurb || '') + '</p>' +
         '<div class="wb-row">' + bench.map(function (g) {
-          return '<a class="wb-chip" href="' + url(g.slug) + '" style="--accent:' + g.accent + '"' +
+          return '<a class="wb-chip' + (shut(g) ? ' is-shut' : '') + '" href="' + url(g.slug) +
+            '" style="--accent:' + g.accent + '"' +
             ' data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' +
-            '<span class="wb-ico" aria-hidden="true">' + g.icon + '</span>' +
+            '<span class="wb-ico" aria-hidden="true">' + (shut(g) ? '🔒' : g.icon) + '</span>' +
             '<span class="wb-name">' + esc(g.name) + '</span></a>';
         }).join('') + '</div>';
     } else if (benchHost) {

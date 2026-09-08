@@ -205,7 +205,7 @@ permalink: /dossier/
     if (!greet) return;   // once the account loads, the operative header replaces this slot
     try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile();
       if (p && p.codename) { greet.innerHTML = 'Welcome back, <b>' + esc(p.codename) + '</b>.'; return; } } } catch(e){}
-    greet.innerHTML = 'Your record is below — <a href="#dossier-body">claim a codename</a> to carry it across every device.';
+    greet.innerHTML = 'Your record is below — <a href="#dossier-body">claim a handle</a> to carry it across every device.';
   }
   renderGreet();
   if (window.PJCC && PJCC.ready) PJCC.ready.then(renderGreet);
@@ -242,7 +242,7 @@ permalink: /dossier/
     setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your profile across every device.</p>');
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Sign In</h2>' +
-      '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your codename, avatar and credits follow you.</p>' +
+      '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your handle, avatar and credits follow you.</p>' +
       '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" aria-label="Email address" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-login').onclick = function () {
@@ -288,17 +288,17 @@ permalink: /dossier/
   }
 
   function renderClaim() {
-    setTop('<p class="cc-greet">Signed in — one last step: choose your codename below.</p>');
+    setTop('<p class="cc-greet">Signed in — one last step: choose your handle below.</p>');
     el.innerHTML =
-      '<div class="dsr-card"><h2 class="dsr-h">Choose Your Codename</h2>' +
-      '<div class="ml-form"><input id="dsr-name" type="text" maxlength="24" class="pjcc-input" placeholder="codename"><button id="dsr-claim" class="pjcc-btn">Claim</button></div>' +
+      '<div class="dsr-card"><h2 class="dsr-h">Choose Your Handle</h2>' +
+      '<div class="ml-form"><input id="dsr-name" type="text" maxlength="24" class="pjcc-input" placeholder="handle"><button id="dsr-claim" class="pjcc-btn">Claim</button></div>' +
       '<p id="dsr-claim-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-claim').onclick = function () {
       var name = document.getElementById('dsr-name').value.trim();
       if (!name) return;
       PJCC.claimCodename(name).then(render).catch(function (e) {
         document.getElementById('dsr-claim-msg').textContent =
-          (e && e.message === 'codename taken') ? 'That codename is taken — try another.' : 'Could not claim — try again.';
+          (e && e.message === 'codename taken') ? 'That handle is taken — try another.' : 'Could not claim — try again.';
       });
     };
   }

@@ -44,19 +44,31 @@ function ok(cond, msg) {
    is to delist it and not add a row here, which is exactly what §3 fails on. */
 const PROTOS = [
   { slug: 'duel',           name: 'Duel Mode',      page: 'games/duel/index.html' },
-  { slug: 'marchland',      name: 'MARCHLAND',      page: 'games/campaign/index.html' },
   { slug: 'follow-the-dog', name: 'Follow the Dog', page: 'games/space_run/index.html' },
   { slug: 'chess-city',     name: 'Chess City',     page: 'games/chess-city/index.html' },
   /* The scroller. Not unfinished — SUPERSEDED: the name went to the Godot survivors run on
      2026-08-26 and the game came off the hall rather than being deleted. Same door either
      way, which is the point of there being only one door. */
-  { slug: 'murphys-law',    name: "Murphy's Law",   page: 'games/murphys-law/index.html' },
-  { slug: 'checker-town',   name: 'Checker Town',   page: 'games/checker-town/index.html' }
+  { slug: 'murphys-law',    name: "Murphy's Law",   page: 'games/murphys-law/index.html' }
 ];
+
+/* ⛑⛑ THE OTHER SHAPE OF SHUT DOOR — 2026-09-07. Campaign and Checker Town left the table
+   above and moved here: they are ON the games hall now (no `playable:false`, and `cat:'dev'`
+   puts them in the workbench row), and the lock is EARNED rather than typed — one flawless
+   Notation Blitz run at Medium or better.
+
+   ⚠⚠ THE CONDITION IS NOT WRITTEN ANYWHERE A PLAYER CAN READ IT, by his instruction, which
+   is what §6 is for. */
+const EARNED = [
+  { slug: 'marchland',    name: 'Campaign',     page: 'games/campaign/index.html' },
+  { slug: 'checker-town', name: 'Checker Town', page: 'games/checker-town/index.html' }
+];
+const MARK = 'pjcc.nrun.clean';
 
 const REGISTRY = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
 
-console.log('\n=== THE PROTOTYPE SOFT GATE — ' + PROTOS.length + ' doors, one key ===\n');
+console.log('\n=== SHUT DOORS — ' + PROTOS.length + ' on a typed key, ' + EARNED.length +
+  ' on an earned one ===\n');
 
 /* ── 1 · both halves, on every prototype ───────────────────────────────────────── */
 const blocks = [];
@@ -118,6 +130,88 @@ const localCopies = PROTOS.filter(p => {
 }).map(p => p.name);
 ok(localCopies.length === 0,
    'no page keeps its own copy of it' + (localCopies.length ? '  -> ' + localCopies.join(', ') : ''));
+
+/* ── 5 · the earned doors: on the hall, and shut until the mark is banked ─────── */
+const earnedBlocks = [];
+for (const p of EARNED) {
+  const file = path.join(ROOT, p.page);
+  if (!fs.existsSync(file)) { ok(false, p.name + ': ' + p.page + ' is missing'); continue; }
+  const src = fs.readFileSync(file, 'utf8');
+  const line = REGISTRY.split('\n').find(l => l.includes("slug:'" + p.slug + "'"));
+
+  /* the registry half. `playable:false` would take the card straight back off the hall, and
+     that failure has no visible symptom: the page would still open for anyone who had earned
+     it, and nobody else would ever learn there was a door. */
+  ok(!!line && !/playable:\s*false/.test(line),
+     p.name + ': is ON the hall — no playable:false');
+  ok(!!line && /cat:'dev'/.test(line),
+     p.name + ": files under cat:'dev', so it lands in the workbench row");
+  ok(!!line && /gate:'nrun'/.test(line),
+     p.name + ': carries the earned gate, so the card wears a padlock');
+
+  const m = src.match(/<script>[\s\S]*?pjcc\.nrun\.clean[\s\S]*?<\/script>/);
+  ok(!!m, p.name + ': the page reads the earned mark');
+  if (m) earnedBlocks.push({ name: p.name, body: m[0].trim() });
+
+  ok(/id="proto-gate"[^>]*\shidden/.test(src),
+     p.name + ': the frame starts HIDDEN — a gate that reveals nothing hides nothing');
+  ok(/id="proto-locked"/.test(src) && /class="proto-shut"/.test(src),
+     p.name + ': says the shut line, in the shared style');
+}
+if (earnedBlocks.length) {
+  const firstE = earnedBlocks[0];
+  const driftedE = earnedBlocks.filter(b => b.body !== firstE.body).map(b => b.name);
+  ok(driftedE.length === 0,
+     'both earned gates are byte-identical' + (driftedE.length ? '  -> drifted: ' + driftedE.join(', ') : ''));
+  ok(firstE.body.includes("var MARK = '" + MARK + "'"),
+     "one mark ('" + MARK + "') for the whole set");
+  /* ⚠ THE TYPED KEY IS A SECOND OPENER, NOT A REPLACEMENT: he hands these links out on
+     stream, and a link that stopped working the day the lock changed is a link he has to
+     remember never to send again. `?key=off` must forget the typed key ONLY. */
+  ok(/KEY = 'chesswild'/.test(firstE.body) && /localStorage\.getItem\(MARK\) === '1'/.test(firstE.body),
+     '…and the typed key still opens them too');
+  ok(!/removeItem\(MARK\)/.test(firstE.body),
+     '…while ?key=off forgets the typed key and never the earned mark');
+}
+
+/* ── 6 · NOTHING SAYS WHAT THE CONDITION IS ────────────────────────────────────
+   Nate: *"Both require a flawless run on medium notation blitz, but don't say that
+   anywhere."* A hint is the one bug this arrangement exists to avoid, and a hint is exactly
+   what a later kindness pass would add — the vault card three lines away in pjcc-hall.js
+   already prints its own condition, so the sentence to copy is right there. Hence a test.
+   ⚠ Comments are stripped first, or the blocks EXPLAINING the silence fail the check that
+   enforces it. */
+function stripComments(t) {
+  return t.replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+          .replace(/<!--[\s\S]*?-->/g, ' ')
+          .replace(/\/\*[\s\S]*?\*\//g, ' ')
+          .replace(/^[ \t]*\/\/.*$/gm, ' ');
+}
+for (const p of EARNED) {
+  const file = path.join(ROOT, p.page);
+  if (!fs.existsSync(file)) continue;
+  const said = stripComments(fs.readFileSync(file, 'utf8')).match(/notation|flawless|blitz/i);
+  ok(!said, p.name + ': the page never names the condition' + (said ? '  -> "' + said[0] + '"' : ''));
+}
+
+const HALL = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-hall.js'), 'utf8');
+ok(HALL.includes("nrun: '" + MARK + "'"), 'the hall reads the same mark the game writes');
+const descLine = (stripComments(HALL).match(/var descHtml =[\s\S]*?;/) || [''])[0];
+ok(descLine !== '' && !/shut\(/.test(descLine),
+   '…and a shut card gets a padlock and no sentence', descLine.trim().slice(0, 90));
+
+const NRUN = fs.readFileSync(path.join(ROOT, 'assets/games/notation_run.html'), 'utf8');
+const markBlock = (NRUN.match(/if \([^\n]*G\.diff === 'medium'[\s\S]*?\n  \}/) || [''])[0];
+ok(/localStorage\.setItem\('pjcc\.nrun\.clean', '1'\)/.test(markBlock),
+   'Notation Blitz banks the mark on a clean run');
+ok(/rank === 'S'/.test(markBlock) && /G\.diff === 'hard'/.test(markBlock),
+   '…on an S at Medium or better, and never on Slow',
+   markBlock.split('\n')[0].trim().slice(0, 100));
+/* ⛑ THE ONE THING THE BLINDFOLD UNLOCK DIRECTLY ABOVE IT DOES DO. Copying that block and
+   changing the key is the obvious way to write this, and it would announce itself on the
+   results screen — which is the thing he asked for the absence of. */
+ok(!/innerHTML|textContent|getElementById/.test(markBlock),
+   '…and says nothing on screen when it does');
 
 console.log('\n' + (FAIL === 0
   ? 'RESULT: PASS (' + PASS + ' checks)\n'

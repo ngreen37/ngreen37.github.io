@@ -139,8 +139,8 @@
 
     if (!prof) {
       bar.innerHTML =
-        '<span class="pjcc-label">Choose your <strong>codename</strong>:</span>' +
-        '<input id="pjcc-codename" type="text" maxlength="24" class="pjcc-input" placeholder="codename">' +
+        '<span class="pjcc-label">Choose your <strong>handle</strong>:</span>' +
+        '<input id="pjcc-codename" type="text" maxlength="24" class="pjcc-input" placeholder="handle">' +
         '<button id="pjcc-claim" class="pjcc-btn">Claim</button>' +
         '<span id="pjcc-claim-msg" class="pjcc-label"></span>';
       bind('pjcc-claim', function () {

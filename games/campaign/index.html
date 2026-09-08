@@ -5,7 +5,7 @@ title: "ChessWild: Campaign"
 # the six banned phrasings in one line, on the one string a stranger sees in a search result.
 # The vocabulary is three words and only three: Building · Next up · Retired. Being early is a
 # fact, not an excuse — so it says what it IS, and the plain true thing about who can play it.
-description: "Chess battles fought over a map. Building — playable by invitation while it is tuned."
+description: "Chess battles fought over a map. Building — on the games hall, behind a door you earn."
 permalink: /games/campaign/
 sitemap: false
 ---
@@ -15,11 +15,12 @@ sitemap: false
      and attack other towns, like in Risk… 2 minutes to either defend or attack… dice roll
      decides how many pieces each person gets."
 
-     ⚠ THIS PAGE IS KEY-GATED, WHICH IS NOT THE SAME AS SECRET. It is a soft gate: it keeps
-     the prototype from being stumbled into from a search result or a shared link, and
-     nothing more. Anyone reading this file can read the key. That is fine for an
-     unfinished game and would NOT be fine for anything that mattered — do not reuse this
-     pattern for real access control.
+     ⛑⛑ IT CAME OFF THE PROTOTYPE GATE 2026-09-07 (Nate: *"put Campaign in the arcade … put
+     the campaign on the workbench"*). It is on the games hall now, in the workbench row, and
+     the lock is EARNED rather than typed — see the gate script at the foot of this file.
+     ⚠ STILL A SOFT GATE, NOT SECRECY. Anyone reading this file can read both openers. That
+     is fine for an unfinished game and would NOT be fine for anything that mattered — do not
+     reuse this pattern for real access control.
 
      ⛑⛑ THE URL MOVED AND THE OLD ONE IS GONE — 2026-08-25. `/games/marchland/` became
      `/games/campaign/`, with NO redirect stub, because Nate said so and because he is right
@@ -37,17 +38,15 @@ sitemap: false
      text moves, identifiers do not, because renaming an identifier breaks stored state and
      buys nothing a reader can see.
 
-     THE KEY: /games/campaign/?key=chesswild — once used it is remembered in localStorage
-     ('pjcc.proto.key'), so the URL only has to be typed once per BROWSER, not once per
-     game: the same store opens MARCHLAND, Duel, Follow the Dog and Chess City. ?key=off
-     forgets it again, on all four.
+     TWO WAYS IN. The earned one is a flawless Notation Blitz run; the typed one is still
+     /games/campaign/?key=chesswild, remembered in localStorage ('pjcc.proto.key') and shared
+     with Duel, Follow the Dog and Chess City, and ?key=off forgets it on all of them.
 
-     ⚠ THE HALL EMITS NO LINK, which is why the move costs nothing to fix up: the entry in
-     pjcc-games-data.js carries `playable:false`, so nothing on the site ever wrote this URL.
-     The hall entry in pjcc-games-data.js carries `playable:false`, which makes the card a
-     <div> rather than an <a> — so the game appears in the Building hall under its cryptic
-     name and emits no link at all. The two halves are independent: this gate does not know
-     about the hall, and the hall does not know about this gate.
+     ⚠ THE HALL LINKS HERE NOW. `playable:false` came off the registry entry, so the card is
+     a real <a> in the workbench row — wearing a padlock and no explanation until the mark is
+     banked. The two halves are still independent: this gate does not know about the hall, and
+     the hall does not know about this gate. They agree only on the name of one localStorage
+     key, and tests/proto-gate.check.js is what holds them to it.
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
 <div id="proto-gate" hidden>
@@ -93,13 +92,19 @@ sitemap: false
 </style>
 
 <script>
-/* ⚑ THE PROTOTYPE SOFT GATE — byte-identical on every unfinished game. ONE key opens them
-   all, so the URL is typed once per browser instead of once per game; the legacy per-game
-   stores are still read so a browser that already knows Duel or MARCHLAND stays open.
+/* ⚑ THE EARNED GATE — byte-identical on both doors it shuts, and NOT the typed prototype
+   gate the four shelved games use (that one is on their pages; this one replaced it here on
+   2026-09-07). It opens on a mark Notation Blitz banks after a flawless run, and it never
+   says so: not on this page, not on the hall card, not on the game's own results screen.
+   Nate: *"Both require a flawless run on medium notation blitz, but don't say that anywhere."*
+   ⚠ THE OLD KEY STILL WORKS, so every link he has already handed out on stream keeps
+   opening — and `?key=off` forgets only the TYPED key, never the earned mark.
    ⚠ Inline on purpose: deferred, the page would flash "This one isn't open yet." first.
-   ⚠ tests/proto-gate.check.js fails the build if the copies drift apart. */
+   ⚠ tests/proto-gate.check.js fails the build if the two copies drift apart, and fails it
+   again if any of these files starts naming the condition out loud. */
 (function () {
-  var KEY = 'chesswild', STORE = 'pjcc.proto.key', OLD = ['pjcc.duel.key', 'pjcc.marchland.key'];
+  var MARK = 'pjcc.nrun.clean', KEY = 'chesswild', STORE = 'pjcc.proto.key';
+  var OLD = ['pjcc.duel.key', 'pjcc.marchland.key'];
   var q = '';
   try { q = new URLSearchParams(location.search).get('key') || ''; } catch (e) {}
   var ok = false;
@@ -107,6 +112,7 @@ sitemap: false
     if (q === 'off') { localStorage.removeItem(STORE); OLD.forEach(function (k) { localStorage.removeItem(k); }); }
     else if (q === KEY) { localStorage.setItem(STORE, '1'); ok = true; }
     else { ok = localStorage.getItem(STORE) === '1' || OLD.some(function (k) { return localStorage.getItem(k) === '1'; }); }
+    ok = ok || localStorage.getItem(MARK) === '1';
   } catch (e) { ok = (q === KEY); }   // private mode: the URL still works, just not the memory
   if (!ok) return;
   var g = document.getElementById('proto-gate'), l = document.getElementById('proto-locked');
