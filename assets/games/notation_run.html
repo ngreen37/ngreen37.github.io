@@ -1500,17 +1500,11 @@ function finish() {
       }
     } catch (e) {}
   }
-  /* ⭐ THE QUIET MARK (2026-09-07, Nate: *"Both require a flawless run on medium notation
-     blitz, but don't say that anywhere."*). One flawless run at Medium or better opens
-     Campaign and Checker Town on the games hall — pjcc-hall.js reads this key and so do the
-     two pages, and NOTHING anywhere prints the condition.
-     ⚠⚠ SILENT ON PURPOSE. The Blindfold unlock directly above says so on screen; this one
-     must not, so there is no innerHTML line here. Adding one is the bug.
-     ⚠ 'hard' COUNTS TOO: Fast is 94 BPM against Medium's 60 over more calls — strictly the
-     harder run — and a player who can clear it finding the door still shut would be reading a
-     bug, not a rule. 'easy' does not count.
-     ⚠ NAMED FOR WHAT IT RECORDS, not for what it opens, so a third door is one line in
-     pjcc-hall.js's GATES and nothing here. */
+  /* ⭐ THE QUIET MARK — a flawless run at Medium or better opens Campaign and Checker Town.
+     ⚠⚠ SILENT ON PURPOSE (Nate: *"don't say that anywhere"*). The Blindfold unlock directly
+     above announces itself on screen; a line here is the bug, and test:proto §6 fails on one.
+     ⚠ 'hard' counts: it is the strictly harder run, so clearing it and still finding the door
+     shut reads as a bug. Named for what it RECORDS — a third door is one line in pjcc-hall.js. */
   if (!G.endless && !G.freestyle && !G.dual && (G.diff === 'medium' || G.diff === 'hard') && rank === 'S') {
     try { localStorage.setItem('pjcc.nrun.clean', '1'); } catch (e) {}
   }

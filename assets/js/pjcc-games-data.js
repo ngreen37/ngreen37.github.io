@@ -60,15 +60,11 @@ window.PJCC_GAMES = [
   // and delete the gate script in the page when either one is ready to be met.
   { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her',        icon:'✦', accent:'#8fb8ff', cat:'dev', playable:false },
   { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth',    icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25', playable:false },
-  /* ⛑⛑ OFF THE TYPED KEY AND ONTO THE WORKBENCH, 2026-09-07 (Nate: *"put Campaign in the
-     arcade … put the campaign on the workbench"*). Dropping `playable:false` puts the card
-     on the hub at all; `cat:'dev'` files it in the workbench ROW rather than the finished
-     grid. ⚠⚠ THE DOOR IS STILL SHUT: `gate:'nrun'` is EARNED — one flawless Notation Blitz
-     run at Medium or better — and by his instruction nothing on the site says so, so the
-     card wears a padlock and no sentence.
-     ⚠ IT KEEPS ITS CABINET IN CHECKER TOWN'S ARCADE (his 2026-09-04 call): a room may hold
-     a machine for a game that files elsewhere here, and `test:town` pins that as one named
-     exception so an accidental extra cabinet is still red. */
+  /* ⛑⛑ OFF THE TYPED KEY AND ONTO THE WORKBENCH, 2026-09-07. Dropping `playable:false` puts
+     the card on the hub at all; `cat:'dev'` files it in the workbench ROW, not the grid.
+     ⚠⚠ THE DOOR IS STILL SHUT: `gate:'nrun'` is EARNED, and by his instruction nothing on the
+     site says what earns it — padlock, no sentence.
+     ⚠ It keeps its cabinet in Checker Town's Arcade; `test:town` §13 names that exception. */
   { slug:'marchland',         name:'ChessWild: Campaign',cryptic:'Ten holdings and a border that moves',  icon:'⚄', accent:'#c9a7ff', cat:'dev', gate:'nrun' },
   // Duel Mode — the same soft-gated shape; the page is at games/duel/index.html.
   { slug:'duel',              name:'Duel Mode',          cryptic:'Say something about the position',       icon:'⚔', accent:'#9fe8ff', cat:'dev', playable:false },

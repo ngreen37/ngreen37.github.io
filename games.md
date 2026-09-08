@@ -113,18 +113,12 @@ permalink: /games/
 .gmdoor { display:flex; align-items:center; justify-content:center;
   text-decoration:none; --acc:#e8b34a; }
 /* ⛑ OUT OF THE GRID, INTO A ROW OF ITS OWN — 2026-09-07 (Nate: *"move the altar to the
-   center and make it bigger"*). It spent since 2026-07-24 as the last CELL of the games grid,
-   which put it in the bottom-right corner — the one spot on a wide screen nobody looks at. It
-   stands centered now, between the finished games and the workbench.
-   ⭐ AND IT STOPPED NEEDING A SCRIPT. As a grid cell it had to be re-appended by a
-   MutationObserver every time pjcc-hall.js rebuilt the grid (twice a load, again when the
-   bests arrive). A sibling of .cat-games is written once and never moves — the workbench row
-   is appended to the same parent after it and lands below, which is the order wanted.
-   ⚠ scale() DOES NOT CHANGE THE LAYOUT BOX, so the row carries the scaled height itself or
-   the altar overlaps what follows: 92px × 2.6 is the min-height, and the two move together.
-   ⭐ 2.6 PICKED FROM A RENDER OF FOUR (1.6 / 2 / 2.6 / 3.2) at the row’s real 940px width, not
-   guessed: 2 still read as a grid tile that had wandered, and by 3.2 the stone’s 1px rim is a
-   3px band and the coin floats too far off it. */
+   center and make it bigger"*). It was the grid's last CELL, i.e. the bottom-right corner.
+   ⭐ As a SIBLING of .cat-games it also stopped needing the MutationObserver that re-appended
+   it on every rebuild — and the workbench row, appended after it, still lands below.
+   ⚠ scale() DOES NOT CHANGE THE LAYOUT BOX, so the row reserves the scaled height or the
+   altar overlaps what follows: 92 × 2.6, the two move together. 2.6 came off a render of
+   four at the row's real width, not a guess. */
 .gm-shrine { display:flex; justify-content:center; align-items:center;
   min-height:239px; margin:1.6rem 0 0.4rem; }
 .gm-shrine .gm-scene { transform:scale(2.6); transform-origin:center; }

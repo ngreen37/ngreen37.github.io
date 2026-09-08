@@ -93,15 +93,14 @@ sitemap: false
 
 <script>
 /* ⚑ THE EARNED GATE — byte-identical on both doors it shuts, and NOT the typed prototype
-   gate the four shelved games use (that one is on their pages; this one replaced it here on
-   2026-09-07). It opens on a mark Notation Blitz banks after a flawless run, and it never
-   says so: not on this page, not on the hall card, not on the game's own results screen.
-   Nate: *"Both require a flawless run on medium notation blitz, but don't say that anywhere."*
-   ⚠ THE OLD KEY STILL WORKS, so every link he has already handed out on stream keeps
-   opening — and `?key=off` forgets only the TYPED key, never the earned mark.
+   gate the four shelved games still use. It opens on a mark Notation Blitz banks after a
+   flawless run, and it never says so: not here, not on the hall card, not on the results
+   screen (Nate, 2026-09-07: *"don't say that anywhere"*).
+   ⚠ THE OLD KEY STILL WORKS, so links already handed out on stream keep opening — and
+   `?key=off` forgets only the TYPED key, never the earned mark.
    ⚠ Inline on purpose: deferred, the page would flash "This one isn't open yet." first.
-   ⚠ tests/proto-gate.check.js fails the build if the two copies drift apart, and fails it
-   again if any of these files starts naming the condition out loud. */
+   ⚠ tests/proto-gate.check.js fails on drift between the two, and on either file naming
+   the condition out loud. */
 (function () {
   var MARK = 'pjcc.nrun.clean', KEY = 'chesswild', STORE = 'pjcc.proto.key';
   var OLD = ['pjcc.duel.key', 'pjcc.marchland.key'];

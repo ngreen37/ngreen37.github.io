@@ -13,12 +13,11 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
   function url(slug) { return base + '/' + slug + '/'; }
   function unlocked() { try { return localStorage.getItem('pjcc.blindfold.unlocked') === '1'; } catch (e) { return false; } }
-  /* ⭐ THE EARNED GATE (2026-09-07). A `gate:'nrun'` game is on the hall and shut until you
-     have banked one flawless Notation Blitz run at Medium or better — the same mark the game
-     itself writes, read here by the ordinary path.
-     ⚠⚠ IT SAYS NOTHING ABOUT ITSELF. Nate: *"but don't say that anywhere."* The vault game
-     prints its condition; this one prints a padlock and no sentence, so the `descHtml` and
-     `tag` branches below have to keep skipping it. A helpful hint here is the bug. */
+  /* ⭐ THE EARNED GATE. A `gate:'nrun'` game is on the hall and shut until the mark below is
+     banked — written by Notation Blitz after a flawless run at Medium or better.
+     ⚠⚠ IT SAYS NOTHING ABOUT ITSELF (Nate: *"don't say that anywhere"*). The vault game two
+     branches down prints its condition; this one prints a padlock, so `descHtml` and `tag`
+     must keep skipping it. A helpful hint here is the bug. */
   var GATES = { nrun: 'pjcc.nrun.clean' };
   function shut(g) {
     if (!g.gate || !GATES[g.gate]) return false;
