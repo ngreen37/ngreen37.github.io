@@ -237,6 +237,13 @@
     .overlay { padding: 14px 12px; }
     #title-screen, #results-screen { overflow-y: auto; overflow-x: hidden; justify-content: safe center; }
     #title-screen > *, #results-screen > * { flex-shrink: 0; }
+    /* ⭐⭐ AND THE MENU GETS THE WHOLE FRAME, NOT THE BOARD — 2026-09-08. `inset: 0` ties an
+       overlay to #stage, whose height is the CANVAS aspect: on a 320 phone that is 241px for a
+       title screen 474px tall, so more than half of it was behind a scroll. `fixed` inside an
+       iframe resolves against the iframe's own viewport, which is the whole cabinet — 400px
+       instead of 241 — and the letterbox those overlays were leaving empty is exactly the room
+       they were short of. ⚠ The board is untouched; only the panels over it move. */
+    #title-screen, #results-screen { position: fixed; border-radius: 0; }
     .ov-title { font-size: clamp(20px, 6.4vw, 34px); }
     .ov-sub { font-size: clamp(12px, 3.4vw, 16px); margin-bottom: 10px; }
     .intro .ov-eyebrow { margin-bottom: 8px; }

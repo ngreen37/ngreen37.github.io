@@ -1032,17 +1032,27 @@ const WIDTHS = [320, 360, 390, 430];
         .replace(/src="[^"]*"/gi, 'src="about:blank"');
 
       const tall = [];
+      const below = {};
       let rendered = 0;
       for (const f of CABS) {
         const src = read(f);
         const tmp = path.join(os.tmpdir(), 'pjcc_cab_' + Date.now() + '_' + path.basename(f) + '.html');
+        /* ⛑⛑ THE FURNITURE ABOVE THE CABINET IS PART OF THE MEASUREMENT — 2026-09-08. Without
+           it this repro asked only "is the cabinet taller than the window", and Notation Blitz
+           passed that for six days while being unplayable: 616px of cabinet, which fits, starting
+           at y=441, which does not. **A cabinet that fits and starts below the fold is invisible.**
+           The 120px stands in for the site header, measured on the live page at 390. */
+        const ttl = (src.match(/^title:\s*"?([^"\n]+?)"?\s*$/m) || [, path.basename(path.dirname(f))])[1];
+        const dsc = (src.match(/^description:\s*"([^"]+)"/m) || [, ''])[1];
         fs.writeFileSync(tmp,
           '<!doctype html><html><head><meta charset="utf-8">' +
           '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
           '<style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;background:#1a0f3d}' +
           '.wrapper{max-width:1100px;margin:0 auto;padding:0 28px}</style>' +   // MEASURED, _pjcc-01-core
           '<style>' + LAYOUT_CSS + '</style></head>' +
-          '<body><main class="page-content"><div class="wrapper">' +
+          '<body><div style="height:120px"></div>' +
+          '<main class="page-content"><div class="wrapper">' +
+          '<div class="game-page-header"><h1>' + ttl + '</h1><p>' + dsc + '</p></div>' +
           strip(src) + '</div></main></body></html>');
 
         for (const [w, h] of [[390, 664], [320, 560]]) {
@@ -1063,6 +1073,7 @@ const WIDTHS = [320, 360, 390, 430];
               const r = stage.getBoundingClientRect();
               if (r.height < 1) return;
               out.push({ h: Math.round(r.height), w: Math.round(r.width),
+                top: Math.round(r.top), bottom: Math.round(r.bottom),
                 cls: wrap.className.replace('game-frame-wrap', '').trim() });
             });
             return { stages: out, vh: window.innerHeight };
@@ -1072,6 +1083,7 @@ const WIDTHS = [320, 360, 390, 430];
           rendered += m.stages.length;
           for (const st of m.stages) {
             if (st.h > m.vh) tall.push(f + ' @' + w + 'x' + h + ': ' + st.h + 'px of cabinet in a ' + m.vh + 'px window');
+            if (w === 390) below[f] = Math.max(below[f] || 0, Math.max(0, st.bottom - m.vh));
           }
         }
         fs.unlinkSync(tmp);
@@ -1085,6 +1097,43 @@ const WIDTHS = [320, 360, 390, 430];
       check('⚠⚠ NO cabinet on the site is taller than the phone showing it', tall.length === 0,
         tall.length ? tall.slice(0, 5).join(' · ')
           : CABS.length + ' cabinets at 390x664 and 320x560, coarse pointer');
+
+      /* ⛑⛑ AND THE SECOND QUESTION, WHICH IS THE ONE THAT BIT HIM — 2026-09-08.
+         Nate, from his phone: *"I can hit Start but then it goes to a board and it doesn't do
+         anything. I can't select speed either I don't even see it."* Notation Blitz was a 616px
+         cabinet in a 664px window — it PASSED the check above — starting at y=441, so 393px of it
+         hung below the fold and every control on the title screen was in that 393px.
+
+         ⭐⭐ THIS IS A RATCHET, NOT A PASS/FAIL. Sixteen of eighteen cabinets are partly below the
+         fold today, and how much that COSTS depends on what lives in the lost band — for most it
+         is letterbox, for Notation Blitz it was every button. Fixing them all blind would be a
+         change applied wider than it was measured. So the baseline is written down and may only
+         go DOWN: a page that gets worse is red, a page that gets better wants its number lowered
+         here in the same commit. Anything not listed must be ZERO. */
+      const FOLD_DEBT = {
+        'games/blindfold-puzzles/index.html': 548, 'games/reading-room/index.html': 177,
+        'games/campaign/index.html': 147, 'games/clearance-delta/index.html': 147,
+        'games/duel/index.html': 147, 'games/shogi-island/index.html': 147,
+        'games/sky-run/index.html': 147, 'games/tower-defense/index.html': 147,
+        'games/pirc-protocol/index.html': 139, 'games/the-gauntlet/index.html': 106,
+        'games/checker-town/index.html': 91, 'games/dungeon/index.html': 91,
+        'games/chess-city/index.html': 71, 'games/sand-mine-depths/index.html': 71,
+        'games/space_run/index.html': 51, 'games/murphys-law/index.html': 11,
+      };
+      const worse = Object.keys(below).filter((f) => (below[f] || 0) > (FOLD_DEBT[f] || 0))
+        .map((f) => f + ': ' + below[f] + 'px below the fold, was ' + (FOLD_DEBT[f] || 0));
+      const fixed = Object.keys(FOLD_DEBT).filter((f) => (below[f] || 0) < FOLD_DEBT[f])
+        .map((f) => f + ' → ' + (below[f] || 0));
+      check('⛑ no cabinet hangs further below the fold than it did',
+        worse.length === 0,
+        worse.length ? worse.slice(0, 4).join(' · ')
+          : (fixed.length ? 'IMPROVED, lower these in FOLD_DEBT: ' + fixed.join(' · ')
+                          : Object.keys(FOLD_DEBT).length + ' pages still owe, the rest are clean'));
+      /* ⚠ THE ONE HE REPORTED IS PINNED AT ZERO, and it is pinned here rather than trusted to
+         the map above so that deleting its row cannot quietly re-open it. */
+      check('⭐ Notation Blitz is entirely above the fold on a phone',
+        (below['games/notation-run/index.html'] || 0) === 0,
+        (below['games/notation-run/index.html'] || 0) + 'px below a 664px fold');
     }
 
     server.close();

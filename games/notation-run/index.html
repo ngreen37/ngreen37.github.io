@@ -21,6 +21,7 @@ permalink: /games/notation-run/
      teacher and a reason, and both of those are twelve lines of markup. One cabinet, one
      door, one set of scores under the slug `notation-run`. [[gauntlet-door-one-file]] {%- endcomment -%}
 
+<div class="nb-stack">
 <p class="nb-crumb"><a href="{{ '/academy/' | relative_url }}">← The Academy</a> &middot; Lesson 2</p>
 
 {%- comment -%} ⚠ CROCKETT'S WORDS ARE PLACEHELD AND ARE NATE'S TO WRITE. The card's shape
@@ -33,6 +34,7 @@ permalink: /games/notation-run/
   </div>
 </div>
 
+
 <div class="game-frame-wrap fits-phone nb-frame">
   <iframe
     src="{{ '/assets/games/notation_run.html' | relative_url }}"
@@ -41,12 +43,48 @@ permalink: /games/notation-run/
     scrolling="no"
   ></iframe>
 </div>
+</div>
 
 <style>
 /* Notation Blitz plays on a near-square board — give it a taller, roomier frame */
 .nb-frame { max-width: 640px; }
 .nb-frame iframe { height: 760px; }
-@media (max-width: 600px) { .nb-frame iframe { height: 660px; } }
+
+/* ⛑⛑ THE CABINET WAS 660px OF WHICH ~250 WAS EMPTY — 2026-09-08. Nate, from his phone:
+   *"I can hit Start but then it goes to a board and it doesn't do anything. I can't select
+   speed either I don't even see it."* Measured at 390x664 before touching anything: the frame
+   ran page-y 441→1057 in a 664px window, so **393px of it was below the fold and every control
+   on the title screen — Mode, Tempo and START — was inside that 393px.**
+
+   ⭐⭐ AND THE HEIGHT WAS NEVER NEEDED. The game sizes its board off its WIDTH (`#stage` is
+   `max-width:100vw`, the canvas is `width:100%` over a 480x500 backing store), so every pixel
+   of frame beyond `width x 500/480` was letterbox. `aspect-ratio` asks for exactly what the
+   board takes and not one pixel more. `min-height` is for the TITLE SCREEN, which is text and
+   wraps taller as the phone gets narrower — measured 396px of content at a 320 viewport.
+   ⚠ SCOPED UNDER 600px because `#stage` stops growing at 560: above that the canvas is a
+   fixed 583px tall and an aspect-derived frame would crop it. [[mobile-window-slide]] */
+@media (max-width: 600px) {
+  .nb-frame iframe { height: auto; aspect-ratio: 480 / 500;
+    /* ⚠ THE FLOOR IS FOR THE TITLE SCREEN, WHICH IS TEXT: it wraps taller as the phone gets
+       narrower (measured 474px of content at a 320 viewport) while the board gets shorter, so
+       the aspect alone leaves the menu scrolling. 420 is what the menu wants; the subtraction
+       is what the PAGE can spare — measured 138px of furniture above the cabinet, and the rest
+       is the cabinet's own padding and air. Whichever is smaller wins, so a short phone gets a
+       frame that still fits above the fold rather than a menu that fits and a cabinet that
+       does not. Both numbers are checked by tests/mobile.check.js. */
+    min-height: min(420px, calc(100svh - 180px)); }
+}
+
+/* ⭐ AND THE GAME COMES FIRST ON A PHONE. The crumb and Crockett's card are worth ~410px in
+   portrait — more than half the window — and they introduce a thing you then cannot see. DOM
+   order is unchanged, so a screen reader and a desktop still meet the lesson before the
+   cabinet; only the finger gets the board first. */
+@media (pointer: coarse) {
+  .nb-stack { display: flex; flex-direction: column; }
+  .nb-stack .game-frame-wrap { order: 0; }
+  .nb-stack .nb-crumb { order: 1; margin: 12px 0 0; }
+  .nb-stack .ac-coach { order: 2; margin-top: 10px; }
+}
 
 /* the way back up the ladder — this page is a games-hall door and a lesson at once */
 .nb-crumb { font-size: 0.8rem; color: #9a7fd4; margin: 0 0 10px; }
