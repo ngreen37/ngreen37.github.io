@@ -555,14 +555,30 @@ const server = http.createServer((req, res) => {
         '…and Matsu is on the island, where his does');
       ok(/matsu\.no_english = true/.test(isl),
         '…he speaks no English, and the card says so rather than leaving you to guess');
-      ok(/kaede\.teaches_words = true/.test(town2) && /"id": "word"/.test(npc),
-        'the teaching is ONE OPT-IN MENU ROW  ("if they wish")');
-      ok(/const WORDS := \[/.test(gs) && /func learn_word\(/.test(gs),
-        '…backed by a fixed list, handed out in order');
-      ok(/if not words\.has\(jp\):/.test(gs),
-        '…never the same word twice  (⚠ a random pick makes the sixteenth take forty asks)');
-      ok(/for k in \(d\.get\("words", \{\}\) as Dictionary\)/.test(gs),
-        '…and a word learned on the phone is learned here');
+      /* ⛑⛑ THE SIXTEEN WORDS CAME OUT 2026-09-07 (*"let's remove the 'learn sixteen words'
+         from the japanese characters in checker town"*), and four checks came out with them.
+         What is asserted now is the part he kept and called a nice touch — which is a
+         CONTRAST, so it has to be checked from both sides or half of it can rot. */
+      ok(!/@export var teaches_words/.test(npc) && !/"id": "word"/.test(npc)
+        && !/const WORDS :=/.test(gs) && !/func learn_word\(/.test(gs),
+        'nobody in the town runs a vocabulary drill any more',
+        '⚠ SHAPES, NOT THE WORD "teaches_words" — the comment recording the removal says it');
+      const kline = /kaede\.lines = \[([\s\S]*?)\]/.exec(town2);
+      const mline = /matsu\.lines = \[([\s\S]*?)\]/.exec(isl);
+      /* ⚠ EVERY LINE, NOT FOUR OF THEM. A floor let a mutation that stripped the English off
+         one line stay green — and one silent line in a greeting ladder is exactly how the
+         contrast rots. A count is not a set. [[green-must-name-what-ran]] */
+      const kEntries = kline ? (kline[1].match(/"/g) || []).length / 2 : 0;
+      const kBoth = kline ? (kline[1].match(/ — /g) || []).length : 0;
+      ok(kEntries >= 4 && kBoth === kEntries,
+        'Kaede says it in Japanese and then in English, on every line she has',
+        kBoth + ' of ' + kEntries);
+      /* ⭐⭐ EXACTLY ONE, AND THE COUNT IS THE POINT (his: *"a TINY bit of English"*). Two is
+         a different character, and `_line_for` puts this one on the top rung of HEART_CAP —
+         so it arrives as a payoff for the relationship rather than as a translation. */
+      ok(!!mline && (mline[1].match(/ — /g) || []).length === 1,
+        '…and Matsu cracks by exactly one English word, at the top of the hearts ladder',
+        mline ? (mline[1].match(/ — /g) || []).length + ' of his lines carry any' : 'no lines');
 
       /* ⭐⭐ THE FONT COVERS WHAT THE SCRIPTS SAY. This is the check that makes the whole
          Japanese lane safe to edit: Godot's built-in font has no kana and no kanji, and a
@@ -1918,9 +1934,12 @@ const server = http.createServer((req, res) => {
         ok(/local\.hearts = maxPerKey\(local\.hearts, remote\.hearts\)/.test(merge),
           '\u26d1\u26d1 hearts is a DICTIONARY and is merged per person',
           'Math.max(+{"Auston":4}) is NaN, so every push used to write the integer 0 over it');
-        ok(/local\.positions = union\(/.test(merge) && /local\.words = union\(/.test(merge)
+        /* ⛑ `words` was a fourth until 2026-09-07. It had to leave the town's push, the
+           town's merge_in AND this merge in one edit — the set-diff above is what would have
+           caught either half being left behind. */
+        ok(/local\.positions = union\(/.test(merge)
           && /local\.hats = union\(/.test(merge) && /local\.razzed = union\(/.test(merge),
-          '\u26a0 the four sets of things that have happened to you are unions');
+          '\u26a0 the three sets of things that have happened to you are unions');
         ok(/if \(!local\.hat && remote\.hat\)/.test(merge)
           && /if \(!local\.board_layout \|\| !Object\.keys\(local\.board_layout\)\.length\)/.test(merge),
           '\u26a0\u26a0 …and the two PREFERENCES are sticky, not unions',

@@ -644,7 +644,6 @@
        not added here is a feature that silently does not sync — which is exactly what
        happened to `razzed`, `words` and `positions`. test:town diffs the two key sets. */
     local.razzed = union(local.razzed, remote.razzed);
-    local.words = union(local.words, remote.words);
     local.hats = union(local.hats, remote.hats);
     /* a study beaten is a thing earned, like a word learned */
     local.positions = union(local.positions, remote.positions);
