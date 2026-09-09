@@ -99,17 +99,31 @@ const ok = (n, c, x) => { if (c) { pass++; console.log('  \u2713 PASS  ' + n); }
      that merely hid the weather would still pay for every frame of it. Both halves are
      checked because they own different pixels: the layout owns the sky backdrop, and
      pjcc-weather.js BUILDS the overlay wash, the fall layer and the glass. */
-  const LAYOUT = fs.readFileSync(path.join(REPO, '_layouts/default.html'), 'utf8');
   const TW = fs.readFileSync(path.join(REPO, '_includes/town-weather.html'), 'utf8');
-  ok('no_sky drops the sky ELEMENT', /\{% unless page\.no_sky %\}\{% include town-sky\.html %\}\{% endunless %\}/.test(LAYOUT));
+  /* ⛑⛑ THE LAYOUT LIST IS DERIVED, NOT TYPED — 2026-09-08. This named _layouts/default.html
+     and nothing else, so when the flag was wanted on a GAME page (Checker Town, whose WASM
+     town shares the parent's main thread with the weather's rAF loop) the guard had to be
+     added to a second layout that no check had ever looked at. A third layout would sit
+     there just as quietly. Every layout that includes the sky must be able to skip it.
+     [[feature-shipped-but-never-loaded]] — derive the hosts, never list them. */
+  const SKY_LAYOUTS = fs.readdirSync(path.join(REPO, '_layouts'))
+    .filter((f) => /\.html$/.test(f))
+    .filter((f) => fs.readFileSync(path.join(REPO, '_layouts', f), 'utf8').indexOf('include town-sky.html') >= 0);
+  ok('the sweep found the layouts that carry the sky', SKY_LAYOUTS.length >= 2, SKY_LAYOUTS.join(' · '));
+  SKY_LAYOUTS.forEach((f) => {
+    const src = fs.readFileSync(path.join(REPO, '_layouts', f), 'utf8');
+    ok('   no_sky drops the sky ELEMENT in ' + f,
+       /\{%-? ?unless page\.no_sky ?-?%\}\{% include town-sky\.html %\}\{%-? ?endunless ?-?%\}/.test(src));
+  });
   ok('   and never loads the weather ENGINE (hiding it would not stop rAF)',
      /\{%-? ?unless page\.no_sky ?-?%\}[\s\S]*pjcc-weather\.js[\s\S]*\{%-? ?endunless ?-?%\}/.test(TW));
   ok('   while the town clock stays on every page \u2014 other modules read it',
      /<script>\{% include pjcc-time\.js %\}<\/script>/.test(TW) &&
      TW.indexOf('pjcc-time.js') < TW.indexOf('unless page.no_sky'));
-  /* the two Alpine files are the reason the flag exists; if a rename loses the flag the
-     weather comes back and nothing else complains */
-  ['_characters/alpine.md', 'classified.md'].forEach((f) => {
+  /* the two Alpine files are the reason the flag exists, and Checker Town is why it reached
+     the game layout; if a rename loses the flag the weather comes back and nothing else
+     complains — on Checker Town that is a measured 2.6 fps off a phone, silently. */
+  ['_characters/alpine.md', 'classified.md', 'games/checker-town/index.html'].forEach((f) => {
     ok('   ' + f + ' opts out', /^no_sky: true$/m.test(fs.readFileSync(path.join(REPO, f), 'utf8')));
   });
   console.log('');

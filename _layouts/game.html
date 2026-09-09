@@ -62,6 +62,11 @@
     @media (max-width: 600px) and (pointer: coarse) {
       .game-page-header { padding: 0.6rem 0 0.5rem; margin-bottom: 0.8rem; }
       .game-page-header p { display: none; }
+      /* ⚠ AND THE HEADING COMES DOWN TO 1.1rem, which is the size the landscape block
+         above has used since August. Not taste: at 1.4rem "Blindfold Puzzles v2.3" wraps to
+         two lines on a 320px phone and every pixel of that second line is subtracted from
+         the game below it — measured, the cabinet started 26px lower there than at 390. */
+      .game-page-header h1 { font-size: 1.1rem; }
     }
 
     /* The "front window" — a glowing arcade-cabinet bezel around every game. */
@@ -125,6 +130,34 @@
        tests/mobile.check.js renders every cabinet on the site at a phone. */
     @media (pointer: coarse) {
       .game-frame-wrap.fits-phone iframe { max-height: calc(100svh - 48px); }
+    }
+
+    /* ══ A CABINET THAT FITS ABOVE THE FOLD — opt in with `above-fold` (2026-09-08) ════
+       `fits-phone` caps the cabinet at the WINDOW, and a window is not what a cabinet gets.
+       By the time one starts, the site header and the page's own heading have already spent
+       ~180 of a 664px phone — so a 616px cabinet passes that rule and still ends 161px past
+       the bottom of the screen.
+
+       ⛑⛑ THAT IS NOT COSMETIC, AND BLINDFOLD PUZZLES IS THE PROOF. Its shell pins the
+       button row to the bottom edge of its own viewport (`#wrap > .row { position: sticky;
+       bottom: 0 }`, under `max-height: 720px`) — so Reveal position / Lights out / Next were
+       stuck to an edge 161px below the fold, and the page cannot be scrolled to them from
+       inside the frame: the same shell sets `overscroll-behavior-y: contain` on its scroller,
+       which is defined to stop exactly that chaining. Sticky to an off-screen edge is the
+       Campaign bug in the note above, one layer further out.
+
+       ⚠ THE 210 IS A SUM OF MEASURED PARTS, not a rounded guess:
+           120px  the site header at 390 (the same figure tests/mobile.check.js stands up)
+         +  62px  .game-page-header, after the two trims above
+         +  28px  the cabinet's own padding, 14 a side
+       ⚠ IT DOES NOT COUNT #pjcc-profile-bar, which is empty until an account paints into it.
+       A signed-in phone therefore still owes a few px; measure before assuming a number.
+       ⚠ THE GAME INSIDE HAS TO SURVIVE A SHORT BOX — this hands it less room, not more.
+       Blindfold's shell already turns #wrap into its own scroller under `max-height: 720px`,
+       which is why it is the first caller. A game that would simply be CLIPPED wants the
+       stage pass `fits-phone` documents, not this class. */
+    @media (pointer: coarse) {
+      .game-frame-wrap.above-fold iframe { max-height: calc(100svh - 210px); }
     }
 
     /* ── THE PLAIN WINDOW — opt in with `is-plain` (2026-08-04) ────────────────────────
@@ -224,8 +257,25 @@
 
   {% comment %} The town sky reaches the game halls too (2026-07-14 Nate: the sun/moon
        arc "includes game and academy pages"). Must stay a DIRECT child of <body> —
-       see _sass/_pjcc-20-town-sky.scss. {% endcomment %}
-  {% include town-sky.html %}
+       see _sass/_pjcc-20-town-sky.scss.
+
+       ⛑⛑ AND IT IS SKIPPABLE HERE NOW — 2026-09-08, `no_sky: true`. Nate, on Checker Town:
+       *"it was lagging and I think a large issue was due to the rain in the background from
+       the site. Can we make the background a solid color for now?"* He is right about the
+       mechanism: a same-origin iframe shares the parent's MAIN THREAD, so the weather's rAF
+       particle loop and a WASM game are taking turns on one thread, not running side by side.
+       MEASURED, the real game in the real page at 390x664 with the CPU throttled 6x to stand
+       in for a phone: 17.5 fps with the sky, 20.1 without, and the p95 frame gap 117ms -> 100.
+       ⚠ THAT IS A GAIN, NOT A CURE. Most of the cost at 6x is the game itself; the sky is
+       roughly a seventh of it. At full speed on this desktop both runs pin 60 and the
+       difference is unmeasurable — do not re-measure without the throttle and conclude it
+       does nothing. [[measure-the-real-page]]
+       ⚠ THE FLAG DOES BOTH HALVES: this drops the backdrop, and the matching guard in
+       _includes/town-weather.html drops the ENGINE. Hiding the canvas would not have helped
+       — display:none does not stop rAF. The body's flat #0f0c1a is what shows through, which
+       is the solid color he asked for and the same one .town-sky falls back to.
+       {% endcomment %}
+  {% unless page.no_sky %}{% include town-sky.html %}{% endunless %}
 
   {% include site-header.html %}
 

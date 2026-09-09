@@ -1794,10 +1794,36 @@ const server = http.createServer((req, res) => {
         'a room that lights a square the rules refuse is worse than a room that lights none');
       ok(/func open_at\(f: int, r: int\) -> bool:/.test(gs)
         && /r >= ARRANGE_LO and r <= ARRANGE_HI/.test(gs)
-        && /slot_at\(f, r\) < 0/.test(gs),
+        && /const ARRANGE_LO := 2/.test(gs),
         '⚠ "you cannot attack the enemy" is a WALL, not a rule',
         'there are no captures at all and their two ranks are simply not squares — nothing '
         + 'has to know a white piece exists');
+      /* ══ NOTHING STANDS ON ANYTHING — 2026-09-08 ════════════════════════════
+         Nate: *"you shouldn't be able to move pieces on top of each other, your own or
+         enemy's... You should have to move pawns first before the bishops behind them."*
+         The board drew sixteen pieces and the rules could only see the ones you had WON,
+         so a bishop slid through an unwon pawn and landed on top of whoever was there.
+         Proved in a real Godot before and after: the f-bishop was offered 7 squares from
+         its home square with the bug, and 0 without it. */
+      ok(/and not blocked_at\(f, r\)/.test(gs),
+        '⛑⛑ an open square is one with NOBODY on it, won or not',
+        'the picture and the rules disagreed about who is standing where, and the picture '
+        + 'was right');
+      {
+        const bl = fnGd(gs, 'blocked_at');
+        ok(/for i in ROSTER\.size\(\)/.test(bl) && !/\barmy\b/.test(bl),
+          '   …and it walks the whole ROSTER, not the pieces you own',
+          'walking `army` is the bug itself — an unwon piece is drawn on its home square, '
+          + 'so it is on the board whether you have won it or not');
+        ok(/for i in army/.test(fnGd(gs, 'slot_at')),
+          '   while slot_at STAYS narrow — it answers WHO, and a cell prints that name',
+          'widening it would hand the player the whole cast on their first visit, which is '
+          + 'the one thing the blank nameplates exist to stop');
+        ok(/GameState\.blocked_at\(f, r\)/.test(hall)
+          && /Somebody is already standing there\./.test(hall),
+          '   and the refusal names the right reason',
+          '"the Bishop cannot reach that square" is a lie about a square it can see');
+      }
       {
         const lm = fnGd(gs, 'legal_moves');
         ok(/at\.y == PAWN_RANK and open_at\(at\.x, at\.y - 2\)/.test(lm),

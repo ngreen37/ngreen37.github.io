@@ -1023,12 +1023,16 @@ const WIDTHS = [320, 360, 390, 430];
       check('the cabinet sweep found the game pages', CABS.length >= 15,
         CABS.length + ' pages carry a .game-frame-wrap');
 
-      /* ⚠ SCRIPTS OUT, `hidden` OFF. Four of these cabinets ship hidden behind a gate the
-         page's own inline script opens (the prototype key, the blindfold unlock); with the
-         scripts stripped, nothing re-hides them and nothing measures a zero-height box. */
+      /* ⚠ SCRIPTS OUT — they are Liquid, and the gates they open read localStorage.
+         ⛑⛑ `hidden` STAYS ON, AND THAT WAS A REAL BUG IN THIS FILE — 2026-09-08. It used to
+         strip every `hidden` attribute, which on a gated page renders BOTH panels at once:
+         Blindfold Puzzles was measured as its lock card AND its cabinet stacked, a state no
+         player can ever be in, and it reported 548px below the fold where the real figure is
+         161. A repro that renders an impossible state is not measuring the page.
+         The browser un-hides the path DOWN TO THE CABINET instead (see below) — which is
+         exactly the state a player who can play is in. [[audit-numbers-can-be-wrong]] */
       const strip = (s) => liquid(s)
         .replace(/<script[\s\S]*?<\/script>/gi, '')
-        .replace(/\shidden(?=[\s>])/gi, ' ')
         .replace(/src="[^"]*"/gi, 'src="about:blank"');
 
       const tall = [];
@@ -1061,6 +1065,15 @@ const WIDTHS = [320, 360, 390, 430];
              delivers it — not the CDP override PART 2 needs, which a mutation run proved
              redundant at this call site. The assertion below is what keeps that honest. */
           await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+          /* ⚠ ONLY THE ANCESTORS OF THE CABINET. Un-hiding everything stacks a lock card on
+             top of the game it locks; un-hiding nothing measures a zero-height box on the four
+             pages whose cabinet ships behind a gate. This opens the one path and leaves every
+             other hidden panel shut. */
+          await page.evaluate(() => {
+            document.querySelectorAll('.game-frame-wrap').forEach((wrap) => {
+              for (let el = wrap; el && el !== document.body; el = el.parentElement) el.hidden = false;
+            });
+          });
           await new Promise((r) => setTimeout(r, 120));
           const m = await page.evaluate(() => {
             if (!matchMedia('(pointer: coarse)').matches) return { blind: true };
@@ -1104,21 +1117,21 @@ const WIDTHS = [320, 360, 390, 430];
          cabinet in a 664px window — it PASSED the check above — starting at y=441, so 393px of it
          hung below the fold and every control on the title screen was in that 393px.
 
-         ⭐⭐ THIS IS A RATCHET, NOT A PASS/FAIL. Sixteen of eighteen cabinets are partly below the
+         ⭐⭐ THIS IS A RATCHET, NOT A PASS/FAIL. Fifteen of eighteen cabinets are partly below the
          fold today, and how much that COSTS depends on what lives in the lost band — for most it
          is letterbox, for Notation Blitz it was every button. Fixing them all blind would be a
          change applied wider than it was measured. So the baseline is written down and may only
          go DOWN: a page that gets worse is red, a page that gets better wants its number lowered
          here in the same commit. Anything not listed must be ZERO. */
       const FOLD_DEBT = {
-        'games/blindfold-puzzles/index.html': 548, 'games/reading-room/index.html': 177,
-        'games/campaign/index.html': 147, 'games/clearance-delta/index.html': 147,
-        'games/duel/index.html': 147, 'games/shogi-island/index.html': 147,
-        'games/sky-run/index.html': 147, 'games/tower-defense/index.html': 147,
-        'games/pirc-protocol/index.html': 139, 'games/the-gauntlet/index.html': 106,
-        'games/checker-town/index.html': 91, 'games/dungeon/index.html': 91,
-        'games/chess-city/index.html': 71, 'games/sand-mine-depths/index.html': 71,
-        'games/space_run/index.html': 51, 'games/murphys-law/index.html': 11,
+        'games/reading-room/index.html': 145,
+        'games/campaign/index.html': 142, 'games/clearance-delta/index.html': 142,
+        'games/duel/index.html': 142, 'games/shogi-island/index.html': 142,
+        'games/sky-run/index.html': 142, 'games/tower-defense/index.html': 142,
+        'games/pirc-protocol/index.html': 134, 'games/the-gauntlet/index.html': 101,
+        'games/checker-town/index.html': 86, 'games/dungeon/index.html': 86,
+        'games/chess-city/index.html': 66, 'games/sand-mine-depths/index.html': 66,
+        'games/space_run/index.html': 46, 'games/murphys-law/index.html': 6,
       };
       const worse = Object.keys(below).filter((f) => (below[f] || 0) > (FOLD_DEBT[f] || 0))
         .map((f) => f + ': ' + below[f] + 'px below the fold, was ' + (FOLD_DEBT[f] || 0));
