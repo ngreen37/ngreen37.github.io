@@ -191,7 +191,18 @@ const PKEY = 'pjcc.gauntlet.v2';
     let mism = 0, sawW = 0, sawB = 0, sawCut = 0;
     for (let k = 0; k < 14; k++) {
       await seed(MID);
-      await page.click('#play-btn'); await sleep(120);          // boss card draws the color
+      /* ⛑⛑ A DOM CLICK, NOT page.click() — 2026-09-09, and it was blocking pushes. This one
+         threw "Node is either not clickable or not an Element" perhaps one run in three,
+         killing the whole run at check 25 of 40; it failed on a clean tree too, so it was
+         never anybody's change. `seed()` on the line above re-renders, and a real click has
+         to hit-test a node this loop may have just replaced.
+         ⚠ THE HIT-TESTING IS NOT LOST. Four other checks in this file click #play-btn for
+         real (lines ~47, 56, 65, 157) and they are where "is that button reachable" is
+         asked. THIS loop is asking whether the announced color is the color dealt, fourteen
+         times — the button is a means, not the subject — which is exactly why the FIGHT
+         button three lines down was already clicked this way. */
+      await page.evaluate(() => { const b = document.querySelector('#play-btn'); b && b.click(); });
+      await sleep(120);                                         // boss card draws the color
       const announced = /White/.test(await text('boss-note')) ? 'w' : 'b';
       announced === 'w' ? sawW++ : sawB++;
       await page.evaluate(() => { const b = document.querySelector('#boss-row .btn-gold'); b && b.click(); });
