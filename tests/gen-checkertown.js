@@ -41,6 +41,27 @@ if (!fs.existsSync(path.join(PROJECT, 'project.godot'))) {
 }
 
 /* ── 2 · the export preset, written once so the build is not a GUI state ───────── */
+/* ⛑⛑ OUR LOADING SCREEN, INJECTED EVERY BUILD — 2026-09-09 ────────────────────
+   Nate: *"does it HAVE to show Godot loading screen or can it be a custom loading screen?"*
+   It does not. `web_head.html` in the project is a <style> + <script> that restyles the
+   overlay the stock shell already builds, and this puts it in the preset.
+
+   ⚠⚠ `head_include` IS A STRING IN THE CFG, NOT A PATH. Godot's editor shows it as a
+   multi-line text box, so the file has to be escaped INTO the preset — which is exactly why
+   it is done here rather than pasted in by hand once: pasted, it is GUI state that drifts
+   from the file anybody would edit, and a loading screen nobody can find the source of.
+   ⚠ NOT `custom_html_shell`. A custom shell means owning a private copy of Godot's boot
+   script — feature detection, service-worker retry, progress plumbing, failure notice —
+   which drifts silently on every engine update. This restyles what the engine already ships.
+   ⚠ THE ESCAPE ORDER MATTERS: backslashes first, or the escapes get escaped. */
+const HEAD_SRC = path.join(PROJECT, 'web_head.html');
+if (!fs.existsSync(HEAD_SRC)) {
+  die('no web_head.html in ' + PROJECT + '\n' +
+      '  That file IS the loading screen. Without it the build falls back to Godot\'s.');
+}
+const HEAD = fs.readFileSync(HEAD_SRC, 'utf8')
+  .replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n');
+
 const PRESET = path.join(PROJECT, 'export_presets.cfg');
 if (!fs.existsSync(PRESET)) {
   fs.writeFileSync(PRESET, `[preset.0]
@@ -72,13 +93,29 @@ vram_texture_compression/for_desktop=false
 vram_texture_compression/for_mobile=false
 html/export_icon=true
 html/custom_html_shell=""
-html/head_include=""
+html/head_include="${HEAD}"
 html/canvas_resize_policy=2
 html/focus_canvas_on_start=true
 html/experimental_virtual_keyboard=false
 progressive_web_app/enabled=false
 `, 'utf8');
   console.log('wrote a Web export preset (single-threaded) to ' + PRESET);
+}
+
+/* ⛑ AND AN EXISTING PRESET GETS IT RE-STAMPED. The block above only runs when there is no
+   preset at all, so on every machine that already has one the loading screen would never
+   arrive — the same shape as a feature shipped but never loaded. Rewriting the line each
+   build also means editing web_head.html is all anyone has to do. */
+{
+  const cfg = fs.readFileSync(PRESET, 'utf8');
+  const line = 'html/head_include="' + HEAD + '"';
+  const next = /^html\/head_include=.*$/m.test(cfg)
+    ? cfg.replace(/^html\/head_include=.*$/m, line)
+    : cfg.replace(/^html\/export_icon=.*$/m, (m) => m + '\n' + line);
+  if (next !== cfg) {
+    fs.writeFileSync(PRESET, next, 'utf8');
+    console.log('stamped the loading screen (web_head.html) into the export preset');
+  }
 }
 
 const presetSrc = fs.readFileSync(PRESET, 'utf8');

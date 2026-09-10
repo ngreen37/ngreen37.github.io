@@ -1368,11 +1368,13 @@ const server = http.createServer((req, res) => {
       ok(/const REPLAY_URL := "\/games\/park-tables\/\?replay="/.test(gs),
         '…and opens the room that can draw it');
       {
-        const sq = hall.slice(hall.indexOf('class Cell extends Interactable'));
+        /* ⛑ THE DOOR MOVED 2026-09-09 — these two used to read the CELL's menu, which no
+           longer exists: one press picks the piece up now. The lectern took the row. */
+        const sq = hall.slice(hall.indexOf('class Lectern extends Interactable'));
         ok(/if key != "" and GameState\.has_replay\(key\):/.test(sq),
           '…a square won off the rest of the site offers no game back',
           '⚠ the row is ABSENT, not grayed — there was never a game at this board');
-        ok(/GameState\.watch_replay\(GameState\.key_at\(_slot\)\)/.test(sq),
+        ok(/GameState\.watch_replay\(GameState\.key_at\(_watch\)\)/.test(sq),
           '…and the one that was, does');
       }
       ok(/function askedForReplay/.test(PT) && /if \(rep\) showReplay\(rep\)/.test(PT),
@@ -1840,8 +1842,10 @@ const server = http.createServer((req, res) => {
           'and the branch is BEFORE move_piece — after it, it is unreachable code');
         /* ⚠ THE COUNT IS WHAT THE PIRC DOOR READS. A put-back that ticked setup_moves would
            let six lift-and-replaces stand in for six moves of chess. */
-        const cancel = drop.slice(iBack, iMove > iBack ? iMove : drop.length);
-        ok(iBack > -1 && /_carry = -1/.test(cancel) && !/setup_moves/.test(cancel),
+        /* ⚠ IT READS _put_back(), NOT A SLICE OF drop_at. On 2026-09-09 the cancel became a
+           function — three callers need it now — and a check that slices the caller went red
+           for a refactor that changed nothing it was asking about. */
+        ok(iBack > -1 && !/setup_moves/.test(fnGd(hall, '_put_back')),
           '   …and putting it back costs no move',
           'six put-backs must not open the door six moves of chess opens');
         ok(/relabel\("Put it back"\)/.test(hall) && /if slot == carry:/.test(hall),
@@ -1945,6 +1949,104 @@ const server = http.createServer((req, res) => {
         ok(/#ct-stage \{ max-height: min\(calc\(100svh - 48px\), calc\(100svh - 210px\)\); \}/.test(ct),
           '   …and the placeholder stage carries the same cap, so the cabinet does not jump',
           'the stage is this page\u2019s own element and the classes only reach the iframe');
+        /* ⛑ 2026-09-09, Nate: *"the Walk the town, fill the assembly should be removed, that
+           description below the game. Then shorten the Chess is Played here description."*
+           The game says the first one better in its own voice one inch up the page; what is
+           left is the one fact the PAGE has to carry, because the game cannot. */
+        ok(!/Walk the town, and fill the Assembly/.test(ct)
+          && /The chess is played here, on the site/.test(ct),
+          '   and the page keeps ONE line under the game, not two',
+          'the surviving line is the warning before a tab opens — the only thing down there '
+          + 'the game itself has no way to say');
+      }
+      /* ══ ONE PRESS, NO DIALOGUE — 2026-09-09 ════════════════════════════
+         Nate: *"spacebar should pick up the piece and set it down. There shouldn't be a
+         dialogue box to pick it up or leave it. Trying to put it somewhere erroneously or off
+         the board, etc, should result in it going back to where it was picked up initially."*
+         Driven in a real Godot through Cell.interact(), which is what ui_accept reaches. */
+      {
+        const cell = hall.slice(hall.indexOf('class Cell extends Interactable'));
+        const act = cell.slice(cell.indexOf('func interact'), cell.indexOf('func speech_top'));
+        ok(/hall\.pick_up\(slot\)/.test(act) && !/open_talk/.test(act),
+          '⛑⛑ pressing USE on your own piece picks it up — no box, no question',
+          '"Leave it where it is" was a do-nothing answer to a question asked every time, in '
+          + 'a room whose whole verb is moving pieces');
+        /* ⭐ THE LINE IS THE THING THE MENU WAS FOR. "The sixteen pieces talk" was the point
+           of the box that is gone; losing it with the box would be paying twice. */
+        ok(/say\(GameState\.square_says\(slot\)/.test(act),
+          '   …and the piece still says its line, over its own head, for free',
+          'a bubble costs no press');
+        /* ⚠ THE REFUSAL PATH SPECIFICALLY. drop_at calls _put_back() twice — once for a press
+           on the square it came from, once for a move the rules refuse — so a check for "any
+           call" stays green with the refusal one deleted. Mutation caught that. */
+        const refuse = fnGd(hall, 'drop_at');
+        ok(/cannot reach that square[\s\S]{0,80}_put_back\(\)/.test(refuse),
+          '   and a refused move puts the piece BACK, rather than leaving it in your hands',
+          'on a board where most pieces start with no legal move at all, a wrong press used '
+          + 'to leave you holding something with nowhere to put it');
+        ok(!/setup_moves/.test(fnGd(hall, '_put_back')),
+          '   …for no move, because setup_moves is what the Pirc door counts',
+          'six put-backs must not open what six moves of chess opens');
+        /* ⚠⚠ A DOOR THAT MOVED, NOT A FEATURE THAT WAS DROPPED. The cell menu was the only
+           way to watch the game that won a square; the lectern is the board's own information
+           desk and already had a menu. [[feature-shipped-but-never-loaded]] in reverse. */
+        ok(/watch_replay/.test(hall) && /Show me the game that won/.test(hall),
+          '   and the replay kept a door — the lectern has it now',
+          'the cell menu was its only way in; deleting the menu would have deleted the feature');
+      }
+      /* ══ THE BOTTOM LINE IS FOUR KEYS, AND THEN IT IS GONE ══════════════════
+         Nate: *"Remove the 'the road runs south' — I don't even know what that means. WASD,
+         arrows, Enter, and Spacebar should be the only text on the bottom, and it should
+         disappear after a moment."* Every zone's wayfinding suffix went, not just the one he
+         named. [[one-fix-every-instance]] */
+      {
+        const zone = fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8');
+        const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
+        ok(/return "WASD  ·  Arrows  ·  Enter  ·  Spacebar"/.test(zone),
+          '⛑⛑ the hint names the four keys and nothing else');
+        ok(/TouchPad\.probably_touch\(\)/.test(fnGd(zone, 'default_hint')),
+          '   …except on a phone, which has no Spacebar to name',
+          'naming four keys to somebody holding a piece of glass is the one thing this '
+          + 'function has always refused to do');
+        const suffix = ['academy', 'arcade', 'depths', 'island', 'park', 'stairwell', 'town']
+          .filter((z) => /default_hint\(\) \+/.test(fs.readFileSync(path.join(GD, z + '.gd'), 'utf8')));
+        ok(suffix.length === 0,
+          '   and no zone appends a wayfinding aside to it any more',
+          suffix.length ? suffix.join(', ') + ' still do'
+            : 'seven zones clean — a room that needs to say where the exit is wants a sign, '
+              + 'not the control legend');
+        /* ⚠ THE CONDITION, NOT THE NAME. `if false: _hint_left -= delta` still mentions
+           _hint_left, and the first draft of this line went green on exactly that. */
+        ok(/const HINT_SECS := 7\.0/.test(ui)
+          && /if _hint_left > 0\.0:[\s\S]{0,200}_hint = ""/.test(fnGd(ui, '_process')),
+          '   and it takes itself down after a moment',
+          'the box has no background in IDLE, so what is left is the town');
+        ok(/if _mode != SAY:/.test(fnGd(ui, '_process').split('_hint_left').pop() || ''),
+          '   …with the clock ABOVE the SAY guard, which is the mode it runs in',
+          'below that early return the walking-around line would never tick at all');
+      }
+      /* ══ AND THE LOADING SCREEN IS OURS ══════════════════════════════
+         Nate: *"does it HAVE to show Godot loading screen or can it be a custom loading
+         screen?"* It does not: `web_head.html` restyles the overlay the stock shell already
+         builds, and gen:checkertown stamps it into the export preset every build. */
+      {
+        const built = fs.readFileSync(path.join(ROOT, 'assets/games/checker-town/index.html'), 'utf8');
+        ok(/id = 'ct-boot'/.test(built) && /#status-splash \{ display: none/.test(built),
+          '⛑⛑ the built game boots on OUR loading screen, not the engine\u2019s',
+          'a #242424 rectangle with the Godot logo on it was the first thing anyone saw');
+        ok(!/and a road south/.test(built),
+          '   …and it does not repeat the phrase he struck out of the game',
+          'a wait wants managing, not a riddle');
+        const gen = fs.readFileSync(path.join(ROOT, 'tests/gen-checkertown.js'), 'utf8');
+        ok(/html\/head_include=/.test(gen) && !/custom_html_shell="res:/.test(gen),
+          '   and it is a head include, not a private copy of Godot\u2019s boot script',
+          'a custom shell owns the feature detection, the service-worker retry and the '
+          + 'progress plumbing, and drifts silently on every engine update');
+        ok(/head_include/.test(gen.slice(gen.indexOf('const presetSrc'))) ||
+           /stamped the loading screen/.test(gen),
+          '   and an EXISTING preset gets it re-stamped, not just a fresh one',
+          'the preset is only written when absent, so every machine that already had one '
+          + 'would never have seen the loading screen');
       }
       {
         const lm = fnGd(gs, 'legal_moves');

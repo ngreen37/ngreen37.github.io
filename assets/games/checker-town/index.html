@@ -92,6 +92,134 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<!-- ══ THE LOADING SCREEN IS OURS, NOT GODOT'S ══════════════════════════════════════════
+     2026-09-09, Nate: *"does it HAVE to show Godot loading screen or can it be a custom
+     loading screen?"* It does not. The stock shell is a #242424 rectangle with the engine's
+     own logo on it, which is the first thing anyone ever sees of Checker Town.
+
+     ⚠⚠ THIS IS `html/head_include`, NOT `html/custom_html_shell`, AND THAT IS THE WHOLE
+     DESIGN. A custom shell means owning a private copy of Godot's boot script — the feature
+     detection, the service-worker retry, the progress plumbing, the failure notice — which
+     then silently drifts every time the engine updates. A head include restyles the DOM the
+     stock shell already builds (#status > #status-splash + #status-progress + #status-notice)
+     and inherits every fix Godot ships. Nothing here reimplements anything.
+
+     ⚠ THE COLORS ARE THE SITE'S, to the hex: #1a0f3d is the cabinet's inside, #F5C518 the
+     gold, #9a7fd4 the muted purple. They are duplicated here because a Godot export cannot
+     read the Jekyll stylesheet — same unavoidable copy as pjcc-game-sky.js, and the same
+     rule applies: change one, change both.
+     ⚠ NO WEBFONT. A loading screen that waits on a font download is a loading screen with a
+     loading screen. system-ui is what the site falls back to anyway.
+     ══════════════════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* the engine's own logo, off — it is Godot's brand, not the town's */
+  #status-splash { display: none !important; }
+
+  #status {
+    background: radial-gradient(120% 90% at 50% 30%, #2a1a5e 0%, #160c33 60%, #12082b 100%)
+                !important;
+    color: #efe9ff;
+    font: 400 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    gap: 18px;
+  }
+
+  /* ⚠ BUILT BY THE SCRIPT BELOW, not markup — the head runs before the body exists. */
+  #ct-boot {
+    text-align: center;
+    padding: 0 24px;
+    max-width: 30rem;
+  }
+  #ct-boot b {
+    display: block;
+    font-weight: 800;
+    font-size: clamp(1.1rem, 5.5vw, 1.6rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #F5C518;
+    margin-bottom: 6px;
+  }
+  #ct-boot span {
+    display: block;
+    color: #9a7fd4;
+    font-size: clamp(0.76rem, 3.4vw, 0.88rem);
+  }
+
+  /* the stock <progress>, wearing the cabinet's colors. ⚠ Chrome and Firefox use different
+     pseudo-elements for the same bar and neither inherits the other's; both are needed. */
+  #status-progress {
+    position: static !important;
+    display: block;
+    width: min(260px, 62vw);
+    height: 6px;
+    margin: 0 auto;
+    border: 1px solid rgba(245, 197, 24, 0.35);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    -webkit-appearance: none;
+    appearance: none;
+    overflow: hidden;
+  }
+  #status-progress::-webkit-progress-bar { background: transparent; }
+  #status-progress::-webkit-progress-value {
+    background: linear-gradient(90deg, #c9a7ff, #F5C518);
+    border-radius: 999px;
+  }
+  #status-progress::-moz-progress-bar {
+    background: linear-gradient(90deg, #c9a7ff, #F5C518);
+    border-radius: 999px;
+  }
+  /* ⚠ AN INDETERMINATE BAR IS A DIFFERENT THING. Godot strips value/max while it has no
+     total to report, and a bar that reads "empty" for eight seconds looks like a stall. */
+  #status-progress:not([value]) {
+    background: repeating-linear-gradient(90deg,
+      rgba(245,197,24,0.45) 0 14px, rgba(245,197,24,0.10) 14px 28px);
+  }
+
+  #status-notice {
+    background: #2a1030 !important;
+    border-color: rgba(245, 197, 24, 0.45) !important;
+    color: #efe9ff !important;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #ct-boot b { animation: none; }
+  }
+</style>
+<script>
+/* ⚠ ONE ELEMENT, INSERTED ONCE, AND EVERY LINE OF IT GUARDED. This runs inside the game's
+   own document at boot; anything that throws here takes the loading screen down with it and
+   the player gets a blank frame instead of a game. There is nothing to fall back to, so it
+   fails silently and leaves Godot's own screen exactly as it was. [[down-never-stuck]] */
+(function () {
+  function paint() {
+    try {
+      var st = document.getElementById('status');
+      if (!st || document.getElementById('ct-boot')) return;
+      var box = document.createElement('div');
+      box.id = 'ct-boot';
+      var name = document.createElement('b');
+      name.textContent = 'Checker Town';
+      /* ⚠ NOT THE GAMES-HALL CRYPTIC. He struck that line out of the game on 2026-09-09 —
+         *"I don't even know what that means"* — and a loading screen is the worst place on the
+         site to be mysterious. A wait wants managing, not a riddle.
+         ⚠ AND THE PHRASE IS NOT QUOTED HERE, deliberately: this whole file is injected into the
+         shipped page, so a comment naming it would put it straight back into the build — and
+         defeat the check that exists to keep it out. */
+      var sub = document.createElement('span');
+      sub.textContent = 'This only takes long the first time.';
+      box.appendChild(name);
+      box.appendChild(sub);
+      st.insertBefore(box, st.firstChild);
+    } catch (e) {}
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', paint);
+  } else {
+    paint();
+  }
+})();
+</script>
 
 	</head>
 	<body>
@@ -111,7 +239,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":285420,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":285788,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
