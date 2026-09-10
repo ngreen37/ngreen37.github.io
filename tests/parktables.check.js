@@ -65,7 +65,12 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascri
 function render(src) {
   let s = src.replace(/^---[\s\S]*?\n---\s*\n/, '');
   s = s.replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
+  /* ⚠ EITHER QUOTE. Jekyll does not care which, and games/checker-town/ has used the
+     double-quoted form since it shipped — so a stripper that knows only one of them fails
+     a page over a difference the build cannot even see. Caught 2026-09-09 by the way home
+     to Checker Town, whose one Liquid tag is written the other way round. */
   s = s.replace(/\{\{\s*'([^']+)'\s*\|\s*relative_url\s*\}\}/g, '$1');
+  s = s.replace(/\{\{\s*"([^"]+)"\s*\|\s*relative_url\s*\}\}/g, '$1');
   const leftover = s.match(/\{[{%][\s\S]{0,60}/);
   if (leftover) {
     console.error('  ✗ unhandled Liquid in the page — this harness would test the wrong file:');

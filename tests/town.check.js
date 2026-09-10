@@ -1824,6 +1824,72 @@ const server = http.createServer((req, res) => {
           '   and the refusal names the right reason',
           '"the Bishop cannot reach that square" is a lie about a square it can see');
       }
+      /* ══ AND YOU CAN ALWAYS PUT IT DOWN AGAIN — 2026-09-09 ═════════════════════
+         Nate: *"we need to make the assembly so you can put the piece back where you find
+         it. Right now you can't do that."* Picking a piece up was a one-way door — the only
+         exit was a legal square — which was survivable while pieces slid through each other
+         and became a TRAP the day above, when they stopped. Driven in a real Godot: a bishop
+         at its home square has ZERO legal moves, and before this you were holding it for
+         good. [[godot-headless-verification]] */
+      {
+        const drop = fnGd(hall, 'drop_at');
+        const iBack = drop.indexOf('GameState.cell_of(slot) == Vector2i(f, r)');
+        const iMove = drop.indexOf('GameState.move_piece(slot, f, r)');
+        ok(iBack > -1 && iMove > -1 && iBack < iMove,
+          '⛑⛑ a piece can always go back on the square it came from',
+          'and the branch is BEFORE move_piece — after it, it is unreachable code');
+        /* ⚠ THE COUNT IS WHAT THE PIRC DOOR READS. A put-back that ticked setup_moves would
+           let six lift-and-replaces stand in for six moves of chess. */
+        const cancel = drop.slice(iBack, iMove > iBack ? iMove : drop.length);
+        ok(iBack > -1 && /_carry = -1/.test(cancel) && !/setup_moves/.test(cancel),
+          '   …and putting it back costs no move',
+          'six put-backs must not open the door six moves of chess opens');
+        ok(/relabel\("Put it back"\)/.test(hall) && /if slot == carry:/.test(hall),
+          '   and the square it came from SAYS so while you are holding it',
+          'the room skips drawing a piece that is in your hands, so that square reads as '
+          + 'empty — with no prompt there is nothing to walk up to and nothing to press');
+        /* ⚠ THE BANNER WAS THE OTHER HALF OF THE TRAP: "the squares it can reach are lit"
+           over a board with nothing lit reads as a broken room rather than a blocked piece. */
+        const pick = fnGd(hall, 'pick_up');
+        ok(/legal_moves\(slot\)\.size\(\)/.test(pick) && /Put it back where it was/.test(pick),
+          '   and it does not promise lit squares it has not got',
+          'an opening-position bishop or rook has no legal move at all now');
+      }
+      /* ══ THE ERRAND COMES BACK — 2026-09-09 ═══════════════════════════════
+         Nate: *"Does the chess game have to open a new window... can we have it close after
+         the game? With the option to review in-game at least?"* The tab stays — a same-tab
+         navigation throws away 38 MB of engine and cold-starts it on the way back — but
+         nothing ever brought you OUT of it. Verified in a real Chrome, opened the way the
+         town opens it: `window.opener` is set on a tab opened by window.open from inside the
+         game's own iframe, and window.close() from there works. */
+      {
+        ok(/url \+= \("&" if url\.contains\("\?"\) else "\?"\) \+ "from=town"/.test(fnGd(gs, 'open_url')),
+          '⛑⛑ every tab the town opens knows where it came from',
+          'six callers reach open_url and every one of them strands you — marking them one '
+          + 'at a time is how the seventh gets forgotten');
+        /* ⚠⚠ READ THE FUNCTION, NOT THE FILE. The first draft of this line tested the whole
+           page for /sessionStorage/ and went GREEN with the storage ripped out — because the
+           COMMENT above it explains why sessionStorage is used. A gate that a comment can
+           satisfy is a gate that measures prose. [[green-must-name-what-ran]] */
+        const townFn = (PT.match(/function from\(\) \{[\s\S]*?\n  \}/) || [''])[0];
+        ok(/sessionStorage\.setItem\(KEY/.test(townFn) && /sessionStorage\.getItem\(KEY/.test(townFn),
+          '   and the Park Tables REMEMBERS it rather than re-reading the URL',
+          'replaceState on sitting down strips the query, which is the one moment the way '
+          + 'home has to survive');
+        /* ⚠⚠ THE ESCAPE HATCH MUST NOT SHARE A FAILURE WITH THE ROOM IT ESCAPES. The park's
+           own script is ~2,500 lines needing a backend, a profile layer and an engine. */
+        const app = PT.indexOf("var TOWN_KEY") >= 0 ? -1 : PT.indexOf('window.PTTown');
+        ok(app > -1 && app < PT.indexOf('function route()'),
+          '   and the way home is its OWN script, above the app that needs a backend',
+          'a player stranded because the chess room would not boot is the whole point of it');
+        ok(/window\.close\(\)/.test(PT) && /\/games\/checker-town\//.test(PT),
+          '   and it closes the tab, or WALKS back when there is no tab to close',
+          'a popup blocker turns the open into a navigation, and this page is bookmarkable '
+          + '— a button that silently does nothing is worse than a slow one');
+        ok(/Review this game[\s\S]{0,400}data-town-back/.test(PT),
+          '   and the review is offered BEFORE the door out, which is the order he asked for',
+          '"with the option to review in-game at least"');
+      }
       {
         const lm = fnGd(gs, 'legal_moves');
         ok(/at\.y == PAWN_RANK and open_at\(at\.x, at\.y - 2\)/.test(lm),

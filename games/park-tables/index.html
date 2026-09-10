@@ -34,6 +34,63 @@ body_class: theme-hall
      say what this is faster than a sentence about benches did. The front-matter
      `description:` stays — that one is the search-result snippet, never rendered here.
 {% endcomment %}
+{% comment %} ⛑⛑ THE WAY BACK TO CHECKER TOWN — 2026-09-09, and it is a SIBLING of #pt-app
+     rather than something route() paints. Every render replaces that div wholesale; a band
+     inside it would blink out the moment you sat down, which is precisely when you need it.
+
+     ⚠ IT SAYS WHY IT IS THERE. A bare arrow in the corner of a page you arrived at from a
+     game you were playing reads as site navigation, and the one thing it must not read as is
+     "leave". [[no-excuses-copy]] {% endcomment %}
+<div id="pt-town" class="pt-town" hidden>
+  <span class="pt-town-txt">You came here from <b>Checker Town</b> — it is still open behind this tab.</span>
+  <button type="button" class="pjcc-btn-ghost pt-town-btn" data-town-back>◂ Back to the town</button>
+</div>
+<script>
+/* ⛑⛑ THE WAY HOME IS ITS OWN SCRIPT, ON PURPOSE — 2026-09-09.
+
+   `?from=town` says this tab was opened by Checker Town; GameState.open_url() stamps it on
+   everything the town opens, so it arrives on a challenge, a study and a replay alike.
+
+   ⚠⚠ IT IS NOT INSIDE THE APP. The park's own script is ~2,500 lines that need a backend,
+   a profile layer and a chess engine; if any of that is down or slow, the player is stranded
+   in a tab with no way back to a town that is still running behind it. The escape hatch must
+   not share a failure with the room it is escaping. [[down-never-stuck]]
+   ⚠⚠ REMEMBERED, NOT RE-READ. Three things strip the query string out from under us —
+   showReplay()'s replaceState, pushTable() on sitting down, and the back button — so a
+   function that asked the URL each time would lose the way home the instant you sat down,
+   which is the one moment it has to survive.
+   ⚠ sessionStorage, NOT localStorage: "this TAB came from the town" is true for exactly as
+   long as the tab lives. In localStorage it would follow you into every future visit and
+   offer a door back to a town nobody opened. */
+(function () {
+  var KEY = 'pjcc.pt.fromtown', Q = /[?&]from=town(?:&|$)/;
+  function from() {
+    try {
+      if (Q.test(location.search)) sessionStorage.setItem(KEY, '1');
+      return sessionStorage.getItem(KEY) === '1';
+    } catch (e) { return Q.test(location.search); }
+  }
+  /* ⚠⚠ window.close() ONLY WORKS ON A WINDOW A SCRIPT OPENED, and this one was — verified
+     in a real Chrome, opened the way the town opens it (window.open from INSIDE the game's
+     own iframe): `window.opener` is set and the tab closes. But the town falls back to
+     navigating the top frame when a popup blocker refuses it, and this page is reachable by
+     bookmark besides, so on both of those paths there is no tab to close.
+     ⭐ Ask it to close; if we are still here a moment later, WALK back instead. Never one or
+     the other — a button that silently does nothing is worse than a slow one. */
+  function back() {
+    try { window.close(); } catch (e) {}
+    setTimeout(function () { try { location.href = '{{ "/games/checker-town/" | relative_url }}'; } catch (e) {} }, 180);
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest && e.target.closest('[data-town-back]');
+    if (b) { e.preventDefault(); back(); }
+  });
+  var band = document.getElementById('pt-town');
+  if (band && from()) band.hidden = false;
+  /* the finished-game button row asks this too — see botBotButtons() */
+  window.PTTown = { from: from, back: back };
+})();
+</script>
 <div id="pt-app"><p class="lb-empty">Walking to the park…</p></div>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
@@ -2677,8 +2734,15 @@ body_class: theme-hall
                '>⚗ Analysis board</button> ' + mull + clk +
         '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>';
     }
+    /* ⛑ AND THE ERRAND ENDS HERE, so the door home is on the row your thumb is already on
+       (2026-09-09). The band at the top of the page says the same thing, but on a phone it is
+       a screen away by the time a game finishes. ⭐ IT SITS AFTER REVIEW, NOT BEFORE: he asked
+       for the review "at least", so leaving is the thing you choose when you are done looking,
+       not the first thing offered. */
     return ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
              ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> ' : '') +
+      ((window.PTTown && PTTown.from()) ?
+        '<button class="pjcc-btn" data-town-back>◂ Back to Checker Town</button> ' : '') +
       // ⚠ THE STOCKFISH BOARD, FINISHED GAMES ONLY — unchanged, and the rule it obeys is
       //   in pjcc-analysis.js's own header. The mid-game door above is a different object.
       ((window.PJCCAnalysis && PJCCAnalysis.available())
@@ -4295,6 +4359,15 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer; margin-left: 6px; }
 .pt-review-btn:hover { border-color: #F5C518; color: #F5C518; }
 .pt-up { color: #6bffb8; } .pt-dn { color: #ff8a8a; }
+
+/* ⛑ the errand's way home — see the markup note at the top of this file */
+.pt-town { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; margin: 0 0 14px; padding: 9px 14px; border-radius: 10px;
+  background: rgba(245,197,24,0.06); border: 1px solid rgba(245,197,24,0.32); }
+.pt-town-txt { color: #cfc3a8; font-size: 0.86rem; }
+.pt-town-txt b { color: #F5C518; }
+/* ⚠ 44px, like every other control on a page he plays on a phone [[tap-targets]] */
+.pt-town-btn { min-height: 44px; white-space: nowrap; }
 
 .pt-table-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
 /* the nameplates — opponent above the board, you below it (2026-07-16 Nate);
