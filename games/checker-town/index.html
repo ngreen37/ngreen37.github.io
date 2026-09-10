@@ -30,7 +30,15 @@ no_sky: true
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
 <div id="proto-gate" hidden>
-  <div class="game-frame-wrap fits-phone ct-frame">
+  {%- comment -%} ⛑⛑ `above-fold` AS WELL AS `fits-phone` — 2026-09-09. MEASURED on this page
+       with the real build at 390x664: the frame ran y 190→750 in a 664px window, so **86px of
+       the game was off the bottom of the screen** — and everything this game anchors to the
+       bottom of its own viewport lives in that 86px: the USE button (36 of its 80px gone), the
+       hint line that tells a phone how to walk, and the LAST row of every conversation menu.
+       ⚠ It costs 106px of view. That is the trade, and it is the right way round: a shorter
+       town you can operate beats a taller one whose controls are past the edge of the glass.
+       {%- endcomment -%}
+  <div class="game-frame-wrap fits-phone above-fold ct-frame">
     <div id="ct-stage">
       <button type="button" id="ct-load">Load Checker Town</button>
       <p class="ct-note">9.8&nbsp;MB the first time. Cached after that.</p>
@@ -58,10 +66,12 @@ no_sky: true
   .ct-frame #ct-stage { height: 640px; }
   @media (max-width: 600px) { .ct-frame #ct-stage { height: 560px; } }
 
-  /* The iframe's cap is `fits-phone` in _layouts/game.html. The placeholder stage is this
-     page's own element, so it carries the same number here or the cabinet jumps on load. */
+  /* The iframe's caps are `fits-phone` and `above-fold` in _layouts/game.html. The
+     placeholder stage is this page's own element, so it carries the same numbers here or the
+     cabinet jumps the moment the frame replaces it.
+     ⚠ BOTH, and the smaller wins — exactly as the two classes compose on the iframe. */
   @media (pointer: coarse) {
-    .ct-frame #ct-stage { max-height: calc(100svh - 48px); }
+    .ct-frame #ct-stage { max-height: min(calc(100svh - 48px), calc(100svh - 210px)); }
   }
 
   .ct-frame #ct-stage {

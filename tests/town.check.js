@@ -1889,6 +1889,62 @@ const server = http.createServer((req, res) => {
         ok(/Review this game[\s\S]{0,400}data-town-back/.test(PT),
           '   and the review is offered BEFORE the door out, which is the order he asked for',
           '"with the option to review in-game at least"');
+        /* ⛑⛑ AND THE INSTALLED APP HAS NO TAB TO OPEN. manifest.json is `display: standalone`,
+           and a `_blank` window.open from a standalone iOS home-screen app ejects you into
+           Safari — out of the app entirely, with the town left behind in something you have
+           quit. In standalone we navigate in place and pay the reload coming back; there is
+           no third option, because keeping the engine warm needs a second tab. */
+        const open = fnGd(gs, 'open_url');
+        ok(/display-mode: standalone/.test(open) && /navigator\.standalone/.test(open)
+          && /w\.location\.href = u; return;/.test(open),
+          '   …and in the installed app it navigates instead of popping a tab',
+          'a _blank open from a standalone iOS app throws the player out into Safari');
+        ok(/var w = window\.top;/.test(open),
+          '   asking window.TOP, because the game runs inside an iframe',
+          'the iframe is not in standalone mode — the page around it is');
+      }
+      /* ══ A MENU ROW IS A THUMB TALL — 2026-09-09 ════════════════════════════
+         Nate: *"the mobile buttons don't really work well… I can't test the park table thing
+         because the buttons work poorly."* MEASURED in a real Godot at the frame his phone
+         gives the game: a conversation row was **25.9 CSS px**, and **16.2** on a 320px
+         phone with **no gap at all** between rows. The site's floor is 44.
+         ⚠ ui_scale did not cover this and was never going to: it holds the UI at a CONSTANT
+         apparent size, which is right for text and wrong for a target. Worse, the row works
+         out to OPT_H x window_height / 648, so making the cabinet FIT the screen made the
+         rows smaller — the two fixes fight, and the floor is what settles it. */
+      {
+        const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
+        ok(/const FINGER_CSS := 44\.0/.test(ui)
+          && /maxf\(OPT_H \* k, \(FINGER_CSS \+ GAP_CSS\) \* _css_unit\(\)\)/.test(ui),
+          '⛑⛑ a conversation row is at least 44 CSS px of thumb',
+          'and the STRIDE carries the gap as well as the target — flooring the stride and '
+          + 'then subtracting the gap left a 38px button, which is the thing you actually hit');
+        ok(/opt_h - GAP_CSS \* _css_unit\(\)/.test(ui),
+          '   …with air between the rows, so a near miss lands on NOTHING',
+          'stacked rows do not make you miss, they make you hit the neighbor — "Sit down" '
+          + 'and "Leave it where it is" are one bad tap apart');
+        /* ⚠⚠ THE TRAP THAT WOULD HAVE MADE THIS SILENTLY WRONG ON HIS ACTUAL PHONE. */
+        const css = fnGd(ui, '_css_unit');
+        ok(/devicePixelRatio/.test(css) && /dpr \* vp\.x \/ win\.x/.test(css),
+          '   and it divides the DEVICE pixel ratio back out',
+          'DisplayServer.window_get_size() is in DEVICE pixels on the web — measured at dpr '
+          + '1/2/3, a 264 CSS-px canvas reports 264/528/792 — so a dpr-3 iPhone would have got '
+          + 'a third of the target it was promised');
+      }
+      /* ══ AND THE BOTTOM OF THE GAME IS ON THE SCREEN ════════════════════════
+         MEASURED on the real page with the real build at 390x664: the frame ran y 190→750 in
+         a 664px window, so 86px of the game was off the bottom — and everything this game
+         anchors to the bottom of its own viewport was in it: the USE button (36 of its 80px),
+         the hint line that tells a phone how to walk, and the LAST row of every menu. */
+      {
+        const ct = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
+        ok(/game-frame-wrap fits-phone above-fold ct-frame/.test(ct),
+          '⛑⛑ the Checker Town cabinet ends ABOVE the fold on a phone',
+          'a control pinned to the bottom edge of a frame whose bottom edge is off the '
+          + 'screen is a control that does not exist');
+        ok(/#ct-stage \{ max-height: min\(calc\(100svh - 48px\), calc\(100svh - 210px\)\); \}/.test(ct),
+          '   …and the placeholder stage carries the same cap, so the cabinet does not jump',
+          'the stage is this page\u2019s own element and the classes only reach the iframe');
       }
       {
         const lm = fnGd(gs, 'legal_moves');

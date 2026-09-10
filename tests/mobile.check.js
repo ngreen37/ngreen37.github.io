@@ -1117,7 +1117,7 @@ const WIDTHS = [320, 360, 390, 430];
          cabinet in a 664px window — it PASSED the check above — starting at y=441, so 393px of it
          hung below the fold and every control on the title screen was in that 393px.
 
-         ⭐⭐ THIS IS A RATCHET, NOT A PASS/FAIL. Fifteen of eighteen cabinets are partly below the
+         ⭐⭐ THIS IS A RATCHET, NOT A PASS/FAIL. Fourteen of eighteen cabinets are partly below the
          fold today, and how much that COSTS depends on what lives in the lost band — for most it
          is letterbox, for Notation Blitz it was every button. Fixing them all blind would be a
          change applied wider than it was measured. So the baseline is written down and may only
@@ -1129,7 +1129,7 @@ const WIDTHS = [320, 360, 390, 430];
         'games/duel/index.html': 142, 'games/shogi-island/index.html': 142,
         'games/sky-run/index.html': 142, 'games/tower-defense/index.html': 142,
         'games/pirc-protocol/index.html': 134, 'games/the-gauntlet/index.html': 101,
-        'games/checker-town/index.html': 86, 'games/dungeon/index.html': 86,
+        'games/dungeon/index.html': 86,
         'games/chess-city/index.html': 66, 'games/sand-mine-depths/index.html': 66,
         'games/space_run/index.html': 46, 'games/murphys-law/index.html': 6,
       };
