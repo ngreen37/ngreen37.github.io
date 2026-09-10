@@ -14,99 +14,16 @@ no_sky: true
 
 <!-- if you're reading this, you're already home -->
 
-<div class="secret-page" id="secret-page">
-
-  <header class="secret-header">
-    <div class="secret-ping"><span>⊙</span></div>
-    <div class="secret-statusbar">
-      <span>SIGNAL ACQUIRED</span><span class="secret-dots">• • •</span><span>DECRYPTION COMPLETE</span>
-    </div>
-    <div class="secret-stamp-wrap">
-      <span class="secret-stamp">CLASSIFIED</span>
-      <span class="secret-stamp secret-stamp--over">DECLASSIFIED</span>
-    </div>
-    <h1 class="secret-title">THE ALPINE FILE</h1>
-    <p class="secret-sub">RECOVERED FILE #001 · CHESS CITY RELEASE ACT OF 2078</p>
-    <div class="secret-coords">
-      ORIGIN:&nbsp;CHECKER&nbsp;TOWN &nbsp;·&nbsp; SUBJECT:&nbsp;PRINCESS &nbsp;·&nbsp; STATUS:&nbsp;<span class="secret-grant">COMPLETED</span>
-    </div>
-  </header>
-
-  <!-- ══════════ THE REDACTED FILES (Nate's text, 2026-07-14 — the <redacted>
-       marks render as true black bars; nothing hides behind them to inspect) ══════════ -->
-  <section class="secret-letters">
-    <div class="secret-letters-label">PETITION GRANTED — THREE PAGES SURVIVE</div>
-
-    <blockquote class="secret-letter">
-      <div class="secret-file-tab">REDACTED FILE</div>
-      <p>One human on Earth, leading up to population of Checker Town, knew of Subject's
-      abilities — the one that TAUGHT her this technique. Bill Alpine, 46 yrs.
-      Worked for ICB's Expanse Branch.</p>
-      <footer>page 1 of 3 · edge-charred</footer>
-    </blockquote>
-
-    <blockquote class="secret-letter secret-letter--alt">
-      <div class="secret-file-tab">REDACTED FILE</div>
-      <p>Number of Humans aware at time of event is unknown, but believed to be
-      less than ten. Despite recent developments STRONGLY suggesting otherwise,
-      optimism is significantly UP around camp. Progress came when w—</p>
-      <footer>page 2 of 3 · water-damaged · the rest is gone</footer>
-    </blockquote>
-
-    <blockquote class="secret-letter">
-      <div class="secret-file-tab">REDACTED FILE</div>
-      <p>Person of Interest: Nate <span class="rx" role="img" aria-label="Redacted">█████████</span>
-      — took in Princess and was main participant in
-      <span class="rx" role="img" aria-label="Redacted">██████████</span>.</p>
-      <footer>page 3 of 3 · the name is struck in every copy</footer>
-    </blockquote>
-  </section>
-
-  <!-- ══════════ THE FOUND FILE — the memo itself. It develops like a photograph
-       when you reach it (the old hardening trick, reused where it belongs). ══════════ -->
-  <section class="secret-core">
-    <div class="secret-core-eyebrow">FOUND FILE</div>
-    <div class="secret-memo" id="secret-memo">
-      <div class="secret-memo-date">March 1st, 2022</div>
-      <p>If you somehow found this file, congratulations,
-      <span class="rx" role="img" aria-label="Redacted">████████</span> but you're too late.
-      <strong>It's already done.</strong> Once Subject learned what Belief was, she just needed
-      to learn how, and, <span class="rx" role="img" aria-label="Redacted">██████</span>
-      <span class="rx" role="img" aria-label="Redacted">███████████</span> and that
-      <span class="rx" role="img" aria-label="Redacted">████</span> Convict #48125 made a
-      decision for all of us, didn't he? <span class="rx" role="img" aria-label="Redacted">█████████</span>
-      <span class="rx" role="img" aria-label="Redacted">███████</span> The story of the dog who can
-      learn anything is still unfolding, but hope in keeping our control is slipping amongst my men.</p>
-      <p>They don't even know how lost it is. I do.</p>
-      <div class="secret-memo-sign">— Lt. Jenkins · 53rd Battalion · ICB</div>
-      <footer class="secret-memo-cite">— Recovered File #001 from the Chess City Release Act of 2078 —
-      Petition to Pull Records from the high-profile court case ALPINE&nbsp;vs.&nbsp;(ICB)&nbsp;Interplanetary&nbsp;Conduct&nbsp;Bureau</footer>
-    </div>
-  </section>
-
-  <!-- ══════════ BURN AFTER READING (restored 2026-07-14 — Nate: "bring the burn
-       function back"; countdown + flame wall + return to the surface, as before) ══════════ -->
-  <div class="secret-destruct" id="secret-destruct">
-    <div class="secret-destruct-label">⚠ &nbsp;READ CAREFULLY. THEN DESTROY.</div>
-    <button class="secret-burn-btn" id="secret-burn-btn" type="button" onclick="igniteSequence()">▸ &nbsp;INITIATE BURN SEQUENCE</button>
-  </div>
-
-  <footer class="secret-footer">
-    <a href="{{ '/' | relative_url }}" class="secret-return">⊘&nbsp;&nbsp;RETURN TO SURFACE</a>
-  </footer>
-
-</div>
-
-<!-- the burn hardware: countdown digits + the flame wall -->
-<div class="burn-count" id="burn-count" aria-hidden="true"><span id="burn-number"></span></div>
-<div class="burn-overlay" id="burn-overlay" aria-hidden="true">
-  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-  <div class="burn-word" id="burn-word">✦ FRAGMENT RECOVERED — the fire keeps your secret</div>
-</div>
-
+{% comment %} ⛑ THE STYLE COMES BEFORE THE MARKUP (2026-09-10). Below it, a paused parse painted
+   this page UNSTYLED for a frame: a stock white burn button, the reward line, the unblurred memo.
+   Nate saw "a little white popup" on the way in from the "i". tests/classified.check.js holds the order.
+   ⛑ The CRT glitch rides .secret-page here, not main: the burn wall and countdown live in main
+   and must stay pinned to the window (see _pjcc-07-characters.scss). {% endcomment %}
 <style>
 .secret-page { max-width: 760px; margin: 0 auto; padding: 56px 26px 88px; position: relative; z-index: 1;
   --amber:#ff8c00; --gold:#ffd24a; --warm:#ffe9bf; }
+.theme-classified .classified-main { animation: none; }
+.secret-page { animation: crt-glitch 24s step-end infinite; }
 
 /* header */
 .secret-header { text-align: center; margin-bottom: 44px; }
@@ -253,6 +170,96 @@ no_sky: true
 </style>
 
 <noscript><style>.secret-memo { filter:none; opacity:1; }</style></noscript>
+
+<div class="secret-page" id="secret-page">
+
+  <header class="secret-header">
+    <div class="secret-ping"><span>⊙</span></div>
+    <div class="secret-statusbar">
+      <span>SIGNAL ACQUIRED</span><span class="secret-dots">• • •</span><span>DECRYPTION COMPLETE</span>
+    </div>
+    <div class="secret-stamp-wrap">
+      <span class="secret-stamp">CLASSIFIED</span>
+      <span class="secret-stamp secret-stamp--over">DECLASSIFIED</span>
+    </div>
+    <h1 class="secret-title">THE ALPINE FILE</h1>
+    <p class="secret-sub">RECOVERED FILE #001 · CHESS CITY RELEASE ACT OF 2078</p>
+    <div class="secret-coords">
+      ORIGIN:&nbsp;CHECKER&nbsp;TOWN &nbsp;·&nbsp; SUBJECT:&nbsp;PRINCESS &nbsp;·&nbsp; STATUS:&nbsp;<span class="secret-grant">COMPLETED</span>
+    </div>
+  </header>
+
+  <!-- ══════════ THE REDACTED FILES (Nate's text, 2026-07-14 — the <redacted>
+       marks render as true black bars; nothing hides behind them to inspect) ══════════ -->
+  <section class="secret-letters">
+    <div class="secret-letters-label">PETITION GRANTED — THREE PAGES SURVIVE</div>
+
+    <blockquote class="secret-letter">
+      <div class="secret-file-tab">REDACTED FILE</div>
+      <p>One human on Earth, leading up to population of Checker Town, knew of Subject's
+      abilities — the one that TAUGHT her this technique. Bill Alpine, 46 yrs.
+      Worked for ICB's Expanse Branch.</p>
+      <footer>page 1 of 3 · edge-charred</footer>
+    </blockquote>
+
+    <blockquote class="secret-letter secret-letter--alt">
+      <div class="secret-file-tab">REDACTED FILE</div>
+      <p>Number of Humans aware at time of event is unknown, but believed to be
+      less than ten. Despite recent developments STRONGLY suggesting otherwise,
+      optimism is significantly UP around camp. Progress came when w—</p>
+      <footer>page 2 of 3 · water-damaged · the rest is gone</footer>
+    </blockquote>
+
+    <blockquote class="secret-letter">
+      <div class="secret-file-tab">REDACTED FILE</div>
+      <p>Person of Interest: Nate <span class="rx" role="img" aria-label="Redacted">█████████</span>
+      — took in Princess and was main participant in
+      <span class="rx" role="img" aria-label="Redacted">██████████</span>.</p>
+      <footer>page 3 of 3 · the name is struck in every copy</footer>
+    </blockquote>
+  </section>
+
+  <!-- ══════════ THE FOUND FILE — the memo itself. It develops like a photograph
+       when you reach it (the old hardening trick, reused where it belongs). ══════════ -->
+  <section class="secret-core">
+    <div class="secret-core-eyebrow">FOUND FILE</div>
+    <div class="secret-memo" id="secret-memo">
+      <div class="secret-memo-date">March 1st, 2022</div>
+      <p>If you somehow found this file, congratulations,
+      <span class="rx" role="img" aria-label="Redacted">████████</span> but you're too late.
+      <strong>It's already done.</strong> Once Subject learned what Belief was, she just needed
+      to learn how, and, <span class="rx" role="img" aria-label="Redacted">██████</span>
+      <span class="rx" role="img" aria-label="Redacted">███████████</span> and that
+      <span class="rx" role="img" aria-label="Redacted">████</span> Convict #48125 made a
+      decision for all of us, didn't he? <span class="rx" role="img" aria-label="Redacted">█████████</span>
+      <span class="rx" role="img" aria-label="Redacted">███████</span> The story of the dog who can
+      learn anything is still unfolding, but hope in keeping our control is slipping amongst my men.</p>
+      <p>They don't even know how lost it is. I do.</p>
+      <div class="secret-memo-sign">— Lt. Jenkins · 53rd Battalion · ICB</div>
+      <footer class="secret-memo-cite">— Recovered File #001 from the Chess City Release Act of 2078 —
+      Petition to Pull Records from the high-profile court case ALPINE&nbsp;vs.&nbsp;(ICB)&nbsp;Interplanetary&nbsp;Conduct&nbsp;Bureau</footer>
+    </div>
+  </section>
+
+  <!-- ══════════ BURN AFTER READING (restored 2026-07-14 — Nate: "bring the burn
+       function back"; countdown + flame wall + return to the surface, as before) ══════════ -->
+  <div class="secret-destruct" id="secret-destruct">
+    <div class="secret-destruct-label">⚠ &nbsp;READ CAREFULLY. THEN DESTROY.</div>
+    <button class="secret-burn-btn" id="secret-burn-btn" type="button" onclick="igniteSequence()">▸ &nbsp;INITIATE BURN SEQUENCE</button>
+  </div>
+
+  <footer class="secret-footer">
+    <a href="{{ '/' | relative_url }}" class="secret-return">⊘&nbsp;&nbsp;RETURN TO SURFACE</a>
+  </footer>
+
+</div>
+
+<!-- the burn hardware: countdown digits + the flame wall -->
+<div class="burn-count" id="burn-count" aria-hidden="true"><span id="burn-number"></span></div>
+<div class="burn-overlay" id="burn-overlay" aria-hidden="true">
+  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  <div class="burn-word" id="burn-word">✦ FRAGMENT RECOVERED — the fire keeps your secret</div>
+</div>
 
 <script>
 /* the found file develops like a photograph once you reach it — one-way */

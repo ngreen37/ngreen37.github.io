@@ -543,8 +543,12 @@
   93.8%         { transform: none; filter: none; }
 }
 
-body.theme-classified {
-  animation: crt-flicker 10s linear infinite, crt-glitch 24s step-end infinite;
+/* ⛑ ON MAIN, NOT BODY (2026-09-10). A transform/filter animation makes its element the
+   containing block for every position:fixed descendant. On body that pinned the Alpine File's
+   burn wall to the PAGE: 1874px of scrollable black under the footer, and the countdown drawn
+   off-screen. Body keeps crt-flicker (opacity only) from _pjcc-05. */
+.theme-classified .classified-main {
+  animation: crt-glitch 24s step-end infinite;
 }
 
 /* =============================================================
