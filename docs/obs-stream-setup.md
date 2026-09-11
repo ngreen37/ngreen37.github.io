@@ -77,13 +77,13 @@ monitor: you play on that, the PC quietly gets its own feed.
 
 | | Roughly | |
 |---|---|---|
-| **AVerMedia StreamLine MINI+ (GC311G2)** | **~$50** | **The pick.** 1080p60 in, 4K60 passthrough, plug-and-play |
+| **AVerMedia StreamLine MINI+ (GC311G2)** | **$80–90** | **The pick.** 1080p60 in, 4K60 passthrough, plug-and-play |
 | Generic USB 3.0 stick (MS2130-type) | $20–35 | ⚠ most have **no passthrough** — check the listing |
 | Elgato HD60 S refurbished | ~$75–90 | Elgato's own refurb program, full warranty |
 | Elgato HD60 X | ~$145 | the no-thinking default |
 
-⚠ Prices come from review round-ups, not retailer pages — check before ordering. Get **USB 3.0**
-(blue connector); USB 2.0 sticks drop to 1080p30.
+⚠ The pick's price is AVerMedia's own store (2026-09-11); the rest come from review round-ups —
+check before ordering. Get **USB 3.0** (blue connector); USB 2.0 sticks drop to 1080p30.
 
 ⭐ **HDCP is not a problem.** The Switch leaves copy protection off for games — it only switches
 on for Netflix-type apps. Switch 2 behaves the same and the major cards advertise support.
@@ -97,8 +97,8 @@ this hardware that's the harder one — ignore it.)*
 ### Steps once the card arrives
 
 ⚠ **YOU NEED A SECOND HDMI CABLE.** Right now you have one: Switch → monitor. The chain below
-uses two. Your existing cable covers leg 1; check whether the card ships with one for leg 2, and
-add a cheap cable (~$8) if not.
+uses two. Your existing cable covers leg 1; the GC311G2 ships with only a USB cable, so buy a
+cheap HDMI cable (~$8) for leg 2.
 
 1. **Switch dock HDMI OUT → capture card HDMI IN**
 2. **Capture card HDMI OUT → your second monitor** *(the passthrough — this is where you play)*
@@ -189,8 +189,8 @@ Then **Done**.
 | | Roughly | Why |
 |---|---|---|
 | **External hard drive, 2 TB** | ~$60 | Everything you own is on one disk with no copy. The only urgent item here. |
-| **Capture card with passthrough** | ~$50 | The only thing between you and streaming the Switch. |
-| **HDMI cable** | ~$8 | Only if the card does not include one — the passthrough leg needs a second cable. |
+| **Capture card with passthrough** | ~$80–90 | The only thing between you and streaming the Switch. |
+| **HDMI cable** | ~$8 | The card ships without one, and the passthrough leg needs a second cable. |
 
 ## Later
 
