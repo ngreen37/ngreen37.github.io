@@ -22,11 +22,13 @@ Every stream now also writes a file to your PC. Twitch's copy dies in 7 days and
 this one can't. **That file is the archive. Twitch and YouTube are just distribution.**
 
 **Settings → Output → Recording:**
-- **Recording Path** → a folder you'll remember
-- **Recording Format** → `mkv` (survives a crash; `mp4` can corrupt if OBS closes badly).
-  Convert later with **File → Remux Recordings** — takes seconds, re-encodes nothing.
+- **Recording Path** → a **Recordings** folder on the external drive once it arrives, so recordings
+  never fill your PC
+- **Recording Format** → **Hybrid MP4** (yours already is) — survives a crash like `mkv` and plays
+  everywhere with no remux.
 
-⚠ ~2–3 GB per hour. C: has ~124 GB free — roughly **40–60 hours** before it's full.
+⚠ About 2.8 GB per hour at your settings. C: has ~114 GB free — about **40 hours**. A 2 TB drive
+holds about **700**.
 
 ### A2 · Resolution, depending on what you're streaming
 
@@ -190,7 +192,7 @@ Then **Done**.
 |---|---|---|
 | **External hard drive, 2 TB** | ~$110–130 | Everything you own is on one disk with no copy, and your recordings fill it in about 40 hours. The only urgent item here. |
 | **Capture card with passthrough** | ~$80–90 | The only thing between you and streaming the Switch. |
-| **HDMI cable** | ~$8 | The card ships without one, and the passthrough leg needs a second cable. |
+| **HDMI cable** | your spare | The card ships without one, and the passthrough leg needs a second cable. |
 
 ## Later
 
