@@ -1,120 +1,155 @@
 # OBS — what's left
 
-*Rewritten 2026-08-19 once the wizard was finished. Everything already done has been cut; what
-follows is only what remains.*
+*Rewritten 2026-09-11. The gear lands around 09-19; this is only what's left, in the order you'll
+do it.*
 
 ## ✅ Already done — no action needed
 
-- OBS installed, Twitch account connected (`chesswild_official`)
-- Auto-Configuration Wizard run and applied
-- Encoder set to **Hardware (QSV)** — the right call on this machine
-- Enhanced Broadcasting / Multitrack left **off** — also right
+- OBS installed, Twitch account connected (`chesswild_official`), wizard run and applied
+- Encoder set to **Hardware (QSV)**, Multitrack **off** — both right on this machine
+- Recording format **Hybrid MP4** — survives a crash, plays everywhere, no remux
+- **Automatically record when streaming: ON** (2026-09-11). Every stream writes a file, and **that
+  file is the archive. Twitch and YouTube are just distribution.**
 
 ---
 
-## PART A — Two settings the wizard didn't ask about
+## PART A — Do now, before anything arrives
 
-### A1 · Record a local copy every time ← **do this one**
+You already own the mic, the MultiMix and its USB cable, so your voice can be working a week early.
 
-**Settings → General →** tick **☑ Automatically record when streaming**
+### A1 · Hook up the mic
 
-Every stream now also writes a file to your PC. Twitch's copy dies in 7 days and can be muted;
-this one can't. **That file is the archive. Twitch and YouTube are just distribution.**
+1. Mic → XLR cable → a **mic input** on the MultiMix. Plug in its power and switch it on.
+2. MultiMix **USB** (the square port) → your PC.
+3. ⚠ Windows may move ALL your sound to the mixer the moment it's plugged in. If the PC goes
+   quiet: **Settings → System → Sound → Output** → **Speaker/Headphone (Realtek(R) Audio)**.
+4. OBS → **Settings → Audio → Mic/Auxiliary Audio** → the device named **USB Audio CODEC**.
+5. Talk at stream volume and raise that channel's **Gain** knob until the **Mic/Aux** bar in OBS's
+   Audio Mixer peaks in the **yellow** — never red.
+   - Nothing at all? Flip the MultiMix's **phantom power (+48V)** switch. A condenser mic needs it;
+     an ordinary dynamic mic ignores it.
 
-**Settings → Output → Recording:**
-- **Recording Path** → a **Recordings** folder on the external drive once it arrives, so recordings
-  never fill your PC
-- **Recording Format** → **Hybrid MP4** (yours already is) — survives a crash like `mkv` and plays
-  everywhere with no remux.
+### A2 · Test it
 
-⚠ About 2.8 GB per hour at your settings. C: has ~114 GB free — about **40 hours**. A 2 TB drive
-holds about **700**.
+OBS → **Start Recording** → talk for 30 seconds → **Stop Recording** → **File → Show Recordings** →
+play the file.
+- Clear, in both ears? Done.
+- Only in one ear? **Edit → Advanced Audio Properties** → tick **Mono** on the mic.
 
-### A2 · Resolution, depending on what you're streaming
+### A3 · Count your free USB ports
 
-The wizard chose **1280x720 @ 60fps**. That's right for a game and wrong for your website.
+Arrival day needs **two more**: the drive and the capture card. Your HP's rectangular USB ports are
+USB 3, which both want. One short? The card also runs from one of the PC's **USB-C** ports on a
+USB-C cable — but only a cable rated for USB 3 data; a phone-charging cable may not be.
+
+---
+
+## PART B — Arrival day, in this order
+
+### B1 · The drive — first, about ten minutes
+
+1. Plug the Seagate into a USB port.
+2. **File Explorer → This PC** → right-click the drive → **Properties** → **File system**.
+   If it says **exFAT**: right-click → **Format** → **NTFS** → **Quick Format** → **Start**. It's
+   empty, and NTFS survives a knocked cable far better.
+3. Make a folder on it called **Recordings**.
+4. OBS → **Settings → Output → Recording Path** → that folder. At your settings it holds about
+   700 hours.
+5. Start menu → search **File History** → **Select drive** → the Seagate → **Turn on**. From now on
+   it copies your Desktop and Documents every hour — the website and the Godot project.
+
+Leave the drive plugged in. If it's unplugged when you go live, nothing records.
+
+### B2 · The arm and the headphones
+
+- Clamp the **PSA1+** to the desk edge (up to 70 mm thick). Its thread adaptor fits your mic's clip.
+- Put the mic about **a fist from your mouth**, aimed from slightly to one side so your breath goes
+  past it.
+- **Headphones → your PC's headphone jack, not the mixer's.** Sending PC sound through the mixer
+  can loop the game back into your mic channel.
+
+### B3 · The capture card
+
+```
+  Switch dock  --HDMI-->  capture card  --USB-->  PC  -->  OBS
+                               |
+                               +--HDMI (your spare)-->  Odyssey monitor   <- you play HERE
+```
+
+1. Switch dock **HDMI OUT** → card **HDMI IN** (the cable the Switch uses now)
+2. Card **HDMI OUT** → the Odyssey (your spare HDMI cable)
+3. Card **USB** → the PC
+4. Switch on, monitor on that input: the game appears, lag-free. **Play on the monitor, never on
+   OBS's preview** — the preview runs 100–300 ms behind your thumbs.
+5. OBS → **Scenes** panel → **`+`** → name it **Switch**. Then **Sources** → **`+`** → **Video
+   Capture Device** → **Device** → the card → **OK**. Drag its corners to fill the canvas.
+6. **Hear the game.** With passthrough, the Switch's own sound goes to the monitor, not to you.
+   **Edit → Advanced Audio Properties** → the capture card → **Monitor and Output**. Then
+   **Settings → Audio → Advanced → Monitoring Device** → **Speaker/Headphone (Realtek(R) Audio)**.
+   - No game bar moving in OBS's Audio Mixer? Right-click the card → **Properties** → tick **Use
+     custom audio device** → pick the card.
+7. **Test:** record a minute of play and watch it back. You should hear the game AND you, with you
+   louder. Game drowning you out? Pull the card's fader down in the **Audio Mixer**.
+
+⭐ A black picture is not HDCP — the Switch leaves copy protection off for games. Check the cables and
+the **Device** dropdown.
+
+---
+
+## PART C — Every stream
+
+**Before you go live:** the drive is plugged in, and **Settings → Video** matches what you're
+streaming:
 
 | Streaming… | Output (Scaled) Resolution | FPS | Why |
 |---|---|---|---|
 | **Cult of the Lamb / any game** | **1280x720** *(leave it)* | 60 | Motion matters more than text, and 6000 kbps at 720p is generous — it'll look clean. |
 | **chesswild.com / a chess board** | **1920x1080** | **30** | Static and full of small text. Scaling down makes it mushy; a still picture doesn't need 60fps. |
 
-Both live in **Settings → Video**. Change them between streams; it takes ten seconds.
+### The Stream Information box (title, category, tags, labels)
 
----
+This is the panel OBS opens before you go live. Everything in it is changeable mid-stream from
+Twitch’s own Stream Manager, so none of it is a commitment.
 
-## PART B — Streaming the Switch
+#### Title
+The headline of the stream. It shows above the video on `twitch.tv/chesswild_official`, in every
+browse and search listing, and beside your thumbnail anywhere somebody might find you. The **Go
+Live Notification** underneath is separate — that is the push your followers get.
+⭐ Put yourself in it, not only the product. People follow a person ([[the-edge-is-him]]).
 
-### ⚠⚠ Why the second monitor doesn't help — measured on your PC
+#### Category — the important one
+**The single biggest discovery field on Twitch.** People browse BY CATEGORY, so it is how anyone
+who does not already know you finds you at all.
+- Playing Cult of the Lamb → **Cult of the Lamb**
+- The site, or chess → **Chess**
+- Just talking → **Just Chatting**
 
-Windows currently sees **two displays**, both 1920x1080:
+It has to match what is actually on screen (a Twitch rule). Changing it mid-stream when you
+switch activities is normal and expected.
 
-```
-\\.\DISPLAY1   1920 x 1080   primary
-\\.\DISPLAY2   1920 x 1080
-```
+#### Tags — yes, use them
+Free, and pure discovery. Up to 10. Language is automatic, so no tag needed for it.
+Starting set: `ChessWild` · `Chess` · `IndieGames` · `CultOfTheLamb` · `SoloDev` · `FirstStream`
 
-**So your second monitor IS connected to your PC, and Windows is drawing a desktop on it right
-now.** Your Switch is plugged into a *different input on that same monitor*. When you press the
-monitor's input button, **the monitor** decides which one to show — the PC keeps drawing on its
-own input the entire time and never sees the Switch's.
+#### The three at the bottom
 
-**You can watch this happen:** add a Display Capture of monitor 2 in OBS, then switch the
-monitor over to the Switch. **OBS will still show your empty Windows desktop.** That isn't a bug
-or a wrong setting — the two signals never meet inside the monitor. A monitor takes pictures
-*in*; it doesn't send them anywhere.
-
-### What actually connects them
-
-```
-  Switch dock  --HDMI-->  capture card  --USB-->  PC  -->  OBS
-                               |
-                               \--HDMI passthrough--> your monitor   (get this)
-```
-
-**Buy one with HDMI passthrough.** Without it, the Switch's only picture goes to the PC and you
-play off OBS's preview — 100–300ms behind your thumbs. Fine for menus; **Cult of the Lamb's
-combat is dodge-timing and it would feel broken.** Passthrough sends a zero-lag copy to your
-monitor: you play on that, the PC quietly gets its own feed.
-
-| | Roughly | |
+| Field | What to do | Why |
 |---|---|---|
-| **AVerMedia StreamLine MINI+ (GC311G2)** | **$80–90** | **The pick.** 1080p60 in, 4K60 passthrough, plug-and-play |
-| Generic USB 3.0 stick (MS2130-type) | $20–35 | ⚠ most have **no passthrough** — check the listing |
-| Elgato HD60 S refurbished | ~$75–90 | Elgato's own refurb program, full warranty |
-| Elgato HD60 X | ~$145 | the no-thinking default |
+| **Content Classification** | **leave empty** for Cult of the Lamb | Twitch auto-applies labels for ESRB **Mature** games. Cult of the Lamb is **T for Teen** (Blood, Crude Humor, Fantasy Violence), so nothing is required. Add **Significant Profanity or Vulgarity** if you swear freely — that label is about YOU, not the game. ⭐ Getting it wrong is gentle: a warning, and Twitch applies the right label itself. It is not a suspension. |
+| **Rerun** | **leave unchecked** | Only for broadcasting a previously-recorded video instead of being live. |
+| **Branded Content** | **leave unchecked** | Only for a paid commercial relationship with a THIRD PARTY — sponsorship, paid placement, endorsement. ⚠ **Promoting your own site is NOT branded content.** Talking about ChessWild on your own channel is just talking about your work. |
 
-⚠ The pick's price is AVerMedia's own store (2026-09-11); the rest come from review round-ups —
-check before ordering. Get **USB 3.0** (blue connector); USB 2.0 sticks drop to 1080p30.
+Then **Done**.
 
-⭐ **HDCP is not a problem.** The Switch leaves copy protection off for games — it only switches
-on for Netflix-type apps. Switch 2 behaves the same and the major cards advertise support.
+### After a stream
 
-⭐ **On your PC a capture card is the EASY path, not the expensive one.** You have an i5-8400T
-with Intel UHD 630 — integrated graphics. With a card your PC never renders the game; it just
-receives a finished picture and encodes it, which is far lighter than running a game *and*
-encoding at once. *(I earlier suggested buying the game again on Steam as the cheap route. On
-this hardware that's the harder one — ignore it.)*
-
-### Steps once the card arrives
-
-⚠ **YOU NEED A SECOND HDMI CABLE.** Right now you have one: Switch → monitor. The chain below
-uses two. Your existing cable covers leg 1; the GC311G2 ships with only a USB cable, so buy a
-cheap HDMI cable (~$8) for leg 2.
-
-1. **Switch dock HDMI OUT → capture card HDMI IN**
-2. **Capture card HDMI OUT → your second monitor** *(the passthrough — this is where you play)*
-3. **Capture card USB → your PC**, ideally a blue USB 3.0 port
-4. Turn the Switch on, set the monitor to that input. You should see the game, lag-free.
-5. In OBS, **Sources** panel (bottom-LEFT) → **`+`** → **Video Capture Device** → OK
-6. **Device** → pick the capture card → **OK**
-7. The game appears in OBS. Drag the corners to fill the canvas.
-
-Game audio arrives over the same USB cable — no separate audio source needed for it.
+1. The recording is on the drive. **That's the master.**
+2. Twitch's copy lasts 7 days — download it only if your own recording failed.
+3. To put it on YouTube: upload the file from the drive. That's the whole process.
 
 ---
 
-## PART C — Your sources
+## Reference — sources you can add any time
 
 **Where the button is:** the **Sources** panel, **bottom-LEFT**, under "Scenes." The `+` is in
 its bottom-left corner.
@@ -135,64 +170,6 @@ a corner. It re-counts every 45 seconds, so it climbs live if somebody signs up 
 
 > `+` → **Window Capture** → OK → **Window** → your browser
 > *(open it to chesswild.com first or it won't be in the list)*
-
-**Your mic:** check the **Audio Mixer** panel first — it already shows **Mic/Aux**. If the green
-bar moves when you talk, you're set and need no source at all.
-
----
-
-## PART C2 — The Stream Information box (title, category, tags, labels)
-
-This is the panel OBS opens before you go live. Everything in it is changeable mid-stream from
-Twitch’s own Stream Manager, so none of it is a commitment.
-
-### Title
-The headline of the stream. It shows above the video on `twitch.tv/chesswild_official`, in every
-browse and search listing, and beside your thumbnail anywhere somebody might find you. The **Go
-Live Notification** underneath is separate — that is the push your followers get.
-⭐ Put yourself in it, not only the product. People follow a person ([[the-edge-is-him]]).
-
-### Category — the important one
-**The single biggest discovery field on Twitch.** People browse BY CATEGORY, so it is how anyone
-who does not already know you finds you at all.
-- Playing Cult of the Lamb → **Cult of the Lamb**
-- The site, or chess → **Chess**
-- Just talking → **Just Chatting**
-
-It has to match what is actually on screen (a Twitch rule). Changing it mid-stream when you
-switch activities is normal and expected.
-
-### Tags — yes, use them
-Free, and pure discovery. Up to 10. Language is automatic, so no tag needed for it.
-Starting set: `ChessWild` · `Chess` · `IndieGames` · `CultOfTheLamb` · `SoloDev` · `FirstStream`
-
-### The three at the bottom
-
-| Field | What to do | Why |
-|---|---|---|
-| **Content Classification** | **leave empty** for Cult of the Lamb | Twitch auto-applies labels for ESRB **Mature** games. Cult of the Lamb is **T for Teen** (Blood, Crude Humor, Fantasy Violence), so nothing is required. Add **Significant Profanity or Vulgarity** if you swear freely — that label is about YOU, not the game. ⭐ Getting it wrong is gentle: a warning, and Twitch applies the right label itself. It is not a suspension. |
-| **Rerun** | **leave unchecked** | Only for broadcasting a previously-recorded video instead of being live. |
-| **Branded Content** | **leave unchecked** | Only for a paid commercial relationship with a THIRD PARTY — sponsorship, paid placement, endorsement. ⚠ **Promoting your own site is NOT branded content.** Talking about ChessWild on your own channel is just talking about your work. |
-
-Then **Done**.
-
----
-
-## PART D — After a stream
-
-1. Your local recording is already saved. **That's the master.**
-2. Twitch's copy lasts 7 days. No need to download it — yours is better.
-3. To put it on YouTube: upload the local file. That's the whole process.
-
----
-
-## Still to buy
-
-| | Roughly | Why |
-|---|---|---|
-| **External hard drive, 2 TB** | ~$110–130 | Everything you own is on one disk with no copy, and your recordings fill it in about 40 hours. The only urgent item here. |
-| **Capture card with passthrough** | ~$80–90 | The only thing between you and streaming the Switch. |
-| **HDMI cable** | your spare | The card ships without one, and the passthrough leg needs a second cable. |
 
 ## Later
 
