@@ -188,7 +188,7 @@ Then **Done**.
 
 | | Roughly | Why |
 |---|---|---|
-| **External hard drive, 2 TB** | ~$60 | Everything you own is on one disk with no copy. The only urgent item here. |
+| **External hard drive, 2 TB** | ~$110–130 | Everything you own is on one disk with no copy, and your recordings fill it in about 40 hours. The only urgent item here. |
 | **Capture card with passthrough** | ~$80–90 | The only thing between you and streaming the Switch. |
 | **HDMI cable** | ~$8 | The card ships without one, and the passthrough leg needs a second cable. |
 
