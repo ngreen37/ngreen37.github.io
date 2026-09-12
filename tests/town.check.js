@@ -286,6 +286,22 @@ const server = http.createServer((req, res) => {
         'a NAMED SQUARE COSTS A CLEAN WIN — difficulty replaced the daily rhythm');
       ok(/if not clean:[\s\S]{0,200}return -2/.test(gs),
         '…and a helped win does NOT retire them: sloppy means go again, like a loss');
+      /* ⭐ BOTH CASTLES SINCE 2026-09-12 (his call). The kingside half was already here.
+         ⚠ EVERY CHECK BELOW PINS AN ARGUMENT, NOT A NAME — one that only asserted
+         castle_ready_long() exists would stay green with the rook left standing on a. */
+      /* ⚠ includes(), NOT a regex. Every one of these is a LITERAL, and a literal full of
+         parentheses is one escaping mistake away from an empty capture group that matches
+         nothing and passes for the wrong reason. */
+      ok(gs.includes('func castle_ready_long() -> bool:'),
+        'the Assembly offers the long castle too');
+      ok(gs.includes('open_at(4, HOME_RANK) and open_at(5, HOME_RANK) and open_at(6, HOME_RANK)'),
+        '…and it clears THREE squares — b is empty for the ROOK, though the king never stands on it');
+      ok(gs.includes('has_slot(4) and has_slot(0)') && gs.includes('cell_of(0) == Vector2i(7, HOME_RANK)'),
+        '…and it is the A-ROOK it checks, slot 0 on file 7  (⚠ our kingside is the LOW files)');
+      ok(gs.includes('out.append(Vector2i(5, HOME_RANK))'),
+        '…the king is offered c(5), two squares the other way');
+      ok(gs.includes('_put(0, Vector2i(4, HOME_RANK))'),
+        '…and the a-rook lands on d(4), or the king castles by himself');
       ok(/_poll\.timeout\.connect\(_tick\)/.test(gs) && /\bpoll_challenge\(\)/.test(gs),
         '…on a timer: the new tab means the town never reloads, so nothing else asks');
       ok(/if not OS\.has_feature\("web"\):\s*\n\s*add_child\(DevReferee/.test(zone),
@@ -1700,11 +1716,39 @@ const server = http.createServer((req, res) => {
         && /var arc := ArcadeFront\.new\(\)/.test(town2),
         'the Arcade has a front of its own');
       {
-        /* …and exactly one building does. A second subclass is a town coming apart. */
-        const subs = (town2.match(/extends TownDoor:/g) || []).length;
-        ok(subs === 3, '…and it is the only building that is not the shared cottage',
-          subs + ' TownDoor subclasses (ArcadeFront, CityGate, Rowboat)');
+        /* …and only the ones we chose do. A bespoke building nobody decided on is a town
+           coming apart.
+           ⛑ THIS WAS A COUNT (`subs === 3`) AND A COUNT PASSES ON A RENAME — swap
+           ArcadeFront for anything and three is still three. The NAMES are the check.
+           ⭐ THE THEATER JOINED THEM 2026-09-12, his call: a replay theater decked out like
+           the Arcade. Two bespoke buildings is the rule now; a third is a decision. */
+        const subs = [...town2.matchAll(/class (\w+) extends TownDoor:/g)]
+          .map((m) => m[1]).sort();
+        const want = ['ArcadeFront', 'CityGate', 'Rowboat', 'TheaterFront'];
+        ok(subs.join(' ') === want.join(' '),
+          '…and the bespoke buildings are exactly the ones we chose',
+          subs.join(' ') || 'none');
       }
+
+      /* ══ 31b · THE REPLAY THEATER ══════════════════════════════════════════════════
+         2026-09-12, Nate: *"Let's make a theater building — deck it out like you did the
+         arcade, and call it replay theater."* The room is the door's whole reason to
+         exist: the site can replay a game, but it cannot say "this is the game that won
+         you Crockett's square". */
+      ok(/class TheaterFront extends TownDoor:/.test(town2)
+        && /var t := TheaterFront\.new\(\)/.test(town2),
+        'the Replay Theater has a front of its own');
+      /* ⚠⚠ NOTHING ELSE IN THIS FILE RESOLVES A scene_path. The Academy's check is a
+         literal for the Academy, and the walker below it resolves SITE permalinks, not
+         scenes — so a door pointing at a room that does not exist would ship silently. */
+      ok(/scene_path = "res:\/\/theater\.tscn"/.test(town2)
+        && fs.existsSync(path.join(ROOT, 'private/docs/godot/chess_town', 'theater.tscn')),
+        '…and its door opens onto a scene that is really there');
+      ok(/const THEATER_AT := Vector2\(250\.0, 420\.0\)/.test(town2),
+        '…standing across the road from the Assembly it answers to',
+        'HALL_AT is (-250, 420); the road is x -44..44');
+      ok(/THEATER_AT\.y \+ 110\.0/.test(town2),
+        '…with its own spur, or it is a building in a field beside a road');
       ok(/sign_text = ""/.test(town2.slice(town2.indexOf('class ArcadeFront'))),
         '\u26a0 the marquee IS the sign, so the name is not also floating over the roof');
       {
