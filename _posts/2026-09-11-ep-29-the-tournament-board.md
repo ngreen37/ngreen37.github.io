@@ -9,7 +9,7 @@ tags: [Godot, Chess, Progress]
 
 {% include clip.html src="/assets/videos/elsa-bot-vs-ngreen37-2026-08-20.mp4" caption="Elsa-BOT vs ngreen37 — the Pirc, Austrian Attack" %}
 
-This is just a test board but not bad!  It's a game from a <ahem> 'competitor's' website, but... whatever.  
+This is just a test board but not bad!   
 
 ### What I worked on:
   - I feel like this is a big step.  This board.  I'll want to make my own pieces and upgrade the animation.  Maybe learn to talk over it. 
