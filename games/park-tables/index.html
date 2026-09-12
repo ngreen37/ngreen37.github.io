@@ -122,6 +122,7 @@ body_class: theme-hall
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-pgn.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-analysis.js' | relative_url }}"></script>
 {% comment %} Tap a live opponent's name to open their card — avatar, companion, trophies,
      and the credit gift (2026-08-13, widened 2026-08-19). Same module the leaderboards use;
@@ -2740,7 +2741,7 @@ body_class: theme-hall
        for the review "at least", so leaving is the thing you choose when you are done looking,
        not the first thing offered. */
     return ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
-             ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> ' : '') +
+             ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> <button class="pjcc-btn-ghost" id="pt-bot-pgn">⧉ Copy PGN</button> ' : '') +
       ((window.PTTown && PTTown.from()) ?
         '<button class="pjcc-btn" data-town-back>◂ Back to Checker Town</button> ' : '') +
       // ⚠ THE STOCKFISH BOARD, FINISHED GAMES ONLY — unchanged, and the rule it obeys is
@@ -2979,6 +2980,17 @@ body_class: theme-hall
     };
     var mu = document.getElementById('pt-bot-mull');
     if (mu) mu.onclick = function(){ botMulligan(); };
+    var pg = document.getElementById('pt-bot-pgn');
+    /* A study carries fen0. A PGN without it replays a game that never happened. */
+    if (pg) pg.onclick = function(){
+      var pf = PJCC.getProfile(), nm = (pf && pf.codename) || 'You';
+      var t = window.PJCCPgn && PJCCPgn.toPGN(st.moves || '', {
+        event: 'Park Tables', date: Date.now(), fen: st.fen0 || null,
+        whiteName: white ? nm : bot.name, blackName: white ? bot.name : nm,
+        result: st.result });
+      if (!t) { toast('Nothing to copy yet.'); return; }
+      PJCCPgn.copy(t).then(function(ok){ toast(ok ? 'PGN copied.' : 'Could not copy.'); });
+    };
     var rv = document.getElementById('pt-bot-review');
     if (rv) rv.onclick = function(){
       /* ⭐ RATINGS TOO (2026-08-14, Nate: "can we put a rating on the game review for each
@@ -3463,7 +3475,7 @@ body_class: theme-hall
               esc(white ? m.black_name : m.white_name) + '</b></span><span class="pt-row-state">' +
               (m.result === '1/2-1/2' ? 'draw' : won ? '✓ won' : 'lost') + ' · ' + esc(m.win_reason || '') +
               myDelta(m, white) + '</span>' +
-              (canReview && hasMoves ? '<button class="pt-review-btn" data-review="' + m.id + '">🔍 Review</button>' : '') +
+              (canReview && hasMoves ? '<button class="pt-review-btn" data-review="' + m.id + '">🔍 Review</button>' : '') + (hasMoves ? '<button class="pt-review-btn" data-pgn="' + m.id + '">⧉ PGN</button>' : '') +
               (canAnalyse && hasMoves ? /* "Analyse" → "Analyze" by hand, 2026-08-04: the automated spelling sweep deliberately
                  skips `analyse` because `data-analyse` and `pt-bot-analyse` are IDENTIFIERS and a word
                  boundary does not protect them (`-` is a non-word character). The attribute keeps its
@@ -3494,6 +3506,16 @@ body_class: theme-hall
             e.stopPropagation();
             var m = finishedById[b.getAttribute('data-review')];
             if (m && window.PJCCReview) PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result });
+          };
+        });
+        Array.prototype.forEach.call(app.querySelectorAll('[data-pgn]'), function (b) {
+          b.onclick = function(e){
+            e.stopPropagation();
+            var m = finishedById[b.getAttribute('data-pgn')];
+            var t = m && window.PJCCPgn && PJCCPgn.toPGN(m.moves, { event: 'Park Tables',
+              date: m.updated_at, whiteName: m.white_name, blackName: m.black_name, result: m.result });
+            if (!t) { toast('Nothing to copy yet.'); return; }
+            PJCCPgn.copy(t).then(function(ok){ toast(ok ? 'PGN copied.' : 'Could not copy.'); });
           };
         });
         Array.prototype.forEach.call(app.querySelectorAll('[data-analyse]'), function (b) {
@@ -3767,7 +3789,7 @@ body_class: theme-hall
           (m.status === 'active' ? '<button class="pjcc-btn-ghost pt-resign" id="pt-resign">Resign</button>' : '') +
           (m.status === 'open' && white ? '<button class="pjcc-btn-ghost pt-resign" id="pt-withdraw">Withdraw the table</button>' : '') + '</div>'
         : (window.PJCCReview && PJCCReview.enabled() && (m.moves || '').trim()
-            ? '<div class="pt-tools"><button class="pjcc-btn" id="pt-review">🔍 Review this game</button></div>'
+            ? '<div class="pt-tools"><button class="pjcc-btn" id="pt-review">🔍 Review this game</button><button class="pjcc-btn-ghost" id="pt-pgn">⧉ Copy PGN</button></div>'
             : ''));
 
     // their color, once we know it — cached by name, so the ~4s poll asks nobody twice
@@ -3793,6 +3815,13 @@ body_class: theme-hall
         onView: function(v){ viewPly = v ? v.ply : null; renderTable(); }
       });
     } else if (nav) { nav.destroy(); nav = null; }
+    var pg2 = document.getElementById('pt-pgn');
+    if (pg2) pg2.onclick = function(){
+      var t = window.PJCCPgn && PJCCPgn.toPGN(m.moves, { event: 'Park Tables',
+        date: m.updated_at, whiteName: m.white_name, blackName: m.black_name, result: m.result });
+      if (!t) { toast('Nothing to copy yet.'); return; }
+      PJCCPgn.copy(t).then(function(ok){ toast(ok ? 'PGN copied.' : 'Could not copy.'); });
+    };
     var rv = document.getElementById('pt-review');
     if (rv) rv.onclick = function(){ PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result }); };
     var fl = document.getElementById('pt-flag');

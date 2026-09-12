@@ -26,6 +26,7 @@
 <script src="/assets/js/pjcc-openings.js"></script>
 <script src="/assets/js/pjcc-replay.js"></script>
 <script src="/assets/js/pjcc-game-review.js"></script>
+<script src="/assets/js/pjcc-pgn.js"></script>
 <!-- the ONE Gauntlet door (2026-07-27) — the same _sass partial the games hall compiles,
      served standalone so this shell can wear it. See assets/css/gauntlet-door.scss. -->
 <link rel="stylesheet" href="/assets/css/gauntlet-door.css">
@@ -1015,6 +1016,24 @@ function endGame(result){
                                   whiteRating: youWhite ? youElo : oppElo,
                                   blackRating: youWhite ? oppElo : youElo,
                                   result: revResult });
+    });
+    /* The same game, as text. Captured here for the reason the review above is: G belongs
+       to the next match the moment one starts. */
+    addBtn(row, '⧉ COPY PGN', 'btn-ghost', function(e){
+      var btn = e && e.currentTarget, was = btn && btn.textContent;
+      var t = window.PJCCPgn && PJCCPgn.toPGN(revMoves, {
+        event: 'The Gauntlet', date: Date.now(),
+        whiteName: youWhite ? youName : oppName,
+        blackName: youWhite ? oppName : youName,
+        whiteRating: youWhite ? youElo : oppElo,
+        blackRating: youWhite ? oppElo : youElo,
+        result: revResult });
+      if (!t) { if (btn) btn.textContent = 'NO PGN'; return; }
+      PJCCPgn.copy(t).then(function(ok){
+        if (!btn) return;
+        btn.textContent = ok ? '✓ COPIED' : 'COPY FAILED';
+        setTimeout(function(){ btn.textContent = was; }, 1800);
+      });
     });
   }
   addBtn(row, 'THE LADDER', 'btn-ghost', showLadder);
