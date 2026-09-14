@@ -46,9 +46,15 @@
   .beam-batt > i { display: block; height: 100%; width: 100%; transform-origin: left center;
     background: linear-gradient(90deg, #ff6b6b, var(--gold) 55%, #6bffb8); }
   .bf-torch { position: absolute; left: 38%; top: 70px; z-index: 7; font-size: 30px; cursor: pointer;
+    background: none; border: 0; padding: 0; color: inherit; border-radius: 50%;
     user-select: none; -webkit-user-select: none; touch-action: manipulation; line-height: 1;
     filter: drop-shadow(0 0 7px rgba(255,240,180,0.75)); animation: bf-drift 7.5s ease-in-out infinite; }
   .bf-torch.caught { display: none; }
+  .bf-torch:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    .bf-torch { animation: none; transform: translate(40px, 24px); }
+    .bf-firefly { display: none; }
+  }
   .bf-torch::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; }
   @keyframes bf-drift { 0%{transform:translate(0,130px) rotate(-16deg);opacity:0;} 10%{opacity:1;} 50%{transform:translate(78px,36px) rotate(12deg);opacity:1;} 90%{opacity:1;} 100%{transform:translate(8px,-70px) rotate(-8deg);opacity:0;} }
   /* Afterglow — recently-swept text lingers as a soft, lagging halo. */
@@ -129,6 +135,8 @@
     font-size:11px; font-weight:bold; cursor:pointer; font-family:inherit; }
   .me-tier.active { background:#2a1a5e; border-color:var(--gold); color:var(--gold); }
   .me-clock { display:flex; justify-content:space-between; font-family:'Courier New',monospace; font-size:14px; margin:4px 0; }
+  /* ⚠ display:flex beats the hidden attribute: without this a Blitz-off game showed a frozen 3:00 */
+  .me-clock[hidden] { display:none; }
   .me-clock .cw { color:#fff; } .me-clock .cb { color:#ff8fd0; } .me-clock b.low { color:var(--bad); }
   .me-opt { display:flex; gap:10px; justify-content:center; font-size:12px; color:#b79aff; margin-bottom:6px; }
   .me-opt label { cursor:pointer; user-select:none; }
@@ -146,6 +154,9 @@
   .me-lab{ display:flex; align-items:center; justify-content:center; font-size:8px; color:#9a7fd4; background:#140c2d; }
   .me-log { background:#120a26; border:1px solid #2a1d54; border-radius:8px; padding:8px; font-size:12.5px; line-height:1.5;
     height:74px; overflow-y:auto; text-align:left; margin:8px 0; font-family:'Courier New',monospace; color:#c9a7ff; }
+  .me-promo { display:flex; gap:6px; justify-content:center; align-items:center; margin:6px 0; color:var(--gold); font-weight:bold; font-size:13px; }
+  .me-promo[hidden] { display:none; }
+  .me-promo button { font-size:22px; padding:2px 12px; line-height:1.2; }
   .me-status { min-height:22px; font-weight:bold; font-size:14px; }
   .me-status.good{ color:var(--good);} .me-status.bad{ color:var(--bad);} .me-status.think{ color:#9a7fd4;}
   .confetti { position:fixed; inset:0; pointer-events:none; z-index:25; }
@@ -196,7 +207,7 @@
     <div class="beam-batt" id="beam-batt"><i></i></div>
     <div class="beam-lock" id="beam-lock">🔒 locked</div>
   </div>
-  <span class="bf-torch" id="bf-torch" title="Catch the flashlight!">🔦</span>
+  <button type="button" class="bf-torch" id="bf-torch" aria-label="Catch the flashlight">🔦</button>
   <span class="bf-firefly" style="left:18%;top:120px;animation-delay:-1s"></span>
   <span class="bf-firefly" style="left:72%;top:90px;animation-delay:-4s;animation-duration:11s"></span>
   <span class="bf-firefly" style="left:46%;top:140px;animation-delay:-7s;animation-duration:8s"></span>
@@ -235,6 +246,7 @@
       <label><input type="checkbox" id="me-narrate"> 🔊 Narrate moves</label>
     </div>
     <div id="me-board"></div>
+    <div class="me-promo" id="me-promo" hidden>Promote to <button data-p="Q" aria-label="Queen">♕</button><button data-p="R" aria-label="Rook">♖</button><button data-p="B" aria-label="Bishop">♗</button><button data-p="N" aria-label="Knight">♘</button></div>
     <div class="me-clock" id="me-clock" hidden><span class="cw">You <b id="clk-w">3:00</b></span><span class="cb">CEO <b id="clk-b">3:00</b></span></div>
     <div class="me-status think" id="me-status">You are White. Make your move.</div>
     <div class="me-log" id="me-log"></div>
@@ -455,7 +467,8 @@ function genMate(diff){
     for(var k=0;k<npieces;k++){ var sq=freeSq(b); if(sq<0){ok=false;break;} b[sq]= pool[rnd(pool.length)]; }
     if(!ok) continue;
     // a few black blockers at higher diff (own pawns near king) to make it less trivial
-    if(diff>=5){ var bp=rf(bk); for(var d2=0;d2<8 && RAND()<0.4;d2++){ var nr=bp[0]+KGJ[d2][0], nf=bp[1]+KGJ[d2][1]; if(onb(nr,nf)&&!b[nr*8+nf]) b[nr*8+nf]='p'; } }
+    // ⚠ rows 1-6 only: a pawn on rank 1 or 8 is a position no game can reach
+    if(diff>=5){ var bp=rf(bk); for(var d2=0;d2<8 && RAND()<0.4;d2++){ var nr=bp[0]+KGJ[d2][0], nf=bp[1]+KGJ[d2][1]; if(onb(nr,nf)&&nr>=1&&nr<=6&&!b[nr*8+nf]) b[nr*8+nf]='p'; } }
     var S={b:b, turn:'w', cast:{K:false,Q:false,k:false,q:false}, ep:-1};
     if(inCheck(S,'b')) continue;             // black shouldn't already be in check
     if(inCheck(S,'w')) continue;             // white king safe
@@ -630,8 +643,12 @@ if (RUN_UI) (function(){
   /* ---- Daily seeded blindfold (shared by everyone) ---- */
   function todayStamp(){ return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
   function dailySeed(){ var s=todayStamp(), h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
-  function dailyDone(){ try{ var o=JSON.parse(localStorage.getItem('pjcc.bf.daily')); return !!(o && o.day===todayStamp()); }catch(e){ return false; } }
-  function markDailyDone(solved){ try{ localStorage.setItem('pjcc.bf.daily', JSON.stringify({ day:todayStamp(), solved:solved })); }catch(e){} }
+  function dailyRec(){ try{ var o=JSON.parse(localStorage.getItem('pjcc.bf.daily')); return (o && o.day===todayStamp()) ? o : null; }catch(e){ return null; } }
+  // a record from before `done` existed was only ever written on a solve
+  function dailyDone(){ var o=dailyRec(); return !!(o && (o.done || 'solved' in o)); }
+  function markDaily(f){ try{ var o=dailyRec() || { day:todayStamp() }; for(var k in f) o[k]=f[k]; localStorage.setItem('pjcc.bf.daily', JSON.stringify(o)); }catch(e){} }
+  // a slip on today's Daily is written down, so leaving the mode and coming back cannot wash it
+  function slip(){ curMistake=true; if(mode==='daily' && prob) markDaily({ slip:true }); }
   function beamSecondsForMode(){ return mode==='speed' ? 3.6 : mode==='describe' ? 9 : 6.5; }
   function comboMult(){ return 1 + Math.floor(combo/3) * (mode==='speed' ? 1 : 0.5); }
   function updateCombo(){ var chip=document.getElementById('combo-chip'); var show = combo>=2 || mode==='speed';
@@ -648,7 +665,8 @@ if (RUN_UI) (function(){
       setMsg('Daily complete. New shared position at midnight.',''); renderMindsEye(); return;
     }
     var d, p;
-    if(mode==='daily'){ var seed=dailySeed(); d=4+(seed%4); p=withSeed(seed, function(){ return genMate(d); }); }
+    document.getElementById('reveal').disabled=false;
+    if(mode==='daily'){ var seed=dailySeed(); d=4+(seed%4); p=withSeed(seed, function(){ return genMate(d); }); var rec=dailyRec(); curMistake=!!(rec && rec.slip); }
     else { d=effDiff(); p=genFor(d); }
     prob={ S:p.S, goal:p.goal, sols:p.sols, from:nameFromSq(p.sols[0].from), to:nameFromSq(p.sols[0].to),
       clue: describeBoard(p.S.b), d:d };
@@ -695,26 +713,46 @@ if (RUN_UI) (function(){
       localStorage.setItem('pjcc.blindfold.missed.v1', JSON.stringify(arr.slice(0,15))); }catch(e){}
   }
 
-  /* ---- Describe-only: type the move ---- */
-  function normMove(s){ return String(s).trim().toLowerCase().replace(/[+#x!?\s.=]/g,'').replace(/(.)(q|r|b|n)$/, function(m,a,b){ return /[a-h][18]/.test(a+ '') ? a : m; }); }
-  function acceptStrings(m){
-    var from=nameFromSq(m.from), to=nameFromSq(m.to), pc=prob.S.b[m.from], type=pc?pc.toLowerCase():'p';
-    var letter = type==='p' ? '' : type.toUpperCase();
-    var arr=[from+to, to, letter+to, letter+from[0]+to];
-    if(type==='p') arr.push(from[0]+to);
-    if(m.promo) arr.push(from+to+m.promo, to+m.promo);
-    return arr.map(normMove);
+  /* ---- Describe-only: type the move ----
+     SAN (Qh5, Nbd7, exd5, e8=Q), coordinates (d1h5) or castling. Returns EVERY legal move the text
+     can mean: a bare square is a pawn move, and a lowercase b is read as both bishop and b-pawn. */
+  function typedMoves(S, raw){
+    var t=String(raw).replace(/[\s+#!?]/g,''), legal=legalMoves(S), out=[], seen={};
+    function take(m){ var k=m.from+'>'+m.to+(m.promo||''); if(!seen[k]){ seen[k]=1; out.push(m); } }
+    if(!t) return out;
+    if(/^[o0]-?[o0]-?[o0]$/i.test(t)){ legal.forEach(function(m){ if(m.castle==='Q'||m.castle==='q') take(m); }); return out; }
+    if(/^[o0]-?[o0]$/i.test(t)){ legal.forEach(function(m){ if(m.castle==='K'||m.castle==='k') take(m); }); return out; }
+    var u=t.replace(/[x=:-]/gi,''), promo=null, pm=u.match(/^(.*[18])([qrbn])$/i);
+    if(pm){ u=pm[1]; promo=pm[2].toLowerCase(); }
+    function promoOk(m){ return !m.promo ? !promo : m.promo.toLowerCase()===(promo||'q'); }
+    var co=u.match(/^([a-h][1-8])([a-h][1-8])$/i);
+    if(co){ legal.forEach(function(m){ if(nameFromSq(m.from)===co[1].toLowerCase() && nameFromSq(m.to)===co[2].toLowerCase() && promoOk(m)) take(m); }); return out; }
+    var sm=u.match(/^([KQRBNkqrbn]?)([a-hA-H]?)([1-8]?)([a-hA-H][1-8])$/);
+    if(!sm) return out;
+    var lead=sm[1], ff=sm[2].toLowerCase(), fr=sm[3], to=sm[4].toLowerCase(), reads=[];
+    if(lead){ reads.push({ pc:lead.toLowerCase(), f:ff, r:fr }); if(lead==='b' && !ff) reads.push({ pc:'p', f:'b', r:fr }); }
+    else reads.push({ pc:'p', f:ff, r:fr });
+    reads.forEach(function(R){ legal.forEach(function(m){
+      var fn=nameFromSq(m.from);
+      if(S.b[m.from].toLowerCase()!==R.pc || nameFromSq(m.to)!==to) return;
+      if((R.f && fn[0]!==R.f) || (R.r && fn[1]!==R.r) || !promoOk(m)) return;
+      take(m); }); });
+    return out;
   }
+  function isSol(m){ return prob.sols.some(function(s){ return s.from===m.from && s.to===m.to && (s.promo||'')===(m.promo||''); }); }
   function submitDescribe(){
     if(phase==='done' || !prob) return;
-    var n=normMove(document.getElementById('describe-in').value);
-    if(!n){ return; }
-    var ok = prob.sols.some(function(m){ return acceptStrings(m).indexOf(n)>=0; });
-    if(ok){ document.getElementById('board').classList.remove('no-board'); revealAll(); clearMarks();
-      sqEls[prob.from].classList.add('from'); sqEls[prob.to].classList.add('target');
+    var di=document.getElementById('describe-in'), raw=di.value;
+    if(!raw.trim()) return;
+    var ms=typedMoves(prob.S, raw), hits=ms.filter(isSol);
+    // text that names no legal move, or two different ones, is a typing problem — not a slip
+    if(!ms.length){ setMsg('That is not a legal move in this position — check the squares.',''); return; }
+    if(ms.length>1 && hits.length!==ms.length){ setMsg('More than one move fits that — add the piece letter or its starting square.',''); return; }
+    if(hits.length){ document.getElementById('board').classList.remove('no-board'); revealAll(); clearMarks();
+      sqEls[nameFromSq(hits[0].from)].classList.add('from'); sqEls[nameFromSq(hits[0].to)].classList.add('target');
       phase='done'; finishSolve(!curMistake); }
-    else { curMistake=true; setMsg('Not the move — re-read the clue and try again.','bad');
-      var di=document.getElementById('describe-in'); di.value=''; try{ di.focus(); }catch(e){} }
+    else { slip(); setMsg('Not the move — re-read the clue and try again.','bad');
+      di.value=''; try{ di.focus(); }catch(e){} }
   }
   document.getElementById('describe-go').onclick=submitDescribe;
   document.getElementById('describe-in').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); submitDescribe(); } });
@@ -735,13 +773,13 @@ if (RUN_UI) (function(){
     if(phase==='done' || typingMode()) return;
     if(phase==='from'){
       if(solutionFromSquares()[sq]){ place(sq, pieceAt(sq)); sqEls[sq].classList.add('from'); prob.fromSq=sq; phase='to'; setMsg('Good — now click where it goes.','good'); }
-      else { curMistake=true; if(pieceAt(sq)){ place(sq,pieceAt(sq)); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.','bad'); } else setMsg('Nothing on that square. Re-read the clue.','bad');
+      else { slip(); if(pieceAt(sq)){ place(sq,pieceAt(sq)); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.','bad'); } else setMsg('Nothing on that square. Re-read the clue.','bad');
         setTimeout(function(){ if(phase==='from'){ clearPieces(); clearMarks(); } }, 850); }
     } else if(phase==='to'){
       var validTo = prob.sols.some(function(s){ return nameFromSq(s.from)===prob.fromSq && nameFromSq(s.to)===sq; });
       if(validTo){ sqEls[prob.fromSq].innerHTML=''; place(sq, pieceAt(prob.fromSq)); clearMarks(); sqEls[sq].classList.add('target');
         revealAll(); phase='done'; finishSolve(!curMistake); }
-      else { curMistake=true; sqEls[sq].classList.add('bad'); setMsg('Not the winning square — try again.','bad'); setTimeout(function(){ sqEls[sq].classList.remove('bad'); }, 650); }
+      else { slip(); sqEls[sq].classList.add('bad'); setMsg('Not the winning square — try again.','bad'); setTimeout(function(){ sqEls[sq].classList.remove('bad'); }, 650); }
     }
   }
   function revealAll(){ var b=prob.S.b; for(var i=0;i<64;i++){ if(b[i]){ var nm=nameFromSq(i); if(!sqEls[nm].innerHTML) place(nm,b[i]); } } }
@@ -752,19 +790,22 @@ if (RUN_UI) (function(){
     else { combo=0; st.streak=0; st.diff=Math.max(1, st.diff-0.5); setMsg('Correct — but counted as a slip.','good'); }
     if(st.solved>st.best) st.best=st.solved;
     if(!st.eye && st.solved>=UNLOCK_AT){ st.eye=true; setMsg('THE MIND’S EYE is unlocked — scroll down.','good'); }
-    save(); updateCombo();
+    save(); updateCombo(); document.getElementById('reveal').disabled=true;
     document.getElementById('solved').textContent=st.solved; document.getElementById('streak').textContent=st.streak;
     document.getElementById('diff-fill').style.width=(st.diff/10*100)+'%';
     document.getElementById('next').disabled=false;
     var motif={}; try{ motif=JSON.parse(localStorage.getItem('pjcc.blindfold.stats.v1'))||{}; }catch(e){}
     if(window.PJCC){
-      if(mode==='daily'){ markDailyDone(clean); PJCC.saveScore('blindfold', st.solved, { seed: todayStamp(), credits: clean?2:1, data:{ daily:true, motif:motif } }); }
+      if(mode==='daily'){ markDaily({ done:true, solved:clean }); PJCC.saveScore('blindfold', st.solved, { seed: todayStamp(), credits: clean?2:1, data:{ daily:true, motif:motif } }); }
       else { var creds = mode==='speed' ? Math.min(5, 1+Math.floor(combo/3)) : 1; PJCC.saveScore('blindfold', st.solved, { credits:creds, data:{ streak:st.streak, diff:Math.round(st.diff), motif:motif } }); }
     }
     renderMindsEye();
   }
   function failReveal(){ // "Reveal position": show + treat as slip; diff eases
-    if(!prob) return;
+    // after a solve the board is already shown, and a reveal must not cost the streak just earned
+    if(!prob || phase==='done') return;
+    if(mode==='daily') markDaily({ done:true, slip:true, solved:false });
+    document.getElementById('reveal').disabled=true;
     document.getElementById('board').classList.remove('no-board'); document.getElementById('describe-wrap').hidden=true;
     recordStat(prob.goal, false); recordMiss(); combo=0; updateCombo();
     revealAll(); clearMarks(); sqEls[prob.from].classList.add('from'); sqEls[prob.to].classList.add('target');
@@ -808,6 +849,8 @@ if (RUN_UI) (function(){
   function resetBeam(){ beamOff(); if(battFill) battFill.style.transform='scaleX(0)'; if(clueAfter) clueAfter.innerHTML = prob ? prob.clue : ''; }
 
   torchEl.addEventListener('pointerdown', function(e){ e.preventDefault(); catchTorch(); });
+  // Enter / Space on the focused button arrive as a click with no pointer
+  torchEl.addEventListener('click', function(){ if(!beamLit) catchTorch(); });
   // long-press to LOCK the beam in place; a quick tap while locked releases it
   var pressT=null, pressStart=0;
   clueEl.addEventListener('pointerdown', function(e){ if(!beamLit) return; pressStart=Date.now(); if(!beamLocked) setBeamPos(e.clientX,e.clientY);
@@ -901,7 +944,15 @@ if (RUN_UI) (function(){
     for(var f2=0;f2<8;f2++){ var l=document.createElement('div'); l.className='me-lab'; l.textContent=FILES[f2]; meBoardEl.appendChild(l); }
   }
   function openMindsEye(){ document.getElementById('me-overlay').classList.remove('hidden'); newMe(); }
-  function newMe(){ ME=parseFEN(START_FEN); mePeekT=0; meSel=null; meBusy=false; meLast=null; meMoves=[]; meEnded=false; mePeeked=false;
+  var mePromo=null;
+  function closePromo(){ mePromo=null; document.getElementById('me-promo').hidden=true; }
+  function choosePromo(letter){
+    if(!mePromo || meEnded) return; var P=mePromo; closePromo(); meBusy=false;
+    for(var i=0;i<P.lm.length;i++){ if(P.lm[i].from===P.from && P.lm[i].to===P.to && P.lm[i].promo===letter){ doMe(P.lm[i], true); return; } }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#me-promo button'), function(b){ b.onclick=function(){ choosePromo(b.dataset.p); }; });
+  document.addEventListener('keydown', function(e){ if(!mePromo) return; var k=String(e.key).toUpperCase(); if('QRBN'.indexOf(k)>=0 && k.length===1){ e.preventDefault(); choosePromo(k); } });
+  function newMe(){ closePromo(); ME=parseFEN(START_FEN); mePeekT=0; meSel=null; meBusy=false; meLast=null; meMoves=[]; meEnded=false; mePeeked=false;
     meHalf=0; meReps={}; bumpMeRep();
     if (window.PJCCGauntletEngine){ PJCCGauntletEngine.warmup(); PJCCGauntletEngine.newGame(); }
     meBlitz=document.getElementById('me-blitz').checked; mePurist=document.getElementById('me-purist').checked;
@@ -922,14 +973,23 @@ if (RUN_UI) (function(){
     if(w){ w.textContent=fmtClock(meClockW); w.className=meClockW<=20?'low':''; }
     if(b){ b.textContent=fmtClock(meClockB); b.className=meClockB<=20?'low':''; } }
   function stopMeClock(){ if(meClockH){ clearInterval(meClockH); meClockH=null; } }
-  function startMeClock(){ stopMeClock(); meClockH=setInterval(function(){
+  function loneKing(b, color){ for(var i=0;i<64;i++){ var p=b[i]; if(p && colorOf(p)===color && p.toLowerCase()!=='k') return false; } return true; }
+  var meTickAt=0;
+  // wall time on a 100ms tick: a move made between two whole-second ticks used to cost nothing
+  function startMeClock(){ stopMeClock(); meTickAt=Date.now(); meClockH=setInterval(function(){
     if(meEnded || !ME){ stopMeClock(); return; }
-    if(ME.turn==='w') meClockW-=1; else meClockB-=1; renderClock();
-    if(meClockW<=0){ meClockW=0; renderClock(); endReveal(); setMeStatus('Your flag fell — '+TIER_LABEL[meTier]+' wins on time.','bad'); }
-    else if(meClockB<=0){ meClockB=0; renderClock(); winMindsEye(true); }
-  }, 1000); }
+    var now=Date.now(), dt=(now-meTickAt)/1000; meTickAt=now;
+    if(ME.turn==='w') meClockW-=dt; else meClockB-=dt; renderClock();
+    // a flag only loses to a side that could still mate; a lone king cannot
+    if(meClockW<=0){ meClockW=0; renderClock(); endReveal();
+      if(loneKing(ME.b,'b')) setMeStatus('Your flag fell, but '+TIER_LABEL[meTier]+' has only a king. Drawn.','think');
+      else setMeStatus('Your flag fell — '+TIER_LABEL[meTier]+' wins on time.','bad'); }
+    else if(meClockB<=0){ meClockB=0; renderClock();
+      if(loneKing(ME.b,'w')){ endReveal(); setMeStatus(TIER_LABEL[meTier]+' ran out of time, but you have only a king. Drawn.','think'); }
+      else winMindsEye(true); }
+  }, 100); }
   /* ---- post-game reveal + replay ---- */
-  function endReveal(){ if(meEnded) return; meEnded=true; meBusy=true; stopMeClock();
+  function endReveal(){ if(meEnded) return; meEnded=true; meBusy=true; stopMeClock(); closePromo();
     meLog('<div style="color:#9a7fd4;margin-top:4px">— You played vs <b style="color:#ff8fd0">'+TIER_LABEL[meTier]+'</b>. Opening: <b style="color:#F5C518">'+meBookName+'</b> · '+Math.ceil(meMoves.length/2)+' moves. Hit ▶ Replay.</div>');
     document.getElementById('me-replay').hidden = false;
   }
@@ -967,14 +1027,20 @@ if (RUN_UI) (function(){
     var from=sqFromName(meSel), to=i, lm=legalMoves(ME), found=null;
     for(var z=0;z<lm.length;z++){ if(lm[z].from===from && lm[z].to===to){ found=lm[z]; break; } }
     if(!found){ if(ME.b[i] && isW(ME.b[i])){ meSel=sq; drawMe(); return; } setMeStatus('Illegal move. Try again.','bad'); meSel=null; drawMe(); return; }
-    if(found.promo){ found=Object.assign({},found,{promo:'Q'}); /* auto-queen for simplicity */ for(var z2=0;z2<lm.length;z2++){ if(lm[z2].from===from&&lm[z2].to===to&&lm[z2].promo==='Q'){ found=lm[z2]; break; } } }
+    // a promotion asks which piece: underpromoting is sometimes the only move that is not a stalemate
+    if(found.promo){ mePromo={ lm:lm, from:from, to:to }; meBusy=true; meSel=null; drawMe();
+      document.getElementById('me-promo').hidden=false; setMeStatus('Promote to which piece? Q, R, B or N.','think'); return; }
     doMe(found, true);
   }
   function doMe(m, isPlayer){
     var san = moveSAN(ME, m);
     if(meNarrate) speak((ME.turn==='w' ? 'You play ' : 'CEO plays ') + spokenSAN(san));
-    if(ME.turn==='w'){ meLog('<div><b style="color:#F5C518">'+moveNumber()+'.</b> '+san+' '); }
-    else { meLog('<span style="color:#ff8fd0">'+san+'</span></div>'); }
+    // innerHTML closes an open <div> on the spot, so a reply is appended INTO its row, never after it
+    var logEl=document.getElementById('me-log');
+    if(ME.turn==='w'){ var row=document.createElement('div'); row.innerHTML='<b style="color:#F5C518">'+(Math.floor(meMoves.length/2)+1)+'.</b> '+san+' '; logEl.appendChild(row); }
+    else { var last=logEl.lastElementChild; if(!last || last.childNodes.length>2){ last=document.createElement('div'); logEl.appendChild(last); }
+      last.insertAdjacentHTML('beforeend','<span style="color:#ff8fd0">'+san+'</span>'); }
+    logEl.scrollTop=logEl.scrollHeight;
     meMoves.push(meUci(m));
     var mvPawn = (ME.b[m.from]||'').toLowerCase()==='p', mvCap = !!ME.b[m.to] || !!m.ep;
     ME=makeMove(ME, m); meLast=m; meSel=null; drawMe();
@@ -997,6 +1063,7 @@ if (RUN_UI) (function(){
         var myME = ME;                                        // stale guard — game may reset while thinking
         function play(mv){
           if (ME !== myME || meEnded) return;
+          if (!mv) mv = aiMove(myME, meDepth);
           if (!mv){ setMeStatus('Stalemate.','think'); endReveal(); return; }
           doMe(mv, false);
           if(!meEnded){ meBusy=false; setMeStatus(inCheck(ME,'w')?'Check! Your move.':'Your move.', inCheck(ME,'w')?'bad':'think'); }
@@ -1017,9 +1084,6 @@ if (RUN_UI) (function(){
         } else play(aiMove(ME, meDepth));
       }, 360);
     }
-  }
-  function moveNumber(){ // count full moves played so far for white
-    return Math.floor((document.getElementById('me-log').querySelectorAll('div').length))+1;
   }
   function onlyKings(b){ for(var i=0;i<64;i++){ if(b[i] && b[i].toLowerCase()!=='k') return false; } return true; }
   function winMindsEye(byTime){
@@ -1063,6 +1127,15 @@ if (RUN_UI) (function(){
     requestAnimationFrame(fr);
   }
 
+  // the account's copy lands after first paint (pjcc-profile.js merges it and fires this)
+  window.addEventListener('pjcc:unlocks', function(){
+    var fresh=load(), changed=false;
+    if(fresh.solved>st.solved){ st.solved=fresh.solved; changed=true; }
+    if(fresh.best>st.best){ st.best=fresh.best; changed=true; }
+    if(fresh.eye && !st.eye){ st.eye=true; changed=true; }
+    if(fresh.trophy && !st.trophy){ st.trophy=true; changed=true; }
+    if(changed){ save(); document.getElementById('solved').textContent=st.solved; renderMindsEye(); }
+  });
   buildBoard(); buildMeBoard(); newPuzzle();
 })();
 </script>

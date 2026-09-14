@@ -589,6 +589,27 @@
     try { localStorage.setItem(NRUN_KEY, '1'); } catch (e) { return false; }
     return true;
   }
+  /* ══ BLINDFOLD, BOTH HALVES EARNED ══ the vault door (a perfect Fast Blitz run, sticky true) and
+     the game's own progress: the account's best `blindfold` score IS the solved count, so the Mind's
+     Eye opens at 20 on a device that never solved one, and a trophy won anywhere stays won. */
+  var BF_DOOR_KEY = 'pjcc.blindfold.unlocked', BF_KEY = 'pjcc.blindfold.v2', BF_EYE_AT = 20;
+  function bfDoorMerge(remote) {
+    if (!remote) return false;
+    try { if (localStorage.getItem(BF_DOOR_KEY) === '1') return false; localStorage.setItem(BF_DOOR_KEY, '1'); return true; }
+    catch (e) { return false; }
+  }
+  function bfProgressMerge(row) {
+    if (!row) return false;
+    var solved = parseInt(row.best_score, 10) || 0, trophy = !!(row.data && row.data.trophy), st = null, changed = false;
+    try { st = JSON.parse(localStorage.getItem(BF_KEY)); } catch (e) { st = null; }
+    if (!st || typeof st.solved !== 'number') st = { solved: 0, diff: 2, best: 0, streak: 0, eye: false, trophy: false };
+    if (solved > st.solved) { st.solved = solved; changed = true; }
+    if (solved > (st.best || 0)) { st.best = solved; changed = true; }
+    if (st.solved >= BF_EYE_AT && !st.eye) { st.eye = true; changed = true; }
+    if (trophy && !st.trophy) { st.trophy = true; st.eye = true; changed = true; }
+    if (changed) { try { localStorage.setItem(BF_KEY, JSON.stringify(st)); } catch (e) { return false; } }
+    return changed;
+  }
 
   /* ══ CHECKER TOWN — the seam the Godot town talks through (2026-09-02) ═══════════════
      The town is a web-exported Godot build in an iframe; it plays no chess. A challenge
@@ -1060,7 +1081,12 @@
            myStats() call, so which of the two resolves first is a race — without the event a
            player who earned the mark on their phone meets a padlock on the desktop until the
            next page load, which is the exact case this pull exists for. */
-        if (nr && nr.data && nr.data.clean && nrunCleanMerge(true)) {
+        var opened = false;
+        if (nr && nr.data && nr.data.clean && nrunCleanMerge(true)) opened = true;
+        if (nr && nr.data && nr.data.bf && bfDoorMerge(true)) opened = true;
+        var bfr = (rows || []).find(function (r) { return r.game === 'blindfold'; });
+        if (bfr && bfProgressMerge(bfr)) opened = true;
+        if (opened) {
           try { window.dispatchEvent(new Event('pjcc:unlocks')); } catch (e) {}
         }
       })['catch'](function () {});

@@ -26,6 +26,12 @@ permalink: /games/blindfold-puzzles/
   var unlocked = false;
   try { unlocked = localStorage.getItem('pjcc.blindfold.unlocked') === '1'; } catch (e) {}
   document.getElementById(unlocked ? 'bf-frame' : 'bf-lock').hidden = false;
+  // earned on another device: the account's copy lands after this ran
+  window.addEventListener('pjcc:unlocks', function () {
+    try { if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') return; } catch (e) { return; }
+    document.getElementById('bf-lock').hidden = true;
+    document.getElementById('bf-frame').hidden = false;
+  });
 })();
 </script>
 

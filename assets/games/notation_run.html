@@ -183,7 +183,6 @@
     margin-top: 4px;
     display: inline-block;
   }
-  .ver { font-size: 0.5em; color: #3d9bff; vertical-align: super; letter-spacing: 1px; }
   /* ===== Intro / attract screen (shown first) ===== */
   .overlay.intro {
     z-index: 30; overflow: hidden; cursor: pointer;
@@ -217,8 +216,6 @@
     animation: introBlink 1.05s steps(1, end) infinite;
   }
   @keyframes introBlink { 0%,54% { opacity: 1; } 55%,100% { opacity: 0.3; } }
-  .intro-ver { position: absolute; bottom: 10px; right: 14px; z-index: 3;
-    font-size: 11px; color: #9fb0d0; letter-spacing: 2px; }
   .intro-chips { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   .intro-chip {
     position: absolute; left: 100%; font-family: 'Courier New', monospace; font-weight: bold;
@@ -273,13 +270,12 @@
       <div class="intro-tag">Read the board at the speed of thought.</div>
       <div class="intro-start" id="intro-start">▶ PRESS&nbsp;START</div>
     </div>
-    <div class="intro-ver">v4.0</div>
   </div>
 
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v4.0</span></div>
+    <div class="ov-title">NOTATION BLITZ</div>
 
     <div class="ov-group-label">Mode</div>
     <div class="btn-row" id="mode-row">
@@ -1504,14 +1500,8 @@ function finish() {
   if (!G.endless && !G.freestyle && !G.dual && (G.diff === 'medium' || G.diff === 'hard') && rank === 'S') {
     try { localStorage.setItem('pjcc.nrun.clean', '1'); } catch (e) {}
   }
-  if (window.PJCC) {
-    var pay = { mode: G.mode, diff: G.diff, rank: rank };
-    /* ⚠ ONLY EVER ASSERTED TRUE. A browser that has not earned it sends no key at all —
-       pushing `false` from a fresh device would wipe the account's mark. */
-    try { if (localStorage.getItem('pjcc.nrun.clean') === '1') pay.clean = true; } catch (e) {}
-    PJCC.saveScore('notation-run', G.score, { credits: 1, data: pay });
-  }
   // Perfect Sprint (rank S on the hardest tempo, Drill) unlocks Blindfold Puzzles.
+  // ⚠ banked BEFORE the push below, which is what carries it to the account
   if (!G.endless && !G.freestyle && !G.dual && G.diff === 'hard' && rank === 'S') {
     try {
       if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') {
@@ -1519,6 +1509,14 @@ function finish() {
         document.getElementById('res-best').innerHTML += '<br><b style="color:#6bffb8;">🔓 Blindfold Puzzles unlocked!</b>';
       }
     } catch (e) {}
+  }
+  if (window.PJCC) {
+    var pay = { mode: G.mode, diff: G.diff, rank: rank };
+    /* ⚠ ONLY EVER ASSERTED TRUE. A browser that has not earned it sends no key at all —
+       pushing `false` from a fresh device would wipe the account's mark. */
+    try { if (localStorage.getItem('pjcc.nrun.clean') === '1') pay.clean = true; } catch (e) {}
+    try { if (localStorage.getItem('pjcc.blindfold.unlocked') === '1') pay.bf = true; } catch (e) {}
+    PJCC.saveScore('notation-run', G.score, { credits: 1, data: pay });
   }
   document.getElementById('results-screen').classList.remove('hidden');
 }
