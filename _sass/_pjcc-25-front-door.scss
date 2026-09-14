@@ -568,6 +568,13 @@ body.theme-chess {
      52vh tall and these stops are cut to fit it; below it phones keep the flat 0.75, for
      the iOS reason in the `--surface` note. One breakpoint, so the two never drift. */
   @media (min-width: 701px) {
+    /* ⚑ DARKER CREAM, 2026-09-14 ("darken the cream background a little bit"), 251,243,224 →
+       240,230,208. Sampled night worst case: --fd-ink-3 5.85 → 5.57.
+       ⚠ NOT ON PHONES: the flat 0.75 sheet there shows the skyline, --fd-ink-3 is 4.57 today
+       and this base drops it to 4.19, under the 4.5 floor. */
+    --surface:      rgba(240, 230, 208, 0.75);
+    --surface-mid:  rgba(240, 230, 208, 0.93);
+    --surface-foot: rgba(240, 230, 208, 0.95);
     --sheet: linear-gradient(180deg, var(--surface) 34vh,
                              var(--surface-mid) 66vh, var(--surface-foot) 100vh);
     --sheet-anchor: fixed;
