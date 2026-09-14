@@ -339,17 +339,8 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      came off was not clutter, it was that the grid disagreed with the count beside it.
 {%- endcomment -%}
 
-    {%- comment -%} ── PICK UP WHERE YOU LEFT OFF (his #4) ──────────────────────────────────
-         Empty and hidden for a stranger; one sentence for somebody who has been here. It reads
-         localStorage DIRECTLY rather than through PJCC — this page loads no profile script, and
-         adding one to the front door to print a number would be a poor trade. Signed in, the
-         profile mirrors the same values into the same keys, so the line is right either way.
-
-         ⚠ It is deliberately BELOW the green door. Above it, the button would move under a
-         returning visitor on every visit as the script fills this in — the one element on the
-         page that must never shift. Below, the only thing it pushes is the small print.
-         ⚠ Wrapped in its own try/catch: a browser with storage denied gets no line, not a dead
-         page ([[down-never-stuck]]). {%- endcomment -%}
+    {%- comment -%} Puzzle rating + solved clean for someone who has played; hidden for a stranger.
+         ⚠ BELOW the green door: filled in after load, so above it the button would jump. {%- endcomment -%}
     <p class="mc-resume" id="mc-resume" data-href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden></p>
 
     {%- comment -%} ── THE REGULARS PARAGRAPH IS GONE (2026-08-11) ──────────────────────────
@@ -1642,87 +1633,29 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
    off that background is a new decision, not a reuse. Hence `--fd-go-ink` (#17492a, 5.36:1),
    added to the palette beside `--fd-wood-ink`, which exists for the identical reason.
    ⭐ GREEN FILLS use `--fd-go`. GREEN WORDS use `--fd-go-ink`. */
-/* ⚑ the bottom margin is "give some more empty space" under Keep Going. It lives on the
-   RESUME block rather than on the list below it, because a signed-out visitor never renders
-   this element — put the gap on `.mc-true` and a stranger gets a hole where his rating isn't.
-   ⚑ 10 → 22px, 2026-08-11 ("give a little more space under Keep Going and the three
-   points"). The link sits on the sheet with nothing around it, so 10px read as the list
-   crowding it rather than as a gap; 22 is one clear line of air and still less than the
-   stack's own 16px gap plus a paragraph would be. */
-/* ⚑⚑ IT IS A PANEL NOW — 2026-08-12. Nate: "the Puzzle rating section above the three
-   points looks like it's missing something (like a box outline or something)."
-
-   He is describing a real thing and it is not only this block. Every other object in this
-   column has an edge — the green door has a fill, the doors below have panels, the board
-   has a timber frame — and his rating was three lines of loose text floating on bare
-   parchment between two of them. It read as unfinished because on this page it WAS the one
-   piece of furniture with no furniture.
-
-   ⭐ THE GREEN LEFT EDGE IS THE ONE JUDGMENT CALL HERE, AND IT IS DELIBERATE. Green on this
-   page means "this belongs to playing" — and this block is the only thing on the front door
-   that belongs to HIM. The rule ties his numbers back to the Play Now door directly above
-   without adding a color the block was not already carrying: the rating, the count and
-   "Keep going" have all been `--fd-go-ink` since 2026-08-11.
-   ⚠ THE PAGE'S ONE LAW SURVIVES IT, and I checked rather than assumed. The law is that
-   exactly one thing is a FILLED green box. This is a 3px edge on a cream panel; `.mc-lead`
-   is still the only green fill, the only green arrow and the only thing shouting. If this
-   ever starts reading as a second call to action, the edge is what to take off first.
-
-   ⚠ THE PANEL IS TRANSLUCENT (0.72), NOT `--fd-panel`. The opaque door cards are the
-   BRIGHTEST paper on the page and the sheet's whole "gray" problem is measured against
-   them — dropping another opaque panel into the hero would have widened the very gap the
-   backlight in _pjcc-25-front-door.scss was just spent closing. At 0.72 it reads as a
-   raised area of the same sheet, which is what it is.
-   ⚠ THE BOTTOM MARGIN CAME OFF (22 → 2px) AND ITS JOB DID NOT GO AWAY. "Give a little more
-   space under Keep Going" is the box's own bottom padding now; leaving both would have
-   double-counted the gap and pushed the proofs away from a block a stranger never sees. */
-.mc-resume { margin: 0 0 2px; display: block;
-  padding: 13px 16px 14px; border-radius: 14px;
-  background: rgba(255, 253, 247, 0.72);
-  border: 1px solid rgba(185, 139, 87, 0.32);
-  border-left: 3px solid var(--fd-go);
-  font-size: 0.88rem; line-height: 1.6; color: var(--fd-ink-3); }
+/* ⚑ TWO NUMBERS, NO SENTENCE (2026-09-14): "RATING x and Solved Clean x".
+   ⚠ `.rs-go` IS LOAD-BEARING: `body.theme-chess .page-body a:not([class])` out-specifies any
+   classless anchor here, and the global `a` purple inherits into un-colored children. */
+.mc-resume { margin: 0 0 2px; display: block; }
 .mc-resume[hidden] { display: none; }
-/* the greeting — its own line, because a bigger, warmer word set inline against body copy
-   fights the baseline instead of leading it.
-
-   ⚑ BLOCK LETTERS, 2026-08-11 (Nate: "Make 'Welcome Back' block letters"). It is
-   `text-transform`, so the STRING is untouched — the markup and the script still say
-   "Welcome back!", which is what a screen reader announces and what a copy-paste carries.
-   Capitals are a treatment here, not a rewording.
-
-   ⚠ CAPS NEED TRACKING AND A SMALLER SIZE, OR THEY SHOUT. Upper case has no descenders and
-   no x-height variation, so the same 1.02rem reads noticeably bigger and tighter than the
-   sentence case did — set letter-spacing OPEN (0.07em) and the size back a step (0.96rem)
-   and the line lands at almost exactly the width it had, which is what keeps it a heading
-   for the two lines under it instead of a second headline competing with the green door. */
-.mc-resume b { display: block; color: var(--fd-wood-ink); font-weight: 800;
-  font-size: 0.96rem; text-transform: uppercase; letter-spacing: 0.07em;
-  margin-bottom: 3px; }
-/* his rating and his count */
-.mc-resume .rs-num { color: var(--fd-go-ink); font-weight: 800; font-size: 1.16rem;
-  letter-spacing: -0.01em; }
-/* the one link in the stack that is not a door — underlined, because it is prose.
-   ⚠ `nowrap` because the preview put the ARROW ALONE on its own line: "Keep going" fit and
-   the → did not, which reads as a typo rather than a link. The whole call to action moves
-   to the next line together or not at all.
-   ⚠ `inline-block` + a top margin, so "give some more empty space" under it is space the
-   LINK owns. Putting it on the stack's flex gap instead would have pushed the three proofs
-   away from the regulars line too, on the visit where nobody is signed in and this element
-   is not even rendered.
-
-   ⚠⚠ THE ANCHOR CARRIES A CLASS, AND IT IS LOAD-BEARING. `_pjcc-25-front-door.scss` has
-   `body.theme-chess .page-body a:not([class]) { color: var(--fd-ink-2) }` at (0,3,2) — it
-   out-specified this rule at (0,1,1), so the link I shipped this morning "in green" rendered
-   in dark ink and I described it as green in two messages without looking. The file's own
-   comment warns about this exact rule; `:not([class])` is what makes it survivable, and a
-   class is how you opt out. Measured, not read: `getComputedStyle` said rgb(51,57,68).
-   ⭐ The general one: A COLOR YOU DECLARED IS NOT A COLOR THAT PAINTED. */
-.mc-resume a.rs-go { display: inline-block; margin-top: 6px;
-  color: var(--fd-go-ink); font-weight: 800; font-size: 0.96rem; text-decoration: underline;
-  text-underline-offset: 3px; white-space: nowrap; }
-/* deeper, never brighter — and it is the same hover the page's other links already use */
-.mc-resume a.rs-go:hover { color: var(--fd-ink); }
+.mc-resume a.rs-go { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 22px;
+  min-height: 44px; padding: 9px 16px; border-radius: 14px;
+  background: rgba(255, 253, 247, 0.72); border: 1px solid rgba(185, 139, 87, 0.32);
+  border-left: 3px solid var(--fd-go); color: var(--fd-ink); text-decoration: none;
+  transition: border-color var(--dur-fast, 0.15s) var(--ease-out, ease); }
+.mc-resume a.rs-go:hover,
+.mc-resume a.rs-go:focus-visible { text-decoration: none; border-color: var(--fd-grain, rgba(185, 139, 87, 0.6)); }
+.mc-resume .rs-stat { display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.mc-resume .rs-lbl { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 700; color: var(--fd-ink-3); }
+.mc-resume .rs-num { color: var(--fd-go-ink); font-weight: 800; font-size: 1.3rem;
+  letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.mc-resume .rs-arrow { margin-left: auto; color: var(--fd-go-ink); font-weight: 800; font-size: 1.1rem; }
+@media (max-width: 480px) {
+  .mc-resume a.rs-go { gap: 4px 14px; padding: 9px 12px; }
+  .mc-resume .rs-stat { gap: 6px; }
+  .mc-resume .rs-num { font-size: 1.15rem; }
+}
 
 /* THE TRUE THINGS — a list, not cards; facts don't need boxes.
    ⚑ IT LIVES IN THE HERO NOW (2026-08-11) — which is what turns it from a footer strip into
@@ -2336,84 +2269,31 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
 
 <script>
 /* ══ PICK UP WHERE YOU LEFT OFF ══════════════════════════════════════════════════════
-   2026-08-11, his #4: "number 4 may be another great thing that keeps people coming back!"
-   (He also said he may pull or modify it — so it is ONE element, ONE script block, and
-   deleting both leaves the page exactly as it was.)
-
-   WHAT IT SAYS, in priority order, and it says only ONE of them:
-     1. a puzzle rating, if we know one — the most specific thing we know;
-     2. otherwise how far along the road to Chess City they are;
-     3. otherwise nothing at all, and the element stays hidden.
-
-   ⚑ WHERE THE NUMBERS COME FROM, in two passes: this browser paints instantly, and then the
-   ACCOUNT is allowed to raise what it painted. Signed out, only the first pass ever happens
-   and it costs nothing. The long note down at pass 2 has the whole story — including the
-   claim that used to live here ("the front door loads no profile script") and why it was
-   false. [[one-fix-every-instance]]
-
-   ⚠ THE WHOLE THING IS IN A try/catch. Safari in private mode throws on localStorage access
-   rather than returning null, and a front door that dies on its own welcome-back line would
-   take the puzzle and the gauntlet door down with it ([[down-never-stuck]]).
-
-   ⚠ THIS PAGE WRITES NOTHING OF ITS OWN — but it is no longer true that nothing is written
-   at all: `PJCC.puzzleRating()` caches the higher of (local, profile) as part of answering.
-   That is the profile module's own reconcile, the same one every room triggers, and it can
-   only ever raise a number. A bug here can still cost a rating but never corrupt one. */
+   Puzzle rating + clean solves, painted from this browser first, then raised by the account.
+   ⚠ In a try/catch: Safari private mode THROWS on localStorage, and this must not take the
+   board and the gauntlet door down with it. */
 (function () {
   var el = document.getElementById('mc-resume');
   if (!el) return;
 
-  /* ⚠ THE URL COMES FROM A data- ATTRIBUTE, NOT FROM LIQUID IN THIS SCRIPT. A Liquid output
-     tag written inside a single-quoted JS string leaves the RAW file unparseable, and the
-     raw file is what `style.check.js` parses to prove every inline script on the site is
-     valid JavaScript. Liquid belongs in the markup, where it has somewhere to stand. */
+  // ⚠ URL from a data- attribute: Liquid inside a JS string breaks style.check.js's parse
   var href = el.getAttribute('data-href') || '/games/fork-in-the-road/';
   var read = function (k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } };
-  /* ⚠ THE NUMBERS ARE WRAPPED, NOT JUST PRINTED. `.rs-num` is what makes his rating and his
-     count the loud things in this block — the CSS cannot find them without the span, and a
-     bold applied to the whole sentence would just be a bold sentence. */
-  var num = function (n) { return '<span class="rs-num">' + n + '</span>'; };
 
-  /* what the line is REPORTING right now, so the account can only ever raise these */
-  var rating = 0, solved = 0, clean = 0, step = 0;
+  var rating = 0, solved = 0, clean = 0, step = 0;   // the account can only raise these
 
   function paint() {
-    var html = '';
-    if (rating > 0) {
-      /* ⚑⚑ TWO NUMBERS SINCE 2026-08-26 (Nate: "I feel like it should be solved correctly,
-         the puzzles. Or maybe we have both numbers there.").
-
-         ⚠ THE OLD LINE HERE WAS A LIE, AND THE COMMENT BESIDE IT WAS THE REASON IT SURVIVED.
-         It read "N solved correctly" and justified the stricter word by asserting the Puzzle
-         Room only counts a clean solve. It does not — `settlePuzzle()` counts every finished
-         puzzle, and a REVEAL routes straight through it. Nate asked "have I only done 26
-         puzzles correctly?" and the honest answer was that 26 was the wrong figure for the
-         question. Nothing measured the claim, so nothing caught it. [[audit-numbers-can-be-wrong]]
-
-         So the room now keeps both, and the sentence only ever says what it can prove:
-           both, and different →  "…is 812 after 27 puzzles — 19 solved clean."
-           a perfect record    →  "…is 812 after 19 solved clean."   (nothing to contrast)
-           clean not seeded    →  "…is 812 after 27 puzzles."        (the honest half)
-         ⭐ NO PARENTHETICAL, NO PERCENTAGE. "19 of 27 (70%)" turns a welcome into a report
-         card, and the one thing this line has to do is make somebody want to play again. */
-      var tail = '';
-      if (clean > 0 && solved > clean) {
-        tail = ' after ' + num(solved) + ' puzzles \u2014 ' + num(clean) + ' solved clean';
-      } else if (clean > 0) {
-        tail = ' after ' + num(clean) + ' solved clean';
-      } else if (solved > 0) {
-        tail = ' after ' + num(solved) + ' puzzle' + (solved === 1 ? '' : 's');
-      }
-      html = '<b>Welcome back!</b> Your puzzle rating is ' + num(Math.round(rating)) + tail + '.';
-    } else if (step > 0) {
-      html = '<b>Welcome back!</b> You are ' + num(step) + ' puzzle' + (step === 1 ? '' : 's') +
-             ' along the road to Chess City.';
-    }
-    if (!html) return;                       /* a stranger sees nothing, and nothing moves */
-    /* ⚠ class="rs-go" IS NOT DECORATION. The theme's `a:not([class])` rule out-specifies this
-       page's own link color, so an anchor with no class paints dark ink no matter what the
-       page asks for. The class is what opts this link out of that rule. */
-    el.innerHTML = html + ' <a class="rs-go" href="' + href + '">Keep going &rarr;</a>';
+    /* ⚠ PLAYED, NOT RATED. PJCC.puzzleRating() answers 700 for someone who has never solved a
+       thing, so a rating alone greeted every first-time visitor with "Welcome back". */
+    if (!(solved > 0 || clean > 0 || step > 0)) return;
+    var stat = function (label, n) {
+      return '<span class="rs-stat"><span class="rs-lbl">' + label + '</span><span class="rs-num">' + n + '</span></span>';
+    };
+    var r = Math.round(rating);
+    el.innerHTML = '<a class="rs-go" href="' + href + '" aria-label="Puzzles: ' +
+      (r > 0 ? 'rating ' + r + ', ' : '') + clean + ' solved clean">' +
+      (r > 0 ? stat('Rating', r) : '') + stat('Solved Clean', clean) +
+      '<span class="rs-arrow" aria-hidden="true">&rarr;</span></a>';
     el.hidden = false;
   }
 
@@ -2425,68 +2305,19 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
     if (pz && typeof pz.solved === 'number' && pz.solved > 0) solved = pz.solved;
     if (pz && typeof pz.clean === 'number' && pz.clean > 0) clean = pz.clean;
     if (jr && typeof jr.step === 'number' && jr.step > 0) step = jr.step;
-    /* ⭐ THE ROAD IS A FLOOR UNDER THE CLEAN COUNT, and this page can read it before
-       pjcc-profile.js has loaded to do its own one-time seed. The road only advances on an
-       earned solve, so that many clean solves have provably happened. It can understate; it
-       cannot overstate. And a clean solve is still a solve, so `solved` is raised with it —
-       "26 puzzles — 30 solved clean" is a sentence that cannot be true.
-       ⚠ THE FLOOR IS THE HIGH-WATER MARK, NOT WHERE YOU ARE STANDING TODAY. `step` is the
-       current position and `best` is the furthest reached; seedClean() in pjcc-profile.js
-       takes the max of both, and reading only `step` here would paint a lower number for a
-       moment and then visibly tick UP when the profile module lands. Both halves of a merge
-       have to agree on the arithmetic or the disagreement shows on screen. */
+    /* the road only advances on an earned solve, so its HIGH-WATER mark is a floor under
+       `clean` — and it must be `best`, as seedClean() uses, or the number ticks up on load */
     var road = Math.max(step, (jr && parseInt(jr.best, 10)) || 0);
     if (road > clean) clean = road;
     if (clean > solved) solved = clean;
     paint();
   } catch (e) { /* storage denied — the page is unchanged, which is the correct outcome */ }
 
-  /* 2. …THEN THE ACCOUNT GETS A SAY — 2026-08-26 ─────────────────────────
-     Nate: "the cw page shows a certain puzzle counter, but on my mobile device it shows
-     another. It should be uniform."
-
-     He is describing localStorage. This line used to read the two progress keys RAW, so it
-     reported what THIS BROWSER had seen — his desktop and his phone are two browsers, so one
-     number each, both of them honest and neither of them his. The server has known the real
-     figures all along: `profiles.puzzle_rating` / `puzzle_solved`, and the `fork-in-the-road`
-     stat row for the road.
-
-     ⚠⚠ THE OLD COMMENT HERE SAID "the front door loads no profile script", AND THAT WAS
-     FALSE — it is the premise the raw read was justified with. `_layouts/default.html` loads
-     `pjcc-profile.js` on EVERY page (line 163). What is true is that it loads it AFTER the
-     layout's content tag (line 85), so `window.PJCC` does not exist yet at parse time and a
-     bare `if (window.PJCC && …)` here is silently false forever. Measured, not assumed:
-     `typeof window.PJCC` is "undefined" when this script runs and "object" after that tag.
-
-     ⛑⛑⛑ AND NAMING THAT TAG WITH ITS BRACES PUT THE WHOLE PAGE ON THE SCREEN — 2026-08-26.
-     This comment originally wrote the layout's content tag out in full, as an example. Liquid
-     does not know it is inside a JS comment: it EXPANDED it, injected the page's own rendered
-     body into the middle of this script, and the first closing script tag that came along
-     with it ended this block early. Everything after that was handed to kramdown, which set my
-     comment prose as paragraphs and code blocks on the live front door. Nate saw it before I
-     did — *"looks like some code got pasted accidentally."*
-
-     ⭐ THIS IS THE SAME MISTAKE AS THE `assign` ONE THE DAY BEFORE, ONE LAYER OVER. That was
-     a Liquid TAG in a Liquid comment; this is a Liquid OUTPUT tag in a JS comment. The gate I
-     added for the first one only understood tag-delimiters and sailed past output ones. A comment is
-     prose to a human and source to Liquid, in every comment syntax there is — so the rule is
-     not "avoid it in Liquid comments", it is NEVER TYPE LIQUID DELIMITERS IN PROSE, anywhere.
-     `tests/style.check.js` now checks JS comments inside script bodies too. [[markdown-eats-scripts]]
-
-     ⭐ SO WAIT FOR IT — DO NOT LOAD A SECOND COPY. `pjcc-profile.js` is an IIFE ending in
-     `window.PJCC = PJCC`; a second tag builds a second object over the first, orphans every
-     `onChange` registered against the original, and stands up a second Supabase auth client
-     on the same storage key. That is a documented way to lose a session mid-refresh, and it
-     was removed from `_layouts/home.html` (2026-07-21) and `puzzle-reports.md` for exactly
-     that reason. DOMContentLoaded is the house pattern and it costs nothing.
-
-     ⚠ THE ACCOUNT ONLY EVER RAISES. Win a puzzle on this phone while the write is still in
-     flight and the local number is the fresher one; taking the max is the only direction that
-     can never walk a rating backwards. Same rule as the gauntlet door beside it.
-     ⚠ `PJCC.puzzleRating()` DOES CACHE what it reconciles, so this block no longer honors the
-     old "nothing is written" note. That is the point: the merge it performs is the same one
-     every room performs, and caching the higher number is what makes the NEXT visit agree
-     with this one. This page still writes nothing of its own. */
+  /* 2. THE ACCOUNT RAISES IT, so a phone and a desktop agree.
+     ⚠ pjcc-profile.js loads AFTER page content: `window.PJCC` is undefined at parse time, so
+     wait for DOMContentLoaded — never add a second script tag (two auth clients, one key).
+     ⚠ NEVER TYPE LIQUID DELIMITERS IN ANY COMMENT HERE: Liquid expands them inside JS too,
+     and on 2026-08-26 that printed this script onto the live page. */
   function whenPJCC(fn) {
     if (window.PJCC) { fn(); return; }
     if (document.readyState === 'loading') {
@@ -2514,7 +2345,7 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
           if (st[i].game === 'fork-in-the-road') { row = st[i]; break; }
         }
         var srv = (row && row.data && parseInt(row.data.step, 10)) || 0;
-        if (srv > step) { step = srv; paint(); }
+        if (srv > step) { step = srv; if (step > clean) clean = step; paint(); }
       })['catch'](function () {});   /* a welcome line that throws on a slow network is worse than a local one */
     });
   } catch (e) {}
