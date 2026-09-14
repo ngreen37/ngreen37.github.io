@@ -39,6 +39,8 @@
     align-items: center; justify-content: center; padding: 26px; text-align: center; border-radius: 14px;
     background: radial-gradient(circle at 50% 22%, #16224e 0%, #05060f 82%); }
   .overlay.hidden { display: none; }
+  /* the pause screen lets the frozen run show through */
+  .overlay.see-through { background: rgba(5,6,15,0.74); }
   .eyebrow { font-size: 11px; letter-spacing: 4px; color: #8fb8ff; text-transform: uppercase; margin-bottom: 10px; }
   .big-title { font-size: 34px; font-weight: 900; color: #ffe27a; letter-spacing: 2px;
     text-shadow: 0 3px 0 #6a4a00, 0 0 26px rgba(255,210,90,0.5); margin-bottom: 4px; }
@@ -50,31 +52,42 @@
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
   .btn-gold { background: #ffe27a; color: #2a1a06; } .btn-gold:hover { filter: brightness(1.05); }
   .btn-ghost { background: #1a2348; color: #bcd0ff; box-shadow: 0 4px 0 #0a1024; }
-  .legend { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; max-width: 320px; margin: 4px auto 14px;
-    font-size: 11.5px; color: #cfe0ff; text-align: left; }
-  .legend .g { font-size: 15px; text-align: center; }
-  .foot { margin-top: 14px; font-size: 10.5px; color: #6a7aa8; line-height: 1.7; } .foot b { color: #bcd0ff; }
   /* Home-screen: cool + minimal — no instruction dump (controls live below the game). */
   .menu-tag { font-size: 14.5px; color: #cfe0ff; letter-spacing: 0.5px; margin-bottom: 24px; }
   .menu-tag b { color: #ffe27a; }
   .menu-best { margin-top: 18px; font-size: 12px; letter-spacing: 1px; color: #8fb8ff; }
   .menu-best b { color: #bcd0ff; }
+  .snd { position: absolute; top: 10px; right: 10px; min-height: 30px; padding: 5px 12px; border-radius: 999px;
+    font: bold 11px 'Trebuchet MS', sans-serif; color: #bcd0ff; background: #1a2348; border: 1px solid #3a4f86; cursor: pointer; }
 </style>
 </head>
 <body>
 <div id="stage">
   <canvas id="canvas" width="440" height="640"></canvas>
-  <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
+  <button class="float-btn hidden" id="menu-btn">❚❚ Pause</button>
   <button class="float-btn hidden" id="focus-btn">◎ FOCUS<small>hold</small></button>
   <button class="float-btn hidden" id="summon-btn">♚ SUMMON<small>0 pawns</small></button>
 
   <!-- MENU (home screen — cool + minimal; controls live below the game) -->
   <div class="overlay" id="menu">
+    <button class="snd" id="snd-menu" aria-pressed="false">🔊 Sound</button>
     <div class="eyebrow">Princess takes flight</div>
     <div class="big-title">SKY RUN</div>
     <div class="menu-tag">The long flight to <b>Chess City</b>.</div>
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ TAKE FLIGHT</button><button class="btn btn-ghost" id="daily-btn">📅 DAILY</button><button class="btn btn-ghost" id="endless-btn">🌊 ENDLESS</button></div>
     <div class="menu-best"><b id="best-line">best: —</b></div>
+  </div>
+
+  <!-- PAUSE -->
+  <div class="overlay see-through hidden" id="pause">
+    <button class="snd" id="snd-pause" aria-pressed="false">🔊 Sound</button>
+    <div class="eyebrow">Paused</div>
+    <div class="big-title" id="pause-where" style="font-size:26px;">SKY RUN</div>
+    <div class="blurb" id="pause-score"></div>
+    <div class="row">
+      <button class="btn btn-gold" id="resume-btn">▶ RESUME</button>
+      <button class="btn btn-ghost" id="end-btn">END RUN</button>
+    </div>
   </div>
 
   <!-- GAME OVER / VICTORY -->
@@ -95,6 +108,10 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const W = 440, H = 640;
+// Backing store at the screen's density (capped at 2) so a phone draws it sharp; every draw call stays in W×H units.
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+canvas.width = W * DPR; canvas.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+const CALM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // ---------- regions (town to town, ending at Chess City + the secret CEO's Office) ----------
 const REGIONS = [
@@ -129,21 +146,31 @@ const RANK_COL     = ['#cfe0ff','#8fe3ff','#c79bff','#ffb066','#ff8fd0'];
 const RANK_AURA    = ['#6a7aa8','#3a7fb0','#7a4fd0','#c07a2a','#ff5bb0'];
 const RANK_FIRE_CD = [0.185, 0.165, 0.150, 0.150, 0.135];
 
-const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 5;
+const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 5, DROP_ODDS = 0.09;
+// Enemy shots hit this core — the dot Focus draws. Bodies still collide at G.pr.
+const CORE_R = 6;
+const KEY_SPD = 340, KEY_SPD_FOCUS = 190;
 const BEST_KEY = 'pjcc.skyrun.best.v1', BEST_KEY_D = 'pjcc.skyrun.dailybest.v1', BEST_KEY_E = 'pjcc.skyrun.endlessbest.v1';
+const SND_KEY = 'pjcc.skyrun.sound';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
 function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
-function loadBestD(){ try { var o=JSON.parse(localStorage.getItem(BEST_KEY_D)||'{}'); return o.d===dayStr()?(o.v||0):0; } catch(e){ return 0; } }
-function saveBestD(v){ try { localStorage.setItem(BEST_KEY_D, JSON.stringify({ d:dayStr(), v:v })); } catch(e){} }
+function loadBestD(){ try { var o=JSON.parse(localStorage.getItem(BEST_KEY_D)||'{}'); return o.d===dayKey()?(o.v||0):0; } catch(e){ return 0; } }
+function saveBestD(v){ try { localStorage.setItem(BEST_KEY_D, JSON.stringify({ d:dayKey(), v:v })); } catch(e){} }
 function loadBestE(){ try { return parseInt(localStorage.getItem(BEST_KEY_E)) || 0; } catch(e){ return 0; } }
 function saveBestE(v){ try { localStorage.setItem(BEST_KEY_E, String(v)); } catch(e){} }
 
 // ---------- audio ----------
-let actx=null, master=null, sndOn=true;
+let actx=null, master=null;
+let sndOn = (function(){ try { return localStorage.getItem(SND_KEY) !== '0'; } catch(e){ return true; } })();
 function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=sndOn?0.6:0; master.connect(actx.destination); }
+function setSound(v){
+  sndOn = v; if (master) master.gain.value = v ? 0.6 : 0;
+  try { localStorage.setItem(SND_KEY, v ? '1' : '0'); } catch(e){}
+  document.querySelectorAll('.snd').forEach(b => { b.textContent = v ? '🔊 Sound' : '🔇 Muted'; b.setAttribute('aria-pressed', String(!v)); });
+}
 function tone(f,t0,dur,type,vol){ if(!actx) return; const o=actx.createOscillator(),g=actx.createGain(); o.connect(g);g.connect(master);o.type=type||'sine';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol||0.2,t0+0.008);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.start(t0);o.stop(t0+dur+0.02);}
 let lastShot=0;
-function sfx(k){ if(!actx) return; const t=actx.currentTime;
+function sfx(k){ if(!actx||!sndOn) return; const t=actx.currentTime;
   if(k==='shoot'){ if(t-lastShot<0.04) return; lastShot=t; tone(880,t,0.05,'square',0.05); }
   else if(k==='pop'){ tone(420,t,0.07,'triangle',0.14); tone(620,t+0.02,0.06,'triangle',0.1); }
   else if(k==='power'){ [523,784,1047].forEach((f,i)=>tone(f,t+i*0.05,0.16,'triangle',0.2)); }
@@ -157,16 +184,68 @@ function sfx(k){ if(!actx) return; const t=actx.currentTime;
 
 // ---------- helpers ----------
 function rnd(a,b){ return a + Math.random()*(b-a); }
-// ---- Daily mode: a seeded RNG drives the SPAWN DIRECTOR so the enemy script is
-// identical for everyone on a given day. Cosmetic randomness keeps Math.random. ----
+// ---- Daily mode: everything that changes the RUN is seeded, from separate streams, so one
+// player's timing cannot shift what the next thing is. Cosmetic randomness keeps Math.random. ----
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
 let SRNG=null;
 function srnd(){ return SRNG ? SRNG() : Math.random(); }
-function srndR(a,b){ return a + srnd()*(b-a); }
-function dayStr(){ var d=new Date(); return (d.getUTCMonth()+1)+'/'+d.getUTCDate(); }
-function todaySeed(){ var s=''+(new Date()).getUTCFullYear()+dayStr(); var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+// the town's date (US Eastern), so the Daily turns over when the rest of the site's day does
+function dayKey(){ try { if (window.PJCC_TIME) return PJCC_TIME.dateStr(); } catch(e){} const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function dayLabel(k){ const p=(k||dayKey()).split('-'); return (+p[1])+'/'+(+p[2]); }
 function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
 function dist2(ax,ay,bx,by){ const dx=ax-bx,dy=ay-by; return dx*dx+dy*dy; }
+
+// ---------- sprites: anything with a glow, a gradient or a glyph is drawn ONCE and stamped ----------
+// ⚠ shadowBlur ignores the transform, so a sprite multiplies it by DPR or the glow halves on a phone.
+const SPR = new Map();
+function sprite(key, w, h, paint){
+  let s = SPR.get(key); if (s) return s;
+  w = Math.ceil(w); h = Math.ceil(h);
+  const c = document.createElement('canvas'); c.width = w*DPR; c.height = h*DPR;
+  const g = c.getContext('2d'); g.scale(DPR, DPR); paint(g, w/2, h/2);
+  s = { c, w, h }; SPR.set(key, s); return s;
+}
+function blit(s, x, y){ ctx.drawImage(s.c, x - s.w/2, y - s.h/2, s.w, s.h); }
+function glyphOn(g,x,y,ch,size,col){ g.font='900 '+size+'px "Segoe UI Symbol","Noto Sans Symbols2",serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillStyle='rgba(0,0,0,0.45)'; g.fillText(ch,x+1,y+2); g.fillStyle=col; g.fillText(ch,x,y); }
+function glyphSpr(ch,size,col){ return sprite('g|'+ch+'|'+size+'|'+col, size*1.7, size*1.7, (g,cx,cy)=>glyphOn(g,cx,cy,ch,size,col)); }
+function enemySpr(e){ return sprite('e|'+e.type, e.r*2+12, e.r*2+12, (g,cx,cy)=>{ const r=e.r;
+  g.fillStyle='rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(cx,cy+r*0.7,r*0.7,r*0.28,0,0,7); g.fill();
+  const grd=g.createRadialGradient(cx-r*0.3,cy-r*0.3,2,cx,cy,r); grd.addColorStop(0,'#fff'); grd.addColorStop(0.3,e.fill); grd.addColorStop(1,'#241a3c');
+  g.fillStyle=grd; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();
+  glyphOn(g,cx,cy,e.glyph,r*1.3,'#1a1030'); }); }
+function bossSpr(open){ const glow=open?'#6bffb8':curRegion().glow; return sprite('b|'+glow+'|'+open, 150, 150, (g,cx,cy)=>{
+  g.save(); g.shadowColor=glow; g.shadowBlur=(open?30:22)*DPR;
+  const grd=g.createRadialGradient(cx-12,cy-12,4,cx,cy,40); grd.addColorStop(0,'#fff'); grd.addColorStop(0.4,glow); grd.addColorStop(1,'#3a0a18');
+  g.fillStyle=grd; g.beginPath(); g.arc(cx,cy,36,0,7); g.fill(); g.restore();
+  glyphOn(g,cx,cy,'♚',46,'#1a0810'); }); }
+function princessSpr(rank){ return sprite('p|'+rank, 84, 84, (g,cx,cy)=>{
+  g.save(); g.shadowColor=RANK_AURA[rank]; g.shadowBlur=(14+rank*2)*DPR;
+  g.fillStyle='#33196e'; g.beginPath(); g.arc(cx,cy,16,0,7); g.fill();
+  g.strokeStyle=RANK_COL[rank]; g.lineWidth=2.5; g.stroke(); g.restore();
+  glyphOn(g,cx,cy,RANK_GLYPH[rank],22,'#f0e6ff'); }); }
+function glowGlyphSpr(ch,size,col,glow,blur){ return sprite('gg|'+ch+'|'+size+'|'+col+'|'+glow+'|'+blur, size*1.7+blur*2, size*1.7+blur*2, (g,cx,cy)=>{
+  g.shadowColor=glow; g.shadowBlur=blur*DPR; glyphOn(g,cx,cy,ch,size,col); }); }
+function bulletSpr(b){ const col=b.bishop?'#d9b3ff':(b.sup?'#ff8fd0':'#9fe8ff'), pad=b.bishop?26:8;
+  return sprite('B|'+col+'|'+b.r+'|'+(b.sup?1:0), b.r*2+pad, b.r*2+pad, (g,cx,cy)=>{
+    if (b.bishop){ g.shadowColor='#c79bff'; g.shadowBlur=10*DPR; }
+    g.fillStyle=col; g.beginPath(); g.arc(cx,cy,b.r,0,7); g.fill();
+    if (b.sup){ g.globalAlpha=0.5; g.beginPath(); g.arc(cx,cy,b.r+3,0,7); g.fill(); } }); }
+const EB_SPR = [];
+function ebSpr(r){ return EB_SPR[r] || (EB_SPR[r] = sprite('E|'+r, r*2+8, r*2+8, (g,cx,cy)=>{
+  g.fillStyle='#ff5b6e'; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();
+  g.fillStyle='rgba(255,150,160,0.5)'; g.beginPath(); g.arc(cx,cy,r+2,0,7); g.fill(); })); }
+function tokenGlowSpr(kind){ const col=POWER_COL[kind]; return sprite('tg|'+kind, 90, 90, (g,cx,cy)=>{
+  g.shadowColor=col; g.shadowBlur=21*DPR; g.fillStyle=col; g.beginPath(); g.arc(cx,cy,17,0,7); g.fill(); }); }
+function tokenCoreSpr(kind){ const col=POWER_COL[kind]; return sprite('tc|'+kind, 36, 36, (g,cx,cy)=>{
+  g.fillStyle='#0a0f24'; g.beginPath(); g.arc(cx,cy,13,0,7); g.fill(); g.strokeStyle=col; g.lineWidth=2.5; g.stroke();
+  glyphOn(g,cx,cy,POWER_GLYPH[kind],17,col); }); }
+function dogSpr(col, blur){ return sprite('d|'+col+'|'+blur, 30+blur*2, 30+blur*2, (g,cx,cy)=>{
+  g.shadowColor=col; g.shadowBlur=blur*DPR; g.font='20px "Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif';
+  g.textAlign='center'; g.textBaseline='middle'; g.fillText('🐕', cx, cy); }); }
+function heartSpr(full){ return sprite('h|'+full, 20, 22, (g,cx,cy)=>{
+  g.font='16px Trebuchet MS'; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle=full?'#ff5b6e':'rgba(120,60,70,0.5)'; g.fillText(full?'♥':'♡',cx,cy); }); }
 
 // ---------- state ----------
 let G = null;
@@ -174,14 +253,15 @@ const FIRE_CD = 0.16, BSPD = 560, PAWNSPD = 460, DIAG = 200;
 
 function newGame(mode){
   mode = mode || 'normal';
-  const daily = mode==='daily', endless = mode==='endless';
-  SRNG = daily ? mulberry32(todaySeed()) : null;
+  const daily = mode==='daily', endless = mode==='endless', day = dayKey();
+  SRNG = daily ? mulberry32(hashStr('sky-run|waves|'+day)) : null;
+  const best = daily ? loadBestD() : (endless ? loadBestE() : loadBest());
   G = {
-    mode: mode, daily: daily, endless: endless, loop: 1,
-    time: 0, running: true, over: false,
+    mode: mode, daily: daily, endless: endless, loop: 1, day: day,
+    time: 0, running: true, over: false, paused: false,
     px: W/2, py: H-90, tx: W/2, ty: H-90, pr: 16,
-    hearts: endless ? 1 : START_HEARTS, inv: 0, score: 0,
-    best: daily ? loadBestD() : (endless ? loadBestE() : loadBest()),
+    hearts: endless ? 1 : START_HEARTS, maxHearts: endless ? 1 : START_HEARTS, inv: 0, score: 0,
+    best: best, prevBest: best, kills: 0,
     combo: 0, mult: 1, killAcc: 0, pawns: 0,
     pwr: { bishop:0, knight:0, queen:0 }, escorts: [],
     fireCd: 0, rank: 0, focus: false, promo: null,
@@ -238,21 +318,25 @@ function startBoss(){
   const hp = Math.round((200 + G.region*130) * (1+(G.loop-1)*0.5));
   G.boss = { x: W/2, y: -40, ty: 96, hp: hp, maxhp: hp, t: 0, fireCd: 1.4, addCd: 5, dir: 1, entering: true,
     kind: BOSS_KIND[(G.region-1) % BOSS_KIND.length], phase: 1, vuln: 0, vulnCd: 6,
-    name: r.secret ? 'THE CEO' : r.name + ' King' };
+    name: r.secret ? 'THE CEO' : r.name + ' King',
+    // his reinforcements draw from their own stream: how fast you reach him cannot reorder the waves
+    rng: G.daily ? mulberry32(hashStr('sky-run|adds|'+G.day+'|'+G.loop+'|'+G.region)) : null };
   G.banner = '⚠ ' + G.boss.name.toUpperCase(); G.bannerT = 2.0; sfx('boss');
 }
 
 // ---------- spawning ----------
-function spawnEnemy(type, x){
-  const a = ENEMY[type];
-  const ex = (x==null) ? srndR(a.r+8, W-a.r-8) : x;
+function spawnEnemy(type, x, rng){
+  const a = ENEMY[type], r = rng || srnd, rr = (lo,hi) => lo + r()*(hi-lo);
+  const ex = (x==null) ? rr(a.r+8, W-a.r-8) : x;
   const sc = 1+(G.loop-1)*0.4, ssp = 1+(G.loop-1)*0.12, hp = Math.round(a.hp*sc);  // Endless loops escalate
   G.enemies.push({ type, glyph:a.glyph, fill:a.fill, r:a.r, hp:hp, maxhp:hp, pts:a.pts,
-    x:ex, y:-a.r-srndR(0,40), vx:0, vy:a.spd*ssp, pat:a.pat, t:srndR(0,6), shoots:!!a.shoots, shootCd:srndR(1.2,2.4), seed:srndR(0,100) });
+    x:ex, y:-a.r-rr(0,40), vx:0, vy:a.spd*ssp, pat:a.pat, t:rr(0,6), shoots:!!a.shoots, shootCd:rr(1.2,2.4), seed:rr(0,100),
+    rng: G.daily ? mulberry32((r()*4294967296)>>>0) : null });
 }
 
 // ---------- firing ----------
-function shoot(x,y,vx,vy,sup,opt){ opt=opt||{}; G.bullets.push({ x, y, vx, vy, r:(opt.r||(sup?7:4)), dmg:(sup?3:1)+(opt.dmg||0), pierce:(sup?2:0)+(opt.pierce||0), sup, bishop:!!opt.bishop, hit:null }); }
+function shoot(x,y,vx,vy,sup,opt){ opt=opt||{}; const b={ x, y, vx, vy, r:(opt.r||(sup?7:4)), dmg:(sup?3:1)+(opt.dmg||0), pierce:(sup?2:0)+(opt.pierce||0), sup, bishop:!!opt.bishop, hit:null };
+  b.spr = bulletSpr(b); G.bullets.push(b); }
 // Default fire by rank — each piece shoots a little like it moves.
 function firePattern(){
   const px=G.px, py=G.py;
@@ -305,7 +389,7 @@ function clusterPoint(){
   return { x: G.px, y: 130 };
 }
 function summon(){
-  if (G.pawns<=0 || !G.running) return;
+  if (G.pawns<=0 || !G.running || G.paused) return;
   const n = G.pawns; G.pawns = 0; updateSummonBtn();
   for (let i=0;i<n;i++){
     const tp = clusterPoint();
@@ -326,6 +410,13 @@ function floater(txt,x,y,col,big){ G.floaters.push({ txt, x, y, col, life:big?1.
 function ring(x,y,col){ G.rings.push({ x, y, col, r:12, life:0.55, max:0.55 }); }
 
 // ---------- damage to enemies / kills ----------
+// A drop is decided by the KILL COUNT in the Daily, so everyone's ninth kill drops the same thing.
+function dropRoll(){
+  G.kills++;
+  const h = G.daily ? mulberry32(hashStr('sky-run|drop|'+G.day+'|'+G.kills))() : Math.random();
+  if (h >= DROP_ODDS) return null;
+  return POWERS[G.daily ? ((h/DROP_ODDS)*POWERS.length)|0 : (Math.random()*POWERS.length)|0];
+}
 function killEnemy(e, byPawn){
   G.score += Math.round(e.pts * G.mult);
   floater('+'+Math.round(e.pts*G.mult), e.x, e.y, '#ffe27a');
@@ -333,8 +424,8 @@ function killEnemy(e, byPawn){
   G.combo++; G.mult = 1 + Math.min(4, Math.floor(G.combo/8));
   G.killAcc++;
   if (G.killAcc >= KILLS_PER_PAWN && G.pawns < MAX_PAWNS){ G.killAcc = 0; G.pawns++; updateSummonBtn(); floater('♟ +1', G.px, G.py-30, '#ffd36b'); sfx('charge'); }
-  // power-up drop
-  if (Math.random() < 0.09){ const p = POWERS[(Math.random()*POWERS.length)|0]; G.tokens.push({ kind:p, x:e.x, y:e.y, bx:e.x, seed:rnd(0,6), vy:80, t:0 }); }
+  const p = dropRoll();
+  if (p) G.tokens.push({ kind:p, x:e.x, y:e.y, bx:e.x, seed:rnd(0,6), vy:80, t:0 });
 }
 function hurtPlayer(){
   if (G.inv>0) return;
@@ -344,13 +435,27 @@ function hurtPlayer(){
 
 // ---------- input ----------
 const focusBtn=document.getElementById('focus-btn');
-let mouseFocus=false;
+let mouseFocus=false, drag=null, usedTouch=false;
+const keys = new Set();
+const KEYMAP = { ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1], KeyA:[-1,0], KeyD:[1,0], KeyW:[0,-1], KeyS:[0,1] };
+function live(){ return G && G.running && !G.paused; }
 function setFocus(v){ if(G) G.focus=v; if(focusBtn) focusBtn.classList.toggle('on', v); }
 function toCanvas(cx,cy){ const r=canvas.getBoundingClientRect(); return { x:(cx-r.left)*(W/r.width), y:(cy-r.top)*(H/r.height) }; }
-function pointerMove(e){ if(!G||!G.running) return; const p=toCanvas(e.clientX,e.clientY); G.tx=clamp(p.x,16,W-16); G.ty=clamp(p.y,60,H-24); }
-canvas.addEventListener('pointerdown', e=>{ e.preventDefault(); pointerMove(e); if(e.pointerType==='mouse'){ mouseFocus=true; setFocus(true); } });
-canvas.addEventListener('pointermove', e=>{ e.preventDefault(); pointerMove(e); });   // hover (mouse) or drag (touch)
-window.addEventListener('pointerup', ()=>{ if(mouseFocus){ mouseFocus=false; setFocus(false); } });
+function pointerMove(e){ const p=toCanvas(e.clientX,e.clientY); G.tx=clamp(p.x,16,W-16); G.ty=clamp(p.y,60,H-24); }
+document.addEventListener('pointerdown', e=>{ if (e.pointerType!=='mouse') usedTouch = true; }, true);
+// A mouse is followed. A finger DRAGS her by its own motion, so the thumb never sits on top of her.
+canvas.addEventListener('pointerdown', e=>{ e.preventDefault(); if(!live()) return;
+  if (e.pointerType==='mouse'){ pointerMove(e); mouseFocus=true; setFocus(true); return; }
+  const p=toCanvas(e.clientX,e.clientY); drag={ id:e.pointerId, x:p.x, y:p.y };
+  try { canvas.setPointerCapture(e.pointerId); } catch(err){} });
+canvas.addEventListener('pointermove', e=>{ e.preventDefault(); if(!live()) return;
+  if (e.pointerType==='mouse'){ pointerMove(e); return; }
+  if (!drag || e.pointerId!==drag.id) return;
+  const p=toCanvas(e.clientX,e.clientY);
+  G.tx=clamp(G.tx+p.x-drag.x,16,W-16); G.ty=clamp(G.ty+p.y-drag.y,60,H-24); drag.x=p.x; drag.y=p.y; });
+function endPointer(e){ if(drag && e.pointerId===drag.id) drag=null; if(mouseFocus && e.pointerType==='mouse'){ mouseFocus=false; setFocus(false); } }
+window.addEventListener('pointerup', endPointer);
+window.addEventListener('pointercancel', endPointer);
 // Focus button (touch-friendly): hold to concentrate fire.
 if (focusBtn){
   focusBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); initAudio(); setFocus(true); });
@@ -359,18 +464,22 @@ if (focusBtn){
   focusBtn.addEventListener('pointercancel', ()=> setFocus(false));
 }
 window.addEventListener('keydown', e=>{
-  if(!G||!G.running) return;
-  if(e.key===' '){ e.preventDefault(); summon(); }
-  else if(e.key==='Shift'){ setFocus(true); }
-  const step=26;
-  if(e.key==='ArrowLeft') G.tx=clamp(G.tx-step,16,W-16);
-  else if(e.key==='ArrowRight') G.tx=clamp(G.tx+step,16,W-16);
-  else if(e.key==='ArrowUp') G.ty=clamp(G.ty-step,60,H-24);
-  else if(e.key==='ArrowDown') G.ty=clamp(G.ty+step,60,H-24);
+  if (e.code==='KeyM'){ setSound(!sndOn); return; }
+  if (!G || !G.running) return;
+  if (e.code==='KeyP' || e.key==='Escape'){ e.preventDefault(); if (G.paused) resume(); else pause(); return; }
+  if (G.paused) return;
+  if (e.key===' '){ e.preventDefault(); if (!e.repeat) summon(); }
+  else if (e.key==='Shift'){ setFocus(true); }
+  else if (KEYMAP[e.code]){ e.preventDefault(); keys.add(e.code); }
 });
-window.addEventListener('keyup', e=>{ if(e.key==='Shift') setFocus(false); });
+window.addEventListener('keyup', e=>{ if(e.key==='Shift') setFocus(false); keys.delete(e.code); });
+// leaving the tab always pauses; leaving the window pauses unless this is a touch session,
+// where a phone's own chrome can fire blur mid-run
+document.addEventListener('visibilitychange', ()=>{ if (document.hidden) pause(); });
+window.addEventListener('blur', ()=>{ keys.clear(); if (!usedTouch) pause(); });
 
 // ---------- update ----------
+const STEPS = [updateEnemies, updateBoss, updateBullets, updateEBullets, updatePawns, updateTokens, updateDog, updateParts, updateRings];
 function update(dt){
   if (!G.running) return;
   G.time += dt;
@@ -394,6 +503,13 @@ function update(dt){
     return;
   }
 
+  // held keys fly her at a steady speed
+  if (keys.size){
+    let kx=0, ky=0; keys.forEach(c=>{ kx+=KEYMAP[c][0]; ky+=KEYMAP[c][1]; });
+    if (kx && ky){ kx*=0.7071; ky*=0.7071; }
+    const sp=(G.focus?KEY_SPD_FOCUS:KEY_SPD)*dt;
+    G.tx=clamp(G.tx+kx*sp,16,W-16); G.ty=clamp(G.ty+ky*sp,60,H-24);
+  }
   // player follow — focus eases her in slower, for precision
   const followLerp = G.focus ? 8 : 14;
   G.px += (G.tx-G.px)*Math.min(1, dt*followLerp);
@@ -416,15 +532,8 @@ function update(dt){
     if (G.waveIdx >= G.wavesInRegion) startBoss(); else startWave();
   }
 
-  updateEnemies(dt);
-  updateBoss(dt);
-  updateBullets(dt);
-  updateEBullets(dt);
-  updatePawns(dt);
-  updateTokens(dt);
-  updateDog(dt);
-  updateParts(dt);
-  updateRings(dt);
+  // a run that ends mid-frame stops there: nothing after it may score or bank twice
+  for (let i=0;i<STEPS.length;i++){ STEPS[i](dt); if (!G.running) return; }
   for (let i=G.floaters.length-1;i>=0;i--){ const f=G.floaters[i]; f.y-=24*dt; f.life-=dt; if(f.life<=0) G.floaters.splice(i,1); }
 }
 
@@ -437,11 +546,11 @@ function updateEnemies(dt){
     else { e.y += e.vy*dt; }
     e.x = clamp(e.x, e.r, W-e.r);
     // queen shoots
-    if (e.shoots){ e.shootCd-=dt; if(e.shootCd<=0 && e.y>0 && e.y<H*0.6){ enemyShoot(e.x,e.y,G.px,G.py); e.shootCd=rnd(1.6,2.8); } }
+    if (e.shoots){ e.shootCd-=dt; if(e.shootCd<=0 && e.y>0 && e.y<H*0.6){ enemyShoot(e.x,e.y,G.px,G.py); e.shootCd = e.rng ? 1.6+e.rng()*1.2 : rnd(1.6,2.8); } }
     // leak
     if (e.y - e.r > H){ G.enemies.splice(i,1); G.combo=0; G.mult=1; G.hearts--; G.flash=0.4; G.shake=8; sfx('hurt'); floater('LEAK!', e.x, H-30, '#ff5b6e'); if(G.hearts<=0){ gameOver(false); return; } continue; }
     // hit player
-    if (G.inv<=0 && dist2(e.x,e.y,G.px,G.py) < (e.r+G.pr)*(e.r+G.pr)){ burst(e.x,e.y,e.fill,12); G.enemies.splice(i,1); hurtPlayer(); continue; }
+    if (G.inv<=0 && dist2(e.x,e.y,G.px,G.py) < (e.r+G.pr)*(e.r+G.pr)){ burst(e.x,e.y,e.fill,12); G.enemies.splice(i,1); hurtPlayer(); if (!G.running) return; continue; }
     // death
     if (e.hp<=0){ G.enemies.splice(i,1); killEnemy(e); }
   }
@@ -465,7 +574,7 @@ function updateBoss(dt){
   if (b.kind==='royal' || b.kind==='ceo'){
     b.addCd-=dt;
     if (b.addCd<=0){ const t = (b.kind==='ceo' && b.phase>=2) ? 'knight' : 'pawn';
-      spawnEnemy(t, b.x-30); spawnEnemy(t, b.x+30); b.addCd = b.kind==='ceo' ? 4.5 : 6; }
+      spawnEnemy(t, b.x-30, b.rng); spawnEnemy(t, b.x+30, b.rng); b.addCd = b.kind==='ceo' ? 4.5 : 6; }
   }
   if (b.hp<=0){ bossDefeated(); }
 }
@@ -504,6 +613,9 @@ const STORY_BEATS = {
 function bossDefeated(){
   const b=G.boss; burst(b.x,b.y,curRegion().glow,60); G.shake=16; sfx('boom');
   G.score += 500*G.region; floater('BOSS +'+(500*G.region), b.x, b.y, '#ffe27a');
+  // his men fall with him, instead of hanging frozen in the air through the story beat
+  G.enemies.forEach(e=>{ G.score += e.pts; burst(e.x, e.y, e.fill, 10); });
+  G.enemies.length=0; G.ppawns.length=0;
   G.boss=null; G.ebullets.length=0;
   const last = G.region>=REGIONS.length;
   // Princess rises a rank for every region she clears — pawn to queen by the gate.
@@ -563,7 +675,7 @@ function updateEBullets(dt){
   for (let i=G.ebullets.length-1;i>=0;i--){
     const b=G.ebullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
     if (b.y>H+12||b.y<-12||b.x<-12||b.x>W+12){ G.ebullets.splice(i,1); continue; }
-    if (G.inv<=0 && dist2(b.x,b.y,G.px,G.py) < (b.r+G.pr)*(b.r+G.pr)){ G.ebullets.splice(i,1); hurtPlayer(); }
+    if (G.inv<=0 && dist2(b.x,b.y,G.px,G.py) < (b.r+CORE_R)*(b.r+CORE_R)){ G.ebullets.splice(i,1); hurtPlayer(); if (!G.running) return; }
   }
 }
 function updatePawns(dt){
@@ -639,46 +751,40 @@ function updateRings(dt){ for(let i=G.rings.length-1;i>=0;i--){ const r=G.rings[
 // ---------- render ----------
 function render(){
   const r = curRegion();
-  const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,r.sky[0]); g.addColorStop(1,r.sky[1]);
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  if (!r.grad){ r.grad = ctx.createLinearGradient(0,0,0,H); r.grad.addColorStop(0,r.sky[0]); r.grad.addColorStop(1,r.sky[1]); }
+  ctx.fillStyle=r.grad; ctx.fillRect(0,0,W,H);
   // parallax specks
-  G.bg.forEach(b=>{ ctx.globalAlpha=0.15+b.z*0.25; ctx.fillStyle=r.glow; ctx.fillRect(b.x, b.y, b.s, b.s*2.4); });
+  ctx.fillStyle=r.glow;
+  G.bg.forEach(b=>{ ctx.globalAlpha=0.15+b.z*0.25; ctx.fillRect(b.x, b.y, b.s, b.s*2.4); });
   ctx.globalAlpha=1;
 
   ctx.save();
-  if (G.shake>0) ctx.translate(rnd(-G.shake,G.shake)*0.4, rnd(-G.shake,G.shake)*0.4);
+  if (G.shake>0 && !CALM) ctx.translate(rnd(-G.shake,G.shake)*0.4, rnd(-G.shake,G.shake)*0.4);
 
   // tokens (power-ups) — made loud while falling so you chase them
   G.tokens.forEach(tk=>{
     const col = POWER_COL[tk.kind];
     const pulse = 0.5 + 0.5*Math.sin(tk.t*7);
-    ctx.save();
     // upward sparkle trail
+    ctx.fillStyle = col;
     for (let k=1;k<=4;k++){
       ctx.globalAlpha = 0.18*(1 - k/5);
-      ctx.fillStyle = col;
       const ty = tk.y - k*11;
       const tx = tk.bx + Math.sin((tk.t - k*0.05)*3 + tk.seed)*12;
       ctx.beginPath(); ctx.arc(tx, ty, 6 - k*0.9, 0, 7); ctx.fill();
     }
-    ctx.globalAlpha = 1;
     // expanding "grab me" halo
     ctx.globalAlpha = 0.5*(1 - pulse);
     ctx.strokeStyle = col; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(tk.x, tk.y, 16 + pulse*12, 0, 7); ctx.stroke();
-    ctx.globalAlpha = 1;
     // glow aura
-    ctx.shadowColor = col; ctx.shadowBlur = 16 + pulse*10;
-    ctx.fillStyle = col; ctx.globalAlpha = 0.30 + 0.25*pulse;
-    ctx.beginPath(); ctx.arc(tk.x, tk.y, 17, 0, 7); ctx.fill();
-    ctx.restore();
-    // solid core coin
-    ctx.fillStyle='#0a0f24'; ctx.beginPath(); ctx.arc(tk.x,tk.y,13,0,7); ctx.fill();
-    ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke();
-    glyph(tk.x,tk.y,POWER_GLYPH[tk.kind],17,col);
+    ctx.globalAlpha = 0.30 + 0.25*pulse;
+    blit(tokenGlowSpr(tk.kind), tk.x, tk.y);
+    ctx.globalAlpha = 1;
+    blit(tokenCoreSpr(tk.kind), tk.x, tk.y);
     // downward chevron pointer
     ctx.globalAlpha = 0.5 + 0.5*pulse;
-    glyph(tk.x, tk.y + 26 + pulse*3, '▾', 14, col);
+    blit(glyphSpr('▾', 14, col), tk.x, tk.y + 26 + pulse*3);
     ctx.globalAlpha = 1;
   });
 
@@ -687,19 +793,13 @@ function render(){
   // boss
   if (G.boss) drawBoss(G.boss);
   // enemy bullets
-  G.ebullets.forEach(b=>{ ctx.fillStyle='#ff5b6e'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,7); ctx.fill(); ctx.fillStyle='rgba(255,150,160,0.5)'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r+2,0,7); ctx.fill(); });
+  G.ebullets.forEach(b=>blit(ebSpr(b.r), b.x, b.y));
   // pawns (summoned)
-  G.ppawns.forEach(p=>{ ctx.save(); ctx.shadowColor='#ffd36b'; ctx.shadowBlur=10; glyph(p.x,p.y,'♙',22,'#ffe27a'); ctx.restore(); });
+  if (G.ppawns.length){ const ps=glowGlyphSpr('♙',22,'#ffe27a','#ffd36b',10); G.ppawns.forEach(p=>blit(ps, p.x, p.y)); }
   // player bullets
-  G.bullets.forEach(b=>{
-    const col = b.bishop ? '#d9b3ff' : (b.sup?'#ff8fd0':'#9fe8ff');
-    if (b.bishop){ ctx.save(); ctx.shadowColor='#c79bff'; ctx.shadowBlur=10; }
-    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,7); ctx.fill();
-    if(b.sup){ ctx.globalAlpha=0.5; ctx.beginPath(); ctx.arc(b.x,b.y,b.r+3,0,7); ctx.fill(); ctx.globalAlpha=1; }
-    if (b.bishop) ctx.restore();
-  });
+  G.bullets.forEach(b=>blit(b.spr, b.x, b.y));
   // escorts
-  G.escorts.forEach(es=>{ glyph(es.x,es.y,'♘',20,'#8fe3ff'); });
+  if (G.escorts.length){ const es=glyphSpr('♘',20,'#8fe3ff'); G.escorts.forEach(e=>blit(es, e.x, e.y)); }
   // Crockett (behind Princess) then Princess
   drawDog();
   drawPrincess();
@@ -717,117 +817,125 @@ function render(){
   if (G.phase==='interstitial' && G.beat) drawInterstitial();
   if (G.bannerT>0) drawBanner();
 }
-function glyph(x,y,ch,size,col){ ctx.font='900 '+size+'px "Segoe UI Symbol","Noto Sans Symbols2",serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fillText(ch,x+1,y+2); ctx.fillStyle=col; ctx.fillText(ch,x,y); }
 function drawEnemy(e){
-  ctx.save();
-  ctx.fillStyle='rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(e.x,e.y+e.r*0.7,e.r*0.7,e.r*0.28,0,0,7); ctx.fill();
-  const grd=ctx.createRadialGradient(e.x-e.r*0.3,e.y-e.r*0.3,2,e.x,e.y,e.r);
-  grd.addColorStop(0,'#fff'); grd.addColorStop(0.3,e.fill); grd.addColorStop(1,'#241a3c');
-  ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,7); ctx.fill();
-  ctx.restore();
-  glyph(e.x,e.y,e.glyph,e.r*1.3,'#1a1030');
+  blit(enemySpr(e), e.x, e.y);
   if (e.hp<e.maxhp){ const w=e.r*1.8, pct=Math.max(0,e.hp/e.maxhp); ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(e.x-w/2,e.y-e.r-7,w,3); ctx.fillStyle='#6bffb8'; ctx.fillRect(e.x-w/2,e.y-e.r-7,w*pct,3); }
 }
 function drawBoss(b){
   const open = b.vuln>0;
-  ctx.save(); ctx.shadowColor = open?'#6bffb8':curRegion().glow; ctx.shadowBlur = open?30:22;
-  const grd=ctx.createRadialGradient(b.x-12,b.y-12,4,b.x,b.y,40);
-  grd.addColorStop(0,'#fff'); grd.addColorStop(0.4, open?'#6bffb8':curRegion().glow); grd.addColorStop(1,'#3a0a18');
-  ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(b.x,b.y,36,0,7); ctx.fill(); ctx.restore();
-  glyph(b.x,b.y,'♚',46,'#1a0810');
+  blit(bossSpr(open), b.x, b.y);
   if (open){ ctx.fillStyle='#6bffb8'; ctx.font='bold 10px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('WEAK POINT', b.x, b.y-44); }
 }
-function heart(x,y,full){ ctx.font='16px Trebuchet MS'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillStyle=full?'#ff5b6e':'rgba(120,60,70,0.5)'; ctx.fillText(full?'♥':'♡',x,y); }
 function drawHUD(){
-  // hearts
-  for (let i=0;i<Math.max(START_HEARTS,G.hearts);i++) heart(12+i*20, 18, i<G.hearts);
-  // score
-  ctx.fillStyle='#ffe27a'; ctx.font='bold 18px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(G.score), W/2, 18);
-  // region + combo
-  ctx.fillStyle='#cfe0ff'; ctx.font='11px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText((curRegion().secret?'★ ':'')+curRegion().name, W/2, 36);
-  if (G.daily){ ctx.fillStyle='#9fe8ff'; ctx.font='9px Trebuchet MS'; ctx.textAlign='left'; ctx.fillText('📅 DAILY '+dayStr(), 12, 36); }
-  if (G.mult>1){ ctx.fillStyle='#9fe8ff'; ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='right'; ctx.fillText('x'+G.mult+' combo', W-12, 36); }
-  // power timers (top-right icons)
-  let py=54; ['queen','bishop','knight'].forEach(k=>{ if(G.pwr[k]>0){ ctx.textAlign='right'; glyph(W-20,py,POWER_GLYPH[k],16,POWER_COL[k]);
+  const bossBar = G.boss && !G.boss.entering;
+  // hearts — as many slots as this mode starts with
+  const hf=heartSpr(true), he=heartSpr(false);
+  for (let i=0;i<Math.max(G.maxHearts,G.hearts);i++) blit(i<G.hearts?hf:he, 18+i*20, 18);
+  // score, and the combo beside the number it multiplies (the Pause button owns the top-right corner)
+  const sc=String(G.score);
+  ctx.fillStyle='#ffe27a'; ctx.font='bold 18px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(sc, W/2, 18);
+  if (G.mult>1){ const sw=ctx.measureText(sc).width; ctx.fillStyle='#9fe8ff'; ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='left'; ctx.fillText('x'+G.mult+' combo', W/2+sw/2+8, 19); }
+  // region (the boss bar names it while he is up)
+  if (!bossBar){ ctx.fillStyle='#cfe0ff'; ctx.font='11px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText((curRegion().secret?'★ ':'')+curRegion().name, W/2, 36); }
+  if (G.daily){ ctx.fillStyle='#9fe8ff'; ctx.font='9px Trebuchet MS'; ctx.textAlign='left'; ctx.fillText('📅 DAILY '+dayLabel(G.day), 12, 36); }
+  // power timers (right edge) — under the Pause button, and under the boss bar when there is one
+  let py = bossBar ? 78 : 62;
+  ['queen','bishop','knight'].forEach(k=>{ if(G.pwr[k]>0){ blit(glyphSpr(POWER_GLYPH[k],16,POWER_COL[k]), W-20, py);
     ctx.fillStyle=POWER_COL[k]; ctx.font='10px Trebuchet MS'; ctx.textAlign='right'; ctx.fillText(Math.ceil(G.pwr[k])+'s', W-32, py); py+=20; } });
   // rank badge + pawn charge — centered at the bottom, clear of the corner buttons
   ctx.textBaseline='middle';
-  glyph(W/2-34, H-34, RANK_GLYPH[G.rank], 15, RANK_COL[G.rank]);
+  blit(glyphSpr(RANK_GLYPH[G.rank], 15, RANK_COL[G.rank]), W/2-34, H-34);
   ctx.fillStyle=RANK_COL[G.rank]; ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='center';
   ctx.fillText(RANK_NAME[G.rank], W/2+4, H-34);
   const pn=MAX_PAWNS, psx=W/2-(pn*14)/2;
   for (let i=0;i<pn;i++){ ctx.fillStyle = i<G.pawns ? '#ffd36b':'rgba(255,211,107,0.18)'; ctx.beginPath(); ctx.arc(psx+8+i*14, H-16, 4.5, 0, 7); ctx.fill(); }
   // boss hp bar
-  if (G.boss && !G.boss.entering){ const bw=W-80, pct=Math.max(0,G.boss.hp/G.boss.maxhp);
+  if (bossBar){ const bw=W-80, pct=Math.max(0,G.boss.hp/G.boss.maxhp);
     ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(40,52,bw,8); ctx.fillStyle='#ff5b6e'; ctx.fillRect(40,52,bw*pct,8);
     ctx.strokeStyle='#ffb0bb'; ctx.lineWidth=1; ctx.strokeRect(40,52,bw,8);
-    ctx.fillStyle='#ffd9df'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText(G.boss.name, W/2, 47); }
+    ctx.fillStyle='#ffd9df'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText(G.boss.name, W/2, 43); }
 }
 function drawDog(){
   const d=G.dog; if(!d) return;
-  const bob=Math.sin(d.t*8)*2;
-  ctx.save();
-  ctx.shadowColor = (d.mode==='carry' && d.carry) ? POWER_COL[d.carry] : '#ffd36b';
-  ctx.shadowBlur = (d.mode==='carry') ? 16 : 8;
-  ctx.font='20px "Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('🐕', d.x, d.y+bob);
-  ctx.restore();
-  if (d.bark>0){ ctx.globalAlpha=Math.min(1,d.bark*4); glyph(d.x+11, d.y-11+bob, '!', 13, '#fff'); ctx.globalAlpha=1; }
+  const bob=Math.sin(d.t*8)*2, carrying=d.mode==='carry' && d.carry;
+  blit(carrying ? dogSpr(POWER_COL[d.carry], 16) : dogSpr('#ffd36b', 8), d.x, d.y+bob);
+  if (d.bark>0){ ctx.globalAlpha=Math.min(1,d.bark*4); blit(glyphSpr('!', 13, '#fff'), d.x+11, d.y-11+bob); ctx.globalAlpha=1; }
 }
 function drawPrincess(){
   const x=G.px, y=G.py;
   if (G.inv>0 && Math.floor(G.time*16)%2===0) return; // blink when hit
-  const aura=RANK_AURA[G.rank], col=RANK_COL[G.rank];
   // thruster
   ctx.fillStyle='rgba(255,180,80,'+(0.5+0.3*Math.sin(G.time*30))+')';
   ctx.beginPath(); ctx.moveTo(x-6,y+14); ctx.lineTo(x,y+14+rnd(8,16)); ctx.lineTo(x+6,y+14); ctx.closePath(); ctx.fill();
-  // focus — a tightening ring + a visible pinpoint hitbox
+  blit(princessSpr(G.rank), x, y);
+  // focus — a tightening ring + the true hitbox: enemy shots only land inside this dot
   if (G.focus){
     ctx.strokeStyle='rgba(159,232,255,0.85)'; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(x,y,G.pr+8+Math.sin(G.time*10)*2,0,7); ctx.stroke();
-    ctx.fillStyle='#9fe8ff'; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fill();
+    ctx.fillStyle='#9fe8ff'; ctx.strokeStyle='#04121a'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(x,y,CORE_R-0.5,0,7); ctx.fill(); ctx.stroke();
   }
-  // body glow + her current rank piece
-  ctx.save(); ctx.shadowColor=aura; ctx.shadowBlur=14+G.rank*2;
-  ctx.fillStyle='#33196e'; ctx.beginPath(); ctx.arc(x,y,G.pr,0,7); ctx.fill();
-  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke(); ctx.restore();
-  glyph(x,y,RANK_GLYPH[G.rank],22,'#f0e6ff');
 }
-function drawBanner(){ const a=Math.min(1,G.bannerT/0.4)*Math.min(1,(2.6-Math.max(0,2.6-G.bannerT))); ctx.globalAlpha=Math.min(1,G.bannerT); ctx.fillStyle='#ffe27a'; ctx.font='900 26px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=5; ctx.strokeText(G.banner,W/2,H*0.32); ctx.fillText(G.banner,W/2,H*0.32); ctx.globalAlpha=1; }
+function drawBanner(){ ctx.globalAlpha=Math.min(1,G.bannerT); ctx.fillStyle='#ffe27a'; ctx.font='900 26px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=5; ctx.strokeText(G.banner,W/2,H*0.32); ctx.fillText(G.banner,W/2,H*0.32); ctx.globalAlpha=1; }
 
 // ---------- summon button ----------
 function updateSummonBtn(){ const b=document.getElementById('summon-btn'); if(!b||!G) return; b.classList.toggle('empty', G.pawns<=0); b.innerHTML='♚ SUMMON<small>'+G.pawns+' pawn'+(G.pawns===1?'':'s')+'</small>'; }
 
-// ---------- loop ----------
-let lastT=performance.now();
-function loop(now){ const dt=Math.min(0.04,(now-lastT)/1000); lastT=now; if(G){ update(dt); render(); } requestAnimationFrame(loop); }
+// ---------- loop: it only runs while a run is live — the menu, pause and result screens draw nothing ----------
+let lastT=0, raf=0;
+function frame(now){
+  raf = 0;
+  if (!live()) return;
+  // ⚠ max(0): a frame's timestamp can predate the performance.now() kick() stamped
+  const dt=Math.max(0, Math.min(0.04,(now-lastT)/1000)); lastT=now;
+  update(dt);
+  if (!live()) return;
+  render();
+  raf = requestAnimationFrame(frame);
+}
+function kick(){ if (raf || !live()) return; lastT=performance.now(); raf=requestAnimationFrame(frame); }
 
 // ---------- screens ----------
-function gameOver(won){
-  G.running=false; G.over=true;
+const $ = id => document.getElementById(id);
+function hideFloats(){ ['menu-btn','summon-btn','focus-btn'].forEach(id=>$(id).classList.add('hidden')); }
+function gameOver(won, quit){
+  if (!G || G.over) return;
+  G.running=false; G.over=true; G.paused=false; keys.clear(); drag=null;
   if (G.score>G.best){ G.best=G.score; (G.daily?saveBestD:(G.endless?saveBestE:saveBest))(G.best); }
-  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(G.daily?'sky-run-daily':(G.endless?'sky-run-endless':'sky-run'), G.score, { credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop } });
+  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(G.daily?'sky-run-daily':(G.endless?'sky-run-endless':'sky-run'), G.score, { seed: G.daily ? G.day : undefined, credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop } });
   setFocus(false);
-  document.getElementById('menu-btn').classList.add('hidden');
-  document.getElementById('summon-btn').classList.add('hidden');
-  document.getElementById('focus-btn').classList.add('hidden');
-  document.getElementById('res-eye').textContent = won ? 'The summit' : 'Shot down';
-  document.getElementById('res-title').textContent = won ? 'CHESS CITY REACHED ★' : 'SKY RUN';
-  document.getElementById('res-msg').innerHTML = (won
+  hideFloats();
+  $('pause').classList.add('hidden');
+  $('res-eye').textContent = won ? 'The summit' : (quit ? 'Run ended' : 'Shot down');
+  $('res-title').textContent = won ? 'CHESS CITY REACHED ★' : 'SKY RUN';
+  $('res-msg').innerHTML = (won
       ? 'Princess rose from a pawn all the way to the <b>Queen</b> — and flew the whole sky, through the CEO\'s Office and out the other side.'
-      : 'Princess went down over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.') +
-    '<br>Score <b>'+G.score+'</b>' + (G.score>=G.best?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best);
+      : (quit ? 'You ended the run over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.'
+              : 'Princess went down over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.')) +
+    '<br>Score <b>'+G.score+'</b>' + (G.score>G.prevBest?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best);
   sfx(won?'win':'lose');
-  document.getElementById('result').classList.remove('hidden');
+  $('result').classList.remove('hidden');
+}
+function pause(){
+  if (!live()) return;
+  G.paused = true; setFocus(false); keys.clear(); drag = null;
+  $('pause-where').textContent = (curRegion().secret ? '★ ' : '') + curRegion().name;
+  $('pause-score').innerHTML = 'Score <b>'+G.score+'</b> · '+RANK_NAME[G.rank];
+  $('pause').classList.remove('hidden');
+}
+function resume(){
+  if (!G || !G.running || !G.paused) return;
+  G.paused = false; $('pause').classList.add('hidden');
+  if (actx && actx.state==='suspended') actx.resume();
+  kick();
 }
 let curMode='normal';
 function startPlay(mode){ curMode=mode||'normal'; initAudio(); if(actx&&actx.state==='suspended') actx.resume();
-  document.getElementById('menu').classList.add('hidden'); document.getElementById('result').classList.add('hidden');
-  document.getElementById('menu-btn').classList.remove('hidden'); document.getElementById('summon-btn').classList.remove('hidden');
-  document.getElementById('focus-btn').classList.remove('hidden');
-  newGame(curMode); updateSummonBtn(); setFocus(false);
+  $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('pause').classList.add('hidden');
+  $('menu-btn').classList.remove('hidden'); $('summon-btn').classList.remove('hidden');
+  $('focus-btn').classList.remove('hidden');
+  keys.clear(); drag=null;
+  newGame(curMode); updateSummonBtn(); setFocus(false); kick();
 }
 // Photo-mode end-card — a shareable PNG of your run
 function saveCard(){
@@ -850,19 +958,30 @@ function saveCard(){
   cx.font='40px "Segoe UI Symbol","Noto Sans Symbols2",serif'; cx.fillStyle='#f0e6ff'; cx.fillText(RANK_GLYPH[G.rank], cw/2, 300);
   const a=document.createElement('a'); a.download='sky-run-'+G.score+'.png'; a.href=cv.toDataURL('image/png'); a.click();
 }
-function openMenu(){ if(G) G.running=false; setFocus(false); document.getElementById('result').classList.add('hidden'); document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('summon-btn').classList.add('hidden'); document.getElementById('focus-btn').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
+function refreshBest(){
+  const b=loadBest(), d=loadBestD(), e=loadBestE(), bits=['Best: '+(b||'—')];
+  if (d) bits.push('today '+d);
+  if (e) bits.push('endless '+e);
+  $('best-line').textContent = bits.join(' · ');
+}
+function openMenu(){ if(G){ G.running=false; G.paused=false; } setFocus(false); keys.clear(); drag=null;
+  $('result').classList.add('hidden'); $('pause').classList.add('hidden'); hideFloats();
+  refreshBest(); $('menu').classList.remove('hidden'); }
 
-document.getElementById('play-btn').addEventListener('click', function(){ startPlay('normal'); });
-document.getElementById('daily-btn').addEventListener('click', function(){ startPlay('daily'); });
-document.getElementById('endless-btn').addEventListener('click', function(){ startPlay('endless'); });
-document.getElementById('retry-btn').addEventListener('click', function(){ startPlay(curMode); });
-document.getElementById('card-btn').addEventListener('click', saveCard);
-document.getElementById('menu-btn').addEventListener('click', openMenu);
-document.getElementById('menu-btn2').addEventListener('click', openMenu);
-document.getElementById('summon-btn').addEventListener('click', summon);
+$('play-btn').addEventListener('click', function(){ startPlay('normal'); });
+$('daily-btn').addEventListener('click', function(){ startPlay('daily'); });
+$('endless-btn').addEventListener('click', function(){ startPlay('endless'); });
+$('retry-btn').addEventListener('click', function(){ startPlay(curMode); });
+$('card-btn').addEventListener('click', saveCard);
+$('menu-btn').addEventListener('click', pause);
+$('menu-btn2').addEventListener('click', openMenu);
+$('resume-btn').addEventListener('click', resume);
+$('end-btn').addEventListener('click', function(){ gameOver(false, true); });
+$('summon-btn').addEventListener('click', summon);
+document.querySelectorAll('.snd').forEach(b => b.addEventListener('click', function(){ initAudio(); setSound(!sndOn); }));
 
-document.getElementById('best-line').textContent = 'Best: ' + (loadBest() || '—');
-requestAnimationFrame(loop);
+setSound(sndOn);
+refreshBest();
 </script>
 </body>
 </html>
