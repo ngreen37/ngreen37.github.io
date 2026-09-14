@@ -1798,35 +1798,37 @@ html.sky-dusk  .ts-city-win--far { opacity: 0.26; }
 html.sky-dawn  .ts-city-win--far { opacity: 0.11; }
 
 /* ── PIECE CLOUDS, /projects/ only (body.studio-home) — see town-sky.html 4d ──────
-   ⚠ The softening is an SVG filter INSIDE each element, not a CSS `filter`: it rasterizes
-   once and the layer only translates. A CSS filter here would repaint every frame.
-   ⚠ THEY SWAY IN THE GUTTERS, THEY DO NOT CROSS. The studio card is opaque and 1044px wide;
-   a crossing cloud spent ~95% of its cycle behind it. --pc-gut is one gutter's width
-   (viewport − 66px rail − card, halved); change the card width and change the 1110. */
+   ⚠⚠ TWO MOVING GROUPS, NEVER EIGHT MOVING SVGs. A transform animation on an SVG that
+   carries a filter is not composited: measured at 6x CPU throttle, eight swaying SVGs put
+   22-35% of frames over 32ms against 2-5% without them. Still SVGs inside two moving divs:
+   4-10%. The filter lives inside each SVG, so the groups only translate a finished layer.
+   They sway in the gutters rather than cross: the studio card is opaque and 1044px wide, and a
+   crossing cloud spent ~95% of its cycle behind it. --pc-gut = viewport − 66px rail − card, halved. */
 .ts-piece-sky { position: absolute; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; opacity: 0.42;
   --pc-gut: max(0px, calc((100vw - 1110px) / 2)); }
-.ts-pc { position: absolute; top: var(--pc-top); overflow: visible; will-change: transform;
-  font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif; font-weight: 900;
-  transform: translateX(-50%);
-  animation: ts-pc-sway var(--pc-dur) ease-in-out var(--pc-delay) infinite alternate; }
+.ts-pcg { position: absolute; inset: 0; will-change: transform;
+  animation: ts-pc-sway 48s ease-in-out -12s infinite alternate; }
+.ts-pcg--r { animation-duration: 56s; animation-delay: -31s; }
+.ts-pc { position: absolute; top: var(--pc-top); overflow: visible; transform: translateX(-50%);
+  font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif; font-weight: 900; }
 .ts-pc--l { left: calc(66px + var(--pc-gut) / 2); }
 .ts-pc--r { left: calc(100vw - var(--pc-gut) / 2); }
-.ts-pc--queen  { --pc-top: 13%; --pc-dur: 46s; --pc-delay: -10s; }
-.ts-pc--rook   { --pc-top: 38%; --pc-dur: 58s; --pc-delay: -31s; }
-.ts-pc--pawn   { --pc-top: 60%; --pc-dur: 41s; --pc-delay: -5s; }
-.ts-pc--puff-b { --pc-top: 81%; --pc-dur: 64s; --pc-delay: -40s; }
-.ts-pc--knight { --pc-top: 17%; --pc-dur: 52s; --pc-delay: -22s; }
-.ts-pc--puff-a { --pc-top: 41%; --pc-dur: 60s; --pc-delay: -48s; }
-.ts-pc--king   { --pc-top: 57%; --pc-dur: 49s; --pc-delay: -15s; }
-.ts-pc--puff-c { --pc-top: 83%; --pc-dur: 55s; --pc-delay: -36s; }
+.ts-pc--queen  { --pc-top: 13%; }
+.ts-pc--rook   { --pc-top: 38%; }
+.ts-pc--pawn   { --pc-top: 60%; }
+.ts-pc--puff-b { --pc-top: 81%; }
+.ts-pc--knight { --pc-top: 17%; }
+.ts-pc--puff-a { --pc-top: 41%; }
+.ts-pc--king   { --pc-top: 57%; }
+.ts-pc--puff-c { --pc-top: 83%; }
 @keyframes ts-pc-sway {
-  from { transform: translateX(-50%) translate3d(-26px, 6px, 0); }
-  to   { transform: translateX(-50%) translate3d(26px, -6px, 0); }
+  from { transform: translate3d(-26px, 6px, 0); }
+  to   { transform: translate3d(26px, -6px, 0); }
 }
 /* no gutter to sway in */
 @media (max-width: 1180px) { .ts-piece-sky { display: none; } }
-html.reduce-flourish .ts-pc { animation: none !important; }
-@media (prefers-reduced-motion: reduce) { .ts-pc { animation: none !important; } }
+html.reduce-flourish .ts-pcg { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .ts-pcg { animation: none !important; } }
 
 /* ── quiet it all down on request ─────────────────────────────────────────────
    The sky itself is PAINT, not motion — the gradient, the orb, the stars and the
