@@ -212,7 +212,7 @@
        This is the whole fix. Stockfish's floor is skill 0 ≈ 1350, so every rung under 1400
        was that one strength plus a dice roll — which is why a "400" opened like a club
        player (the opening BOOK) and then hung its queen (the dice). The negamax is weak by
-       JUDGEMENT: it picks a plausible worse move because it valued the position wrong, and
+       JUDGMENT: it picks a plausible worse move because it valued the position wrong, and
        that is what a weak human actually does.
        ⚠ EXPLICIT FLAG, NOT AN ELO TEST. The bridge must not know about rungs — it takes
        what it is handed. The caller decides, via personaForElo() returning non-null.
@@ -298,7 +298,7 @@
      played instead. That is why the opening looked like a club player (it was the opening
      BOOK) and the middlegame fell apart (that was the dice).
 
-     ⭐ WHAT REPLACES IT: the negamax, whose weakness is JUDGEMENT rather than dice — it
+     ⭐ WHAT REPLACES IT: the negamax, whose weakness is JUDGMENT rather than dice — it
      picks a plausible worse move because it valued the position wrong. Priced over 13,860
      games across 231 pairings, fitted on one Bradley-Terry scale (`npm run sim:bots`).
      Ratings below are that scale, relative, top-anchored at 0.

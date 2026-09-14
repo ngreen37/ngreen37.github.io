@@ -171,7 +171,7 @@ function bestMove(S, persona){
            has only five steps. It is judgment error, not a coin flip.
            ⚠ APPLIED AT THE ROOT ONLY. Inside `nega` the same position would score
            differently on every visit, which breaks alpha-beta's assumptions and makes the
-           search unstable rather than the judgement wrong. */
+           search unstable rather than the judgment wrong. */
         if(useNoise) sc += (Math.random()*2 - 1) * useNoise;
         if(sc > aScore){ aScore = sc; aBest = moves[i]; }
         if(sc > alpha) alpha = sc;

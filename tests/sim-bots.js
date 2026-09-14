@@ -108,7 +108,7 @@ function gauntletFloors() {
      comment exists. Actual name→persona spans in this file run 245..550 characters (the
      secret floors carry a lore-drop comment between the two, which is what pushes The CEO
      to 531 and The Founder to 550). A 400-char window read 11 of 13; tightening it to 200
-     read 6. 600 clears the longest by 50 with no room to swallow a neighbouring entry,
+     read 6. 600 clears the longest by 50 with no room to swallow an adjacent entry,
      since the shortest gap between floors is far larger than the overshoot. */
   const re = /name:'([^']+)'[\s\S]{0,600}?elo:(\d+)[\s\S]{0,600}?persona:\{([^}]*)\}/g;
   /* ⚠⚠ COUNTED OVER THE CODE, NOT THE FILE — and this guard tripped on its own explanation
@@ -459,7 +459,7 @@ if (argv.includes('--map')) {
   say('');
   say('⚠ "NO — same strength" means those two rungs are inside each other\'s error bars.');
   say('  The ORDER is still correct and never inverts. Over three or more rungs the');
-  say('  difference is large and real; between neighbours it is not measurable.');
+  say('  difference is large and real; between adjacent rungs it is not measurable.');
   process.exit(0);
 }
 
