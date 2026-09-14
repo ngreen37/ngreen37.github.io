@@ -434,7 +434,7 @@ const server = http.createServer((req, res) => {
       const npc = fs.readFileSync(path.join(GD, 'npc.gd'), 'utf8');
       const chal = fs.readFileSync(path.join(GD, 'challenger.gd'), 'utf8');
 
-      ok(/extends CanvasLayer/.test(speech) && /get_screen_center_position/.test(speech),
+      ok(/extends CanvasLayer/.test(speech) && /get_canvas_transform\(\)/.test(speech),
         'the line is drawn over the speaker — a layer that PROJECTS, not a Label in the world',
         '(a parented label at the map edge is drawn where the camera cannot reach)');
       ok(/u\.say\(text, seconds, self\)/.test(inter) && /u\.talk\(speaker, line, options, self\)/.test(inter),
@@ -672,7 +672,7 @@ const server = http.createServer((req, res) => {
       const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
       ok(/var _bubbles: Array/.test(sp) && /func _find\(who: Node2D\) -> Bubble:/.test(sp),
         'Speech holds MORE THAN ONE bubble — you and them, on screen together');
-      ok(/func _unstack\(/.test(sp) && /up\.position\.y = maxf\(TOP, want\)/.test(sp),
+      ok(/func _unstack\(/.test(sp) && /up\.position\.y = maxf\(_top\(k\), want\)/.test(sp),
         '…and an overlapping pair is resolved by pushing the HIGHER one UP',
         'down is where the head that said it is');
       ok(/func _height\(/.test(sp) && /get_multiline_string_size/.test(sp),
@@ -2309,6 +2309,55 @@ const server = http.createServer((req, res) => {
         ok(shot.label === 'Your Assembly board, 3 of 16: Vince on a8, Crockett on h7, Michael on e4.',
           '…and reads itself out in board squares for anybody who cannot see it',
           shot.label);
+      }
+
+      /* ══ 36 · A PHONE CAN READ THE TOWN, AND A SAVE CANNOT EAT ITSELF (2026-09-14) ═══════ */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const mineG = code(rd('mine.gd')), spc = code(rd('speech.gd')), zn = code(rd('zone.gd'));
+        const cardG = code(rd('npc_card.gd')), tuiG = code(rd('town_ui.gd')), plG = code(rd('player.gd'));
+        const gst = code(rd('game_state.gd')), jr = code(rd('journal.gd'));
+        const over = fnGd(mineG, '_process').split('return')[0];
+        ok(/pad\.take_accept\(\)/.test(over) && /_leave\(\)/.test(over),
+          "the Sand Mine's result screen leaves on the pad's USE — a phone has no Enter");
+        const fin = fnGd(mineG, '_finish');
+        ok(/PROCESS_MODE_DISABLED/.test(fin) && /player\.set_physics_process\(false\)/.test(fin),
+          '…and the run stops where it ends: the pieces and your feet');
+        ok(/"tap USE" if TouchPad\.probably_touch\(\) else "press ENTER"/.test(fin), '…and the line names the input you have');
+        const hud = fnGd(mineG, '_layout_hud');
+        ok(/TownZone\.ui_scale\(self\)/.test(hud) && /int\(42\.0 \* k\)/.test(hud) && /int\(20\.0 \* k\)/.test(hud),
+          "…and the mine's HUD is scaled for the window");
+        const place = fnGd(spc, '_place_all');
+        ok(/var xf := vp\.get_canvas_transform\(\)/.test(place) && /xf \* world/.test(place) && !/get_screen_center_position/.test(spc),
+          'a bubble is projected through the canvas transform, zoom included', 'on a phone the old arithmetic missed by 96 units');
+        ok(/TownZone\.ui_scale\(self\)/.test(place) && /_fit\(b\.label, k\)/.test(place) && /int\(18\.0 \* k\)/.test(fnGd(spc, '_fit')),
+          "…and its type is scaled for the window");
+        ok(/Speech\.no_break\(text\)/.test(fnGd(spc, 'show_over')) && /\(\?<=\[A-Za-z0-9\]\)-\(\?=\[A-Za-z0-9\]\)/.test(spc),
+          'a hyphenated name never breaks across a line');
+        ok(/get_canvas_transform\(\) \* world/.test(fnGd(cardG, '_to_screen')) && /affine_inverse\(\) \* mouse/.test(cardG)
+          && !/get_screen_center_position/.test(cardG), 'the relationship card projects the same way, in both directions');
+        ok(/int\(16\.0 \* k\)/.test(fnGd(cardG, '_paint')), "…and is drawn at the window's scale");
+        ok(/ui_scale\(n\) \/ maxf\(z, 0\.01\)/.test(fnGd(zn, 'read_scale')), "world text has a read scale off the camera's zoom");
+        for (const f of ['npc.gd', 'door.gd', 'exit_door.gd']) {
+          ok(/TownZone\.read_scale\(self\)/.test(code(rd(f))), '…' + f + ' draws its words with it');
+        }
+        ok(/propagate_call\("queue_redraw"\)/.test(fnGd(zn, '_scale_hud')), '…and a resized window redraws them');
+        ok(/_fit_row\(b, int\(17\.0 \* k\)/.test(fnGd(tuiG, '_layout')) && /int\(float\(fs\) \* 0\.7\)/.test(fnGd(tuiG, '_fit_row')),
+          'a menu row shrinks to fit before it clips');
+        const uin = fnGd(tuiG, '_unhandled_input');
+        ok(/is_action_pressed\("ui_down"\)/.test(uin) && /is_action_pressed\("ui_accept"\) and _row >= 0/.test(uin),
+          'the menu answers the keys the hint names: up, down and accept');
+        ok(/if not _opts\[i\]\.disabled:/.test(fnGd(tuiG, '_step_row')), '…and skips a row you cannot take');
+        ok(/_closed_us = Time\.get_ticks_usec\(\)/.test(fnGd(tuiG, 'close')) && /_closed_us = Time\.get_ticks_usec\(\)/.test(fnGd(tuiG, 'close_saying')),
+          '…both ways out of a conversation stamp the close');
+        ok(/not \(u != null and u\.just_closed\(\)\)/.test(fnGd(plG, '_process')), '…and the press that closed it cannot reopen it');
+        const sv = fnGd(gst, 'save_state'), ld = fnGd(gst, 'load_state');
+        ok(/FileAccess\.open\(SAVE_TMP, FileAccess\.WRITE\)/.test(sv) && /rename_absolute\(SAVE_TMP, SAVE_PATH\)/.test(sv),
+          'a save is written aside and swapped in');
+        ok(/rename_absolute\(SAVE_PATH, SAVE_BAK\)/.test(sv), '…keeping the one before it');
+        ok(/for p in \[SAVE_PATH, SAVE_TMP, SAVE_BAK\]:/.test(ld), '…and a torn save falls back instead of starting Day 1');
+        ok(/GameState\.check_site_unlocks\(\)[\s\S]*site_scores/.test(fnGd(jr, 'open')), 'the Journal fills a met price before it draws');
       }
 
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
