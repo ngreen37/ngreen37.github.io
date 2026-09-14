@@ -93,6 +93,8 @@
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   /* ORANGE, matching the ring this button flashes on the board — one signal, one color */
   #hint-btn { background: #e0651a; color: #ffffff; }
+  #hint-btn.nudge { animation: hint-nudge 0.5s ease-in-out 3; }
+  @keyframes hint-nudge { 50% { transform: scale(1.12); box-shadow: 0 0 0 4px rgba(224,101,26,0.35); } }
   /* Takes the Hint button's seat — Hint is hidden the moment a puzzle resolves, which is
      exactly when there is something worth taking apart. Never both on screen at once. */
   #analysis-btn { background: #2e7d47; color: #ffffff; }
@@ -586,6 +588,10 @@ function genKnightFork(diff, rnd){
        matter are the four key ones, the escape E (adjacent to T1, so already covered) and
        the white king, which goes in the clear-of list so a black man cannot check it. */
     addDistractors(pieces, used, clutterFor(diff, 12), rnd, [S, T1, T2, O, wk], diff >= 4);
+    const fb = parseBoard({ pieces });
+    if (inCheck(fb, 'b') || inCheck(fb, 'w')) continue;               // see genDoubleAttack
+    fb[S.y][S.x] = fb[O.y][O.x]; fb[O.y][O.x] = null;
+    if (!legalMovesFor(fb, 'b').some(m => m.fx === T1.x && m.fy === T1.y && m.tx === E.x && m.ty === E.y)) continue;
     const line = [
       [alg(O.x,O.y)+alg(S.x,S.y), 'N'+alg(S.x,S.y)+'+'],
       [alg(T1.x,T1.y)+alg(E.x,E.y), 'K'+alg(E.x,E.y)],
@@ -593,8 +599,8 @@ function genKnightFork(diff, rnd){
     ];
     const tn = big === 'Q' ? 'queen' : 'rook';
     return { theme:'Knight Fork', cat:'fork', goal:'Win the '+tn+'.', side:'w',
-      hint:'A knight leap that checks the king and forks the '+tn+'.', pieces, line,
-      explain:'Check from '+alg(S.x,S.y)+' — and the '+tn+' on '+alg(T2.x,T2.y)+' is hit too. The check comes first; the '+tn+' falls.' };
+      pieces, line,
+      explain:line[0][1]+' checks and forks the '+tn+'.' };
   }
   return null;
 }
@@ -620,8 +626,8 @@ function genBackRankMate(diff, rnd){
     addDistractors(pieces, used, clutterFor(diff, 11), rnd, [ek, {x:fx,y:0}, {x:fx,y:ry}, wk], diff >= 4, lanes);
     const line = [[alg(fx,ry)+alg(fx,0), heavy+alg(fx,0)+'#']];
     return { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w',
-      hint:'The back rank is fatally weak — bring a heavy piece down.', pieces, line,
-      explain:'Its own pawns seal the escape. '+(heavy==='Q'?'Queen':'Rook')+' to '+alg(fx,0)+' — mate on the back rank.' };
+      pieces, line,
+      explain:line[0][1]+' — mate on the back rank.' };
   }
   return null;
 }
@@ -657,14 +663,16 @@ function genSkewer(diff, rnd){
        board — the difference is you now have to FIND it. */
     const lanes = lineLane(rfx, cy, kx, cy).concat(lineLane(kx, cy, kx, qy));
     addDistractors(pieces, used, clutterFor(diff, 11), rnd, [{x:kx,y:ky}, {x:kx,y:qy}, {x:rfx,y:cy}, {x:kx,y:cy}, E, wk], diff >= 4, lanes);
+    const sb = parseBoard({ pieces });
+    if (inCheck(sb, 'b') || inCheck(sb, 'w')) continue;               // see genDoubleAttack
     const line = [
       [alg(rfx,cy)+alg(kx,cy), 'R'+alg(kx,cy)+'+'],
       [alg(kx,ky)+alg(E.x,E.y), 'K'+alg(E.x,E.y)],
       [alg(kx,cy)+alg(kx,qy), 'Rx'+alg(kx,qy)],
     ];
     return { theme:'Skewer', cat:'skewer', goal:'Win the queen.', side:'w',
-      hint:'Check along the line — the king steps aside and the queen falls.', pieces, line,
-      explain:'Check down the file. The king steps aside, and the queen behind it on '+alg(kx,qy)+' falls.' };
+      pieces, line,
+      explain:line[0][1]+', the king steps aside, the queen falls.' };
   }
   return null;
 }
@@ -722,6 +730,10 @@ function genDoubleAttack(diff, rnd){
     addDistractors(pieces, used, clutterFor(diff, 12), rnd, [S, K, T, O, wk], diff >= 4,
       lineLane(O.x,O.y,S.x,S.y).concat(lineLane(S.x,S.y,K.x,K.y), lineLane(S.x,S.y,T.x,T.y)));
     const b = parseBoard({ pieces });
+    /* ⚠ These three rejected 95% of candidates at the GATE, where each costs one of
+       genPuzzle's 18 attempts and a miss fell back to a Knight Fork. Measured 2026-09-14. */
+    if (inCheck(b, 'b') || inCheck(b, 'w')) continue;
+    if (isAttacked(b, T.x, T.y, 'w') || isAttacked(b, T.x, T.y, 'b')) continue;   // en prise, or defended
     // every line the tactic depends on has to be genuinely clear
     const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
     if (!clearPath(occ, O.x, O.y, S.x, S.y)) continue;
@@ -736,62 +748,91 @@ function genDoubleAttack(diff, rnd){
     if (!outs.length) continue;                                       // that's a mate, not this puzzle
     const esc = outs.find(m => m.fx === K.x && m.fy === K.y && !(m.tx === T.x && m.ty === T.y));
     if (!esc) continue;
+    // ⚠ every reply must leave AxT on the board AND safe: an escape beside T defends it
+    if (outs.some(m => {
+      const mv = nb[m.fy][m.fx], cp = nb[m.ty][m.tx];
+      nb[m.ty][m.tx] = mv; nb[m.fy][m.fx] = null;
+      let bad = !(nb[T.y][T.x] && nb[T.y][T.x].c === 'b') ||
+        !legalMovesFor(nb, 'w').some(w => w.fx === S.x && w.fy === S.y && w.tx === T.x && w.ty === T.y);
+      if (!bad){ const a0 = nb[S.y][S.x], t0 = nb[T.y][T.x]; nb[T.y][T.x] = a0; nb[S.y][S.x] = null; bad = isAttacked(nb, T.x, T.y, 'b'); nb[S.y][S.x] = a0; nb[T.y][T.x] = t0; }
+      nb[m.fy][m.fx] = mv; nb[m.ty][m.tx] = cp;
+      return bad;
+    })) continue;
     const line = [
       [alg(O.x,O.y)+alg(S.x,S.y), A+alg(S.x,S.y)+'+'],
       [alg(K.x,K.y)+alg(esc.tx,esc.ty), 'K'+alg(esc.tx,esc.ty)],
       [alg(S.x,S.y)+alg(T.x,T.y), A+'x'+alg(T.x,T.y)]
     ];
     return { theme:'Winning Material', cat:'material', goal:'Win material.', side:'w',
-      hint:'One move that checks the king AND attacks something loose.', pieces, line,
-      explain:'The '+(useRook?'rook':'queen')+' on '+alg(S.x,S.y)+' checks and eyes the '+TVAL[tt]+' on '+alg(T.x,T.y)+'. Answer the check, lose the '+TVAL[tt]+'.' };
+      pieces, line,
+      explain:line[0][1]+' checks and hits the '+TVAL[tt]+'.' };
   }
   return null;
 }
 
-// ── DISCOVERED CHECK — a white knight stands on the line between a white slider and
-//    the enemy king. It leaves WITH a capture: the check comes from behind it, so the
-//    grabbed piece can never be won back. ────────────────────────────────────────
+// ── DISCOVERED CHECK — our knight blocks our slider's line to their king. It steps off
+//    WITHOUT capturing, onto a square that attacks their queen or rook: the check comes from
+//    behind it, the king must answer, then the knight takes.
+//    ⚑ 2026-09-14, Nate: the old first move CAPTURED the prize, "so the discovered check is
+//    more just an added detail". ⚠ Kept only if EVERY legal reply leaves the prize takeable.
 function genDiscovered(diff, rnd){
-  const TVAL = { R:'rook', Q:'queen', B:'bishop' };
-  for (let t = 0; t < 300; t++){
+  const TVAL = { R:'rook', Q:'queen' };
+  const same = (m, P) => m.x === P.x && m.y === P.y;
+  for (let t = 0; t < 400; t++){
     const useBishop = rnd() < 0.45;
     const SL = useBishop ? 'B' : 'R';
     const dirs = useBishop ? [[-1,-1],[-1,1],[1,-1],[1,1]] : RDIRS;
     const d = dirs[rnd()*dirs.length|0];
-    const Sl = { x: 1 + (rnd()*6|0), y: 1 + (rnd()*6|0) };            // the slider
-    const gap = 2 + (rnd()*3|0);
-    const B  = ray(Sl.x, Sl.y, d[0], d[1], 1);                        // the blocker (our knight)
-    const K  = ray(Sl.x, Sl.y, d[0], d[1], gap);                      // enemy king behind it
-    if (!B || !K || gap < 2) continue;
-    // the knight's landing square can't be the king's, and can't still block the
-    // slider — but that second case is already impossible: the target piece sits
-    // there, so clearPath(Sl→K) below rejects it for us.
-    const jumps = kTargets(B.x, B.y).filter(j => !(j.x === K.x && j.y === K.y));
-    if (!jumps.length) continue;
-    const T = jumps[rnd()*jumps.length|0];
-    if (adjc(T.x, T.y, K.x, K.y)) continue;                           // the king could just take it
-    const tt = ['R','Q','B'][rnd()*3|0];
-    const used = new Set([k2(Sl), k2(B), k2(K), k2(T)]);
-    if (used.size < 4) continue;
-    const wk = placeFar(used, [K, T, Sl, B], rnd); if (!wk) continue;
+    const Sl = { x: rnd()*8|0, y: rnd()*8|0 };
+    const gap = 2 + (rnd()*4|0);
+    const B = ray(Sl.x, Sl.y, d[0], d[1], 1 + (rnd()*(gap - 1)|0));    // the blocker, between
+    const K = ray(Sl.x, Sl.y, d[0], d[1], gap);
+    if (!B || !K) continue;
+    const lands = kTargets(B.x, B.y).filter(L => !same(L, K) && !adjc(L.x, L.y, K.x, K.y));
+    if (!lands.length) continue;
+    const L = lands[rnd()*lands.length|0];
+    const aims = kTargets(L.x, L.y).filter(T => !same(T, B) && !same(T, K) && !same(T, Sl));
+    if (!aims.length) continue;
+    const T = aims[rnd()*aims.length|0];
+    const tt = rnd() < 0.7 ? 'Q' : 'R';
+    const used = new Set([k2(Sl), k2(B), k2(K), k2(L), k2(T)]);
+    if (used.size < 5) continue;
+    const wk = placeFar(used, [K, T, Sl, B, L], rnd); if (!wk) continue;
     used.add(k2(wk));
-    if (adjc(K.x, K.y, wk.x, wk.y)) continue;
     const pieces = [SL+alg(Sl.x,Sl.y), 'N'+alg(B.x,B.y), 'K'+alg(wk.x,wk.y), 'k'+alg(K.x,K.y), tt.toLowerCase()+alg(T.x,T.y)];
-    // the discovery's whole point is the line Sl->K, which only the knight may stand on
-    addDistractors(pieces, used, clutterFor(diff, 11), rnd, [Sl, B, K, T, wk], diff >= 4,
+    addDistractors(pieces, used, clutterFor(diff, 11), rnd, [Sl, B, K, L, T, wk], diff >= 4,
       lineLane(Sl.x,Sl.y,K.x,K.y));
-    const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
+    const occ = new Set(); pieces.forEach(sq => occ.add(F(sq.slice(1)) + ',' + Rk(sq.slice(1))));
     occ.delete(k2(B));
     if (!clearPath(occ, Sl.x, Sl.y, K.x, K.y)) continue;              // only the knight blocks it
-    const b = parseBoard({ pieces });
-    if (inCheck(b, 'b') || inCheck(b, 'w')) continue;
-    const nb = cloneBoard(b); nb[T.y][T.x] = nb[B.y][B.x]; nb[B.y][B.x] = null;
+    const b0 = parseBoard({ pieces });
+    if (inCheck(b0, 'b') || inCheck(b0, 'w')) continue;
+    if (isAttacked(b0, T.x, T.y, 'w')) continue;                      // already en prise: a second answer
+    const nb = cloneBoard(b0); nb[L.y][L.x] = nb[B.y][B.x]; nb[B.y][B.x] = null;
     if (!inCheck(nb, 'b')) continue;
-    if (!legalMovesFor(nb, 'b').length) continue;                     // mate — a different puzzle
-    const line = [[alg(B.x,B.y)+alg(T.x,T.y), 'Nx'+alg(T.x,T.y)+'+']];
-    return { theme:'Discovered Check', cat:'discovered', goal:'Win material.', side:'w',
-      hint:'Something of yours is standing in front of a line at the king.', pieces, line,
-      explain:'The knight takes on '+alg(T.x,T.y)+' and uncovers the '+(useBishop?'bishop':'rook')+'. The check must be answered — the '+TVAL[tt]+' is gone.' };
+    const replies = legalMovesFor(nb, 'b');
+    if (!replies.length) continue;                                    // mate: a different puzzle
+    let rep = null, holds = true;
+    for (const m of replies){
+      const moved = nb[m.fy][m.fx], cap = nb[m.ty][m.tx];
+      nb[m.ty][m.tx] = moved; nb[m.fy][m.fx] = null;
+      const takes = legalMovesFor(nb, 'w').some(w => w.fx === L.x && w.fy === L.y && w.tx === T.x && w.ty === T.y)
+        && nb[T.y][T.x] && nb[T.y][T.x].c === 'b' && nb[T.y][T.x].t === tt;
+      nb[m.fy][m.fx] = moved; nb[m.ty][m.tx] = cap;
+      if (!takes){ holds = false; break; }
+      if (!rep || (moved.t === 'K' && rep.piece !== 'K')) rep = { m, piece: moved.t };
+    }
+    if (!holds) continue;
+    const rm = rep.m;
+    const repSan = (rep.piece !== 'P' ? rep.piece : '') + alg(rm.tx, rm.ty);
+    const line = [
+      [alg(B.x,B.y)+alg(L.x,L.y), 'N'+alg(L.x,L.y)+'+'],
+      [alg(rm.fx,rm.fy)+alg(rm.tx,rm.ty), repSan],
+      [alg(L.x,L.y)+alg(T.x,T.y), 'Nx'+alg(T.x,T.y)]
+    ];
+    return { theme:'Discovered Check', cat:'discovered', goal:'Win the '+TVAL[tt]+'.', side:'w',
+      pieces, line,
+      explain:line[0][1]+' unmasks check, then takes the '+TVAL[tt]+'.' };
   }
   return null;
 }
@@ -849,6 +890,10 @@ function genPinWin(diff, rnd){
     if (legalMovesFor(nb, 'b').some(m => m.fx === P.x && m.fy === P.y)) continue;
     const replies = legalMovesFor(nb, 'b').filter(m => !(m.tx === push.x && m.ty === push.y));
     if (!replies.length) continue;
+    // ⚠ a spite check delays PxR past the proof's depth and fails the gate (~70% of pins did)
+    if (legalMovesFor(nb, 'b').some(m => { const mv = nb[m.fy][m.fx], cp = nb[m.ty][m.tx];
+      nb[m.ty][m.tx] = mv; nb[m.fy][m.fx] = null; const chk = inCheck(nb, 'w');
+      nb[m.fy][m.fx] = mv; nb[m.ty][m.tx] = cp; return chk; })) continue;
     const rep = replies[rnd()*replies.length|0];
     const rp = nb[rep.fy][rep.fx];
     const repSan = (rp && rp.t !== 'P' ? rp.t : '') + alg(rep.tx, rep.ty);
@@ -858,8 +903,8 @@ function genPinWin(diff, rnd){
       [alg(push.x,push.y)+alg(P.x,P.y), alg(push.x,push.y)[0]+'x'+alg(P.x,P.y)]
     ];
     return { theme:'The Pin', cat:'pin', goal:'Win the rook.', side:'w',
-      hint:'That rook is pinned to its king — it cannot move. Attack it with something small.', pieces, line,
-      explain:'The rook on '+alg(P.x,P.y)+' is pinned and cannot move. It is guarded, so the bishop only trades — the pawn steps to '+alg(push.x,push.y)+' and wins it.' };
+      pieces, line,
+      explain:'The rook is pinned. '+line[0][1]+' wins it.' };
   }
   return null;
 }
@@ -1065,17 +1110,25 @@ function puzzleRating(p, diff){
    is still a fork, and a road that never repeats a motif stops teaching it. */
 function motifMix(diff){
   const hard = Math.max(0, Math.min(1, (diff - 5) / 4));   // 0 at ≤5, 1 at ≥9
+  /* ⚠ A WEIGHT IS NOT A SHARE. What gets SERVED is weight × how often that generator
+     survives the gate, and the gate passes ~90% of skewers but ~25% of Winning Material.
+     2026-09-14, Nate: "too many basic fork and skewer puzzles". Re-measure with the
+     served counts, never the weights, after any change here. */
   return [
-    [genBackRankMate, diff <= 3 ? 1.0 : 0.5 - hard * 0.35],   // was the plurality of the whole road
-    [genDoubleAttack, 1.4 - hard * 0.7],
-    [genKnightFork,   1.1 - hard * 0.4],
-    [genSkewer,       diff >= 3 ? 0.9 : 0.25],
-    [genPinWin,       diff >= 4 ? 0.9 + hard * 0.5 : 0],
-    [genDiscovered,   diff >= 5 ? 0.9 + hard * 0.8 : 0]
+    [genBackRankMate, diff <= 3 ? 0.9 : 0.5 - hard * 0.3],
+    [genDoubleAttack, 1.4 - hard * 0.4],
+    [genKnightFork,   0.6 - hard * 0.2],
+    [genSkewer,       diff >= 3 ? 0.4 : 0.3],
+    [genPinWin,       diff >= 3 ? 1.0 + hard * 0.4 : 0],
+    [genDiscovered,   diff >= 3 ? 1.0 + hard * 0.5 : 0]
   ].filter(e => e[1] > 0);
 }
-function pickMotif(diff, rnd){
-  const mix = motifMix(diff);
+const THEME_OF = new Map([[genBackRankMate, 'Back Rank'], [genDoubleAttack, 'Winning Material'],
+  [genKnightFork, 'Knight Fork'], [genSkewer, 'Skewer'], [genPinWin, 'The Pin'], [genDiscovered, 'Discovered Check']]);
+// `avoid` = themes served recently. Dropped only while something else is left to pick.
+function pickMotif(diff, rnd, avoid){
+  let mix = motifMix(diff);
+  if (avoid && avoid.length){ const keep = mix.filter(e => !avoid.includes(THEME_OF.get(e[0]))); if (keep.length) mix = keep; }
   let total = 0; mix.forEach(e => total += e[1]);
   let r = rnd() * total;
   for (const [fn, w] of mix){ r -= w; if (r <= 0) return fn; }
@@ -1118,7 +1171,7 @@ function puzzleCode(p){
   for (let i = 0; i < 8; i++){ out = A[n % 32] + out; n = Math.floor(n / 32); }
   return out.slice(0, 4) + '-' + out.slice(4);
 }
-function genPuzzle(diff, rnd){
+function genPuzzle(diff, rnd, avoid){
   rnd = rnd || Math.random;
   try {
     /* A WALL CLOCK ON TOP OF THE NODE BUDGET. The budget bounds one proof; this bounds the
@@ -1129,8 +1182,9 @@ function genPuzzle(diff, rnd){
       // crowded for the first third, then ease off rather than run out of attempts
       const late = Date.now() - t0;
       clutterEase = (a < 6 && late < 260) ? 1 : (a < 12 && late < 620) ? 0.7 : 0.45;
-      let p = pickMotif(diff, rnd)(diff, rnd);
-      if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genDoubleAttack(diff, rnd);
+      /* ⚠ A FAILED PICK IS RE-PICKED. It used to fall back to a Knight Fork, which is most
+         of why forks dominated: measured 29% of level 2 and 21% of level 5. */
+      const p = pickMotif(diff, rnd, avoid)(diff, rnd);
       if (p && puzzleSane(p)) { p.id = puzzleCode(p); p.rating = puzzleRating(p, diff); return p; }
     }
     // guaranteed fallbacks — still gated; the last resort is a known-sane composition
@@ -1139,7 +1193,7 @@ function genPuzzle(diff, rnd){
     if (fb){ fb.id = puzzleCode(fb); fb.rating = puzzleRating(fb, 2); return fb; }
   } finally { clutterEase = 1; }
   // The last-resort composition names itself the same way everything else does.
-  const last = { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
+  const last = { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w',
       rating:400, pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
   last.id = puzzleCode(last);
   return last;
@@ -1410,19 +1464,21 @@ const TACT_KEY  = 'pjcc.fork.tactics.v1';
      discovered  #c9a7ff -> #5b3fa8   6.60   indigo
      pin         #ffb066 -> #a5561a   4.63   burnt orange
    White on each of them clears 5:1 too, which is what the OK button needs. */
+/* `cue` is hint tier 2 and `explain` the fallback lesson. ⚠ KEEP BOTH SHORT: the hint strip
+   holds one line, and Nate asked for minimal text (2026-09-14). */
 const MOTIFS = {
   'Knight Fork': { cat:'fork',   icon:'♞', color:'#1f7a4d', name:'Knight Fork',
-    explain:'One knight, two targets. The check forces the king to move — then the same knight grabs the piece it was also attacking.' },
+    cue:'Check and hit two', explain:'One knight hits the king and a piece.' },
   'Back Rank':   { cat:'mate',   icon:'♜', color:'#a03574', name:'Back-Rank Mate',
-    explain:'The king is boxed in by its own pawns. A heavy piece crashes to the last rank — nowhere to run. Checkmate.' },
+    cue:'The back rank is open', explain:'Boxed in by its own pawns. Mate.' },
   'Skewer':      { cat:'skewer', icon:'➳', color:'#7d5f0d', name:'Skewer',
-    explain:'A check straight through the king. It must step aside — exposing the valuable piece that was hiding right behind it.' },
+    cue:'Check through the king', explain:'The king steps aside; take what was behind it.' },
   'Winning Material': { cat:'material', icon:'♛', color:'#0f6a86', name:'Winning Material',
-    explain:'One move, two jobs. It checks the king and attacks something loose at the same time — the check gets answered first, and the loose piece has nowhere to go.' },
+    cue:'Check and attack at once', explain:'Answer the check, lose the loose piece.' },
   'Discovered Check': { cat:'discovered', icon:'✦', color:'#5b3fa8', name:'Discovered Check',
-    explain:'The check comes from the piece that DIDN\'T move. Step the blocker aside — with a capture — and the line behind it opens onto the king.' },
+    cue:'Unmask a check', explain:'The blocker steps aside with check, then takes.' },
   'The Pin':     { cat:'pin',    icon:'⛓', color:'#a5561a', name:'The Pin',
-    explain:'A piece pinned to its own king cannot legally move. Attack it with something small and it just has to stand there and be taken.' }
+    cue:'Attack the pinned piece', explain:'A pinned piece cannot run. Hit it.' }
 };
 const CAT_LABEL = { fork:'Forks', mate:'Mates', skewer:'Skewers', pin:'Pins', material:'Material', discovered:'Discoveries' };
 const CAT_ORDER = ['fork','skewer','material','discovered','pin','mate'];
@@ -1618,14 +1674,15 @@ function loadPuzzle(){
     const boss = gateAt(run.step + 1);          // solving this puzzle steps onto a region gate
     if (boss){
       const eff = Math.max(4, Math.min(10, Math.round(run.diff) + 3));
-      p = genPuzzle(eff, Math.random); p.boss = boss;
+      p = genPuzzle(eff, Math.random, run.recent); p.boss = boss;
     } else {
       const eff = Math.max(1, Math.min(10, Math.round(run.diff + (Math.random()*3 - 1.5))));  // generous variance
-      p = genPuzzle(eff, Math.random);
+      p = genPuzzle(eff, Math.random, run.recent);
     }
   }
+  run.recent = [p.theme].concat(run.recent || []).slice(0, 2);
   run.served++;
-  clearRefutation();
+  clearRefutation(); hintCard = null;
   G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, revealed: false, hintLevel: 0, phase: 'await', orient: p.side };
   document.getElementById('hint-btn').classList.remove('hidden');
   document.getElementById('report-btn').classList.remove('hidden');
@@ -1822,7 +1879,7 @@ function puzzleSolved(){
 // Teaching card shown after each solve — names the motif and explains the idea.
 // 2026-07-14: prefers the puzzle's OWN square-by-square explanation (attached at
 // generation) over the generic motif blurb, and shows the puzzle's rating.
-let explainCard = null, explainTimer = null, lastRatingMove = null;
+let explainCard = null, explainTimer = null, lastRatingMove = null, hintCard = null;
 function showExplain(){
   const mt = MOTIFS[G.p.theme] || { icon:'★', name:G.p.theme, color:C.good, explain:'' };
   // A BOSS shows the CHARACTER's one canonical Gauntlet rating (no tilde — it's fixed,
@@ -1877,7 +1934,7 @@ canvas.addEventListener('pointerdown', e => {
   const c = cellFromXY(e.clientX, e.clientY); if (!c) return; e.preventDefault();
   const exp = uci(G.p.line[G.step][0]);
   const piece = G.board[c.y][c.x];
-  if (!G.selected) { if (piece && piece.c === G.orient) { G.selected = c; G.moves = legalFrom(G.board, c.x, c.y); } return; }
+  if (!G.selected) { if (piece && piece.c === G.orient) { G.selected = c; G.moves = legalFrom(G.board, c.x, c.y); clearRefutation(); } return; }
   if (c.x === G.selected.x && c.y === G.selected.y) { G.selected = null; G.moves = null; return; }
   if (piece && piece.c === G.orient) { G.selected = c; G.moves = legalFrom(G.board, c.x, c.y); return; }
   const from = G.selected;
@@ -1915,7 +1972,7 @@ canvas.addEventListener('pointerdown', e => {
     G.selected = null; G.moves = null; G.clean = false; G.wrong++;
     sfx('wrong'); shake = 10; vignette = 14;
     // the nudge moved ABOVE the board — the refutation card owns the strip below it
-    if (G.wrong >= 2) floater('Try the hint 🐾', W/2, BY - 8, '#a3323b');
+    if (G.wrong >= 2) { const hb = document.getElementById('hint-btn'); hb.classList.remove('nudge'); void hb.offsetWidth; hb.classList.add('nudge'); }
     showRefutation(from, tried);
   }
 });
@@ -1933,7 +1990,7 @@ function showRefutation(from, tried){
        They used to be one value, which meant every choice was a compromise between a light
        background and a dark one — the same split the front door made between --fd-wood
        (decoration) and --fd-wood-ink (text). Red bites, green shrugs, on both surfaces. */
-    refuteCard  = { text: r.text, t: 0, life: 7,
+    refuteCard  = { text: r.text, t: 0, life: 4,
       color: r.hard ? C.bad : '#2e7d47', ink: r.hard ? '#a3323b' : '#5f3e1e' };
     refuteArrow = { fx: r.reply.fx, fy: r.reply.fy, tx: r.reply.tx, ty: r.reply.ty, tried };
     /* ── THE TRIAGE (2026-08-03, priority #1) ────────────────────────────────────
@@ -1954,8 +2011,8 @@ function updateHintBtn(){
   const lvl = G ? (G.hintLevel || 0) : 0;
   b.textContent = lvl <= 0 ? '🐾 Hint' : lvl === 1 ? '💡 Idea' : '👁 Reveal';
 }
-// Hint tiers, each with a cost (any hint marks the solve as assisted):
-//  1) flash the piece that moves · 2) name the motif + the idea · 3) reveal & play it.
+// Hint tiers, each costing the clean solve: 1) ring the piece that moves · 2) one strip:
+// motif + cue · 3) play it. ⚠ NO FLOATERS: stacked floaters over the header were the overlap.
 document.getElementById('hint-btn').addEventListener('click', () => {
   if (!G || G.phase !== 'await') return;
   clearRefutation();                    // the hint text uses the same strip
@@ -1964,16 +2021,13 @@ document.getElementById('hint-btn').addEventListener('click', () => {
   run.stats.hints = (run.stats.hints || 0) + 1;
   const mt = MOTIFS[G.p.theme] || {};
   if (G.hintLevel === 1){
-    G.hintFlash = 40;
-    // ⚠ NOT C.gold. Gold is a BOARD color; this floats above the board on the parchment
-    // sheet, where #F5C518 measures 1.06:1 and is simply not there.
-    floater('✨ This piece holds the key', W/2, BY - 8, '#5f3e1e');
+    G.hintRing = true;
     sfx('advance');
   } else if (G.hintLevel === 2){
-    floater((mt.icon || '💡') + ' ' + G.p.theme, W/2, BY - 8, mt.color || C.gold);
-    floater(G.p.hint, W/2, BY + BOARD - 16, C.muted);
+    hintCard = { text: (mt.icon || '💡') + '  ' + (mt.name || G.p.theme) + (mt.cue ? ' — ' + mt.cue : '') };
     sfx('advance');
   } else {
+    hintCard = null;
     revealSolution();
   }
   updateHintBtn();
@@ -1995,6 +2049,7 @@ function render(){
   if (run) drawRibbon();
   if (G && G.p) drawPuzzleCode();
   if (refuteCard && !explainCard) drawRefute();
+  else if (hintCard && G && G.phase === 'await' && !explainCard) drawHintStrip();
   drawBanner();
   if (explainCard) drawExplain();
   if (vignette > 0){ ctx.fillStyle = 'rgba(255,40,90,'+(vignette/14*0.22)+')'; ctx.fillRect(0,0,W,H); vignette -= 0.6; }
@@ -2114,7 +2169,7 @@ function drawBoard(){
   // selection is MINT, the Park Tables "go" color — gold on maple is nearly invisible
   if (G.selected){ const s=cell(G.selected.x,G.selected.y); ctx.fillStyle='rgba(107,255,184,0.34)'; ctx.fillRect(s.x-TILE/2,s.y-TILE/2,TILE,TILE); }
   // the hint stays ORANGE so it can never be confused with a legal-move dot
-  if (G.hintFlash > 0){ const u = uci(G.p.line[G.step][0]); const s = cell(u.fx, u.fy); ctx.strokeStyle='rgba(255,140,60,'+(G.hintFlash/30)+')'; ctx.lineWidth=4; ctx.strokeRect(s.x-TILE/2+2,s.y-TILE/2+2,TILE-4,TILE-4); G.hintFlash--; }
+  if (G.hintRing && G.phase === 'await' && G.step < G.p.line.length){ const u = uci(G.p.line[G.step][0]); const s = cell(u.fx, u.fy); ctx.strokeStyle='rgba(255,140,60,'+(0.65 + 0.35*Math.sin(performance.now()/180))+')'; ctx.lineWidth=4; ctx.strokeRect(s.x-TILE/2+2,s.y-TILE/2+2,TILE-4,TILE-4); }
   // move dots
   if (G.moves){ G.moves.forEach(m=>{ const s=cell(m.x,m.y); const cap = G.board[m.y][m.x]; if (cap){ ctx.strokeStyle=C.dot; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(s.x,s.y,TILE*0.42,0,Math.PI*2); ctx.stroke(); } else { ctx.fillStyle=C.dot; ctx.beginPath(); ctx.arc(s.x,s.y,6,0,Math.PI*2); ctx.fill(); } }); }
   // labels
@@ -2305,6 +2360,15 @@ function drawRefute(){
   ctx.fillText('✗', x + padX, y + padY);
   ctx.fillStyle = '#333944'; ctx.font = '11.5px Trebuchet MS';
   lines.forEach((l, i) => ctx.fillText(l, x + padX + 18, y + padY + i*lh));
+  ctx.restore();
+}
+function drawHintStrip(){
+  const x = BX + 6, cw = BOARD - 12, ch = 30, y = BY + BOARD - ch - 8;
+  ctx.save();
+  ctx.fillStyle = '#faf5e9'; roundRect(x, y, cw, ch, 9); ctx.fill();
+  ctx.strokeStyle = '#e0651a'; ctx.lineWidth = 2; roundRect(x, y, cw, ch, 9); ctx.stroke();
+  ctx.fillStyle = '#1e232c'; ctx.font = 'bold 13.5px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(hintCard.text, x + cw/2, y + ch/2 + 1, cw - 16);
   ctx.restore();
 }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }

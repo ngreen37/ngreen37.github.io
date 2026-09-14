@@ -338,7 +338,7 @@ async function testFork(browser, port) {
   const page = await openPage(browser, port, '/assets/games/pjcc_fork.html');
   const res = await page.evaluate(() => {
     const C = window.PJCCChess;
-    const out = { n: 0, bad: [], cats: {}, pawn2: null };
+    const out = { n: 0, bad: [], cats: {}, pawn2: null, discCapture: [], served: {}, repeats: 0 };
     // unit: the in-game move hints must include the pawn double-step
     (function () {
       const b = parseBoard({ pieces: ['Ke1', 'Pe2', 'ke8'] });
@@ -393,9 +393,23 @@ async function testFork(browser, port) {
       }
       return null;
     }
+    // ⚑ WHAT A PLAYER IS SERVED: the room's own avoid-recent path, at a mid-road difficulty
+    let recent = [], prevTheme = null;
+    for (let i = 0; i < 120; i++) {
+      const q = genPuzzle(5, Math.random, recent);
+      recent = [q.theme].concat(recent).slice(0, 2);
+      out.served[q.theme] = (out.served[q.theme] || 0) + 1;
+      if (q.theme === prevTheme) out.repeats++;
+      prevTheme = q.theme;
+    }
     for (let i = 0; i < 600; i++) {
       const p = genPuzzle(1 + (i % 6), Math.random);
       out.n++; out.cats[p.cat || p.theme] = (out.cats[p.cat || p.theme] || 0) + 1;
+      // ⚠ the first move of a discovery must not BE the win (Nate, 2026-09-14)
+      if (p.cat === 'discovered') {
+        const t = p.line[0][0].slice(2, 4);
+        if (p.line.length !== 3 || p.pieces.some(sq => sq.slice(1) === t)) out.discCapture.push(p.line.map(m => m[1]).join(' '));
+      }
       out.men.push(p.pieces.length);
       const af = armyFault(p.pieces);
       if (af) out.army.push(af + ' — ' + p.pieces.join(' '));
@@ -447,6 +461,13 @@ async function testFork(browser, port) {
     `referee cross-audit: ${res.n} generated puzzles (${JSON.stringify(res.cats)}), ` +
     `${res.deepChecked} proved vs best defense` +
     (res.bad.length ? ' -> ' + res.bad.slice(0, 4).join(' | ') : ''));
+  ok(res.discCapture.length === 0,
+    `a discovered check steps aside WITHOUT capturing, then wins the piece (3-move line)` +
+    (res.discCapture.length ? ` -> ${res.discCapture.length} bad: ` + res.discCapture.slice(0, 3).join(' | ') : ''));
+  const topShare = Math.max(...Object.values(res.served)) / 120;
+  ok(res.repeats === 0 && topShare <= 0.35 && Object.keys(res.served).length === 6,
+    `served variety at difficulty 5: no motif twice in a row, none over 35%, all six appear ` +
+    `(repeats ${res.repeats}, top ${(topShare * 100).toFixed(0)}%, ${JSON.stringify(res.served)})`);
   ok(res.twoMates.length === 0,
     `every mate-in-one puzzle has exactly ONE mate in one` +
     (res.twoMates.length ? ` -> ${res.twoMates.length} with another: ` + res.twoMates.slice(0, 3).join(' | ') : ''));
