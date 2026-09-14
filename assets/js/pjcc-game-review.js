@@ -155,7 +155,10 @@
      site has ever shown — a weighted mean that punishes blunders, or ignoring plies after
      the game is decided — and that is a call about what the whole feature claims, not a
      bug fix. The rating now printed beside each score (see renderReport) is the cheap half
-     of the remedy: it gives the percentage the scale it was missing. ═══════════════════ */
+     of the remedy: it gives the percentage the scale it was missing.
+     ⚠ A PER-GAME "PLAYED AT" RATING DOES NOT WORK EITHER (2026-09-14, tests/sim-review.js):
+     400 bot games, best feature (centipawn loss) misses by ±815 per game on a 350–1250
+     ladder. Do not print one from a single game. ═══════════════════════════════════════ */
   /* 2026-07-27 — the opening is graded on a wider band than the middlegame.
      Two reasons, both learned from Nate's 1.e4 d6 game:
        · The book can never cover everything. The moment a game steps one ply off a
@@ -259,6 +262,24 @@
 
   /* ─────────────────────────── the overlay UI ────────────────────────────────── */
   var GLYPH = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' };
+  var PIECE = { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' };
+
+  // mover-POV centipawns → a whole percent that never reads as a certainty
+  function odds(c) { return Math.max(1, Math.min(99, Math.round(winPct(c)))); }
+
+  // "Nxh7" → "knight takes pawn on h7", read off the board BEFORE the move
+  function sayMove(fen, from, to, san) {
+    var Cc = C(), b = Cc.parseFEN(fen).b, pc = b[from], cap = b[to];
+    if (!pc) return '';
+    var name = PIECE[pc.toLowerCase()], sq = Cc.nameFromSq(to), out;
+    if (!cap && name === 'pawn' && from % 8 !== to % 8) cap = 'p';        // en passant
+    if (/^O-O-O/.test(san)) out = 'castles queenside';
+    else if (/^O-O/.test(san)) out = 'castles kingside';
+    else out = name + (cap ? ' takes ' + PIECE[cap.toLowerCase()] + ' on ' : ' to ') + sq;
+    var pr = /=([QRBN])/.exec(san);
+    if (pr) out += ', becomes a ' + PIECE[pr[1].toLowerCase()];
+    return out + (/#/.test(san) ? ', checkmate' : /\+/.test(san) ? ', check' : '');
+  }
   function styles() {
     if (document.getElementById('pgr-css')) return;
     var s = document.createElement('style'); s.id = 'pgr-css';
@@ -268,7 +289,7 @@
       '.pgr-card{background:#160c33;border:1px solid #3a2a6a;border-radius:16px;max-width:840px;width:100%;' +
         'max-height:92vh;overflow:auto;box-shadow:0 30px 80px -20px rgba(0,0,0,.7);color:#e9e2ff}' +
       '.pgr-hd{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #2a1f52;position:sticky;top:0;background:#160c33;z-index:2}' +
-      '.pgr-hd h3{margin:0;font-size:1.02rem;color:#F5C518;font-weight:800;letter-spacing:.02em}' +
+      '.pgr-hd h3{margin:0;font-size:1.02rem;color:#F5C518;font-weight:800;letter-spacing:.02em;white-space:nowrap}' +
       '.pgr-hd .pgr-sub{font-size:.76rem;color:#9a8fd4}' +
       '.pgr-x{margin-left:auto;background:#241847;border:1px solid #4a3a86;color:#cdbcf2;border-radius:8px;' +
         'width:32px;height:32px;font-size:16px;cursor:pointer;line-height:1}' +
@@ -297,20 +318,39 @@
       '.pgr-chip{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid #6a5a9a}' +
       '.pgr-chip-w{background:#f0eee8}.pgr-chip-b{background:#4a3585}' +
       '.pgr-graph{width:100%;height:46px;display:block;margin:4px 0 12px;background:#0f0a26;border:1px solid #2a1f52;border-radius:8px}' +
-      '.pgr-moves{max-height:320px;overflow:auto;font-size:.85rem}' +
-      '.pgr-mv{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:5px 8px;border-radius:7px;cursor:pointer}' +
-      '.pgr-mv:hover{background:#20153f}.pgr-mv.sel{background:#2a1a5e;outline:1px solid #F5C518}' +
-      '.pgr-mv .pgr-no{color:#7d6bb0;font-family:"Share Tech Mono",monospace}' +
-      '.pgr-mv .pgr-san{font-weight:700}' +
+      '.pgr-moves{max-height:320px;overflow:auto;scroll-padding-top:26px;font-size:.85rem}' +
+      '.pgr-mv{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,1fr);gap:4px;align-items:center;padding:1px 0}' +
+      '.pgr-mv:nth-child(odd){background:rgba(255,255,255,.025)}' +
+      '.pgr-mv.pgr-mvhd{position:sticky;top:0;z-index:1;background:#160c33;border-bottom:1px solid #2a1f52;font-size:.7rem;color:#9a8fd4;letter-spacing:.04em;padding:0 0 4px}' +
+      '.pgr-mvhd>span{padding:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.pgr-no{color:#7d6bb0;font-family:"Share Tech Mono",monospace;text-align:right}' +
+      '.pgr-cell{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;min-height:34px;padding:4px 8px;' +
+        'background:none;border:0;border-radius:7px;color:inherit;font:inherit;text-align:left;cursor:pointer}' +
+      '@media(pointer:coarse){.pgr-cell{min-height:44px}}' +
+      '.pgr-cell:hover{background:#20153f}.pgr-cell.sel{background:#2a1a5e;outline:1px solid #F5C518}' +
+      '.pgr-san{font-weight:700;white-space:nowrap}' +
       '.pgr-tag{font-size:.7rem;font-weight:800;padding:1px 7px;border-radius:99px;white-space:nowrap}' +
+      '@media(max-width:520px){.pgr-cell .pgr-lbl{display:none}}' +
       '.pgr-opening{text-align:center;font-size:.82rem;color:#cdbcf2;margin:0 0 10px}.pgr-opening b{color:#d9c9ff}.pgr-opening small{color:#8f82c8;letter-spacing:.05em}' +
       '.pgr-c-book{color:#c3b4ff;background:rgba(160,140,230,.14)}' +
       '.pgr-c-best{color:#6bffb8;background:rgba(107,255,184,.12)}.pgr-c-good{color:#a9e5ff;background:rgba(120,190,255,.1)}' +
       '.pgr-c-ok{color:#c7bdf0;background:rgba(160,150,220,.1)}.pgr-c-inaccuracy{color:#ffd77a;background:rgba(245,197,24,.12)}' +
       '.pgr-c-mistake{color:#ff9e6b;background:rgba(255,140,80,.14)}.pgr-c-blunder{color:#ff6b6b;background:rgba(255,80,80,.16)}' +
       '.pgr-best{font-size:.78rem;color:#9a8fd4;margin-top:8px;min-height:1.2em}.pgr-best b{color:#6bffb8}' +
-      '.pgr-turn{margin-top:12px;font-size:.8rem;color:#c7bdf0}.pgr-turn h4{margin:0 0 4px;color:#F5C518;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}' +
-      '.pgr-turn a{color:#ffd77a;cursor:pointer;text-decoration:underline dotted}' +
+      '.pgr-turn{margin-top:14px;font-size:.8rem;color:#c7bdf0}.pgr-turn h4{margin:0;color:#F5C518;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}' +
+      '.pgr-turn-sub{margin:2px 0 8px;font-size:.74rem;color:#9a8fd4}' +
+      '.pgr-tp{display:block;width:100%;margin:0 0 8px;padding:10px 12px;background:#1c1140;border:1px solid #2a1f52;border-left:3px solid #ff9e6b;' +
+        'border-radius:10px;color:inherit;font:inherit;text-align:left;cursor:pointer}' +
+      '.pgr-tp.pgr-tp-blunder{border-left-color:#ff6b6b}.pgr-tp:hover,.pgr-tp.sel{border-color:#F5C518}' +
+      '.pgr-tp>span{display:block}' +
+      '.pgr-tp>.pgr-tp-top{display:flex;align-items:center;gap:8px;font-size:.74rem;color:#9a8fd4}' +
+      '.pgr-tp-go{margin-left:auto;color:#F5C518;font-weight:700}' +
+      '.pgr-tp-what{margin:6px 0 8px;font-size:.84rem;line-height:1.45;color:#e9e2ff}' +
+      '.pgr-tp-what b{white-space:nowrap}.pgr-tp-what i{font-style:normal;color:#9a8fd4}' +
+      '.pgr-tp-bar{position:relative;height:6px;border-radius:99px;background:#2a1f52;overflow:hidden}' +
+      '.pgr-tp-bar i,.pgr-tp-bar em{position:absolute;top:0;bottom:0;left:0}' +
+      '.pgr-tp-bar i{background:#9a8fd4}.pgr-tp-bar em{background:#ff9e6b}.pgr-tp-blunder .pgr-tp-bar em{background:#ff6b6b}' +
+      '.pgr-tp-odds{margin-top:4px;font-size:.74rem;color:#9a8fd4}.pgr-tp-odds b{color:#e9e2ff}' +
       '.pgr-foot{font-size:.72rem;color:#6f5fb0;text-align:center;margin-top:14px}';
     document.head.appendChild(s);
   }
@@ -410,10 +450,11 @@
     meta = meta || {};
     styles();
     var ov = document.createElement('div'); ov.className = 'pgr-ov';
-    var names = (meta.whiteName || 'White') + ' vs ' + (meta.blackName || 'Black') + (meta.result ? ' · ' + meta.result : '');
+    var names = esc((meta.whiteName || 'White') + ' vs ' + (meta.blackName || 'Black')) +
+      (meta.result ? ' · <span style="white-space:nowrap">' + esc(meta.result) + '</span>' : '');
     ov.innerHTML =
       '<div class="pgr-card"><div class="pgr-hd"><h3>Game Review</h3>' +
-        '<span class="pgr-sub">' + esc(names) + '</span>' +
+        '<span class="pgr-sub">' + names + '</span>' +
         '<button class="pgr-x" aria-label="Close">✕</button></div>' +
       '<div class="pgr-body" id="pgr-body">' +
         '<p class="pgr-note" id="pgr-status">Warming up the engine…</p>' +
@@ -494,23 +535,40 @@
       '<line x1="0" y1="' + (H / 2) + '" x2="' + W + '" y2="' + (H / 2) + '" stroke="#3a2a6a" stroke-width="1"/>' +
       '<polyline points="' + pts + '" fill="none" stroke="#F5C518" stroke-width="1.5"/></svg>';
 
-    var movesH = rep.plies.map(function (p) {
-      var num = (p.mover === 'w') ? (p.n / 2 + 1) + '.' : (Math.floor(p.n / 2) + 1) + '…';
-      return '<div class="pgr-mv" data-k="' + (p.n + 1) + '">' +
-        '<span class="pgr-no">' + num + '</span>' +
+    // replay() always starts from the initial position, so ply 0 is White's
+    function cell(p) {
+      if (!p) return '<span></span>';
+      var num = Math.floor(p.n / 2) + 1;
+      return '<button type="button" class="pgr-cell" data-k="' + (p.n + 1) + '" aria-label="' +
+          num + (p.mover === 'w' ? '. ' : '… ') + esc(p.san) + ', ' + LABEL[p.cls] + '">' +
         '<span class="pgr-san">' + esc(p.san) + '</span>' +
-        '<span class="pgr-tag pgr-c-' + p.cls + '">' + MARK[p.cls] + ' ' + LABEL[p.cls] + '</span></div>';
-    }).join('');
-
-    var turnH = '';
-    if (rep.turning.length) {
-      turnH = '<div class="pgr-turn"><h4>Turning Points</h4>' + rep.turning.map(function (p) {
-        var num = Math.floor(p.n / 2) + 1;
-        return '<div>Move ' + num + (p.mover === 'w' ? ' (White) ' : ' (Black) ') +
-          '<a data-k="' + (p.n + 1) + '">' + esc(p.san) + '</a> — ' + LABEL[p.cls].toLowerCase() +
-          (p.bestSan ? '; <b style="color:#6bffb8">' + esc(p.bestSan) + '</b> was stronger.' : '.') + '</div>';
-      }).join('') + '</div>';
+        '<span class="pgr-tag pgr-c-' + p.cls + '">' + MARK[p.cls] + '<span class="pgr-lbl"> ' + LABEL[p.cls] + '</span></span></button>';
     }
+    var movesH = '<div class="pgr-mv pgr-mvhd"><span></span>' +
+      '<span><span class="pgr-chip pgr-chip-w"></span>' + wName + '</span>' +
+      '<span><span class="pgr-chip pgr-chip-b"></span>' + bName + '</span></div>';
+    for (var r = 0; r < rep.plies.length; r += 2)
+      movesH += '<div class="pgr-mv"><span class="pgr-no">' + (r / 2 + 1) + '.</span>' +
+        cell(rep.plies[r]) + cell(rep.plies[r + 1]) + '</div>';
+
+    var turnH = '<div class="pgr-turn"><h4>Turning Points</h4>';
+    if (!rep.turning.length) turnH += '<p class="pgr-turn-sub">No big swings. Neither side threw the game away.</p>';
+    else turnH += '<p class="pgr-turn-sub">The moves that swung the game most. Tap one to see it on the board.</p>' +
+      rep.turning.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) {
+        var sign = p.mover === 'w' ? 1 : -1;
+        var before = odds(sign * rep.evalW[p.n]), after = odds(sign * rep.evalW[p.n + 1]);
+        return '<button type="button" class="pgr-tp pgr-tp-' + p.cls + '" data-k="' + (p.n + 1) + '">' +
+          '<span class="pgr-tp-top"><span class="pgr-tag pgr-c-' + p.cls + '">' + MARK[p.cls] + ' ' + LABEL[p.cls] + '</span>' +
+            '<span>Move ' + (Math.floor(p.n / 2) + 1) + ' · <span class="pgr-chip pgr-chip-' + p.mover + '"></span>' +
+              (p.mover === 'w' ? wName : bName) + '</span>' +
+            '<span class="pgr-tp-go">Show ▸</span></span>' +
+          '<span class="pgr-tp-what">Played <b>' + esc(p.san) + '</b> <i>(' + sayMove(rep.fens[p.n], p.from, p.to, p.san) + ')</i>.' +
+            (p.bestSan ? ' Better was <b style="color:#6bffb8">' + esc(p.bestSan) + '</b> <i>(' +
+              sayMove(rep.fens[p.n], p.bestFrom, p.bestTo, p.bestSan) + ')</i>.' : '') + '</span>' +
+          '<span class="pgr-tp-bar"><i style="width:' + after + '%"></i><em style="left:' + after + '%;width:' + Math.max(0, before - after) + '%"></em></span>' +
+          '<span class="pgr-tp-odds">Winning chances <b>' + before + '%</b> → <b>' + after + '%</b></span></button>';
+      }).join('');
+    turnH += '</div>';
 
     var openH = (rep.opening && rep.opening.name)
       ? '<div class="pgr-opening">📖 <b>' + esc(rep.opening.name) + '</b>' +
@@ -552,10 +610,10 @@
         best.innerHTML = MARK[p.cls] + ' <b style="color:inherit">' + LABEL[p.cls] + '</b>' +
           (p.bestSan ? ' — best was <b style="color:#2fbf71">' + esc(p.bestSan) + '</b> <span style="color:#2fbf71">➤</span>' : '');
       }
-      Array.prototype.forEach.call(document.querySelectorAll('.pgr-mv'), function (el) {
+      Array.prototype.forEach.call(ov.querySelectorAll('.pgr-cell,.pgr-tp'), function (el) {
         el.classList.toggle('sel', +el.getAttribute('data-k') === k);
       });
-      var selEl = document.querySelector('.pgr-mv.sel');
+      var selEl = ov.querySelector('.pgr-cell.sel');
       if (selEl) selEl.scrollIntoView({ block: 'nearest' });
     }
     document.getElementById('pgr-prev').onclick = function () { show(k - 1); };
@@ -571,7 +629,10 @@
       });
     };
     body.addEventListener('click', function (e) {
-      var t = e.target.closest('[data-k]'); if (t) show(+t.getAttribute('data-k'));
+      var t = e.target.closest('[data-k]'); if (!t) return;
+      show(+t.getAttribute('data-k'));
+      // one column on a phone: the board is a screen above the cards
+      if (t.classList.contains('pgr-tp')) document.getElementById('pgr-board').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     });
     document.addEventListener('keydown', function nav(e) {
       if (!ov.isConnected) { document.removeEventListener('keydown', nav); return; }

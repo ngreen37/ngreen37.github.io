@@ -39,3 +39,4 @@ tests/map-*.txt
 #   ⚠ THIRD TIME A RULE HERE WAS WRITTEN TOO NARROW (2026-09-13). First two named files
 #   when twelve existed; then the patterns missed `map-final.txt`. Any NEW sim output
 #   belongs in this block the moment the mode that writes it is added, not afterwards.
+tests/sim-review.*.jsonl
