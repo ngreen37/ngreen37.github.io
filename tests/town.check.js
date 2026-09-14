@@ -2343,6 +2343,10 @@ const server = http.createServer((req, res) => {
           ok(/TownZone\.read_scale\(self\)/.test(code(rd(f))), '…' + f + ' draws its words with it');
         }
         ok(/propagate_call\("queue_redraw"\)/.test(fnGd(zn, '_scale_hud')), '…and a resized window redraws them');
+        const paintHud = fnGd(zn, '_paint_hud');
+        ok(/get_visible_rect\(\)\.size\.x - 150\.0 \* k/.test(paintHud) && /fs = maxi\(int\(float\(fs\) \* 0\.7\), int\(float\(fs\) \* room \/ tw\)\)/.test(paintHud)
+          && /_stat\.add_theme_font_size_override\("font_size", fs\)/.test(paintHud) && !/font_size/.test(fnGd(zn, '_scale_hud').split('_tab')[0]),
+          'the stat row is measured against the Journal tab, and one function owns its size', 'on a 390-wide phone "Energy 100/100" ran under the tab');
         ok(/_fit_row\(b, int\(17\.0 \* k\)/.test(fnGd(tuiG, '_layout')) && /int\(float\(fs\) \* 0\.7\)/.test(fnGd(tuiG, '_fit_row')),
           'a menu row shrinks to fit before it clips');
         const uin = fnGd(tuiG, '_unhandled_input');
