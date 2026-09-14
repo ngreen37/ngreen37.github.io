@@ -348,6 +348,35 @@
     <i class="ts-cloud-shape ts-cloud--long ts-cloud--long-a"></i>
     <i class="ts-cloud-shape ts-cloud--long ts-cloud--long-b"></i>
   </div>
+  {%- comment -%} 4d · PIECE CLOUDS, /projects/ only (2026-09-14): "make the clouds look more like
+       chess pieces (some of them; others look like normal clouds)". Its own layer because the
+       studio hides the deck except on weather days. {%- endcomment -%}
+  {%- if page.body_class contains 'studio-home' %}
+  <div class="ts-piece-sky" aria-hidden="true">
+    <svg width="0" height="0" style="position:absolute"><defs>
+      <filter id="pc-cloud" x="-30%" y="-30%" width="160%" height="160%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="28" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feGaussianBlur in="d" stdDeviation="4" result="b"/>
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="11" result="m"/>
+        <feColorMatrix in="m" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -0.25" result="ma"/>
+        <feComposite in="b" in2="ma" operator="arithmetic" k1="0.9" k2="0.45" k3="0" k4="0"/>
+      </filter>
+      <filter id="pc-halo" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
+      <linearGradient id="pc-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity="0.62"/><stop offset="1" stop-color="#fff" stop-opacity="0.30"/>
+      </linearGradient>
+    </defs></svg>
+    <svg class="ts-pc ts-pc--l ts-pc--pawn" width="160" height="160" viewBox="0 0 160 160"><text x="50%" text-anchor="middle" y="120" font-size="100"<text x="50%" text-anchor="middle" y="120" font-size="100" fill="url(#pc-fill)" filter="url(#pc-cloud)">&#x265F;&#xFE0E;</text></svg>
+    <svg class="ts-pc ts-pc--r ts-pc--knight" width="200" height="200" viewBox="0 0 200 200"><text x="50%" text-anchor="middle" y="156" font-size="140"<text x="50%" text-anchor="middle" y="156" font-size="140" fill="url(#pc-fill)" filter="url(#pc-cloud)">&#x265E;&#xFE0E;</text></svg>
+    <svg class="ts-pc ts-pc--l ts-pc--rook" width="175" height="175" viewBox="0 0 175 175"><text x="50%" text-anchor="middle" y="134" font-size="115"<text x="50%" text-anchor="middle" y="134" font-size="115" fill="url(#pc-fill)" filter="url(#pc-cloud)">&#x265C;&#xFE0E;</text></svg>
+    <svg class="ts-pc ts-pc--r ts-pc--king" width="210" height="210" viewBox="0 0 210 210"><text x="50%" text-anchor="middle" y="165" font-size="150"<text x="50%" text-anchor="middle" y="165" font-size="150" fill="url(#pc-fill)" filter="url(#pc-cloud)">&#x265A;&#xFE0E;</text></svg>
+    <svg class="ts-pc ts-pc--l ts-pc--queen" width="190" height="190" viewBox="0 0 190 190"><text x="50%" text-anchor="middle" y="147" font-size="130"<text x="50%" text-anchor="middle" y="147" font-size="130" fill="url(#pc-fill)" filter="url(#pc-cloud)">&#x265B;&#xFE0E;</text></svg>
+    <svg class="ts-pc ts-pc--r ts-pc--puff-a" width="200" height="92" viewBox="0 0 260 120"><g fill="url(#pc-fill)" filter="url(#pc-cloud)"><ellipse cx="80" cy="76" rx="62" ry="20"/><ellipse cx="112" cy="58" rx="34" ry="26"/><ellipse cx="150" cy="52" rx="42" ry="34"/><ellipse cx="188" cy="68" rx="36" ry="24"/><ellipse cx="130" cy="82" rx="90" ry="18"/></g></svg>
+    <svg class="ts-pc ts-pc--l ts-pc--puff-b" width="230" height="92" viewBox="0 0 300 120"><g fill="url(#pc-fill)" filter="url(#pc-cloud)"><ellipse cx="110" cy="78" rx="90" ry="20"/><ellipse cx="120" cy="60" rx="40" ry="28"/><ellipse cx="168" cy="56" rx="34" ry="26"/><ellipse cx="205" cy="72" rx="40" ry="20"/></g></svg>
+    <svg class="ts-pc ts-pc--r ts-pc--puff-c" width="170" height="77" viewBox="0 0 220 100"><g fill="url(#pc-fill)" filter="url(#pc-cloud)"><ellipse cx="110" cy="66" rx="70" ry="16"/><ellipse cx="96" cy="52" rx="30" ry="22"/><ellipse cx="132" cy="50" rx="26" ry="20"/></g></svg>
+  </div>
+  {%- endif %}
 
   {%- comment -%} 5 · the far horizon: the town's own light, low and warm, along the foot of
        the sky. It's what stops the backdrop reading as "a gradient" and starts it reading as

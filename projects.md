@@ -2,7 +2,7 @@
 layout: page
 title: McPuppy Studios
 permalink: /projects/
-body_class: theme-studio
+body_class: theme-studio studio-home
 tab_title: McPuppy Studios — The Studio Behind ChessWild
 description: McPuppy Studios — the independent studio behind ChessWild. The Academy, the games and the build log, and how far along each one is.
 ---
