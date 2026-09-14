@@ -926,7 +926,8 @@ const WIDTHS = [320, 360, 390, 430];
         await page.goto('http://127.0.0.1:' + port + '/assets/games/pjcc_marchland.html', { waitUntil: 'load' });
         await new Promise((r) => setTimeout(r, 400));
         try {
-          await page.evaluate(() => document.getElementById('go').click());
+          /* ⚠ every stage starts a FRESH campaign: the last stage's save makes Begin ask twice */
+          await page.evaluate(() => { localStorage.removeItem('pjcc.campaign.save.v1'); document.getElementById('go').click(); });
           await new Promise((r) => setTimeout(r, 400));
           /* deploy every troop — one tap a rank, and the last one ends the phase itself */
           for (let i = 0; i < 40; i++) {

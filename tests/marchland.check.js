@@ -216,7 +216,7 @@ check('…and the budget is spent when an attack is COMMITTED, not when it is wo
      from `$('cont').addEventListener` then captured two one-line listeners and none of the
      logic, and this check went quietly green-adjacent on an empty string. Slice the FUNCTION,
      not the place it happens to be wired up. */
-  const contFn = slice('function continueOn()', "newCampaign('medium')");
+  const contFn = slice('function continueOn()', "$('cont').addEventListener");
   check('spending the last attack moves you on rather than stranding you',
         /G\.atks <= 0[\s\S]{0,120}setPhase\('fortify'\)/.test(contFn),
         'the map still opens first, so you see what you took');
@@ -282,7 +282,7 @@ check('⭐ on the position die the gold band IS the castling set',
 /* The badge itself: markup, both paint paths, and the stillness guard. */
 const diceFns = slice('function paintDice', 'function matVerdict');
 check('the castle mark is asked of posCastles(), not of the band',
-      /if \(isPos && posCastles\(v\)\) cls \+= ' castle';/.test(diceFns),
+      /if \(isPos && isDef && posCastles\(v\)\) cls \+= ' castle';/.test(diceFns),
       'one source of truth for what castles — move POS_CASTLE and the badge moves with it');
 check('⚠ …and only on the KEPT die — a dropped 7 castles nothing',
       /i === keptIdx[\s\S]{0,160}posCastles\(v\)/.test(diceFns));
@@ -780,7 +780,8 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
       await page.waitForFunction(() => !document.getElementById('tobattle').disabled, { timeout: 9000 });
       await page.click('#tobattle');
       await page.waitForFunction(isOn('screen-battle'), { timeout: 9000 });
-      await page.click('#resign');
+      await page.click('#resign');                               // arms it…
+      await page.click('#resign');                               // …and withdraws
       await page.waitForFunction(ENDED, { timeout: 9000 });
       await page.click('#econt');
       await page.waitForFunction(isOn('screen-map'), { timeout: 9000 });
@@ -798,8 +799,8 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
 
     /* whatever phase the run above left us in, walk it to theirs */
     for (let i = 0; i < 3; i++) {
-      const p = await page.evaluate(() => (document.querySelector('.phasebar span.on') || {}).textContent);
-      if (p === 'Theirs') break;
+      /* their turn lights no cell — and #endturn is the hurry button during it, so stop here */
+      if (await page.evaluate(() => !document.querySelector('.phasebar span.on'))) break;
       await page.click('#endturn');
       await new Promise((r) => setTimeout(r, 120));
     }
