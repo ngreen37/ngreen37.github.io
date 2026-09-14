@@ -181,6 +181,13 @@ if (stackFails.length) {
   process.exit(1);
 }
 console.log('  ✓ PASS  the front door\'s sheet: 3 layers, 3 anchors, only the parchment pinned');
+// a `display:` rule anywhere beats the UA's [hidden]; this is the one line that stops it
+if (!/\[hidden\]\{display:none ?!important\}/.test(min)) {
+  console.error('  ✗ FAIL  no global `[hidden] { display: none !important }` — a hidden element with a display rule renders anyway');
+  console.error('\nRESULT: FAIL\n');
+  process.exit(1);
+}
+console.log('  ✓ PASS  [hidden] always hides (global !important guard)');
 console.log('  ✓ PASS  expanded:   ' + (out.css.length / 1024).toFixed(1) + ' KB');
 console.log('  ✓ PASS  compressed: ' + (min.length / 1024).toFixed(1) + ' KB   ← what visitors download');
 

@@ -108,6 +108,11 @@
   padding: 0;
 }
 
+/* ⚠ `hidden` MUST WIN. Any `display:` rule outranks the browser's own [hidden] default, so
+   an element a script hid kept rendering: on 2026-09-14 the Park Tables told every visitor
+   "You came here from Checker Town". tests/css.check.js requires this rule. */
+[hidden] { display: none !important; }
+
 /* --- Base Typography --- */
 html {
   font-size: 16px;
