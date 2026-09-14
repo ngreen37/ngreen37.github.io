@@ -32,9 +32,17 @@
     border:3px solid #d24b4b; border-radius:16px; box-shadow:0 0 44px rgba(210,75,75,0.22);
     padding:16px 16px 20px; max-height:100%; overflow-y:auto; overflow-x:hidden;
     overscroll-behavior-y:contain; }
-  /* START sits under a 1036px deck list; pinned, it is where the thumb already is */
-  #home > .row { position:sticky; bottom:-20px; z-index:3; margin-top:12px; padding:10px 0;
+  /* ⚠ THE WHOLE START DECISION IS PINNED, not just START: the deck list is ~1036px, and a
+     mode toggle left below it was invisible while you picked a deck at the top. */
+  .start-bar { position:sticky; bottom:-20px; z-index:3; margin-top:12px; padding:8px 0 10px;
     background:#0d0a1e; box-shadow:0 -8px 14px #0d0a1e; }
+  .start-deck { text-align:center; font-size:12px; color:#cdbcf2; font-weight:800; margin-bottom:6px; }
+  .start-deck .due { color:#f5c518; }
+  .start-controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  @media (max-width: 400px) {
+    .start-controls .mode-row { flex:1 1 100%; } .mode-pick { flex:1; }
+    .start-controls .btn { flex:1; padding:11px 10px; }
+  }
   /* faint hanko/seal pattern */
   #app::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:0.05;
     background-image:radial-gradient(circle at 20% 30%, #d24b4b 0 2px, transparent 3px),
@@ -75,11 +83,11 @@
   .deck-due { flex-shrink:0; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; min-width:52px; text-align:center; }
   .due-have { background:#f5c518; color:#1a0f3d; } .due-none { background:#2a1a5a; color:#8a6fd0; }
 
-  .mode-row { display:flex; gap:8px; justify-content:center; margin:12px 0 4px; }
-  .mode-pick { font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:#211842; color:#b9a8e6;
-    border:2px solid #4a3a86; border-radius:999px; padding:7px 16px; }
+  .mode-row { display:flex; gap:4px; padding:3px; background:#211842; border:2px solid #4a3a86; border-radius:999px; }
+  .mode-pick { font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:transparent; color:#b9a8e6;
+    border:2px solid transparent; border-radius:999px; padding:0 14px; min-height:38px; }
   .mode-pick.sel { border-color:#6bffb8; color:#fff; background:#1e3a32; }
-  .mode-note { text-align:center; font-size:11px; color:#9a8fc0; margin-top:4px; min-height:14px; }
+  .mode-note { text-align:center; font-size:11px; color:#9a8fc0; margin-top:6px; min-height:14px; }
 
   .row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
   .btn { font-family:inherit; font-weight:800; cursor:pointer; border:none; border-radius:999px; padding:11px 24px; font-size:14px; letter-spacing:.5px;
@@ -100,7 +108,6 @@
   .card-back { text-align:center; margin-top:10px; }
   .card-reading { color:#1b1206; font-size:30px; font-weight:900; }
   .card-meaning { color:#7a3030; font-size:16px; margin-top:2px; }
-  .card-extra { color:#9a6a4a; font-size:12.5px; margin-top:4px; }
 
   .grade-row { display:flex; gap:8px; justify-content:center; margin-top:10px; }
   .grade { flex:1; max-width:120px; font-family:inherit; font-weight:800; cursor:pointer; border:none; border-radius:12px; padding:12px 8px; font-size:13px; color:#1a0f3d; box-shadow:0 4px 0 rgba(0,0,0,0.3); }
@@ -147,17 +154,18 @@
     <div class="eyebrow">Kaede's</div>
     <div class="title">THE READING ROOM<span class="jp">どくしょしつ</span></div>
     <div class="decks" id="deck-list"></div>
-    <div class="mode-row" id="mode-row">
-      <button class="mode-pick sel" data-mode="review">🔁 Review</button>
-      <button class="mode-pick" data-mode="quiz">⚡ Quiz</button>
-    </div>
-    <div class="mode-note" id="mode-note">Review: see a character, recall it, then grade yourself. This is what teaches you.</div>
-    <div class="row">
-      <button class="btn btn-gold" id="start-btn">START</button>
-      <button class="btn btn-ghost" id="cram-btn">CRAM ALL</button>
-    </div>
-    <div class="foot">
-      Readings use simple romaji. <span class="tap" id="reset-srs">Reset Progress</span>
+    <div class="foot"><span class="tap" id="reset-srs">Reset Progress</span></div>
+    <div class="start-bar">
+      <div class="start-deck" id="start-deck"></div>
+      <div class="start-controls">
+        <div class="mode-row" id="mode-row">
+          <button class="mode-pick sel" data-mode="review">🔁 Review</button>
+          <button class="mode-pick" data-mode="quiz">⚡ Quiz</button>
+        </div>
+        <button class="btn btn-gold" id="start-btn">START</button>
+        <button class="btn btn-ghost" id="cram-btn">CRAM ALL</button>
+      </div>
+      <div class="mode-note" id="mode-note">Recall it, then grade yourself. This is what teaches you.</div>
     </div>
   </div>
 
@@ -171,7 +179,6 @@
       <div class="card-back hidden" id="rv-back">
         <div class="card-reading" id="rv-reading"></div>
         <div class="card-meaning" id="rv-meaning"></div>
-        <div class="card-extra" id="rv-extra"></div>
       </div>
     </div>
     <div id="rv-show-wrap" class="row"><button class="btn btn-gold" id="rv-show">SHOW ANSWER</button></div>
@@ -288,26 +295,26 @@
   ];
 
   // --- reverse: English for Japanese speakers ---
-  // [japanese(front), english(answer), example]
+  // [japanese(front), english(answer)]
   var ENWORDS = [
-    ['犬','dog','a big dog'],['猫','cat','a black cat'],['水','water','a glass of water'],['本','book','a good book'],
-    ['学校','school','go to school'],['先生','teacher','my teacher'],['友達','friend','a good friend'],['家','house','a big house'],
-    ['車','car','a fast car'],['食べる','to eat','I eat rice.'],['飲む','to drink','drink some water'],['行く','to go','go home'],
-    ['見る','to see','I can see you.'],['大きい','big','a big dog'],['小さい','small','a small cat'],['今日','today','See you today.'],
-    ['明日','tomorrow','See you tomorrow.'],['名前','name','my name']
+    ['犬','dog'],['猫','cat'],['水','water'],['本','book'],
+    ['学校','school'],['先生','teacher'],['友達','friend'],['家','house'],
+    ['車','car'],['食べる','to eat'],['飲む','to drink'],['行く','to go'],
+    ['見る','to see'],['大きい','big'],['小さい','small'],['今日','today'],
+    ['明日','tomorrow'],['名前','name']
   ];
   var ENPHRASES = [
-    ['こんにちは','Hello','Hello!'],['おはよう','Good morning','Good morning!'],['こんばんは','Good evening','Good evening!'],
-    ['おやすみ','Good night','Good night!'],['ありがとう','Thank you','Thank you very much.'],['すみません','Excuse me / Sorry','Excuse me.'],
-    ['おねがいします','Please','Water, please.'],['はじめまして','Nice to meet you','Hi, nice to meet you.'],['さようなら','Goodbye','Goodbye!'],
-    ['げんきですか','How are you?','How are you today?'],['わかりません','I don\'t understand','Sorry, I don\'t understand.'],['たすけて','Help!','Help me, please!']
+    ['こんにちは','Hello'],['おはよう','Good morning'],['こんばんは','Good evening'],
+    ['おやすみ','Good night'],['ありがとう','Thank you'],['すみません','Excuse me / Sorry'],
+    ['おねがいします','Please'],['はじめまして','Nice to meet you'],['さようなら','Goodbye'],
+    ['げんきですか','How are you?'],['わかりません','I don\'t understand'],['たすけて','Help!']
   ];
 
   var DECKS = [
     { id:'hira', name:'Hiragana', jp:'ひらがな', sub:'the everyday script', glyph:'あ', color:'#ff8f8f', cards:HIRA, kind:'kana', group:'jp' },
     { id:'kata', name:'Katakana', jp:'カタカナ', sub:'foreign & loud words', glyph:'ア', color:'#8fc8ff', cards:KATA, kind:'kana', group:'jp' },
-    { id:'kanji', name:'Kanji', jp:'漢字 · N5', sub:'46 common characters', glyph:'本', color:'#f5c518', cards:KANJI, kind:'kanji', group:'jp' },
-    { id:'kanji2', name:'Kanji II', jp:'漢字 · N5', sub:'24 more N5 characters', glyph:'母', color:'#ffd089', cards:KANJI2, kind:'kanji', group:'jp' },
+    { id:'kanji', name:'Kanji', jp:'漢字 · N5', sub:'common characters', glyph:'本', color:'#f5c518', cards:KANJI, kind:'kanji', group:'jp' },
+    { id:'kanji2', name:'Kanji II', jp:'漢字 · N5', sub:'more N5 characters', glyph:'母', color:'#ffd089', cards:KANJI2, kind:'kanji', group:'jp' },
     { id:'words', name:'Everyday Words', jp:'単語 · N5', sub:'common N5 vocabulary', glyph:'猫', color:'#6bffb8', cards:WORDS, kind:'kanji', group:'jp' },
     { id:'phrases', name:'Greetings & Phrases', jp:'あいさつ', sub:'say it out loud', glyph:'こ', color:'#ff9ec9', cards:PHRASES, kind:'kanji', group:'jp' },
     { id:'jchess', name:'Chess & Shogi', jp:'将棋・チェス', sub:'the words of the board', glyph:'王', color:'#caa24a', cards:JCHESS, kind:'kanji', group:'jp' },
@@ -324,11 +331,8 @@
   function answerOf(card, deck) { return deck.kind==='kanji' ? card[2] : card[1]; }
   function frontPrompt(deck) { return deck.kind==='kana' ? 'what does this read?' : (deck.kind==='en' ? 'say it in English' : 'what does this mean?'); }
   function quizPrompt(deck) { return deck.kind==='kana' ? 'tap the reading' : (deck.kind==='en' ? 'tap the English' : 'tap the meaning'); }
-  function secondaryOf(card, deck) {
-    if (deck.kind==='kanji') return meaningOf(card, deck);
-    if (deck.kind==='en') return card[2] || '';
-    return deck.id==='hira' ? 'hiragana' : 'katakana';
-  }
+  // the answer's second line: a kanji's meaning, and nothing for kana or English
+  function secondaryOf(card, deck) { return deck.kind==='kanji' ? meaningOf(card, deck) : ''; }
 
   // ======================= SRS (Anki-lite Leitner) =======================
   var SRS_KEY = 'pjcc.reading.srs.v1';
@@ -341,17 +345,24 @@
   function isDue(id) { return sched(id).due <= Date.now(); }
   function grade(id, g) {
     var s = sched(id), box;
-    if (g === 'again') { SRS[id] = { box: 1, due: Date.now() + MIN }; saveSRS(); return { box:1, promoted:false }; }
+    if (g === 'again') { SRS[id] = { box: 1, due: Date.now() + MIN }; saveSRS(); return; }
     if (g === 'easy') box = Math.min((s.box || 0) + 2, 5);
     else box = Math.min((s.box || 0) + 1, 5);              // 'good'
     var due = Date.now() + INTERVAL[box] * (g === 'easy' ? 1.3 : 1);
-    var promoted = box > (s.box || 0);
     SRS[id] = { box: box, due: due }; saveSRS();
-    return { box: box, promoted: promoted };
   }
   function deckIds(deck) { return deck.cards.map(function (c) { return cardId(deck.id, glyphOf(c)); }); }
   function deckMastery(deck) { var ids = deckIds(deck), sum = 0; ids.forEach(function (id) { sum += sched(id).box; }); return ids.length ? sum / ids.length : 0; }
   function deckDue(deck) { return deckIds(deck).filter(isDue).length; }
+  function stars(deck) { var m = Math.round(deckMastery(deck)); return '★'.repeat(m) + '☆'.repeat(5 - m); }
+  function whenNext(deck) {
+    if (deckDue(deck)) return 'now';
+    var h = (Math.min.apply(null, deckIds(deck).map(function (id) { return sched(id).due; })) - Date.now()) / HOUR;
+    if (h < 1) return 'within the hour';
+    if (h < 24) return 'in ' + Math.round(h) + 'h';
+    var d = Math.round(h / 24);
+    return 'in ' + d + ' day' + (d === 1 ? '' : 's');
+  }
 
   // ======================= Kaede speech =======================
   function say(jp, romaji, en) {
@@ -410,19 +421,20 @@
         gh.style.cssText = 'font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#a087e0;font-weight:800;margin:' + (list.children.length ? '14px' : '2px') + ' 4px 6px;';
         list.appendChild(gh);
       }
-      var due = deckDue(d), m = Math.round(deckMastery(d));
-      var stars = '★'.repeat(m) + '☆'.repeat(5 - m);
+      var due = deckDue(d);
       var el = document.createElement('div');
       el.className = 'deck' + (d.id === selectedDeck ? ' sel' : '');
       el.innerHTML =
         '<div class="deck-badge jp" style="background:' + d.color + '">' + d.glyph + '</div>' +
         '<div class="deck-info"><div class="deck-name">' + d.name + ' <span class="jp" style="color:#b9a8e6;font-size:12px;">' + d.jp + '</span></div>' +
         '<div class="deck-sub">' + d.cards.length + ' cards · ' + d.sub + '</div>' +
-        '<div class="deck-stars">' + stars + '</div></div>' +
+        '<div class="deck-stars">' + stars(d) + '</div></div>' +
         '<div class="deck-due ' + (due ? 'due-have' : 'due-none') + '">' + (due ? due + ' due' : 'rest') + '</div>';
       el.addEventListener('click', function () { selectedDeck = d.id; buildDeckList(); });
       list.appendChild(el);
     });
+    var sd = deckById(selectedDeck), n = deckDue(sd);
+    document.getElementById('start-deck').innerHTML = sd.name + ' · <span class="due">' + (n ? n + ' due' : 'all caught up') + '</span>';
   }
 
   // ======================= REVIEW (Anki) =======================
@@ -438,7 +450,7 @@
       if (!queue.length) { allCaughtUp(deck); return; }
     }
     R = { deck: deck, cram: !!cram, queue: queue, total: queue.length, done: 0,
-          stats: { seen: 0, again: 0, good: 0, promo: 0 }, shown: false, cur: null };
+          stats: { seen: 0, again: 0, good: 0 }, shown: false, cur: null };
     show('review');
     document.getElementById('rv-deck').textContent = deck.name + (cram ? ' · cram' : ' · review');
     nextReview();
@@ -458,7 +470,6 @@
     document.getElementById('rv-back').classList.add('hidden');
     document.getElementById('rv-reading').textContent = '';   // never let the last answer linger
     document.getElementById('rv-meaning').textContent = '';
-    document.getElementById('rv-extra').textContent = '';
     document.getElementById('rv-show-wrap').classList.remove('hidden');
     document.getElementById('rv-grades').classList.add('hidden');
     var left = R.queue.length + 1;
@@ -470,7 +481,6 @@
     var deck = R.deck, card = cardByIdInDeck(deck, R.cur);
     document.getElementById('rv-reading').textContent = readingOf(card);
     document.getElementById('rv-meaning').textContent = secondaryOf(card, deck);
-    document.getElementById('rv-extra').textContent = deck.kind === 'kanji' ? '読み — reading' : (deck.kind === 'en' ? '英語 → English' : '');
     document.getElementById('rv-back').classList.remove('hidden');
     document.getElementById('rv-show-wrap').classList.add('hidden');
     document.getElementById('rv-grades').classList.remove('hidden');
@@ -480,7 +490,7 @@
     R.stats.seen++;
     if (g === 'again') { R.stats.again++; sayNudge(); }
     else { R.stats.good++; if (Math.random() < 0.5) sayPraise(); }
-    if (!R.cram) { var r = grade(R.cur, g); if (r.promoted) R.stats.promo++; }
+    if (!R.cram) grade(R.cur, g);
     if (g === 'again') R.queue.push(R.cur);   // re-drill this session
     R.done++;
     nextReview();
@@ -489,7 +499,8 @@
     sfx('done');
     var s = R.stats;
     showSummary('review', R.deck, {
-      'Cards seen': s.seen, 'Recalled': s.good, 'Promoted ★': s.promo, 'Stumbled': s.again
+      'Cards': s.seen, 'Knew it': s.good, 'Practice again': s.again,
+      'Deck': stars(R.deck), 'Next review': whenNext(R.deck)
     }, null);
     if (window.PJCC && PJCC.saveScore) PJCC.saveScore('reading-room', 0, { credits: Math.ceil(s.good / 3), data: { deck: R.deck.id, mode: 'review' } });
   }
@@ -571,7 +582,7 @@
     } else {
       eyebrow.textContent = (kind === 'quiz' ? 'Quiz' : 'Review') + ' · ' + deck.name;
       title.innerHTML = '<span class="jp">お疲れさま！</span>';
-      var g = ''; for (var k in rows) g += '<div class="l">' + k + '</div><div class="v' + (/Recalled|Correct|Round|score/.test(k) ? ' up' : '') + '">' + rows[k] + '</div>';
+      var g = ''; for (var k in rows) g += '<div class="l">' + k + '</div><div class="v' + (/Knew it|Correct|Round|score/.test(k) ? ' up' : '') + '">' + rows[k] + '</div>';
       document.getElementById('sm-grid').innerHTML = g;
       var gl = document.getElementById('sm-ghost');
       if (kind === 'quiz' && window.PJCC && PJCC.vsGhost) {
@@ -588,8 +599,10 @@
     selectedMode = b.dataset.mode;
     Array.prototype.forEach.call(document.querySelectorAll('#mode-row .mode-pick'), function (p) { p.classList.toggle('sel', p === b); });
     document.getElementById('mode-note').textContent = selectedMode === 'review'
-      ? 'Review: see a character, recall it, then grade yourself. This is what teaches you.'
-      : 'Quiz: pick the reading against the clock — combos score big. Posts to the leaderboard.';
+      ? 'Recall it, then grade yourself. This is what teaches you.'
+      : 'Pick from four. Combos score big, and it posts to the leaderboard.';
+    // cram is a review with no schedule; in Quiz mode it started a review anyway
+    document.getElementById('cram-btn').classList.toggle('hidden', selectedMode !== 'review');
   });
   function startSelected(cram) {
     go(); var deck = deckById(selectedDeck);
