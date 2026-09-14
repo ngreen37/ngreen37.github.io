@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>P&JCC: Fork in the Road v2.2</title>
+<title>P&JCC: Fork in the Road</title>
 <!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
      ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
      nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
@@ -176,7 +176,9 @@
      render() draws nothing behind them. Report does NOT — the puzzle is still live under
      it, which is the point (you are reporting THAT position). Without a fill the FEN and
      the note field would be typed over a chessboard. */
-  #report-screen { background: rgba(250, 245, 232, 0.96); }
+  #report-screen, #map-screen { background: rgba(250, 245, 232, 0.96); }
+  #map-wrap { width: 100%; max-width: 400px; }
+  #map-wrap svg { display: block; width: 100%; height: auto; }
   /* Page typography, not arcade typography: the title is sentence case at a page weight,
      the eyebrow is the front door's mono label, and nothing glows. */
   .big-title { font-size: 30px; font-weight: 900; color: #1e232c; letter-spacing: -0.02em;
@@ -244,10 +246,21 @@
     <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#175031;font-weight:700;min-height:14px;"></div>
     <div class="row">
       <button class="btn btn-gold" id="journey-btn">Continue the Journey</button>
+      <button class="btn btn-ghost" id="map-btn">🗺 Map</button>
     </div>
     <div class="foot">
       <span class="tap" id="snd-toggle">🔊 Sound: On</span> &nbsp;·&nbsp; <span class="tap" id="reset-prog">Reset Journey</span>
     </div>
+  </div>
+
+  <!-- the road, as a map (2026-09-14) -->
+  <div class="overlay hidden" id="map-screen">
+    <div class="eyebrow">The Road</div>
+    <div class="big-title" style="font-size:22px;">Checker Town to Chess City</div>
+    <div class="blurb" id="map-line" style="margin-bottom:4px;"></div>
+    <div id="map-wrap"></div>
+    <div class="row" id="map-doors"></div>
+    <div class="foot"><span class="tap" id="map-close">Back</span></div>
   </div>
 
   <!-- the report panel (2026-07-27) -->
@@ -344,17 +357,27 @@ function Rk(a){ return 8 - parseInt(a[1], 10); }
 // Puzzles are generated and verified by construction (no chess-theory guesswork):
 // knight forks (Princess's own move) and corner back-rank mates. Difficulty
 // scales board clutter + target value; the journey adapts to the player.
-const REGIONS = ['Checker Town', 'The Sand Mines', 'The Sea', 'Shogi Isle', 'Chess City'];
+/* THE ROAD'S PLACES — the ribbon, the map, the menu line and the summary all read this.
+   `at` is clean solves. A door is only a PUBLIC game: Chess City is in development and
+   Checker Town sits behind the prototype gate, so neither gets a link. */
+const STOPS = [
+  { at: 0,    name: 'Checker Town' },
+  { at: 200,  name: 'The Sand Mines', door: ['/games/sand-mine-depths/', 'Sand Mine Depths'] },
+  { at: 400,  name: 'The Sea' },
+  { at: 600,  name: 'Shogi Isle', door: ['/games/shogi-island/', 'Shogi Island'] },
+  { at: 800,  name: 'The City Gates' },
+  { at: 1000, name: 'Chess City' }
+];
+function stopAt(step){ let i = 0; STOPS.forEach((st, k) => { if (step >= st.at) i = k; }); return i; }
 const JOURNEY_LEN = 1000, LEG = 5;
 // TEN LEVELS on the road to Chess City (2026-07-28, Nate: "Chess City is the final
 // destination but requires 1,000 correct puzzles to reach. There are multiple (maybe 10?)
 // steps along the way. They don't need names for now - just call them level 1, level 2").
-// 100 solved puzzles per level. The five REGIONS stay as the world underneath; the LEVEL is
+// 100 solved puzzles per level. The STOPS stay as the world underneath; the LEVEL is
 // what the player is TOLD, because a number that moves ten times beats a name that moves five.
 const LEVELS = 10, LEVEL_LEN = JOURNEY_LEN / LEVELS;
 function levelFor(step){ return Math.min(LEVELS, Math.floor(step / LEVEL_LEN) + 1); }
 function intoLevel(step){ return step % LEVEL_LEN; }
-function regionFor(step){ return Math.min(4, Math.floor(step / (JOURNEY_LEN / 5))); }
 const STORY = {
   0:    'The road out of Checker Town begins — one tactic at a time.',
   200:  'Into the Sand Mines. The puzzles bite harder in the dark.',
@@ -1601,7 +1624,7 @@ function updateJourneyLine(){
   const rated = pz ? 'Your puzzle rating <b>' + pz.rating + '</b> &middot; ' : '';
   el.innerHTML = rated + (pr.step >= JOURNEY_LEN
     ? '🏰 <b>You walked the whole road.</b> ' + pr.step + ' puzzles solved.'
-    : REGIONS[regionFor(pr.step)] + ' &middot; ' + pr.step + ' solved');
+    : STOPS[stopAt(pr.step)].name + ' &middot; ' + pr.step + ' solved');
 }
 
 // ---- Flow ----
@@ -1930,6 +1953,10 @@ function cellFromXY(cx, cy){
 }
 canvas.addEventListener('pointerdown', e => {
   if (explainCard) { e.preventDefault(); advanceFromExplain(); return; }   // tap the teaching card to continue
+  if (run && run.mode === 'journey'){
+    const r = canvas.getBoundingClientRect();
+    if ((e.clientY - r.top) * (H / r.height) >= H - 46) { e.preventDefault(); openMap(); return; }
+  }
   if (!G || G.phase !== 'await') return;
   const c = cellFromXY(e.clientX, e.clientY); if (!c) return; e.preventDefault();
   const exp = uci(G.p.line[G.step][0]);
@@ -2252,10 +2279,15 @@ function drawRibbon(){
      claiming otherwise. Left is where you ARE, right is the NEXT place on the road — true as
      a heading whether or not this particular five gets you there — and the long run now lives
      in the journey line and in the rating, which is what a rating is for. */
+  /* ⚑ 2026-09-14, Nate: "the road to the sand mines on the bottom never seems to happen."
+     The dots are one five-puzzle leg; the far label is 200 clean solves away. So the far
+     label now carries the COUNT, and a tap on this band opens the map (see openMap). */
   ctx.fillStyle = C.muted; ctx.font = '9px Trebuchet MS'; ctx.textBaseline = 'top';
-  const here = run.mode === 'journey' ? regionFor(run.step) : 0;
-  ctx.textAlign = 'left'; ctx.fillText(REGIONS[here], x0 - 6, y + 9);
-  ctx.textAlign = 'right'; ctx.fillText(REGIONS[Math.min(REGIONS.length - 1, here + 1)], x1 + 6, y + 9);
+  const here = run.mode === 'journey' ? stopAt(run.step) : 0, next = STOPS[Math.min(STOPS.length - 1, here + 1)];
+  ctx.textAlign = 'left'; ctx.fillText(STOPS[here].name, x0 - 6, y + 9);
+  ctx.textAlign = 'right';
+  ctx.fillText(next.name + (next.at > run.step ? ' · ' + (next.at - run.step) + ' to go' : ''), x1 + 6, y + 9);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#5f3e1e'; ctx.fillText('🗺 Map', W/2, y + 9);
   // Princess token gliding along
   const ph = princessHop;
   const fr = x0 + (x1 - x0) * (ph.from / n), to = x0 + (x1 - x0) * (ph.to / n);
@@ -2387,13 +2419,13 @@ function loop(now){
 }
 
 // ---- Screens ----
-function hideOverlays(){ ['menu-screen','summary-screen','report-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
+function hideOverlays(){ ['menu-screen','summary-screen','report-screen','map-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
 function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); document.getElementById('analysis-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showSummary(){
   G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); document.getElementById('analysis-btn').classList.add('hidden');
   const s = run.stats;
   if (run.mode === 'journey'){
-    const reg = REGIONS[regionFor(run.step)], done = run.step >= JOURNEY_LEN;
+    const reg = STOPS[stopAt(run.step)].name, done = run.step >= JOURNEY_LEN;
     let beat = '';
     for (const k in STORY){ const st = +k; if (st > run.legStartStep && st <= run.step) beat = STORY[k]; }
     document.getElementById('sum-mode').textContent = 'Journey · ' + reg;
@@ -2620,6 +2652,59 @@ document.getElementById('rep-copy').addEventListener('click', async ()=>{
   }
 });
 document.getElementById('menu-btn').addEventListener('click', showMenu);
+document.getElementById('map-btn').addEventListener('click', openMap);
+// ⚠ the menu is hidden under the map, not left behind it: at 0.96 its title still ghosted through
+let mapOverMenu = false;
+document.getElementById('map-close').addEventListener('click', () => {
+  document.getElementById('map-screen').classList.add('hidden');
+  if (mapOverMenu) document.getElementById('menu-screen').classList.remove('hidden');
+});
+
+/* THE MAP — a switchback from Checker Town (bottom) to Chess City (top), a stop every
+   200 clean solves, Princess where you are. Each stretch is one cubic, so the token is
+   placed and the walked road is cut with the same maths (de Casteljau). */
+function openMap(){
+  const step = run && run.mode === 'journey' ? run.step : loadProg().step;
+  const VW = 400, VH = 400, pad = 34, n = STOPS.length;
+  const pt = STOPS.map((st, i) => ({ x: i % 2 ? VW * 0.64 : VW * 0.36, y: VH - pad - i * (VH - 2 * pad) / (n - 1) }));
+  const ctrl = i => { const a = pt[i], b = pt[i + 1], my = (a.y + b.y) / 2; return [a, { x: a.x, y: my }, { x: b.x, y: my }, b]; };
+  const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+  const split = (c, t) => { const ab = lerp(c[0], c[1], t), bc = lerp(c[1], c[2], t), cd = lerp(c[2], c[3], t),
+    abc = lerp(ab, bc, t), bcd = lerp(bc, cd, t); return [c[0], ab, abc, lerp(abc, bcd, t)]; };
+  const cub = c => 'M' + c[0].x + ' ' + c[0].y + ' C' + c[1].x + ' ' + c[1].y + ',' + c[2].x + ' ' + c[2].y + ',' + c[3].x + ' ' + c[3].y;
+  const here = stopAt(step), seg = Math.min(n - 2, here), t = here >= n - 1 ? 1 : (step - STOPS[seg].at) / (STOPS[seg + 1].at - STOPS[seg].at);
+  let road = '', walked = '';
+  for (let i = 0; i < n - 1; i++){
+    road += '<path d="' + cub(ctrl(i)) + '" stroke="#d9cfb4" stroke-width="10" fill="none" stroke-linecap="round"/>';
+    if (i < seg) walked += '<path d="' + cub(ctrl(i)) + '" stroke="#c99a12" stroke-width="6" fill="none" stroke-linecap="round"/>';
+  }
+  const part = split(ctrl(seg), t);
+  walked += '<path d="' + cub(part) + '" stroke="#c99a12" stroke-width="6" fill="none" stroke-linecap="round"/>';
+  const me = part[3];
+  const nodes = STOPS.map((st, i) => {
+    const c = pt[i], left = i % 2 === 0, reached = step >= st.at, isNext = i === here + 1;
+    const lx = left ? c.x - 20 : c.x + 20, anchor = left ? 'end' : 'start';
+    const sub = reached ? (i === 0 ? 'Start' : 'Reached') : isNext ? (st.at - step) + ' to go' : '';
+    return '<circle cx="' + c.x + '" cy="' + c.y + '" r="10" fill="' + (reached ? '#c99a12' : '#faf5e9') +
+        '" stroke="' + (isNext ? '#2e7d47' : reached ? '#5f3e1e' : '#b9ad8e') + '" stroke-width="' + (isNext ? 3 : 2) + '"/>' +
+      '<text x="' + lx + '" y="' + (c.y - 1) + '" text-anchor="' + anchor + '" font-size="14" font-weight="700" fill="' + (reached || isNext ? '#1e232c' : '#5f6570') + '">' + st.name + '</text>' +
+      (sub ? '<text x="' + lx + '" y="' + (c.y + 15) + '" text-anchor="' + anchor + '" font-size="11.5" fill="' + (isNext ? '#175031' : '#5f3e1e') + '">' + sub + '</text>' : '');
+  }).join('');
+  const token = '<circle cx="' + me.x + '" cy="' + (me.y - 16) + '" r="11" fill="#33196e" stroke="#c99a12" stroke-width="2"/>' +
+    '<text x="' + me.x + '" y="' + (me.y - 11.5) + '" text-anchor="middle" font-size="13" fill="#fceeff">♞</text>';
+  document.getElementById('map-wrap').innerHTML =
+    '<svg viewBox="0 0 ' + VW + ' ' + VH + '" role="img" aria-label="The road: ' + step + ' of ' + JOURNEY_LEN + ' clean solves" ' +
+    'style="font-family:Trebuchet MS,sans-serif">' + road + walked + nodes + token + '</svg>';
+  const next = STOPS[Math.min(n - 1, here + 1)];
+  document.getElementById('map-line').innerHTML = step >= JOURNEY_LEN ? '🏰 <b>You walked the whole road.</b>'
+    : '<b>' + step + '</b> clean solves · <b>' + (next.at - step) + '</b> to ' + next.name;
+  document.getElementById('map-doors').innerHTML = STOPS.filter(st => st.door && step >= st.at)
+    .map(st => '<a class="btn btn-ghost" style="text-decoration:none" target="_top" href="' + st.door[0] + '">Play ' + st.door[1] + ' ↗</a>').join('');
+  const menu = document.getElementById('menu-screen');
+  mapOverMenu = !menu.classList.contains('hidden');
+  menu.classList.add('hidden');
+  document.getElementById('map-screen').classList.remove('hidden');
+}
 document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
 document.getElementById('reset-prog').addEventListener('click', ()=>{ saveProg({ step:0, diff:2, best:0 }); updateJourneyLine(); });
