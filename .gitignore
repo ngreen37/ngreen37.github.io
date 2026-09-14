@@ -18,3 +18,24 @@ private/
 tests/__shots/
 games/park-tables/__pt_test.html
 assets/css/__pt_test.css
+
+# `npm run sim:bots` writes its ladder measurement here (2026-09-12). It is a READING —
+# what the bots scored on one seed, on one machine, on one afternoon — not a fact about
+# the site, and a committed one would go stale silently and then be quoted as current.
+# The seed is printed at the top of every run, so any result can be reproduced instead.
+#   ⚠ NAMED TWO FILES FIRST AND THAT WAS THE WRONG RULE — one afternoon of sharded runs
+#   left TWELVE untracked result files (price-1..4, weak-1..2, shard-dry-1..4, dry-weak,
+#   sim-seed7). A results file is disposable by nature, so the rule has to be a pattern.
+tests/sim-bots.out.txt
+tests/sim-smoke.txt
+tests/sim-seed*.txt
+tests/price-*.txt
+tests/weak-*.txt
+tests/shard-dry-*.txt
+tests/dry-weak.txt
+tests/rr-*.txt
+tests/fit-*.txt
+tests/map-*.txt
+#   ⚠ THIRD TIME A RULE HERE WAS WRITTEN TOO NARROW (2026-09-13). First two named files
+#   when twelve existed; then the patterns missed `map-final.txt`. Any NEW sim output
+#   belongs in this block the moment the mode that writes it is added, not afterwards.

@@ -443,11 +443,28 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      flags him around move 46 of a bullet game and "I beat the CEO" mostly means "the CEO ran
      out of time". The property under test is untouched: resolved INSIDE the call that uses
      the bridge, so it cannot be older than the object producing it. */
+  /* ⚑ RE-AIMED 2026-09-13, when the bench grew a SECOND engine. `botDial` now resolves a
+     rating to one of two things — a measured negamax persona under 1400, Stockfish skill at
+     1400 and above — so a regex expecting `E.skillForElo(elo)` within 220 characters of the
+     function head stopped matching once the persona branch sat above it.
+     ⚠ THE PROPERTY UNDER TEST IS UNCHANGED and is the one that matters: strength is still
+     resolved INSIDE the call that uses the bridge, so it can never be staler than the object
+     producing it. What is asserted now is that BOTH doors are inside that one function —
+     widening the old window until it went green would have tested nothing. */
+  const dialBody = (PT.match(/function botDial\(b, st, S\)\{[\s\S]{0,700}?\n  \}/) || [''])[0];
   check('the dial is read at move time, not at parse time',
-    /function botDial\(b, st, S\)\{[\s\S]{0,220}E\.skillForElo\(elo\)/.test(PT) &&
+    /E\.personaForElo/.test(dialBody) &&
+    /E\.skillForElo\(elo\)/.test(dialBody) &&
     /function botElo\(b\)\{[\s\S]{0,200}return b\.elo;/.test(PT) &&
     /PJCCGauntletEngine\.move\(S, botDial\(bot, st, S\)\)/.test(PT),
-    'botDial() runs inside the same call that uses the engine');
+    'both engine doors resolve inside botDial(), which runs inside the call that uses them');
+  /* ⚠⚠ AND THE TWO ENGINES MUST NOT OVERLAP. personaForElo returning non-null for a rating
+     that Stockfish also claims would mean two sources of truth about one seat's difficulty —
+     the "Medium was secretly 1575" bug wearing its third hat. */
+  check('the negamax and Stockfish ranges do not overlap',
+    E.personaForElo && [350, 400, 750, 1000, 1250, 1399].every(e => E.personaForElo(e)) &&
+    [1400, 1600, 1800, 2100, 2400].every(e => E.personaForElo(e) === null),
+    'negamax owns <1400, Stockfish owns >=1400, nothing owns both');
   /* ⚠ AND STRENGTH STILL HAS EXACTLY ONE DOOR. An adaptive seat that reached the engine
      by any other route would be a second source of truth about difficulty — which is the
      original "Medium was secretly 1575" bug wearing a new hat. */

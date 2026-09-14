@@ -1245,8 +1245,19 @@ body_class: theme-hall
     var want = deep ? Math.min(base * 2.5, left / 8) : Math.min(base, left / 30);
     return Math.max(150, Math.floor(Math.min(want, left - 800)));
   }
+  /* ⚑ RE-AIMED 2026-09-13 — THE RATING IS STILL THE ONLY DIAL, it just now resolves to two
+     different engines. Under 1400 `personaForElo` hands back a measured depth/noise persona
+     and the negamax plays it; at 1400 and above it returns null and Stockfish keeps the seat
+     exactly as before. Nate: *"re-calibrate so the bots consistently play at their level."*
+     ⚠ STILL DERIVED AT MOVE TIME, inside the call that uses the bridge — the property
+     ladders.check.js asserts, and the reason "Medium" could not silently become a 1575. */
   function botDial(b, st, S){
     var E = window.PJCCGauntletEngine, elo = botElo(b);
+    var persona = E.personaForElo ? E.personaForElo(elo) : null;
+    if (persona) {
+      persona.timeMs = botThinkFor(b, st, S);
+      return { persona: persona, negamax: true, movetime: persona.timeMs };
+    }
     return { skill: E.skillForElo(elo), blunder: E.blunderForElo(elo),
              movetime: botThinkFor(b, st, S) };
   }

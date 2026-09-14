@@ -81,8 +81,20 @@
    stop moving while still reporting numbers. Keep these two IN the ladder.
    ⚠ MIN is 400 and not 350: below Maxwell the only lever left is `blunder`, and a bot
    whose weakness is "one move in three is random" does not feel weaker, it feels
-   broken — which is the opposite of what somebody on a losing run needs. */
-var MIN = 400, MAX = 2400;
+   broken — which is the opposite of what somebody on a losing run needs.
+
+   ⚠⚠ MAX CAME DOWN 2400 → 1399 ON 2026-09-13, and it is a real reduction in her ceiling.
+   The bench now resolves strength through TWO engines: under 1400 a measured negamax
+   persona, at 1400 and above Stockfish. Every fixed seat picks one and stays there — but
+   SHE MOVES, so at 1399 she was a depth-4 negamax and at 1400 she became Stockfish skill
+   3: two different engines on two different scales, swapping mid-game. Nobody designed
+   that seam and it cannot even be measured from the Node harness, because Stockfish needs
+   a Worker.
+   ⭐ Her card says "Adapts", not a number, so capping her costs no honesty — which is
+   exactly why this was the cheap fix and clamping her to Stockfish (killing the beginner
+   floor that is the whole point of her) was not. Nate's call, option A.
+   ⚠ If the negamax ladder ever reaches past 1400, raise this WITH it — not before. */
+var MIN = 400, MAX = 1399;
 
 /* Where it starts before it knows anything about you. 900 is the middle of the range
    people actually arrive at — the same reason the puzzle run starts its estimate at 900

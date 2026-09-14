@@ -884,9 +884,22 @@ function aiTurnSoon(){
 function aiMove(){
   if (!G || G.over){ return; }
   var myG = G, S = G.S;
+  /* ⭐⭐ THE SAME TWO-ENGINE SPLIT THE BENCH GOT (2026-09-13). Under 1400 a MEASURED negamax
+     persona plays; at 1400 and above Stockfish keeps the floor exactly as it was.
+     ⚠⚠ IT MUST BE personaForElo(), NOT G.persona. The floors' own `persona:{depth:1,
+     blunder:0.36…}` blocks are the HAND-AUTHORED GUESSES this whole recalibration replaced —
+     the file says so itself: "not measured, but honest about the curve". Flagging negamax
+     with those would move the room onto a new engine still running the old numbers, which
+     looks like a fix and is not one.
+     ⚠ `timeMs` is carried over from the floor's own persona because it is PACING, not
+     strength — the Tidecaller thinking 440ms is characterisation. */
+  var mPers = (ENGINE && ENGINE.personaForElo && G.rung) ? ENGINE.personaForElo(G.rung.elo) : null;
+  if (mPers) mPers.timeMs = G.persona.timeMs;
   var chooser = ENGINE
-    ? ENGINE.move(S, { persona:G.persona, skill:skillForRung(G.idx), movetime:G.persona.timeMs, blunder:G.persona.blunder })
-    : Promise.resolve(AI.bestMove(S, G.persona));
+    ? ENGINE.move(S, mPers
+        ? { persona:mPers, negamax:true, movetime:mPers.timeMs }
+        : { persona:G.persona, skill:skillForRung(G.idx), movetime:G.persona.timeMs, blunder:G.persona.blunder })
+    : Promise.resolve(AI.bestMove(S, mPers || G.persona));
   chooser.then(function(m){ applyAiMove(myG, S, m); },
                function(){ applyAiMove(myG, S, AI.bestMove(S, G.persona)); });
 }

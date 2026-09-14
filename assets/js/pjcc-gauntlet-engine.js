@@ -208,6 +208,23 @@
     var lm = legal(S);
     if (!lm.length) return Promise.resolve(null);          // mate / stalemate
     if (lm.length === 1) return Promise.resolve(lm[0]);    // forced — no need to think
+    /* ⭐⭐ BELOW 1400 THE NEGAMAX PLAYS, NOT STOCKFISH (2026-09-13) ═══════════════════════
+       This is the whole fix. Stockfish's floor is skill 0 ≈ 1350, so every rung under 1400
+       was that one strength plus a dice roll — which is why a "400" opened like a club
+       player (the opening BOOK) and then hung its queen (the dice). The negamax is weak by
+       JUDGEMENT: it picks a plausible worse move because it valued the position wrong, and
+       that is what a weak human actually does.
+       ⚠ EXPLICIT FLAG, NOT AN ELO TEST. The bridge must not know about rungs — it takes
+       what it is handed. The caller decides, via personaForElo() returning non-null.
+       ⚠ AND IT STILL DEGRADES: if pjcc-chess-ai.js did not load, this falls straight
+       through to the Stockfish path below rather than failing. [[down-never-stuck]] */
+    if (opts.negamax && opts.persona && AI()) {
+      try {
+        var nm = AI().bestMove(S, opts.persona);
+        if (nm) return Promise.resolve(nm);
+      } catch (e) { /* fall through to the engine */ }
+    }
+
     var blunder = opts.blunder != null ? opts.blunder
                 : (opts.persona && opts.persona.blunder) || 0;
     if (blunder && Math.random() < blunder) {              // keep the low rungs beatable
@@ -270,8 +287,76 @@
     return 0;                                 // above the public ladder: no charity
   }
 
+  /* ══ THE SUB-1400 LADDER, MEASURED ════════════════════════════════════════════════════
+     2026-09-12, Nate, after a "400" played a clean six-move opening then hung its queen:
+     *"re-calibrate so the bots consistently play at their level, not just
+     best-move-or-blunder."*
+
+     ⚠⚠ EVERY RUNG UNDER 1400 USED TO BE THE SAME BOT. `skillForElo` floors at 0 below 1400
+     and Stockfish's skill 0 is already ~1350, so twelve rungs from 350 to 1250 were ONE
+     strength wearing twelve labels, separated only by how often a random legal move was
+     played instead. That is why the opening looked like a club player (it was the opening
+     BOOK) and the middlegame fell apart (that was the dice).
+
+     ⭐ WHAT REPLACES IT: the negamax, whose weakness is JUDGEMENT rather than dice — it
+     picks a plausible worse move because it valued the position wrong. Priced over 13,860
+     games across 231 pairings, fitted on one Bradley-Terry scale (`npm run sim:bots`).
+     Ratings below are that scale, relative, top-anchored at 0.
+
+     ⚠ ABOVE 1400 NOTHING CHANGES. Stockfish skill 3→20 already spans that range correctly
+     and the negamax ceiling is nowhere near 2400 — routing the top seats through it would
+     fix Maxwell and gut the CEO. The bug was only ever below 1400.
+
+     ⚠ `mat` / `pst` / `aggr` ARE UNMEASURED. They are character, not strength: they shift
+     playing style and shift rating by some amount nobody has priced. Kept conservative. */
+  var LADDER_1400 = [
+    /* elo   depth noise  mat   pst  aggr  tilt  extras                      measured */
+    [ 350,  2, 220, 1.30, 0.30, 4, 0.00, { blunder: 0.05 } ],              /*  -808 */
+    /* ⚠ TILT 0.25, NOT 0.5 — Nate's call, 2026-09-13. He already refuses to castle, and a
+       seat carrying BOTH a visible structural flaw and a collapse-when-behind is two
+       weaknesses on the one bot the player meets first. 0.25 wobbles; 0.5 comes apart. */
+    [ 400,  2, 160, 1.00, 1.00, 0, 0.25, { neverCastle: true } ],          /*  -783 */
+    [ 500,  2,  90, 1.25, 0.40, 1, 0.50, {} ],                             /*  -734 */
+    [ 650,  2,  60, 1.00, 1.10, 0, 0.25, {} ],                             /*  -685 */
+    [ 750,  2,  30, 1.00, 0.90, 1, 0.50, {} ],                             /*  -657 */
+    [ 800,  3, 120, 1.00, 1.00, 2, 0.25, {} ],                             /*  -610 */
+    [ 950,  3,  90, 1.00, 1.00, 1, 0.25, {} ],                             /*  -569 */
+    [1000,  3,  60, 1.00, 1.00, 1, 0.25, {} ],                             /*  -500 */
+    [1100,  4,  45, 1.00, 1.05, 1, 0.00, {} ],                             /*  -461 */
+    [1150,  3,  30, 1.00, 1.00, 2, 0.00, {} ],                             /*  -462 */
+    [1200,  4,  30, 1.00, 1.00, 2, 0.00, {} ],                             /*  -414 */
+    [1250,  4,  15, 1.00, 1.00, 6, 0.00, {} ]                              /*  -342 */
+  ];
+
+  /* ⛔ MAXWELL (400) REFUSES TO CASTLE — Nate, 2026-09-13: *"How about one character
+     REFUSES to castle (a low rated player) so you can take advantage of that."*
+     It is the only weakness on this whole ladder a player can SEE. Noise and depth make a
+     bot worse invisibly; an uncastled king is a target you can aim at, so it teaches
+     attacking play just by sitting there.
+     ⚠ PRICED: refusing to castle costs ~108 Elo at depth 2 (35.0% over 30 games against an
+     otherwise identical twin). He is placed one setting HIGHER than his rating alone would
+     put him so the flaw does not quietly drop him a rung. */
+
+  /* Tilt is a PROBABILITY of losing a ply while behind, not a magnitude — see the note in
+     pjcc-chess-ai.js. It buys about three honest settings: 0 (holds it together), 0.25
+     (wobbles), 0.5 (comes apart). ⚠ The 350 seat gets 0: at depth 2 a dropped ply lands on
+     depth 1, which is 660 points down and a pathological material-grabber. */
+
+  function personaForElo(elo) {
+    elo = +elo || 0;
+    var L = LADDER_1400;
+    if (elo >= 1400) return null;             // Stockfish's range — not ours
+    var row = L[0];
+    for (var i = 0; i < L.length; i++) if (elo >= L[i][0]) row = L[i];
+    var p = { depth: row[1], noise: row[2], mat: row[3], pst: row[4],
+              aggr: row[5], tilt: row[6], blunder: 0 };
+    for (var k in row[7]) if (row[7].hasOwnProperty(k)) p[k] = row[7][k];
+    return p;
+  }
+
   root.PJCCGauntletEngine = {
     available: hasEngine,
+    personaForElo: personaForElo,
     warmup: warmup,
     newGame: newGame,
     move: move,

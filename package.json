@@ -32,6 +32,7 @@
     "gen:godotgame": "node tests/gen-godot-game.js",
     "gen:rating": "node tests/gen-rating-puzzles.js",
     "sim:marchland": "node tests/sim-marchland.js",
+    "sim:bots": "node tests/sim-bots.js",
     "soak:puzzles": "node tests/puzzle-soak.js",
     "test:marchland": "node tests/marchland.check.js",
     "test:regulars": "node tests/regulars.check.js",
