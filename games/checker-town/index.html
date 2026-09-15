@@ -157,6 +157,8 @@ no_sky: true
      — a bare `<script>` above it lands inside that comparison and reads as drift. Cost me a
      red build; keep any new bare script tag down here. {%- endcomment -%}
 <script src="{{ '/assets/js/pjcc-systems.js' | relative_url }}"></script>
+{%- comment -%} The mailbox names a game the way the games hall does (PJCC.townPost reads it). {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}" defer></script>
 <script id="ct-facts-data" type="application/json">
   [{%- for r in site.data.regulars -%}
      {"key":{{ r.key | jsonify }},"name":{{ r.name | jsonify }},"elo":{{ r.elo | default: 0 }},

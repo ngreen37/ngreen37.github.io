@@ -1296,6 +1296,78 @@
     } catch (e) { return ''; }
   };
 
+  /* ⭐ THE TOWN'S MAILBOX (2026-09-14). What the players you follow have posted in the last
+     two weeks, read from the same public tables their card and the leaderboards read. A letter
+     is a SCORE, never a sentence: nobody on this site types words at anybody, and the post
+     does not start. [[follow-is-a-bookmark]]
+     ⚠ SYNCHRONOUS FOR THE TOWN: the first ask starts the fetch and answers null, a later ask
+     gets the result. Five minutes of cache; the town asks every few seconds.
+     state: 'signed-out' | 'no-follows' (migration not run) | 'none' (follows nobody) |
+            'offline' | 'ok'. */
+  var townPostCache = null, townPostAt = 0, townPostBusy = false;
+  var POST_DAYS = 14, POST_MAX = 12;
+  PJCC.townPost = function () {
+    if (!townPostBusy && (!townPostCache || Date.now() - townPostAt > 300000)) {
+      townPostBusy = true;
+      loadTownPost().then(function (r) { townPostCache = r; },
+                          function () { townPostCache = { state: 'offline', letters: [] }; })
+        .then(function () { townPostAt = Date.now(); townPostBusy = false; });
+    }
+    return townPostCache;
+  };
+
+  function gameName(slug) {
+    try {
+      var g = (window.PJCC_GAMES || []).filter(function (x) { return x && x.slug === slug; })[0];
+      if (g && g.name) return g.name;
+    } catch (e) {}
+    return String(slug || '').split('-').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+  }
+
+  async function loadTownPost() {
+    if (!sb || !PJCC.currentUser()) return { state: 'signed-out', letters: [] };
+    if (!(await PJCC.followsEnabled())) return { state: 'no-follows', letters: [] };
+    var fol = await PJCC.following();
+    var names = (fol || []).map(function (f) { return f && f.codename; }).filter(Boolean).slice(0, 40);
+    if (!names.length) return { state: 'none', letters: [] };
+    var p = await sb.from('profiles').select('id,codename').in('codename', names);
+    if (p.error) return { state: 'offline', letters: [] };
+    var who = {};
+    (p.data || []).forEach(function (r) { who[r.id] = r.codename; });
+    var ids = Object.keys(who);
+    if (!ids.length) return { state: 'ok', letters: [] };
+    var cut = new Date(Date.now() - POST_DAYS * 86400000).toISOString();
+    var s = await sb.from('scores').select('user_id,game,score,created_at').in('user_id', ids)
+      .gte('created_at', cut).order('created_at', { ascending: false }).limit(200);
+    if (s.error) return { state: 'offline', letters: [] };
+    var g = await sb.from('game_stats').select('user_id,game,best_score').in('user_id', ids);
+    var best = {};
+    ((g && !g.error && g.data) || []).forEach(function (r) { best[r.user_id + '|' + r.game] = r.best_score || 0; });
+    return { state: 'ok', letters: townLetters(who, s.data, best, PJCC.localBest) };
+  }
+
+  /* ⚠ ONE LETTER PER PLAYER PER GAME, THE NEWEST. Twelve Sky Run runs in an evening is one
+     piece of news, and a box of twelve identical letters is a box nobody opens twice.
+     `rows` arrive newest first.
+     ⚠⚠ MEASURED ON THE LIVE TABLE 09-14: rows of 0 and ids that are not games ('park-bot',
+     'daily-dispatch') are banked too. "put up 0 — a new best" is a letter that lies, so only
+     a positive score in a game the registry names is news. */
+  function townLetters(who, rows, best, mineOf) {
+    var seen = {}, letters = [];
+    var reg = window.PJCC_GAMES || null;
+    (rows || []).forEach(function (r) {
+      var k = r.user_id + '|' + r.game;
+      if (!((r.score || 0) > 0)) return;
+      if (reg && !reg.some(function (g) { return g && g.slug === r.game; })) return;
+      if (seen[k] || letters.length >= POST_MAX) return;
+      seen[k] = 1;
+      letters.push({ who: who[r.user_id] || '', game: r.game, name: gameName(r.game), score: r.score || 0,
+                     best: Math.max(best[k] || 0, r.score || 0), mine: mineOf(r.game) || 0,
+                     at: r.created_at });
+    });
+    return letters;
+  }
+
   function townLast(key, since, pos) {
     try {
       var r = JSON.parse(localStorage.getItem('pjcc.pt.last.v1') || 'null');

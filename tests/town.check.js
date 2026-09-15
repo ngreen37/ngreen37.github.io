@@ -835,8 +835,11 @@ const server = http.createServer((req, res) => {
       ok(/draw_set_transform\(Vector2\.ZERO, 0\.0, Vector2\.ONE\)\s*\n\s*_attract_over\(r\)/.test(arc),
         '…and anything with a STROKE is drawn after the reset',
         '⚠⚠ a 3px outline under a scale of 80 arrives 240px thick — it covered a whole cabinet');
+      /* ⚠ THE SKY CLOUDS WENT (2026-09-14, the Daily demo); the siege walkers still scroll, and the
+         Daily's round enemies cannot be clipped, so they are skipped at the screen's edge. */
       ok(/func _box\(aspect: float, r: Rect2\) -> Rect2:/.test(arc)
-        && /_box\(aspect, Rect2\(x, y, 0\.19/.test(arc),
+        && /_box\(aspect, Rect2\(x, y - 0\.17/.test(arc)
+        && /if y < 0\.05 or y > 0\.95:\s*\n\s*continue/.test(fnGd(arc, '_sky_live')),
         '…and a sprite that scrolls off a screen is clipped, not painted on the next cabinet');
       /* ⚠⚠ `.new()`, NOT THE BARE CLASS NAME. Both of these are named in this file's own
          header, so the first draft went green on PROSE: swapping the CanvasModulate for a
@@ -1319,8 +1322,8 @@ const server = http.createServer((req, res) => {
       }
       ok(/if k\.keycode == KEY_J and not _talking\(\)/.test(jrn),
         '…and it will not open over a conversation  (two things listening for 1-4 at once)');
-      ok(/TownJournal\.is_open\(get_tree\(\)\)/.test(player)
-        && /TownJournal\.is_open\(get_tree\(\)\)/.test(pad),
+      ok(/TownZone\.covered\(get_tree\(\)\)/.test(player) && /TownZone\.covered\(get_tree\(\)\)/.test(pad)
+        && /TownJournal\.is_open\(t\)/.test(fnGd(zone, 'covered')),
         '…the player and the pad both stand down while it is up');
       ok(/func is_open\(t: SceneTree\) -> bool:/.test(jrn),
         '…and they ask ONE function, not two copies of the flag');
@@ -2309,6 +2312,239 @@ const server = http.createServer((req, res) => {
         ok(shot.label === 'Your Assembly board, 3 of 16: Vince on a8, Crockett on h7, Michael on e4.',
           '…and reads itself out in board squares for anybody who cannot see it',
           shot.label);
+      }
+
+      /* ══ 37 · THE PAPER, THE CALENDAR, THE CAMERA, THE DAILY, THE POST, THE MARKET, THE MAP ═══
+         2026-09-14, nine of his ten picks. Each one says something true or it says nothing. */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const hap = code(rd('haptics.gd')), aud = code(rd('town_audio.gd')), gst = code(rd('game_state.gd'));
+        const zn = code(rd('zone.gd')), twn = code(rd('town.gd')), pap = code(rd('paper.gd'));
+        const sea = code(rd('season.gd')), sart = code(rd('season_art.gd')), dor = code(rd('door.gd'));
+        const pho = code(rd('photo.gd')), hal = code(rd('hall.gd')), sky = code(rd('sky_daily.gd'));
+        const arc9 = code(rd('arcade.gd')), mail = code(rd('mailbox.gd')), mkt = code(rd('market.gd'));
+        const mapg = code(rd('map.gd')), jr9 = code(rd('journal.gd'));
+
+        /* ── #9 · THE BUZZ ── */
+        ok(/if GameState\.sound_on:\s*\n\s*TownHaptics\.buzz\(\)/.test(fnGd(aud, 'piece_landed')),
+          'a piece landing buzzes the phone, and the mute silences the buzz with the thunk');
+        ok(/if OS\.has_feature\("web"\):\s*\n\s*JavaScriptBridge\.eval\(JS % ms, true\)/.test(fnGd(hap, 'buzz')),
+          '…through one snippet, on the web only');
+        const buzzJs = ((/const JS := """([\s\S]*?)"""/.exec(rd('haptics.gd')) || [])[1] || '');
+        const buzz = (o) => page.evaluate((src, o) => {
+          const old = document.getElementById('ct-buzz');
+          if (old) old.remove();
+          const calls = [];
+          Object.defineProperty(navigator, 'vibrate', { configurable: true,
+            value: o.vibrate ? (ms) => { calls.push(ms); return true; } : undefined });
+          const mm = window.matchMedia;
+          window.matchMedia = (q) => ({ matches: /coarse/.test(q) ? !!o.coarse : false });
+          const keep = document.createElement('input');
+          document.body.appendChild(keep);
+          keep.focus();
+          let flips = 0;
+          const spy = (e) => { if (e.target && e.target.type === 'checkbox') flips++; };
+          document.addEventListener('click', spy, true);
+          let r = '';
+          try { r = (0, eval)(src.replace('%d', '18')); } catch (e) { r = 'THREW ' + e.message; }
+          const out = { r, calls, flips, sw: !!document.querySelector('#ct-buzz input[switch]'),
+                        kept: document.activeElement === keep };
+          document.removeEventListener('click', spy, true);
+          window.matchMedia = mm;
+          delete navigator.vibrate;
+          keep.remove();
+          return out;
+        }, buzzJs, o);
+        const android = await buzz({ vibrate: true, coarse: true });
+        ok(android.r === 'vibrate' && android.calls.join() === '18' && !android.sw,
+          '…an Android phone gets navigator.vibrate(18)', JSON.stringify(android));
+        const iphone = await buzz({ vibrate: false, coarse: true });
+        ok(iphone.r === 'switch' && iphone.sw && iphone.flips === 1 && iphone.kept,
+          '…an iPhone, which has no vibrate, gets the switch haptic and keeps its focus', JSON.stringify(iphone));
+        const mac = await buzz({ vibrate: false, coarse: false });
+        ok(mac.r === 'none' && !mac.sw && mac.flips === 0 && mac.kept,
+          '⚠ …and desktop Safari, which has no vibrate either, gets nothing — its keys stay with the town',
+          JSON.stringify(mac));
+        ok(/had\.focus\(\{ preventScroll: true \}\)/.test(buzzJs),
+          '…the switch hands focus straight back to whatever had it');
+
+        /* ── #1 · THE PAPER ── */
+        const tp = fnGd(gst, 'turn_paper');
+        ok(/if not paper_fresh\(\):\s*\n\s*return/.test(tp) && /"was": paper\.get\("now", \{\}\)/.test(tp),
+          'the paper\'s "since your last paper" moves once a day, not once a read');
+        const sv9 = fnGd(gst, 'save_state'), ld9 = fnGd(gst, 'load_state'), push9 = fnGd(gst, 'push_to_site');
+        ok(['"paper": paper', '"post_seen": post_seen', '"finale_seen": finale_seen'].every((k) => sv9.includes(k))
+          && /paper = d\.get\("paper"/.test(ld9) && /post_seen = str\(d\.get\("post_seen"/.test(ld9)
+          && /finale_seen = bool\(d\.get\("finale_seen"/.test(ld9)
+          && !/paper|post_seen|finale_seen/.test(push9),
+          '⚠ what you have read and seen is saved on this device and deliberately NOT synced');
+        ok(/var paper := TownPaper\.new\(\)/.test(fnGd(zn, '_build_hud'))
+          && /paper\.shown\.connect\(func\(on: bool\) -> void: _hud\.visible = not on\)/.test(fnGd(zn, '_build_hud')),
+          '…every room carries the paper, and the HUD row steps out from under it');
+        ok(/get_first_node_in_group\("town_cover"\) != null/.test(fnGd(zn, 'covered'))
+          && /Time\.get_ticks_usec\(\) - _uncovered_us < 150000/.test(fnGd(zn, 'covered'))
+          && /TownZone\.uncovered\(\)/.test(fnGd(pap, 'close')),
+          '⚠⚠ the Enter that closes the paper cannot reopen it: a closed cover counts for 150ms');
+        ok(/while fs > 10 and _column_height/.test(fnGd(pap, '_paint')),
+          '…and the paper fits by bringing the type down — nothing in this town scrolls');
+        ok(/GameState\.paper_was\(\)/.test(fnGd(pap, '_lead')) && /npc\.away_days\.has\(wd\)/.test(fnGd(pap, '_around'))
+          && /if slot < 0 or GameState\.has_slot\(slot\):/.test(fnGd(pap, '_arcade')) && /if best <= 0:/.test(fnGd(pap, '_arcade')),
+          '⭐ every line is read off the save, the calendar or a banked score — never a guess');
+        ok(/TownClock\.DUSK_AT - 12/.test(pap) && /TownClock\.DUSK_AT - 12/.test(mkt) && !/opens at \d/.test(pap + mkt),
+          '…and the paper and the market read the same hour off the clock');
+        ok(/TownPaper\.Stand\.new\(\)/.test(twn), '…sold from a stand in the town');
+
+        /* ── #2 · THE CALENDAR ── */
+        const TIME = fs.readFileSync(path.join(ROOT, '_includes/pjcc-time.js'), 'utf8');
+        const siteSeason = ((/function season\(\) \{[\s\S]*?(return \(mo[^;]*;)/.exec(TIME)) || [])[1] || '';
+        const jsMonth = (mo) => { try { return new Function('mo', siteSeason)(mo); } catch (e) { return '?'; } };
+        const w = /if m == 12 or m <= (\d+):\s*\n\s*return WINTER/.exec(sea);
+        const sp = /if m <= (\d+):\s*\n\s*return SPRING/.exec(sea);
+        const su = /if m <= (\d+):\s*\n\s*return SUMMER/.exec(sea);
+        const gdMonth = (m) => !(w && sp && su) ? '?' : (m === 12 || m <= +w[1]) ? 'winter'
+          : m <= +sp[1] ? 'spring' : m <= +su[1] ? 'summer' : 'fall';
+        const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        ok(siteSeason && months.every((m) => jsMonth(m) === gdMonth(m)),
+          '⭐⭐ the town\'s seasons are the site sky\'s quarters, month for month',
+          months.map((m) => m + ':' + gdMonth(m)[0] + '/' + jsMonth(m)[0]).join(' '));
+        ok(/T\.season \? T\.season\(\)/.test(sea) && /ds: T\.dateStr\(\)/.test(sea)
+          && /var s := str\(site\(\)\.get\("season", ""\)\)/.test(fnGd(sea, 'now')),
+          '…and on the site it asks PJCC_TIME first, so the town and the page agree on the day');
+        ok(/season == TownSeason\.WINTER and TownSeason\.weather\(\) == "snow"/.test(sart),
+          'snow falls only on a day the site sky is snowing');
+        ok(/z\.outdoors and TownSeason\.now\(\) == TownSeason\.WINTER/.test(fnGd(dor, '_draw')),
+          '…and lies on roofs outdoors only');
+        const outdoorsSet = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+          .filter((f) => /^\s*outdoors = true/m.test(code(rd(f))));
+        ok(outdoorsSet.join() === 'town.gd', '…where the town is the one place that is outdoors', outdoorsSet.join());
+        ok(/if TownSeason\.december\(\):\s*\n\s*var tree := SeasonArt\.FirTree\.new\(\)/.test(twn),
+          'the tree goes up in December and not before');
+        ok(!/rand[fi]/.test(fnGd(sart, 'ground')), '…and a leaf on the ground is salted, not rolled: it must not crawl');
+
+        /* ── #3 + #7 · THE CAMERA AND THE GALLERY ── */
+        ok(/PhotoMode\.Tripod\.new\(\)/.test(hal) && /add_child\(PhotoMode\.new\(self\)\)/.test(hal),
+          'the Assembly has a camera on a tripod');
+        ok(/if n is CanvasLayer and n != self/.test(fnGd(pho, '_hide_chrome'))
+          && /\["town_player", "touch_pad"\]/.test(fnGd(pho, '_hide_chrome'))
+          && /n\.visible = true/.test(fnGd(pho, 'close')) && /make_current\(\)/.test(fnGd(pho, 'close')),
+          '…the frame loses the HUD, the box, the pad and you, and Done gives every one of them back');
+        ok(/JavaScriptBridge\.download_buffer\(img\.save_png_to_buffer\(\)/.test(fnGd(pho, 'take')),
+          '…Take it hands the phone a real PNG');
+        ok(/if full and not GameState\.finale_seen:/.test(fnGd(hal, '_refresh'))
+          && /GameState\.finale_seen = true/.test(fnGd(pho, 'finale')),
+          '⭐ the finale plays in the gallery once, the first time the board is full');
+        const hallConsts = new Set([...hal.matchAll(/^const ([A-Z_]+) :?=/gm)].map((m) => m[1]));
+        const asked = [...new Set([...pho.matchAll(/C\.get\("([A-Z_]+)"/g)].map((m) => m[1]))];
+        ok(/get_script_constant_map\(\)/.test(pho) && asked.length >= 7 && asked.every((k) => hallConsts.has(k)),
+          '⚠ the gallery paints with the ROOM\'s own constants, so the two pictures cannot disagree',
+          asked.filter((k) => !hallConsts.has(k)).join(' ') || asked.length + ' read');
+        ok(/GameState\.cell_of\(slot\) if won else GameState\.home_cell\(slot\)/.test(fnGd(pho, '_paint_gallery'))
+          && /GameState\.board_cell\(f\)\.x/.test(fnGd(pho, '_paint_gallery')),
+          '…and stands every piece where GameState says it stands');
+
+        /* ── #4 · THE DAILY ON THE CABINET ── */
+        const SR = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_sky_run.html'), 'utf8');
+        const spawnJs = fn(SR, 'spawnEnemy');
+        const draws = (spawnJs.match(/\brr\(/g) || []).length + (spawnJs.match(/\br\(\)/g) || []).length - 1;
+        const reg1 = (/\{ id:1,[^}]*pool:\[([^\]]*)\]/.exec(SR) || [])[1] || '';
+        const gdPool = ((/const POOL := \[([^\]]*)\]/.exec(sky) || [])[1] || '').replace(/"/g, "'").replace(/\s/g, '');
+        const enemy = (t) => (new RegExp(t + ':\\s*\\{[^}]*r:(\\d+), spd:(\\d+)').exec(SR) || []).slice(1).join('/');
+        ok(/const W = 440, H = 640;/.test(SR) && /const W := 440\.0/.test(sky) && /const H := 640\.0/.test(sky)
+          && reg1.replace(/\s/g, '') === gdPool
+          && enemy('pawn') === '13/78' && /"pawn": 13\.0/.test(sky) && /"pawn": 78\.0/.test(sky)
+          && enemy('bishop') === '14/70' && /"bishop": 14\.0/.test(sky) && /"bishop": 70\.0/.test(sky),
+          '⭐⭐ the cabinet\'s field, region-one pool and enemy sizes are Sky Run\'s', reg1 + ' vs ' + gdPool);
+        ok(/const groups = 2 \+ Math\.floor\(waveIdx\/2\);/.test(SR) && /for g in 2:/.test(sky)
+          && /const n = 3 \+ Math\.floor\(\(region \+ waveIdx\)\/2\);/.test(SR) && /var n := 3/.test(sky)
+          && /const gap = Math\.max\(0\.26, 0\.62 - region\*0\.04 - waveIdx\*0\.02\);/.test(SR) && /maxf\(0\.26, 0\.62 - 0\.04\)/.test(sky)
+          && /let t = G\.time \+ 0\.5;/.test(SR) && /var at := 0\.5/.test(sky) && /t \+= 0\.7;/.test(SR) && /at \+= 0\.7/.test(sky),
+          '…and so are the opening wave\'s groups, counts and timing');
+        ok(/SRNG = daily \? mulberry32\(hashStr\('sky-run\|waves\|'\+day\)\) : null;/.test(SR)
+          && /hash_str\("sky-run\|waves\|" \+ day\)/.test(sky)
+          && /a=a\+0x6D2B79F5\|0; var t=Math\.imul\(a\^a>>>15,1\|a\); t=t\+Math\.imul\(t\^t>>>7,61\|t\)\^t; return \(\(t\^t>>>14\)>>>0\)\/4294967296;/.test(SR)
+          && /0x6D2B79F5/.test(sky) && /imul\(a \^ \(a >> 15\), 1 \| a\)/.test(sky)
+          && /imul\(t \^ \(t >> 7\), 61 \| t\)\) & SkyDaily\.M32\) \^ t/.test(sky) && /\(t \^ \(t >> 14\)\)/.test(sky),
+          '…seeded the same way, through the same generator');
+        ok(draws === 6 && /const DRAWS_PER_SPAWN := 6/.test(sky)
+          && (SR.match(/srnd\(\)/g) || []).length === 2 && (SR.match(/\|\| srnd/g) || []).length === 1,
+          '⚠⚠ and only genWave and spawnEnemy draw from the Daily stream, six draws a spawn — or the port is a guess',
+          draws + ' draws');
+        ok(/\(a \* \(b >> 16\)\) & 0xFFFF/.test(fnGd(sky, 'imul')),
+          '⚠ Math.imul is split in 16-bit halves: a u32 × u32 can pass 2^63, undefined in C++ even where this build wraps');
+        ok(/SkyDaily\.opening_wave\(TownSeason\.date_key\(\)\)/.test(fnGd(arc9, '_sky_live'))
+          && /PJCC_TIME\.dateStr\(\)/.test(fn(SR, 'dayKey')),
+          '…and the cabinet plays the date the game itself calls today');
+
+        /* ── #5 · THE POST ── */
+        const loadPost = fn(PROF, 'loadTownPost');
+        ok(/PJCC\.townPost = function/.test(PROF) && loadPost
+          && !/\.insert\(|\.update\(|\.upsert\(|\.delete\(|rpc\(/.test(loadPost),
+          'the post READS: nothing in it writes a row');
+        ok(/from\('profiles'\)\.select\('id,codename'\)/.test(loadPost)
+          && /from\('scores'\)\.select\('user_id,game,score,created_at'\)/.test(loadPost)
+          && /from\('game_stats'\)\.select\('user_id,game,best_score'\)/.test(loadPost),
+          '…only the public columns a player card already shows');
+        {
+          const ctx = { PJCC_GAMES: [{ slug: 'sky-run', name: 'Sky Run' }, { slug: 'tower-defense' },
+            { slug: 'notation-run', name: 'Notation Blitz' }], POST_MAX: 3 };
+          ctx.window = ctx;
+          require('vm').runInNewContext(fn(PROF, 'gameName') + '\n' + fn(PROF, 'townLetters') +
+            '\nthis.out = townLetters({ u1: "ACE", u2: "BEE" }, [' +
+            '{ user_id: "u1", game: "sky-run", score: 90, created_at: "3" },' +
+            '{ user_id: "u2", game: "park-bot", score: 5, created_at: "3" },' +
+            '{ user_id: "u1", game: "sky-run", score: 50, created_at: "2" },' +
+            '{ user_id: "u2", game: "tower-defense", score: 0, created_at: "2" },' +
+            '{ user_id: "u2", game: "sky-run", score: 70, created_at: "2" },' +
+            '{ user_id: "u1", game: "tower-defense", score: 7, created_at: "1" },' +
+            '{ user_id: "u2", game: "notation-run", score: 1, created_at: "0" }],' +
+            ' { "u2|sky-run": 120 }, function (g) { return g === "sky-run" ? 64 : 0; });', ctx);
+          const L = ctx.out || [];
+          ok(L.length === 3 && L[0].who === 'ACE' && L[0].score === 90 && L[1].who === 'BEE'
+            && L[1].best === 120 && L[0].mine === 64 && L[0].name === 'Sky Run' && L[2].name === 'Tower Defense',
+            '⭐ one letter per player per game, the newest, capped — and named the way the hall names it',
+            JSON.stringify(L));
+          ok(!L.some((l) => l.score <= 0 || l.game === 'park-bot'),
+            '⚠⚠ …and a zero, or an id that is not a game, is not news — both are banked on the live table',
+            JSON.stringify(L.map((l) => l.game + ':' + l.score)));
+        }
+        await page.evaluate(() => PJCC.townPost());
+        await new Promise((r) => setTimeout(r, 120));
+        ok((await page.evaluate(() => (PJCC.townPost() || {}).state)) === 'signed-out',
+          '…and signed out it says so instead of pretending the box is empty');
+        const letterKeys = [...new Set([...fnGd(mail, 'letter').matchAll(/l\.get\("(\w+)"/g)].map((m) => m[1]))].sort();
+        ok(letterKeys.join() === 'at,best,game,mine,name,score,who',
+          '⚠⚠ a letter is built from a name, a game and numbers — no field a person could have typed',
+          letterKeys.join());
+        ok(/str\(\(l as Dictionary\)\.get\("at", ""\)\) > post_seen/.test(fnGd(gst, 'post_unread'))
+          && /post_seen = newest/.test(fnGd(gst, 'read_post')),
+          '…the flag is up for letters newer than the last one read');
+        ok(/pjcc-games-data\.js/.test(fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8')),
+          '…and the town\'s page loads the games registry the letters name games from');
+
+        /* ── #6 · THE NIGHT MARKET ── */
+        ok(/GameState\.buy_scout\(GameState\.key_at\(slot\)\)/.test(mkt) && !/ore\s*[-+]=/.test(mkt)
+          && /GameState\.SCOUT_ORE/.test(mkt),
+          '⭐ a scorebook page is the face-to-face price, down the same buy_scout path');
+        ok(/if not TownClock\.is_dark\(\):\s*\n\s*say\("Shuttered/.test(mkt),
+          '…open after dark and shuttered by day, on the wall clock');
+        ok(/GameState\.met_at\(i\)/.test(mkt) && /return GameState\.met_at\(slot\)/.test(fnGd(jr9, '_met')),
+          '…stocked with people you have MET, by the journal\'s own definition');
+        ok(/NightMarket\.new\(\)/.test(twn) && /func retime\(\) -> void:/.test(mkt),
+          '…and it lights with the lamps');
+
+        /* ── #8 · THE MAP ── */
+        ok(/"The map"/.test(jr9) && /if k\.keycode == KEY_M and not _talking\(\):/.test(jr9) && /_paint_map\(f\)/.test(jr9),
+          'M, or the journal\'s fourth tab, opens the map');
+        const cap = fnGd(mapg, 'capture');
+        ok(/not n2\.visible/.test(cap) && /not \(n is TownNPC\)/.test(cap),
+          '⚠⚠ the map shows only places the town is showing — no people, and nothing hidden');
+        ok(/for r in _roads\(\):/.test(fnGd(twn, '_draw_roads')) && !/Rect2\(/.test(fnGd(twn, '_draw_roads'))
+          && /TownMap\.capture\(self, GROUND_RECT, \[/.test(twn) && /_roads\(\)\)/.test(fnGd(twn, '_after_ready'))
+          && /SAND_RECT/.test(fnGd(twn, '_draw')) && /SAND_RECT/.test(fnGd(twn, '_region')),
+          '…drawn from the same rects the ground is painted from');
+        ok(/if t\.intersects\(box\):/.test(fnGd(jr9, '_paint_map')),
+          '…and on a phone a name that would land on another name is left off');
       }
 
       /* ══ 36 · A PHONE CAN READ THE TOWN, AND A SAVE CANNOT EAT ITSELF (2026-09-14) ═══════ */
