@@ -33,7 +33,7 @@ window.__t = {
     await sleep(400);
 
     let s = await G();
-    ok(s && s.rank === 0 && s.hearts === 5, 'run starts as Pawn (rank 0) with 5 hearts  [rank=' + (s && s.rank) + ' hearts=' + (s && s.hearts) + ']');
+    ok(s && s.rank === 0 && s.hearts === 3, 'run starts as Pawn (rank 0) with 3 hearts  [rank=' + (s && s.rank) + ' hearts=' + (s && s.hearts) + ']');
 
     await sleep(300); s = await G();
     ok(s.bullets > 0, 'Princess auto-fires  [bullets=' + s.bullets + ']');
@@ -213,7 +213,7 @@ window.__t = {
         window.blit = function (sp) { if (hs.has(sp)) n++; return b0.apply(this, arguments); }; drawHUD(); window.blit = b0; return n; }
       return { endless: count('endless'), normal: count('normal') };
     });
-    ok(hearts.endless === 1 && hearts.normal === 5, 'Endless draws the one heart it has, not four empty ones  [endless=' + hearts.endless + ' normal=' + hearts.normal + ']');
+    ok(hearts.endless === 1 && hearts.normal === 3, 'Endless draws the one heart it has, not four empty ones  [endless=' + hearts.endless + ' normal=' + hearts.normal + ']');
 
     // ── When the King falls, his men fall with him ─────────────────────────────
     const fall = await page.evaluate(() => {
@@ -223,6 +223,28 @@ window.__t = {
       return { left: G.enemies.length, gained: G.score - s0 };
     });
     ok(fall.left === 0 && fall.gained === 500 + 10 + 30 + 20, 'a fallen King takes his men with him, and they score  [left=' + fall.left + ' +' + fall.gained + ']');
+
+    // ── Every piece but the pawn shoots back ───────────────────────────────────
+    const fire = await page.evaluate(() => { startPlay('normal'); return ['pawn', 'bishop', 'knight', 'rook', 'queen'].map((t) => {
+      G.enemies.length = 0; G.ebullets.length = 0; spawnEnemy(t, 200); const e = G.enemies[0];
+      e.y = 100; e.vy = 0; e.pat = 'straight'; e.shootCd = 0; updateEnemies(0.001); return G.ebullets.length; }).join(''); });
+    ok(fire === '01111', 'every piece but the pawn shoots back  [pawn→queen ' + fire + ']');
+
+    // ── COPY PNG copies, and a refused clipboard still hands over the file ──────
+    const png = await page.evaluate(async () => {
+      const wait = async (from) => { for (let i = 0; i < 60 && $('png-btn').textContent === from; i++) await new Promise((r) => setTimeout(r, 50)); };
+      let type = null, saved = 0; const click0 = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function () { if (this.download) saved++; };
+      startPlay('normal'); G.score = 42; gameOver(false);
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { write: async (items) => { type = (await items[0].getType('image/png')).type; } } });
+      $('png-btn').click(); await wait('📋 COPY PNG'); const ok1 = $('png-btn').textContent, saved1 = saved;
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { write: () => Promise.reject(new Error('denied')) } });
+      $('png-btn').textContent = '📋 COPY PNG'; $('png-btn').click(); await wait('📋 COPY PNG'); const ok2 = $('png-btn').textContent;
+      HTMLAnchorElement.prototype.click = click0;
+      return { type, ok1, saved1, ok2, saved };
+    });
+    ok(png.type === 'image/png' && png.ok1 === '✓ COPIED' && png.saved1 === 0, 'COPY PNG puts a PNG on the clipboard and says so  [' + png.type + ', ' + png.ok1 + ']');
+    ok(png.ok2 === '✓ SAVED' && png.saved - png.saved1 === 1, '…and a refused clipboard downloads the file instead  [' + png.ok2 + ', saved=' + png.saved + ']');
 
     // ── The home screen tells the truth about your bests ───────────────────────
     const bests = await page.evaluate(() => {

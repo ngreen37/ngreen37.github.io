@@ -97,7 +97,7 @@
     <div class="blurb" id="res-msg"></div>
     <div class="row">
       <button class="btn btn-gold" id="retry-btn">FLY AGAIN</button>
-      <button class="btn btn-ghost" id="card-btn">📷 CARD</button>
+      <button class="btn btn-ghost" id="png-btn">📋 COPY PNG</button>
       <button class="btn btn-ghost" id="menu-btn2">MENU</button>
     </div>
   </div>
@@ -125,15 +125,15 @@ const REGIONS = [
 // ---------- enemy & token archetypes ----------
 const ENEMY = {
   pawn:   { glyph:'♟', hp:2,  r:13, spd:78,  pts:10, fill:'#b9a8e6', pat:'straight' },
-  bishop: { glyph:'♝', hp:3,  r:14, spd:70,  pts:15, fill:'#c79bff', pat:'zigzag' },
-  knight: { glyph:'♞', hp:4,  r:15, spd:64,  pts:20, fill:'#8fe3ff', pat:'hop' },
-  rook:   { glyph:'♜', hp:9,  r:17, spd:42,  pts:30, fill:'#ffb066', pat:'tank' },
-  queen:  { glyph:'♛', hp:16, r:19, spd:46,  pts:80, fill:'#ff8fd0', pat:'weave', shoots:true }
+  bishop: { glyph:'♝', hp:3,  r:14, spd:70,  pts:15, fill:'#c79bff', pat:'zigzag', fire:[3.8,1.8] },
+  knight: { glyph:'♞', hp:4,  r:15, spd:64,  pts:20, fill:'#8fe3ff', pat:'hop',    fire:[3.2,1.6] },
+  rook:   { glyph:'♜', hp:9,  r:17, spd:42,  pts:30, fill:'#ffb066', pat:'tank',   fire:[2.6,1.4] },
+  queen:  { glyph:'♛', hp:16, r:19, spd:46,  pts:80, fill:'#ff8fd0', pat:'weave',  fire:[1.6,1.2] }
 };
 const POWERS = ['bishop','knight','queen'];
 const POWER_GLYPH = { bishop:'♗', knight:'♘', queen:'♕' };
 const POWER_COL   = { bishop:'#c79bff', knight:'#8fe3ff', queen:'#ff8fd0' };
-const POWER_NAME  = { bishop:'♗ X-BEAMS!', knight:'♘ ESCORTS!', queen:'♕ SUPER-SHOT!' };
+const POWER_NAME  = { bishop:'♗ X-BEAMS!', knight:'♘ GUARDIANS!', queen:'♕ SUPER-SHOT!' };
 function hexToRgb(h){ const n=parseInt(h.slice(1),16); return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255); }
 const PWR_DUR = { bishop:12, knight:14, queen:10 }, PWR_CAP = 22;
 
@@ -146,7 +146,8 @@ const RANK_COL     = ['#cfe0ff','#8fe3ff','#c79bff','#ffb066','#ff8fd0'];
 const RANK_AURA    = ['#6a7aa8','#3a7fb0','#7a4fd0','#c07a2a','#ff5bb0'];
 const RANK_FIRE_CD = [0.185, 0.165, 0.150, 0.150, 0.135];
 
-const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 5, DROP_ODDS = 0.09;
+const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 3, DROP_ODDS = 0.06, HIT_INV = 1.0;
+const EB_SPD = 220, BOSS_PACE = 0.8, BOSS_SHOT = 1.15, VULN_DUR = 1.8, VULN_EVERY = 9;
 // Enemy shots hit this core — the dot Focus draws. Bodies still collide at G.pr.
 const CORE_R = 6;
 const KEY_SPD = 340, KEY_SPD_FOCUS = 190;
@@ -263,7 +264,7 @@ function newGame(mode){
     hearts: endless ? 1 : START_HEARTS, maxHearts: endless ? 1 : START_HEARTS, inv: 0, score: 0,
     best: best, prevBest: best, kills: 0,
     combo: 0, mult: 1, killAcc: 0, pawns: 0,
-    pwr: { bishop:0, knight:0, queen:0 }, escorts: [],
+    pwr: { bishop:0, knight:0, queen:0 }, guardians: [],
     fireCd: 0, rank: 0, focus: false, promo: null,
     dog: { x: W/2-40, y: H-70, mode:'follow', target:null, carry:null, biteCd:0, fetchCd:1, bark:0, t:0 },
     region: 1, regionIdx: 0, waveIdx: 0, wavesInRegion: 5,
@@ -330,7 +331,7 @@ function spawnEnemy(type, x, rng){
   const ex = (x==null) ? rr(a.r+8, W-a.r-8) : x;
   const sc = 1+(G.loop-1)*0.4, ssp = 1+(G.loop-1)*0.12, hp = Math.round(a.hp*sc);  // Endless loops escalate
   G.enemies.push({ type, glyph:a.glyph, fill:a.fill, r:a.r, hp:hp, maxhp:hp, pts:a.pts,
-    x:ex, y:-a.r-rr(0,40), vx:0, vy:a.spd*ssp, pat:a.pat, t:rr(0,6), shoots:!!a.shoots, shootCd:rr(1.2,2.4), seed:rr(0,100),
+    x:ex, y:-a.r-rr(0,40), vx:0, vy:a.spd*ssp, pat:a.pat, t:rr(0,6), fire:a.fire||null, shootCd:rr(1.2,2.4), seed:rr(0,100),
     rng: G.daily ? mulberry32((r()*4294967296)>>>0) : null });
 }
 
@@ -429,7 +430,7 @@ function killEnemy(e, byPawn){
 }
 function hurtPlayer(){
   if (G.inv>0) return;
-  G.hearts--; G.inv = 1.3; G.combo = 0; G.mult = 1; G.shake = 12; G.flash = 0.5; sfx('hurt');
+  G.hearts--; G.inv = HIT_INV; G.combo = 0; G.mult = 1; G.shake = 12; G.flash = 0.5; sfx('hurt');
   if (G.hearts <= 0) gameOver(false);
 }
 
@@ -520,11 +521,11 @@ function update(dt){
   if (G.fireCd<=0){ fire(); G.fireCd = RANK_FIRE_CD[G.rank]; }
   // power timers
   for (const k in G.pwr){ if (G.pwr[k]>0) G.pwr[k]=Math.max(0,G.pwr[k]-dt); }
-  // escorts (knight)
+  // guardians (knight power)
   if (G.pwr.knight>0){
-    if (G.escorts.length<2){ G.escorts=[{off:-36,cd:0},{off:36,cd:0}]; }
-    G.escorts.forEach(es=>{ es.x=G.px+es.off; es.y=G.py+6; es.cd-=dt; if(es.cd<=0){ shoot(es.x,es.y-10,0,-BSPD,false); es.cd=0.2; } });
-  } else if (G.escorts.length){ G.escorts.length=0; }
+    if (G.guardians.length<2){ G.guardians=[{off:-36,cd:0},{off:36,cd:0}]; }
+    G.guardians.forEach(es=>{ es.x=G.px+es.off; es.y=G.py+6; es.cd-=dt; if(es.cd<=0){ shoot(es.x,es.y-10,0,-BSPD,false); es.cd=0.2; } });
+  } else if (G.guardians.length){ G.guardians.length=0; }
 
   // spawn director
   while (G.toSpawn.length && G.toSpawn[0].time<=G.time){ spawnEnemy(G.toSpawn.shift().type); }
@@ -545,8 +546,7 @@ function updateEnemies(dt){
     else if (e.pat==='weave'){ e.x += Math.sin(e.t*1.6+e.seed)*54*dt; e.y += e.vy*dt; }
     else { e.y += e.vy*dt; }
     e.x = clamp(e.x, e.r, W-e.r);
-    // queen shoots
-    if (e.shoots){ e.shootCd-=dt; if(e.shootCd<=0 && e.y>0 && e.y<H*0.6){ enemyShoot(e.x,e.y,G.px,G.py); e.shootCd = e.rng ? 1.6+e.rng()*1.2 : rnd(1.6,2.8); } }
+    if (e.fire){ e.shootCd-=dt; if(e.shootCd<=0 && e.y>0 && e.y<H*0.6){ enemyShoot(e.x,e.y,G.px,G.py); e.shootCd = e.fire[0] + (e.rng ? e.rng() : Math.random())*e.fire[1]; } }
     // leak
     if (e.y - e.r > H){ G.enemies.splice(i,1); G.combo=0; G.mult=1; G.hearts--; G.flash=0.4; G.shake=8; sfx('hurt'); floater('LEAK!', e.x, H-30, '#ff5b6e'); if(G.hearts<=0){ gameOver(false); return; } continue; }
     // hit player
@@ -556,20 +556,21 @@ function updateEnemies(dt){
   }
 }
 
-function enemyShoot(x,y,tx,ty){ const a=Math.atan2(ty-y,tx-x); const sp=180; G.ebullets.push({ x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, r:5 }); }
+function enemyShoot(x,y,tx,ty){ const a=Math.atan2(ty-y,tx-x); const sp=EB_SPD; G.ebullets.push({ x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, r:5 }); }
 
 function updateBoss(dt){
   const b=G.boss; if(!b) return; b.t+=dt;
   if (b.entering){ b.y += 70*dt; if(b.y>=b.ty){ b.y=b.ty; b.entering=false; b.vulnCd=6; } return; }
   // weak-point rhythm — it opens up, stops firing, and takes bonus damage
   if (b.vuln>0){ b.vuln-=dt; }
-  else { b.vulnCd-=dt; if (b.vulnCd<=0){ b.vuln=2.4; b.vulnCd=7.5; sfx('charge'); floater('WEAK POINT!', b.x, b.y-46, '#6bffb8'); } }
+  else { b.vulnCd-=dt; if (b.vulnCd<=0){ b.vuln=VULN_DUR; b.vulnCd=VULN_EVERY; sfx('charge'); floater('WEAK POINT!', b.x, b.y-46, '#6bffb8'); } }
   // drift (the hopper teleports instead, in bossFire)
   if (b.kind!=='burst'){ b.x += b.dir*70*dt; if(b.x<60){b.x=60;b.dir=1;} if(b.x>W-60){b.x=W-60;b.dir=-1;} }
   // CEO phase by health
   if (b.kind==='ceo'){ const p=b.hp/b.maxhp; b.phase = p>0.6?1:(p>0.3?2:3); }
   // fire (paused while the guard is down — that's your window)
-  if (b.vuln<=0){ b.fireCd-=dt; if (b.fireCd<=0) bossFire(b); }
+  if (b.vuln<=0){ b.fireCd-=dt; if (b.fireCd<=0){ const n0=G.ebullets.length; bossFire(b); b.fireCd*=BOSS_PACE;
+    for (let i=n0;i<G.ebullets.length;i++){ G.ebullets[i].vx*=BOSS_SHOT; G.ebullets[i].vy*=BOSS_SHOT; } } }
   // reinforcements
   if (b.kind==='royal' || b.kind==='ceo'){
     b.addCd-=dt;
@@ -798,8 +799,8 @@ function render(){
   if (G.ppawns.length){ const ps=glowGlyphSpr('♙',22,'#ffe27a','#ffd36b',10); G.ppawns.forEach(p=>blit(ps, p.x, p.y)); }
   // player bullets
   G.bullets.forEach(b=>blit(b.spr, b.x, b.y));
-  // escorts
-  if (G.escorts.length){ const es=glyphSpr('♘',20,'#8fe3ff'); G.escorts.forEach(e=>blit(es, e.x, e.y)); }
+  // guardians
+  if (G.guardians.length){ const es=glyphSpr('♘',20,'#8fe3ff'); G.guardians.forEach(e=>blit(es, e.x, e.y)); }
   // Crockett (behind Princess) then Princess
   drawDog();
   drawPrincess();
@@ -808,7 +809,9 @@ function render(){
   // shockwave rings (power-up collection)
   G.rings.forEach(r=>{ ctx.globalAlpha=Math.max(0,r.life/r.max); ctx.strokeStyle=r.col; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,7); ctx.stroke(); }); ctx.globalAlpha=1;
   // floaters
-  G.floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.font='bold '+(f.big?22:15)+'px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; if(f.big){ ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=4; ctx.strokeText(f.txt,f.x,f.y); } ctx.fillStyle=f.col; ctx.fillText(f.txt,f.x,f.y); }); ctx.globalAlpha=1;
+  G.floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.font='bold '+(f.big?22:15)+'px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    if(f.hw==null) f.hw=ctx.measureText(f.txt).width/2+6;  // kept on screen: she can stand at the very edge
+    const x=clamp(f.x,f.hw,W-f.hw); if(f.big){ ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=4; ctx.strokeText(f.txt,x,f.y); } ctx.fillStyle=f.col; ctx.fillText(f.txt,x,f.y); }); ctx.globalAlpha=1;
 
   ctx.restore();
   drawHUD();
@@ -937,8 +940,8 @@ function startPlay(mode){ curMode=mode||'normal'; initAudio(); if(actx&&actx.sta
   keys.clear(); drag=null;
   newGame(curMode); updateSummonBtn(); setFocus(false); kick();
 }
-// Photo-mode end-card — a shareable PNG of your run
-function saveCard(){
+// End-of-run PNG — copied to the clipboard; a browser that refuses gets the file instead
+function copyPng(){
   if (!G) return;
   const cw=600, ch=315, cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; const cx=cv.getContext('2d');
   const r=curRegion();
@@ -956,7 +959,13 @@ function saveCard(){
   cx.fillStyle='#cfe0ff'; cx.font='600 15px Trebuchet MS'; cx.fillText(won?'crowned the Queen':'rose to '+RANK_NAME[G.rank], cw/2, 248);
   cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   mcpuppystudios.com', cw/2, 270);
   cx.font='40px "Segoe UI Symbol","Noto Sans Symbols2",serif'; cx.fillStyle='#f0e6ff'; cx.fillText(RANK_GLYPH[G.rank], cw/2, 300);
-  const a=document.createElement('a'); a.download='sky-run-'+G.score+'.png'; a.href=cv.toDataURL('image/png'); a.click();
+  const btn=$('png-btn'), done=(t)=>{ btn.textContent=t; clearTimeout(copyPng.t); copyPng.t=setTimeout(()=>{ btn.textContent='📋 COPY PNG'; }, 1800); };
+  const download=()=>{ const a=document.createElement('a'); a.download='sky-run-'+G.score+'.png'; a.href=cv.toDataURL('image/png'); a.click(); done('✓ SAVED'); };
+  // ⚠ Safari only honors the write if ClipboardItem gets the PROMISE synchronously, inside the tap
+  try {
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': new Promise(res=>cv.toBlob(res,'image/png')) })])
+      .then(()=>done('✓ COPIED'), download);
+  } catch(e){ download(); }
 }
 function refreshBest(){
   const b=loadBest(), d=loadBestD(), e=loadBestE(), bits=['Best: '+(b||'—')];
@@ -972,7 +981,7 @@ $('play-btn').addEventListener('click', function(){ startPlay('normal'); });
 $('daily-btn').addEventListener('click', function(){ startPlay('daily'); });
 $('endless-btn').addEventListener('click', function(){ startPlay('endless'); });
 $('retry-btn').addEventListener('click', function(){ startPlay(curMode); });
-$('card-btn').addEventListener('click', saveCard);
+$('png-btn').addEventListener('click', copyPng);
 $('menu-btn').addEventListener('click', pause);
 $('menu-btn2').addEventListener('click', openMenu);
 $('resume-btn').addEventListener('click', resume);
