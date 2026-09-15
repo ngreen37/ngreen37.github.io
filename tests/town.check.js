@@ -1155,7 +1155,7 @@ const server = http.createServer((req, res) => {
         && !/get_datetime_dict_from_system\(true\)/.test(clk),
         '…in LOCAL time, in BOTH readers  (⚠ `true` is UTC: midnight here at four in the afternoon)');
       /* the darkest tint still has to be a town you can cross */
-      const nightTint = /NIGHT: return Color\(([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(clk);
+      const nightTint = /const NIGHT_TINT := Color\(([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(clk);
       ok(nightTint && Math.max(+nightTint[1], +nightTint[2], +nightTint[3]) >= 0.35,
         '…and the darkest tint still leaves a walkable map  [[down-never-stuck]]',
         nightTint && nightTint.slice(1).join(', '));
@@ -2314,6 +2314,85 @@ const server = http.createServer((req, res) => {
           shot.label);
       }
 
+      /* ══ 38 · THE TRIBUNE, THE SUN, THE CLOCK AND THE DRAIN (2026-09-14) ════════════════
+         His: the Checker Tribune, positive with questions for the Bureau; morning, afternoon,
+         evening and night that look it; a clock; energy that the clock wears down. */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const clk8 = code(rd('clock.gd')), pap8 = code(rd('paper.gd')), zn8 = code(rd('zone.gd'));
+        const gs8 = code(rd('game_state.gd')), twn8 = code(rd('town.gd')), jr8 = code(rd('journal.gd'));
+        const mkt8 = code(rd('market.gd'));
+
+        /* ── the Tribune ── */
+        ok(/const MASTHEAD := "THE CHECKER TRIBUNE"/.test(pap8), 'the paper is the Checker Tribune');
+        const list = (name) => {
+          const m = new RegExp('const ' + name + ' := \\[([\\s\\S]*?)\\n\\]').exec(pap8);
+          return m ? [...m[1].matchAll(/^\t"((?:[^"\\]|\\.)*)",?$/gm)].map((x) => x[1]) : [];
+        };
+        const bureau = list('BUREAU'), townNews = list('TOWN_NEWS');
+        ok(bureau.length >= 6 && townNews.length >= 6
+          && bureau.every((b) => /Bureau|ICB|Expanse Branch|checkpoint|Construction Co/i.test(b)),
+          'a question for the Bureau and a town column in every edition, and every question is about the Bureau and its friends',
+          bureau.length + ' questions, ' + townNews.length + ' town items');
+        const hidden = /Alpine|Jenkins|53rd|Release Act|Convict|Subject|P&JCC|Pontiac|manifest|Robert|queen|Michael/i;
+        const leaks = bureau.concat(townNews).filter((l) => hidden.test(l));
+        ok(leaks.length === 0, '⚠⚠ …and nothing in it comes off a hidden page or a slow-rolled card', leaks.join(' | ') || 'clean');
+        ok(!/\b(barks?|woofs?|growls?)\b|Princess (said|says)|Crockett (said|says)|Argus (said|says)/i.test(bureau.concat(townNews).join(' ')),
+          '…and no animal says a word in it  [ONLY HUMANS TALK]');
+        ok(/TownPaper\.pick\(TOWN_NEWS, "town"\)/.test(fnGd(pap8, 'edition')) && /TownPaper\.pick\(BUREAU, "bureau"\)/.test(fnGd(pap8, 'edition'))
+          && /SkyDaily\.hash_str\(TownSeason\.date_key\(\) \+ "#" \+ salt\)/.test(fnGd(pap8, 'pick')),
+          '…picked by the date, so everybody in town reads the same edition');
+        ok(/TownClock\.time_text\(TownClock\.lamps_on\(\)\)/.test(pap8) && /TownClock\.time_text\(TownClock\.lamps_on\(\)\)/.test(mkt8),
+          '…and the market hours it prints are the real dusk, not a typed hour');
+
+        /* ── the sun ── */
+        const num = (re) => { const m = re.exec(clk8); return m ? parseFloat(m[1]) : NaN; };
+        const LAT = num(/const LATITUDE := ([\d.]+)/), NOON = num(/const SOLAR_NOON := ([\d.]+)/);
+        const sunFn = fnGd(clk8, 'sun');
+        ok(/deg_to_rad\(23\.44\) \* sin\(TAU \* \(float\(day_of_year\(\)\) - 81\.0\) \/ 365\.0\)/.test(sunFn)
+          && /acos\(clampf\(c, -1\.0, 1\.0\)\)/.test(sunFn) && /1\.0 if _dst\(\) else 0\.0/.test(sunFn),
+          'the sun rises and sets by the date: declination, latitude and daylight saving');
+        const sunAt = (doy, dst) => {
+          const d2r = Math.PI / 180, decl = 23.44 * d2r * Math.sin(2 * Math.PI * (doy - 81) / 365);
+          const half = Math.acos(Math.max(-1, Math.min(1, -Math.tan(LAT * d2r) * Math.tan(decl)))) / d2r / 15;
+          return [(NOON + (dst ? 1 : 0) - half) * 60, (NOON + (dst ? 1 : 0) + half) * 60];
+        };
+        const dec = sunAt(355, 0), jun = sunAt(172, 1);
+        ok(dec[1] < 17 * 60 + 15 && dec[0] > 7 * 60 + 45 && jun[1] > 20 * 60 + 45 && jun[0] < 6 * 60 + 15,
+          '⭐ …so December is dark before 5:15 pm and June is light past 8:45 — computed from the constants',
+          'Dec ' + Math.round(dec[0]) + '-' + Math.round(dec[1]) + ' min, Jun ' + Math.round(jun[0]) + '-' + Math.round(jun[1]) + ' min');
+        const ease = fnGd(clk8, '_ease');
+        ok(/s\.x - 90\.0, s\.x - 35\.0, s\.x \+ 5\.0, s\.x \+ 60\.0, noon, s\.y - 150\.0,/.test(ease)
+          && /s\.y - 60\.0, s\.y - 5\.0, s\.y \+ 30\.0, s\.y \+ 80\.0\]/.test(ease) && /smoothstep\(a, b, m\)/.test(ease),
+          'the look of the day is placed against the sun and eased, never stepped on the hour');
+        ok(/return _ease\(\[NIGHT_TINT, BLUE_HOUR, SUNRISE, MORNING_TINT, MIDDAY, AFTERNOON_TINT, GOLDEN, SUNSET, DUSK, NIGHT_TINT\]\)/.test(fnGd(clk8, 'tint')),
+          '…night, blue hour, sunrise, morning, midday, afternoon, golden hour, sunset, dusk, night');
+        ok(/blend_mode = CanvasItemMaterial\.BLEND_MODE_ADD/.test(fnGd(twn8, '_light_the_sky'))
+          && /layer\.layer = 1/.test(fnGd(twn8, '_light_the_sky')) && /_skylight\.color = TownClock\.glow\(\)/.test(fnGd(twn8, '_retime')),
+          '⚠ …with light ADDED at sunrise and golden hour, because a tint can only darken');
+        ok(/return m < s\.x \+ 10\.0 or m >= s\.y - 15\.0/.test(fnGd(clk8, 'is_dark')) && /return int\(sun\(\)\.y - 15\.0\)/.test(fnGd(clk8, 'lamps_on')),
+          '…and the lamps come on at the real dusk');
+
+        /* ── the clock ── */
+        ok(/return TownClock\.time_text\(\)/.test(fnGd(zn8, 'clock_text')) && /_dial\.draw\.connect\(_draw_dial\)/.test(zn8)
+          && /clock_text\(\)/.test(fnGd(zn8, '_draw_dial'))
+          && /if m == _shown_minute:\s*\n\s*return/.test(fnGd(zn8, '_tick_clock')) && /_dial\.queue_redraw\(\)/.test(fnGd(zn8, '_tick_clock')),
+          'a clock in the HUD: a face and the time, repainted when the minute turns');
+        ok(/_dial\.position = Vector2\(w - 110\.0 \* k, 62\.0 \* k\)/.test(fnGd(zn8, '_scale_hud'))
+          && !/time_text|clock_text/.test(fnGd(zn8, '_paint_hud')),
+          '⚠⚠ …under the Journal tab and NOT in the row: on a 390-wide phone the row has no room left (measured 970 and 791 against a tab at 761)');
+
+        /* ── the drain ── */
+        ok(/const DRAIN_MINUTES := \d+/.test(gs8) && /_drain\(_poll\.wait_time\)/.test(fnGd(gs8, '_tick')),
+          'energy drains with the clock, on the tick that already runs');
+        const dr = fnGd(gs8, '_drain');
+        ok(/if energy <= 0:\s*\n\s*return/.test(dr) && /energy -= 1/.test(dr) && /if energy % GAME_COST == 0:\s*\n\s*save_state\(\)/.test(dr),
+          '⚠ …never below empty, and saved only when a game\'s worth is gone: every save banks a row on the site');
+        ok(/GameState\.DRAIN_MINUTES/.test(jr8) && /TownClock\.sun\(\)/.test(jr8),
+          '…and the journal says so, along with sunrise and sunset');
+      }
+
       /* ══ 37 · THE PAPER, THE CALENDAR, THE CAMERA, THE DAILY, THE POST, THE MARKET, THE MAP ═══
          2026-09-14, nine of his ten picks. Each one says something true or it says nothing. */
       {
@@ -2391,7 +2470,7 @@ const server = http.createServer((req, res) => {
         ok(/GameState\.paper_was\(\)/.test(fnGd(pap, '_lead')) && /npc\.away_days\.has\(wd\)/.test(fnGd(pap, '_around'))
           && /if slot < 0 or GameState\.has_slot\(slot\):/.test(fnGd(pap, '_arcade')) && /if best <= 0:/.test(fnGd(pap, '_arcade')),
           '⭐ every line is read off the save, the calendar or a banked score — never a guess');
-        ok(/TownClock\.DUSK_AT - 12/.test(pap) && /TownClock\.DUSK_AT - 12/.test(mkt) && !/opens at \d/.test(pap + mkt),
+        ok(/TownClock\.lamps_on\(\)/.test(pap) && /TownClock\.lamps_on\(\)/.test(mkt) && !/opens at \d/.test(pap + mkt),
           '…and the paper and the market read the same hour off the clock');
         ok(/TownPaper\.Stand\.new\(\)/.test(twn), '…sold from a stand in the town');
 
