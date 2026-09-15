@@ -547,7 +547,7 @@ check('the phase strip reads Deploy, Attack, Fortify — and nothing for their t
    file would stay green with three of the four deleted. */
 check('the map header counts your chained holdings',
       /id="t-chain"/.test(slice('<div class="tally">', '</div>')) &&
-      /\$\('t-chain'\)\.textContent = chainCount\(G\.own, 'm'\)/.test(src));
+      /\$\('t-chain'\)\.textContent = chainCount\(G\.own, G\.side\)/.test(src));
 check('a chained holding is marked on the map itself',
       /if \(chained\(G\.own, L\.id\)\) cls \+= ' chained';/.test(slice('function drawMap()', 'function tapLand')) &&
       /\.node\.chained \.disc \{/.test(slice('<style>', '</style>')),

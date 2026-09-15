@@ -21,6 +21,8 @@
 <link rel="stylesheet" href="/assets/css/vs-aura.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* ⚠ .btn's display:block beats the browser's own [hidden] rule — without this every hidden button shows */
+  [hidden] { display: none !important; }
   html, body { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
   html, body {
     background: #0d0a17; height: 100%; overflow: hidden;
@@ -145,6 +147,9 @@
     font: 700 12px 'Trebuchet MS', sans-serif; letter-spacing: .6px; }
   .levels button.on { border-color: var(--mine); color: var(--mine); background: rgba(107,255,184,.09); }
   .lvl-note { text-align: center; font-size: 11px; color: var(--ink-3); margin-top: 7px; min-height: 15px; }
+  .modes { display: flex; gap: 7px; }
+  .modes .btn { flex: 1; min-width: 0; }
+  #screen-pass { justify-content: safe center; gap: 6px; }
 
   /* ── THE MAP ── */
   .mapbox { position: relative; width: 100%; aspect-ratio: 1/1.12; margin: 4px 0 3px;
@@ -172,6 +177,11 @@
      flickered in and out depending on what was selected. Everything is border-box, so the
      disc stays exactly 38px and the map does not shift when a chain forms. */
   .node.chained .disc { border-width: 5px; border-style: double; }
+  /* ⚠ fog takes the FILL: the border color is the owner and the border style is the chain */
+  .node.fog .disc { background: #1a1528; color: var(--ink-3); }
+  /* two players: the hints wear the color of whoever holds the device */
+  #screen-map.red-turn .node.can .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.45); }
+  #screen-map.red-turn .node.sel .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.4); }
   /* a rank landing, or a holding under an announced attack — both want a beat you can see */
   .node.flash .disc { animation: land .42s ease; }
   .node.doom .disc  { animation: doom .55s ease infinite; }
@@ -213,6 +223,8 @@
   .rlab { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 5px;
     font-weight: 700; }
   .rlab.att { color: var(--mine); } .rlab.def { color: var(--theirs); }
+  /* two players, Red attacking: this screen colors by CHAIR (attacker = --mine), so the chairs swap colors */
+  #screen-roll.swap { --mine: #ff6e8a; --theirs: #6bffb8; }
   /* the chain's payout, said where the extra die appears rather than in the fine print */
   .chainchip { display: block; margin-top: 3px; font-style: normal; font-size: 9px;
     letter-spacing: .8px; text-transform: uppercase; color: #ffd76e; }
@@ -508,6 +520,10 @@
     <p class="lvl-note" id="lvl-note">A fair fight that punishes carelessness.</p>
     <button class="btn" id="resume" hidden>Continue the campaign</button>
     <button class="btn" id="go">Begin the campaign</button>
+    <div class="modes">
+      <button class="btn ghost slim" id="daily">Daily</button>
+      <button class="btn ghost slim" id="two">Two players</button>
+    </div>
     <button class="btn ghost" id="how">How it works</button>
     <p class="foot"><button class="snd" id="snd" aria-pressed="false">🔊 Sound on</button></p>
   </section>
@@ -547,7 +563,12 @@
       him &mdash; and <b>an 8</b> brings his rook around and three pawns with him.<br><br>
       <b>7. Fifteen seconds each,</b> a second back on every move. <b>Run your own clock out
       and you lose.</b> Checkmate takes the ground. A draw goes to the defender.<br><br>
-      <b>8. Take every holding to win.</b> Lose them all and the campaign is over.
+      <b>8. Take every holding to win.</b> Lose them all and the campaign is over.<br><br>
+      <b>9. Fog.</b> You only see troops where you share a border. Tap a <b>?</b> twice to
+      scout it &mdash; that costs one of your attacks.<br><br>
+      <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
+      rounds; hold as much as you can.<br>
+      <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.
     </p>
     <button class="btn ghost" id="back">Back</button>
   </section>
@@ -570,8 +591,8 @@
       <span data-p="fortify">Fortify</span>
     </div>
     <div class="tally">
-      <span>Yours <b class="m" id="t-mine">0</b></span>
-      <span>Theirs <b class="t" id="t-theirs">0</b></span>
+      <span><span id="l-mine">Yours</span> <b class="m" id="t-mine">0</b></span>
+      <span><span id="l-theirs">Theirs</span> <b class="t" id="t-theirs">0</b></span>
       <!-- ⚑ THE CHAIN, COUNTED. His: "The chain is great - let's do it and promote it
            in-game." It is promoted in four places and this is the quietest of them: a
            number you watch go up as you play, which is what turns a rule into a goal. -->
@@ -648,7 +669,16 @@
   <section class="screen" id="screen-result">
     <p class="verdict" id="verdict"></p>
     <p class="sub" id="result-say" style="margin-top:12px"></p>
+    <button class="btn ghost" id="share" hidden>Copy result</button>
     <button class="btn" id="cont">Continue</button>
+  </section>
+
+  <!-- ══ PASS (two players) ═════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-pass">
+    <p class="verdict" id="pass-who"></p>
+    <p class="sub" id="pass-say"></p>
+    <button class="btn" id="pass-go"></button>
+    <button class="btn ghost slim" id="pass-quit">End this game</button>
   </section>
 
 </div>
@@ -839,13 +869,48 @@ var LEVELS = {
 var G = null;          // campaign state
 var B = null;          // battle state
 
-function newCampaign(diff) {
-  G = { own: START_OWN.slice(), ranks: START_RANKS.slice(), round: 1, sel: -1, busy: false,
-        diff: diff || 'medium', phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
+/* mode: 'solo' | 'daily' | 'two'. G.side is whose turn it is at the device — always 'm' outside two-player.
+   ⚠ 'm'/'t' stay the COLORS (green/red); player-action code asks G.side, never 'm'. */
+function newCampaign(diff, mode) {
+  mode = mode || 'solo';
+  var day = mode === 'daily' ? dayKey() : null;
+  var start = day ? dailyStart(day) : { own: START_OWN.slice(), ranks: START_RANKS.slice() };
+  G = { own: start.own, ranks: start.ranks, round: 1, sel: -1, busy: false,
+        diff: day ? 'medium' : (diff || 'medium'), mode: mode, day: day, side: 'm',
+        seen: { m: [], t: [] }, scoutArm: -1,
+        phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
         fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
         flash: -1, hot: null, q: [] };
-  G.toPlace = deployFor('m');
+  G.toPlace = deployFor(G.side);
 }
+function sideName(s) { return s === 'm' ? 'Green' : 'Red'; }
+function sideColor(s) { return s === 'm' ? '#6bffb8' : '#ff6e8a'; }
+
+/* ── FOG ── an enemy holding is hidden unless it borders one of yours or you scouted it this turn */
+function fogged(id) {
+  var s = G.side;
+  if (G.own[id] === s || G.seen[s].indexOf(id) >= 0) return false;
+  return !nbrs(id).some(function (j) { return G.own[j] === s; });
+}
+
+/* ── THE DAILY ── same start, and the same attack rolls the same dice, for everyone */
+var DAILY_ROUNDS = 3, DAILY_KEY = 'pjcc.campaign.daily.v1';
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hashStr(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function seeded(key, fn) { RNG = mulberry32(hashStr(key)); try { return fn(); } finally { RNG = null; } }
+function dayKey() { try { if (window.PJCC_TIME) return PJCC_TIME.dateStr(); } catch (e) {} var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function dayLabel(k) { var p = String(k).split('-'); return (+p[1]) + '/' + (+p[2]); }
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rand() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+/* five holdings a side in the campaign's own 4-3-3-3-2 shape, dealt across the map by the date */
+function dailyStart(day) {
+  return seeded('campaign|start|' + day, function () {
+    var ids = shuffle(LAND.map(function (L) { return L.id; }));
+    var mShape = shuffle([4, 3, 3, 3, 2]), tShape = shuffle([4, 3, 3, 3, 2]), own = [], ranks = [];
+    ids.forEach(function (id, i) { own[id] = i < 5 ? 'm' : 't'; ranks[id] = i < 5 ? mShape[i] : tShape[i - 5]; });
+    return { own: own, ranks: ranks };
+  });
+}
+function loadDaily() { try { var o = JSON.parse(localStorage.getItem(DAILY_KEY)); return o && o.day ? o : null; } catch (e) { return null; } }
 
 /* ── DICE ──────────────────────────────────────────────────────────────────────────
    ⚑ REWRITTEN 2026-08-08 TO HIS RULES. It shipped as 3d6 vs 2d6 with the totals SPENT
@@ -887,7 +952,10 @@ function newCampaign(diff) {
    ⚠ IF THE FACES EVER MOVE AGAIN, RE-DERIVE ALL FOUR ROWS. Two of them are exact only by
    arithmetic coincidence, not by construction. */
 var FACES = 8;
-function d20() { return 1 + Math.floor(Math.random() * FACES); }
+/* the Daily's seeded stream, set and cleared inside one synchronous call (seeded()); null = Math.random */
+var RNG = null;
+function rand() { return RNG ? RNG() : Math.random(); }
+function d20() { return 1 + Math.floor(rand() * FACES); }
 
 /* ══ THEY ARE **TROOPS**, AND ONLY IN THE DISPLAY ═══════════════════════════
    2026-08-25, Nate: *"Let's brainstorm another name for Ranks. That is still a bit
@@ -1120,7 +1188,7 @@ function muster(budget, caps) {
     if (!afford.length) break;
     // mostly reach for the biggest thing affordable, but not always — two identical
     // budgets should not always produce the identical army.
-    var pick = (Math.random() < 0.6) ? afford[0] : afford[Math.floor(Math.random() * afford.length)];
+    var pick = (rand() < 0.6) ? afford[0] : afford[Math.floor(rand() * afford.length)];
     out.push(pick); left -= VAL[pick];
   }
   while (left > 0 && have('p') < cap.p) { out.push('p'); left -= 1; }
@@ -1421,7 +1489,7 @@ function material(b, side) {
 
 /* ── SCREENS ───────────────────────────────────────────────────────────────────── */
 function show(id) {
-  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result']
+  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass']
     .forEach(function (s) { $(s).classList.toggle('on', s === id); });
 }
 function say(t) { $('map-say').innerHTML = t; }
@@ -1496,7 +1564,7 @@ function drawMap() {
     if (G.own[e[0]] === G.own[e[1]] && chained(G.own, e[0]) && chained(G.own, e[1])) {
       cls += G.own[e[0]] === 'm' ? ' chain-m' : ' chain-t';
     }
-    if (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] === 't') || (e[1] === G.sel && G.own[e[0]] === 't'))) {
+    if (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] !== G.side) || (e[1] === G.sel && G.own[e[0]] !== G.side))) {
       cls += ' hot';
     }
     if (G.hot && ((e[0] === G.hot.from && e[1] === G.hot.to) || (e[1] === G.hot.from && e[0] === G.hot.to))) {
@@ -1507,13 +1575,15 @@ function drawMap() {
   });
   svg.innerHTML = lines;
 
+  var two = G.mode === 'two';
   LAND.forEach(function (L) {
-    var mine = G.own[L.id] === 'm';
+    var mine = G.own[L.id] === G.side, fog = fogged(L.id);
     var isSel = G.sel === L.id;
-    var cls = 'node ' + (mine ? 'mine' : 'theirs');
+    var cls = 'node ' + (G.own[L.id] === 'm' ? 'mine' : 'theirs');
     if (isSel) cls += ' sel';
     if (G.flash === L.id) cls += ' flash';
     if (G.hot && G.hot.to === L.id) cls += ' doom';
+    if (fog) cls += ' fog';
 
     if (chained(G.own, L.id)) cls += ' chained';
 
@@ -1535,10 +1605,11 @@ function drawMap() {
     el.type = 'button';
     el.className = cls;
     el.setAttribute('data-id', L.id);
-    el.setAttribute('aria-label', L.nm + ', ' + (mine ? 'yours' : 'theirs') + ', ' + G.ranks[L.id] + ' troop' +
-      (G.ranks[L.id] === 1 ? '' : 's') + (chained(G.own, L.id) ? ', chained' : ''));
+    el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(G.own[L.id]) : mine ? 'yours' : 'theirs') + ', ' +
+      (fog ? 'troops unknown' : G.ranks[L.id] + ' troop' + (G.ranks[L.id] === 1 ? '' : 's')) +
+      (chained(G.own, L.id) ? ', chained' : ''));
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
-    el.innerHTML = '<span class="disc">' + G.ranks[L.id] + '</span><span class="nm">' + L.nm + '</span>';
+    el.innerHTML = '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>';
     el.addEventListener('click', function () { tapLand(L.id); });
     box.appendChild(el);
     if (focusId === String(L.id)) el.focus();
@@ -1548,17 +1619,22 @@ function drawMap() {
   var m = 0, t = 0;
   for (var i = 0; i < LAND.length; i++) { if (G.own[i] === 'm') m++; else t++; }
   $('t-mine').textContent = m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
-  $('t-chain').textContent = chainCount(G.own, 'm');
+  $('l-mine').textContent = two ? 'Green' : 'Yours'; $('l-theirs').textContent = two ? 'Red' : 'Theirs';
+  $('screen-map').classList.toggle('red-turn', two && G.side === 't');
+  $('t-chain').textContent = chainCount(G.own, G.side);
+  $('t-chain').className = $('t-atk').className = G.side;
   $('t-atk').textContent = G.atks;
   $('t-atk').parentNode.className = G.atks ? '' : 'spent';
 }
 
 function tapLand(id) {
   if (G.busy) return;
+  var armed = G.scoutArm; G.scoutArm = -1;
+  if ((G.phase === 'deploy' || G.phase === 'attack') && fogged(id)) { scout(id, armed === id); return; }
 
   /* ── DEPLOYMENT: one tap, one rank ── */
   if (G.phase === 'deploy') {
-    if (G.own[id] !== 'm') { say('You can only reinforce ground you hold.'); return; }
+    if (G.own[id] !== G.side) { say('You can only reinforce ground you hold.'); return; }
     if (G.toPlace <= 0) return;
     G.ranks[id]++; G.toPlace--;
     G.flash = id;
@@ -1589,7 +1665,7 @@ function tapLand(id) {
   if (G.phase === 'fortify') {
     if (G.fortDone) { say('You have already fortified this round.'); return; }
     if (G.fortFrom < 0) {
-      if (G.own[id] !== 'm') { say('Move troops between your own holdings.'); return; }
+      if (G.own[id] !== G.side) { say('Move troops between your own holdings.'); return; }
       if (G.ranks[id] < 2) { say(LAND[id].nm + ' has one troop — it cannot spare it.'); return; }
       G.fortFrom = id;
       say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per troop.');
@@ -1601,7 +1677,7 @@ function tapLand(id) {
       if (G.fortMoved) { G.fortDone = true; say('<b>' + G.fortMoved + '</b> moved to ' + LAND[G.fortTo].nm + '. That is your fortify.'); drawMap(); return; }
       G.fortFrom = -1; G.fortTo = -1;
       say('Pick a holding to move troops from.'); drawMap(); return; }
-    if (G.own[id] !== 'm' || !adj(G.fortFrom, id)) {
+    if (G.own[id] !== G.side || !adj(G.fortFrom, id)) {
       say(LAND[id].nm + ' is not a neighbor you hold.'); return;
     }
     if (G.fortTo >= 0 && G.fortTo !== id) {
@@ -1619,7 +1695,7 @@ function tapLand(id) {
   /* ── ATTACK ── */
   if (G.phase !== 'attack') return;
   if (G.atks <= 0) { say(atksLine()); return; }
-  if (G.own[id] === 'm') {
+  if (G.own[id] === G.side) {
     if (G.ranks[id] < 2) { say(LAND[id].nm + ' has only one troop — it cannot attack.'); drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
     say(G.sel < 0 ? atksLine()
@@ -1632,6 +1708,28 @@ function tapLand(id) {
      attack you lose is still one of your three; that is what makes choosing them matter. */
   G.atks--;
   beginBattle(G.sel, id, true);
+}
+
+/* ⚠ paid on the SECOND tap: one stray tap on a ? must not spend an attack */
+function scout(id, confirmed) {
+  if (G.atks <= 0) { say('No attacks left to spend on a scout.'); return; }
+  if (!confirmed) {
+    G.scoutArm = id;
+    say('Scout <b>' + LAND[id].nm + '</b>? It costs one of your attacks. Tap it again.');
+    return;
+  }
+  G.atks--; G.seen[G.side].push(id); G.sel = -1; G.flash = id;
+  say('<b>' + LAND[id].nm + '</b> holds <b>' + G.ranks[id] + '</b>. You see it until your next turn.');
+  setPhase(G.phase); drawMap();
+  setTimeout(function () { G.flash = -1; drawMap(); }, 420);
+}
+function deployLine() {
+  return (G.mode === 'two' ? '<b>' + sideName(G.side) + '</b> · ' : '') +
+    'Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace === 1 ? '' : 's') + '.';
+}
+function phaseLine() {
+  return G.phase === 'deploy' ? deployLine() : G.phase === 'attack' ? atksLine()
+    : 'Fortify — one free move of troops between two holdings you hold.';
 }
 
 /* the one line that says how many attacks are left, in the same words everywhere */
@@ -1655,12 +1753,16 @@ function beginBattle(from, to, playerAttacks) {
      ⚠ THE CHAIN IS A DEFENDER'S DIE AND ONLY A DEFENDER'S DIE. It is a bonus for holding
      together, and holding is what a defender does. Giving it to the attacker would have
      made a compact position better at everything, which is not a trade-off. */
-  var aMatPool = rollPool(poolFor(aRanks, false));
-  var aPosPool = rollPool(poolFor(aRanks, false));
+  /* ⚠ ONE STREAM PER POOL in the Daily: a shared stream would shift the defender's dice whenever
+     the attacker's stack differed, and "the same attack rolls the same dice" would stop being true */
+  var seed = G.mode === 'daily' ? 'campaign|' + G.day + '|' + G.round + '|' + from + '>' + to + '|' : null;
+  var draw = function (tag, fn) { return seed ? seeded(seed + tag, fn) : fn(); };
+  var aMatPool = draw('am', function () { return rollPool(poolFor(aRanks, false)); });
+  var aPosPool = draw('ap', function () { return rollPool(poolFor(aRanks, false)); });
   var dChain = chained(G.own, to);
   var dDice = Math.min(DICE_CAP + 1, poolFor(dRanks, true) + (dChain ? 1 : 0));
-  var dMatPool = rollPool(dDice);
-  var dPosPool = rollPool(dDice);
+  var dMatPool = draw('dm', function () { return rollPool(dDice); });
+  var dPosPool = draw('dp', function () { return rollPool(dDice); });
 
   var aMat = bestOf(aMatPool), aPos = bestOf(aPosPool);
   var dMat = bestOf(dMatPool), dPos = bestOf(dPosPool);
@@ -1676,8 +1778,8 @@ function beginBattle(from, to, playerAttacks) {
      follows it, instead of silently becoming unreachable (or free). */
   var aPerfect = aMat === FACES, dPerfect = dMat === FACES;
   var aChained = chainCount(G.own, G.own[from]), dChained = chainCount(G.own, G.own[to]);
-  var aArmy = muster(aBud, capsFor(aRanks, aChained, aPerfect)),
-      dArmy = muster(dBud, capsFor(dRanks, dChained, dPerfect));
+  var aArmy = draw('aa', function () { return muster(aBud, capsFor(aRanks, aChained, aPerfect)); }),
+      dArmy = draw('da', function () { return muster(dBud, capsFor(dRanks, dChained, dPerfect)); });
 
   /* ⚑ THE BOARD IS BUILT HERE, NOT AT THE START OF THE BATTLE (2026-08-24). It has to be,
      because the roll screen now SHOWS it — and a preview that re-rolled on the way to the
@@ -1700,14 +1802,16 @@ function beginBattle(from, to, playerAttacks) {
            aMatPool:aMatPool, aPosPool:aPosPool, dMatPool:dMatPool, dPosPool:dPosPool,
            dChain:dChain };
 
-  $('roll-title').textContent = playerAttacks
-    ? 'You march on ' + LAND[to].nm
+  var two = G.mode === 'two', aName = sideName(G.own[from]), dName = sideName(G.own[to]);
+  $('screen-roll').classList.toggle('swap', two && G.own[from] === 't');
+  $('roll-title').textContent = two ? aName + ' marches on ' + LAND[to].nm
+    : playerAttacks ? 'You march on ' + LAND[to].nm
     : LAND[from].nm + ' marches on ' + LAND[to].nm;
-  $('att-label').textContent = (playerAttacks ? 'You attack' : 'They attack') + ' · ' + LAND[from].nm;
+  $('att-label').textContent = (two ? aName + ' attacks' : playerAttacks ? 'You attack' : 'They attack') + ' · ' + LAND[from].nm;
   /* ⚑ THE CHAIN GETS ITS OWN CHIP, ABOVE THE DICE IT IS ABOUT. It used to appear only as
      ", +1 chained" inside the fine print behind a tap — which is to say the one bonus in
      the game that rewards how you hold the map was invisible at the moment it paid out. */
-  $('def-label').innerHTML = (playerAttacks ? 'They defend' : 'You defend') + ' · ' + LAND[to].nm +
+  $('def-label').innerHTML = (two ? dName + ' defends' : playerAttacks ? 'They defend' : 'You defend') + ' · ' + LAND[to].nm +
     (dChain ? '<em class="chainchip">chained &middot; +1 die</em>' : '');
 
   ['att-mat','att-pos','def-mat','def-pos'].forEach(function (k) { $(k).innerHTML = ''; });
@@ -1881,6 +1985,12 @@ function paintPreview() {
   }
   $('pmen').innerHTML = mh;
   var mw = material(p.board, 'w'), mb = material(p.board, 'b');
+  if (G.mode === 'two') {
+    var a = G.own[p.from], d = G.own[p.to];
+    $('ptally').innerHTML = sideName(a) + ' <b style="color:' + sideColor(a) + '">' + mw + '</b> · ' + sideName(d) + ' <b style="color:' + sideColor(d) + '">' + mb + '</b>' +
+      ' &nbsp;·&nbsp; ' + sideName(a) + ' moves first';
+    return;
+  }
   $('ptally').innerHTML = 'you <b class="m">' + mw + '</b> · them <b class="t">' + mb + '</b>' +
     ' &nbsp;·&nbsp; ' + (p.playerAttacks ? 'you move first' : 'they move first');
 }
@@ -2001,15 +2111,20 @@ function startBattle() {
     ids: new Array(64).fill(0), els: {}, seq: 0, anim: false,
     /* one mercy pause per battle — see MERCY_PLY. A new battle is a new B, so this
        resets on its own and never needs clearing anywhere. */
-    mercied: false
+    mercied: false,
+    /* two players: White is always the attacker, so wSide/bSide name the two humans */
+    two: G.mode === 'two', wSide: G.own[p.from], bSide: G.own[p.to]
   };
   B.turnStart = B.clk[B.S.turn];
   show('screen-battle');
-  PJCCVs.paint('mc-aura-me', PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
+  PJCCVs.paint('mc-aura-me', B.two ? sideColor(B.wSide) : PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
+  PJCCVs.paint('mc-aura-opp', B.two ? sideColor(B.bSide) : '#ff6e8a');
   seedMen();
   paint();
   updateClock();
-  $('say').innerHTML = p.playerAttacks
+  $('say').innerHTML = B.two
+    ? '<b>' + sideName(B.wSide) + '</b> attacks from the bottom. <b>' + sideName(B.bSide) + '</b> defends from the top.'
+    : p.playerAttacks
     ? 'You attack. <b>Force it, or the attack stalls.</b>'
     : 'You defend. <b>Outlast their fifteen seconds.</b>' +
       (p.dInfo.castled ? ' Your king is castled.' : '');
@@ -2037,7 +2152,7 @@ function goLive() {
   B.turnStart = B.clk[B.S.turn];
   B.timer = setInterval(tickClock, 100);
   updateClock();
-  if (B.S.turn === 'b') scheduleAI();
+  if (B.S.turn === 'b' && !B.two) scheduleAI();
 }
 
 /* ⚠ WALL CLOCK, NOT A TICK COUNTER. setInterval is not a timer, it is a request — a
@@ -2057,7 +2172,8 @@ function tickClock() {
     finish(attFlagged ? 'time-att' : 'time-def');
     return;
   }
-  if (B.clk[B.S.turn] <= 4 && B.S.turn === 'w' && Math.ceil(B.clk.w) !== B.lastTick) { B.lastTick = Math.ceil(B.clk.w); sfx('tick'); }
+  var mover = B.S.turn;
+  if (B.clk[mover] <= 4 && (mover === 'w' || B.two) && Math.ceil(B.clk[mover]) !== B.lastTick) { B.lastTick = Math.ceil(B.clk[mover]); sfx('tick'); }
   updateClock();
 }
 /* the Bronstein credit: give back the lesser of what the move cost and MOVE_DELAY, which
@@ -2079,6 +2195,11 @@ function updateClock() {
   var low = B.clk[live];
   el.className = 'clock' + (!B.running ? '' : low <= 4 ? ' crit' : low <= 8 ? ' warn' : '');
   var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
+  if (B.two) {
+    $('mat').innerHTML = sideName(B.wSide) + ' <b style="color:' + sideColor(B.wSide) + '">' + mw + '</b> &middot; ' +
+      sideName(B.bSide) + ' <b style="color:' + sideColor(B.bSide) + '">' + mb + '</b>';
+    return;
+  }
   $('mat').innerHTML = 'you <b style="color:var(--mine)">' + mw + '</b> &middot; them <b style="color:var(--theirs)">' + mb + '</b>';
 }
 
@@ -2184,7 +2305,7 @@ function paint() {
 }
 
 function onSquare(e) {
-  if (B.over || B.S.turn !== 'w') return;
+  if (B.over || (B.S.turn !== 'w' && !B.two)) return;
   if (!B.running) { goLive(); return; }               // tapping the board skips the reveal
   var t = e.target.closest ? e.target.closest('[data-i]') : null;
   if (!t) return;
@@ -2192,7 +2313,7 @@ function onSquare(e) {
   var mv = B.moves.filter(function (m) { return m.to === i; })[0];
   if (mv) { applyMove(mv); return; }
   var p = B.S.b[i];
-  if (p && p >= 'A' && p <= 'Z') {
+  if (p && ((p >= 'A' && p <= 'Z') ? 'w' : 'b') === B.S.turn) {
     if (B.sel === i) { B.sel = -1; B.moves = []; }
     else { B.sel = i; B.moves = C.legalMoves(B.S).filter(function (m) { return m.from === i; }); }
   } else { B.sel = -1; B.moves = []; }
@@ -2216,14 +2337,16 @@ function applyMove(m) {
   var res = C.gameResult(B.S);
   if (res === 'checkmate') { finish(B.S.turn === 'w' ? 'lost-mate' : 'won-mate'); return; }
   if (res) { finish('draw'); return; }
+  if (B.two) { $('say').innerHTML = C.inCheck(B.S, B.S.turn) ? '<b>Check.</b>' : '&nbsp;'; return; }
   if (B.S.turn === 'b' && !B.over) scheduleAI();
 }
 
-/* A queen, unless you are ATTACKING and the queen stalemates them — a draw is the defender's —
-   in which case a rook, if the rook does not stalemate them too. */
+/* A queen, unless the promoting side is ATTACKING and the queen stalemates them — a draw is the
+   defender's — in which case a rook, if the rook does not stalemate them too.
+   ⚠ playerAttacks means "White attacks" (the player is White; in two-player White always attacks). */
 function autoPromo(S, m, white) {
   var q = { from:m.from, to:m.to, promo:white ? 'Q' : 'q' };
-  if (!(PEND && PEND.playerAttacks) || C.gameResult(C.makeMove(S, q)) !== 'stalemate') return q;
+  if (!!(PEND && PEND.playerAttacks) !== white || C.gameResult(C.makeMove(S, q)) !== 'stalemate') return q;
   var r = { from:m.from, to:m.to, promo:white ? 'R' : 'r' };
   return C.gameResult(C.makeMove(S, r)) === 'stalemate' ? q : r;
 }
@@ -2240,12 +2363,13 @@ function autoPromo(S, m, white) {
    one-second delay a side that answers in 180ms NEVER LOSES CLOCK, so a machine playing at
    full speed could not flag and the battle could not end on time at all. The pace is what
    keeps both clocks meaningful. It is charged to the machine, as thinking time should be. */
+/* ⚠ both timers are tied to the battle that set them: one outliving it moved for a person in the next battle */
 function scheduleAI() {
-  var L = LEVELS[G.diff] || LEVELS.medium;
-  setTimeout(aiMove, L.pace);
+  var L = LEVELS[G.diff] || LEVELS.medium, battle = B;
+  setTimeout(function () { if (B === battle) aiMove(); }, L.pace);
 }
 function aiMove() {
-  if (!B || B.over || B.S.turn !== 'b' || !B.running) return;
+  if (!B || B.over || B.two || B.S.turn !== 'b' || !B.running) return;
   var L = LEVELS[G.diff] || LEVELS.medium;
   var pick = bestMove(B.S, L.ms, L.depth, L.slip, L.slipCp);
   if (!pick) { finish('draw'); return; }
@@ -2254,7 +2378,8 @@ function aiMove() {
       (MATE_SCORE - pick.val) <= MERCY_PLY && Math.random() < MERCY_ODDS) {
     B.mercied = true;
     $('say').innerHTML = '<b>They see it.</b>';
-    setTimeout(function () { playAI(pick.mv); }, MERCY_MS);
+    var battle = B;
+    setTimeout(function () { if (B === battle) playAI(pick.mv); }, MERCY_MS);
     return;
   }
   playAI(pick.mv);
@@ -2288,7 +2413,8 @@ function finish(how) {
 
   if (how === 'won-mate')      { playerWon = true;  line = 'Checkmate. The field is yours.'; }
   else if (how === 'lost-mate'){ playerWon = false; line = 'Checkmate. Your king is taken.'; }
-  else if (how === 'resign')   { playerWon = false; line = 'You withdrew from the field.'; }
+  /* two players: the side to move is the one giving up */
+  else if (how === 'resign')   { playerWon = !!B.two && B.S.turn === 'b'; line = 'You withdrew from the field.'; }
   else if (how === 'draw')     {
     // a draw is not a stalemate of the campaign — the defender keeps the ground.
     playerWon = !p.playerAttacks;
@@ -2322,6 +2448,15 @@ function finish(how) {
   var word = attackerWon
     ? (p.playerAttacks ? 'TAKEN' : 'LOST')
     : (p.playerAttacks ? 'DEFENDED' : 'HELD');
+  var cls = playerWon ? 'win' : 'lose';
+  if (B.two) {
+    var att = sideName(B.wSide), def = sideName(B.bSide);
+    word = attackerWon ? att.toUpperCase() + ' TAKES IT' : def.toUpperCase() + ' HOLDS';
+    cls = (attackerWon ? B.wSide : B.bSide) === 'm' ? 'win' : 'lose';
+    if (how === 'won-mate') line = 'Checkmate. ' + LAND[p.to].nm + ' changes hands.';
+    else if (how === 'lost-mate') line = 'Checkmate. The attack is broken.';
+    else if (how === 'resign') line = (playerWon ? def : att) + ' gave up the fight.';
+  }
 
   /* ⛑⛑ THE BOARD KEEPS THE SCREEN — 2026-08-25. `show('screen-result')` used to fire here
      and replace the board outright. On a mate that meant the position vanished at the exact
@@ -2333,7 +2468,7 @@ function finish(how) {
   if (how === 'won-mate') lightMate('b');
   else if (how === 'lost-mate') lightMate('w');
   sfx(how === 'won-mate' || how === 'lost-mate' ? (playerWon ? 'mate' : 'mated') : (playerWon ? 'win' : 'lose'));
-  showEndcard(word, playerWon ? 'win' : 'lose', line);
+  showEndcard(word, cls, line);
   saveCampaign();
 }
 
@@ -2532,12 +2667,12 @@ function rivalPlan() {
   if (L.smart && front.length) {
     var order = front.slice().sort(function (a, b) { return srcScore(b, rk) - srcScore(a, rk); });
     for (i = 0; i < add; i++) {
-      var pickId = (i === 0 || Math.random() < 0.7) ? order[0] : order[Math.min(order.length - 1, 1 + ((Math.random() * 2) | 0))];
+      var pickId = (i === 0 || rand() < 0.7) ? order[0] : order[Math.min(order.length - 1, 1 + ((rand() * 2) | 0))];
       deploy.push(pickId); rk[pickId]++;
     }
   } else {
     for (i = 0; i < add; i++) {
-      var r = theirs[(Math.random() * theirs.length) | 0];
+      var r = theirs[(rand() * theirs.length) | 0];
       deploy.push(r); rk[r]++;
     }
   }
@@ -2581,7 +2716,7 @@ function rivalPlan() {
 function theirTurn() {
   setPhase('theirs');
   G.sel = -1; G.busy = true;
-  var plan = rivalPlan();
+  var plan = G.mode === 'daily' ? seeded('campaign|' + G.day + '|' + G.round + '|rival', rivalPlan) : rivalPlan();
   G.q = [{ t:'say', s:'Their turn.' }];
   plan.deploy.forEach(function (id) { G.q.push({ t:'deploy', id:id }); });
   plan.attacks.forEach(function (a) {
@@ -2608,8 +2743,11 @@ function pump() {
   var s = G.q.shift();
   if (s.t === 'say') { say(s.s); drawMap(); beat(650, pump); return; }
   if (s.t === 'deploy') {
-    G.ranks[s.id]++; G.flash = s.id;
-    say('Troops reach <b>' + LAND[s.id].nm + '</b>.');
+    G.ranks[s.id]++;
+    /* ⚠ no flash in the fog: the pulse alone would say where they are stacking */
+    var hid = fogged(s.id);
+    G.flash = hid ? -1 : s.id;
+    say(hid ? 'Troops gather behind their lines.' : 'Troops reach <b>' + LAND[s.id].nm + '</b>.');
     drawMap();
     beat(480, function () { G.flash = -1; drawMap(); pump(); });
     return;
@@ -2631,8 +2769,11 @@ function pump() {
   if (s.t === 'move') {
     var n = Math.min(s.n, Math.max(0, G.ranks[s.from] - 1));
     if (G.own[s.from] !== 't' || G.own[s.to] !== 't' || n < 1) { pump(); return; }
-    G.ranks[s.from] -= n; G.ranks[s.to] += n; G.flash = s.to;
-    say('They move <b>' + n + '</b> to ' + LAND[s.to].nm + ' under the dark.');
+    G.ranks[s.from] -= n; G.ranks[s.to] += n;
+    var toHid = fogged(s.to);
+    G.flash = toHid ? -1 : s.to;
+    say(toHid ? (fogged(s.from) ? 'They move troops behind their lines.' : 'Troops leave <b>' + LAND[s.from].nm + '</b> for behind their lines.')
+              : 'They move <b>' + n + '</b> to ' + LAND[s.to].nm + ' under the dark.');
     drawMap();
     beat(900, function () { G.flash = -1; drawMap(); pump(); });
     return;
@@ -2642,14 +2783,34 @@ function pump() {
 
 function startYourTurn() {
   if (campaignCheck()) return;
+  if (G.mode === 'daily' && G.round >= DAILY_ROUNDS) { campaignOver(null); return; }
   G.round++;
-  G.sel = -1; G.busy = false; G.hot = null; G.flash = -1; G.hurry = false;
+  resetTurn();
+  say(deployLine());
+  drawMap(); show('screen-map');
+}
+function resetTurn() {
+  G.sel = -1; G.busy = false; G.hot = null; G.flash = -1; G.hurry = false; G.scoutArm = -1;
   G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0; G.fortDone = false;
   G.atks = ATTACK_CAP;
-  G.toPlace = deployFor('m');
+  G.seen[G.side] = [];
+  G.toPlace = deployFor(G.side);
   setPhase('deploy');
-  say('Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace > 1 ? 's' : '') + '.');
-  drawMap(); show('screen-map');
+}
+/* two players: hand the device over. ⚠ the curtain goes up BEFORE the map redraws for the next side */
+function passTurn() {
+  G.side = G.side === 'm' ? 't' : 'm';
+  if (G.side === 'm') G.round++;
+  resetTurn();
+  showPass();
+}
+function showPass() {
+  var n = sideName(G.side);
+  $('pass-who').textContent = n.toUpperCase() + '’S TURN';
+  $('pass-who').className = 'verdict ' + (G.side === 'm' ? 'win' : 'lose');
+  $('pass-say').textContent = 'Round ' + G.round + '. Hand the device to ' + n + ' — the map only shows what ' + n + ' can see.';
+  $('pass-go').textContent = 'I’m ' + n + ' — show the map';
+  show('screen-pass');
 }
 function campaignCheck() {
   var m = idsOf('m').length, t = idsOf('t').length;
@@ -2658,14 +2819,35 @@ function campaignCheck() {
   return false;
 }
 
+/* won: true/false = Green holds all / none; null = the Daily ran out of rounds */
 function campaignOver(won) {
-  $('verdict').textContent = won ? 'THE CAMPAIGN IS YOURS' : 'THE CAMPAIGN IS LOST';
-  $('verdict').className = 'verdict ' + (won ? 'win' : 'lose');
-  $('result-say').textContent = won
-    ? 'Ten holdings, all of them flying your colors. Round ' + G.round + '.'
-    : 'They hold every road out. Round ' + G.round + '.';
+  var v = $('verdict'), rs = $('result-say'), held = idsOf('m').length;
+  $('share').hidden = G.mode !== 'daily';
+  if (G.mode === 'daily') {
+    var troops = idsOf('m').reduce(function (s, id) { return s + G.ranks[id]; }, 0);
+    var rec = loadDaily(), today = rec && rec.day === G.day ? rec : null;
+    var score = { held: held, troops: troops }, better = !today || held > today.best.held ||
+      (held === today.best.held && troops > today.best.troops);
+    try { localStorage.setItem(DAILY_KEY, JSON.stringify({ day: G.day, first: today ? today.first : score, best: better ? score : today.best })); } catch (e) {}
+    v.textContent = 'DAILY ' + dayLabel(G.day) + ' · ' + held + ' OF ' + LAND.length;
+    v.className = 'verdict' + (held > 5 ? ' win' : held < 5 ? ' lose' : '');
+    rs.textContent = held + ' holdings and ' + troops + ' troops standing, round ' + G.round + '.' +
+      (today ? ' Best today: ' + (better ? held : today.best.held) + ' of ' + LAND.length + '.' : '');
+    $('share').dataset.text = 'ChessWild: Campaign · Daily ' + dayLabel(G.day) + ' · ' + held + '/' + LAND.length +
+      ' held · ' + troops + ' troops' + (today ? ' · replay' : '');
+  } else if (G.mode === 'two') {
+    v.textContent = (won ? 'GREEN' : 'RED') + ' TAKES THE MAP';
+    v.className = 'verdict ' + (won ? 'win' : 'lose');
+    rs.textContent = 'All ten holdings, round ' + G.round + '.';
+  } else {
+    v.textContent = won ? 'THE CAMPAIGN IS YOURS' : 'THE CAMPAIGN IS LOST';
+    v.className = 'verdict ' + (won ? 'win' : 'lose');
+    rs.textContent = won
+      ? 'Ten holdings, all of them flying your colors. Round ' + G.round + '.'
+      : 'They hold every road out. Round ' + G.round + '.';
+  }
   PEND = null; G.q = [];
-  clearSave(); sfx(won ? 'win' : 'lose');
+  clearSave(); sfx(G.mode === 'two' || won === true || (won === null && held >= 5) ? 'win' : 'lose');
   show('screen-result');
 }
 
@@ -2678,20 +2860,50 @@ Array.prototype.forEach.call($('levels').children, function (b) {
     $('lvl-note').textContent = LEVELS[chosenLevel].note;
   });
 });
-$('go').addEventListener('click', function () {
+function startMode(b, mode) {
   initAudio();
-  /* a campaign in progress is not thrown away by one tap on the button beside Continue */
-  if (loadSave() && !this.dataset.armed) {
-    var b = this; b.dataset.armed = '1'; b.textContent = 'Tap again to start over';
-    setTimeout(function () { delete b.dataset.armed; b.textContent = 'Begin a new campaign'; }, 2500);
+  var o = loadSave(mode);
+  /* today's Daily and a two-player game pick up where they were; yesterday's Daily is simply replaced */
+  if (o && (mode === 'two' || (mode === 'daily' && o.day === dayKey()))) { resumeCampaign(o); return; }
+  /* a campaign in progress is not thrown away by one tap on Begin */
+  if (mode === 'solo' && o && !b.dataset.armed) {
+    b.dataset.armed = '1'; b.textContent = 'Tap again to start over';
+    setTimeout(function () { delete b.dataset.armed; paintHome(); }, 2500);
     return;
   }
-  try { localStorage.setItem(LEVEL_KEY, chosenLevel); } catch (e) {}
-  newCampaign(chosenLevel);
+  delete b.dataset.armed;
+  if (mode === 'solo') { try { localStorage.setItem(LEVEL_KEY, chosenLevel); } catch (e) {} }
+  newCampaign(chosenLevel, mode);
   G.started = true;
   setPhase('deploy');
-  say('Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace > 1 ? 's' : '') + '.');
+  say(deployLine());
   drawMap(); show('screen-map');
+}
+$('go').addEventListener('click', function () { startMode(this, 'solo'); });
+$('daily').addEventListener('click', function () { startMode(this, 'daily'); });
+$('two').addEventListener('click', function () { startMode(this, 'two'); });
+$('pass-go').addEventListener('click', function () { say(phaseLine()); drawMap(); show('screen-map'); });
+$('pass-quit').addEventListener('click', function () {
+  var b = this;
+  if (!b.dataset.armed) {
+    b.dataset.armed = '1'; b.textContent = 'Tap again to end it';
+    setTimeout(function () { delete b.dataset.armed; b.textContent = 'End this game'; }, 2500);
+    return;
+  }
+  delete b.dataset.armed; b.textContent = 'End this game';
+  clearSave(); show('screen-home');
+});
+$('share').addEventListener('click', function () {
+  var b = this, t = b.dataset.text || '';
+  function done(ok) { b.textContent = ok ? 'Copied' : 'Could not copy'; setTimeout(function () { b.textContent = 'Copy result'; }, 1600); }
+  function fallback() {
+    var a = document.createElement('textarea'), ok = false;
+    a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select();
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    a.remove(); return ok;
+  }
+  try { navigator.clipboard.writeText(t).then(function () { done(true); }, function () { done(fallback()); }); }
+  catch (e) { done(fallback()); }
 });
 $('how').addEventListener('click', function () { show('screen-how'); });
 $('back').addEventListener('click', function () { show('screen-home'); });
@@ -2708,7 +2920,7 @@ $('endturn').addEventListener('click', function () {
     say('Fortify — one free move of troops between two holdings you hold.');
     drawMap(); return;
   }
-  if (G.phase === 'fortify') { theirTurn(); return; }
+  if (G.phase === 'fortify') { if (G.mode === 'two') passTurn(); else theirTurn(); return; }
 });
 $('tobattle').addEventListener('click', startBattle);
 /* tapping the roll screen skips the flourish straight to the end of it; once the roll has
@@ -2758,21 +2970,25 @@ $('econt').addEventListener('click', continueOn);
    Written on every map repaint and phase change. A battle in flight is saved as `pending`, and
    loading a save with one resolves it as a WITHDRAWAL — or closing the tab re-rolls a bad battle. */
 var SAVE_KEY = 'pjcc.campaign.save.v1', LEVEL_KEY = 'pjcc.campaign.level', SND_KEY = 'pjcc.campaign.sound';
+/* ⚠ one slot per mode: a Daily or a two-player game must never overwrite a campaign in progress */
+function saveKey(mode) { return mode === 'daily' ? 'pjcc.campaign.save.daily.v1' : mode === 'two' ? 'pjcc.campaign.save.two.v1' : SAVE_KEY; }
 function saveCampaign() {
   if (!G || !G.started) return;
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ v:1, own:G.own, ranks:G.ranks, round:G.round, diff:G.diff,
+    localStorage.setItem(saveKey(G.mode), JSON.stringify({ v:1, mode:G.mode, day:G.day, side:G.side, seen:G.seen,
+      own:G.own, ranks:G.ranks, round:G.round, diff:G.diff,
       phase:G.phase, toPlace:G.toPlace, atks:G.atks, fortFrom:G.fortFrom, fortTo:G.fortTo, fortMoved:G.fortMoved,
       fortDone:G.fortDone, q:G.q, pending:G.pending || null }));
   } catch (e) {}
 }
-function loadSave() {
-  try { var o = JSON.parse(localStorage.getItem(SAVE_KEY)); return (o && o.v === 1 && o.own && o.own.length === LAND.length) ? o : null; }
+function loadSave(mode) {
+  try { var o = JSON.parse(localStorage.getItem(saveKey(mode))); return (o && o.v === 1 && o.own && o.own.length === LAND.length) ? o : null; }
   catch (e) { return null; }
 }
-function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} if (G) G.started = false; paintHome(); }
+function clearSave() { try { localStorage.removeItem(saveKey(G && G.mode)); } catch (e) {} if (G) G.started = false; paintHome(); }
 function resumeCampaign(o) {
   G = { own:o.own, ranks:o.ranks, round:o.round, sel:-1, busy:false, diff:o.diff || 'medium', phase:o.phase,
+        mode:o.mode || 'solo', day:o.day || null, side:o.side || 'm', seen:o.seen || { m: [], t: [] }, scoutArm:-1,
         toPlace:o.toPlace, atks:o.atks, fortFrom:o.fortFrom, fortTo:o.fortTo, fortMoved:o.fortMoved,
         fortDone:o.fortDone, flash:-1, hot:null, q:o.q || [], pending:null, started:true };
   var pend = o.pending;
@@ -2788,12 +3004,13 @@ function resumeCampaign(o) {
   if (pend && pend.playerAttacks) G.phase = G.atks > 0 ? 'attack' : 'fortify';
   setPhase(G.phase);
   say(pend ? 'You withdrew from <b>' + LAND[pend.to].nm + '</b> when you left.'
-      : G.phase === 'deploy' ? 'Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace === 1 ? '' : 's') + '.'
-      : G.phase === 'attack' ? atksLine() : 'Fortify — one free move of troops between two holdings you hold.');
+      : phaseLine());
   drawMap();
+  /* two players: whoever sits down next must not see the other side's map */
+  if (G.mode === 'two') showPass();
 }
 function paintHome() {
-  var o = loadSave(), r = $('resume'), g = $('go');
+  var o = loadSave('solo'), d = loadSave('daily'), t = loadSave('two'), r = $('resume'), g = $('go'), rec = loadDaily(), today = dayKey();
   r.hidden = !o;
   if (o) {
     var held = o.own.filter(function (x) { return x === 'm'; }).length;
@@ -2801,8 +3018,12 @@ function paintHome() {
   }
   g.className = o ? 'btn ghost' : 'btn';
   g.textContent = o ? 'Begin a new campaign' : 'Begin the campaign';
+  /* ⚠ one line at 320px: "Daily 9/15 · best 5/10" wraps, so a score replaces the date */
+  $('daily').textContent = d && d.day === today ? 'Daily · round ' + d.round
+    : rec && rec.day === today ? 'Daily · best ' + rec.best.held + '/' + LAND.length : 'Daily ' + dayLabel(today);
+  $('two').textContent = t ? 'Two players · round ' + t.round : 'Two players';
 }
-$('resume').addEventListener('click', function () { initAudio(); var o = loadSave(); if (o) resumeCampaign(o); });
+$('resume').addEventListener('click', function () { initAudio(); var o = loadSave('solo'); if (o) resumeCampaign(o); });
 
 /* ── SOUND — synthesized, nothing to download ───────────────────────────────────── */
 var actx = null, master = null;
