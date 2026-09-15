@@ -33,6 +33,7 @@
     "gen:rating": "node tests/gen-rating-puzzles.js",
     "sim:marchland": "node tests/sim-marchland.js",
     "sim:bots": "node tests/sim-bots.js",
+    "sim:skyrun": "node tests/sim-skyrun.js",
     "soak:puzzles": "node tests/puzzle-soak.js",
     "test:marchland": "node tests/marchland.check.js",
     "test:campaign": "node tests/campaign.check.js",
