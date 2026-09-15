@@ -1363,6 +1363,13 @@ body_class: theme-hall
       '<span class="pt-est-band">to meet you — somewhere around ' + (n - band) + '–' + (n + band) + '</span>' +
       '<span class="pt-est-note">One game is one game. Play a few and the number settles.</span></p>';
   }
+  /* Read off the saved board, so a refresh after the game still shows the same change. */
+  function ratingLine(st, lab){
+    if (lab || !st || !st.done || !st.ra || !BOTS[st.bot]) return '';
+    var d = st.ra.to - st.ra.from;
+    return '<p class="pt-est pt-est--short">' + esc(BOTS[st.bot].name) + '’s rating: <b>' +
+      st.ra.from + ' → ' + st.ra.to + '</b> (' + (d > 0 ? '+' + d : d < 0 ? '−' + (-d) : '±0') + ')</p>';
+  }
   /* Which side to take next time. 'w' | 'b' | 'r' (random, resolved at sit-down). */
   var SIDE_KEY = 'pjcc.pt.side.v1';
   /* ⭐⭐ RANDOM IS THE DEFAULT, AND IT HAS TO STAY RANDOM — 2026-09-01, Nate, and he called
@@ -1763,14 +1770,9 @@ body_class: theme-hall
     var showStars = anyStar();
     var ids = Object.keys(BOTS).filter(function (id) { return BOTS[id].adaptive; });
     if (!ids.length) return '';
-    /* ⚠ THE HEADING NAMES HER RATHER THAN LISTING WHAT SHE LACKS. It read "No Rating, No
-       Ladder" for about ten minutes, which is a true sentence and the wrong one: a section
-       header built out of two absences describes a hole where a rung used to be, and this
-       is a seat, not a gap. The honest "no rating" survives in the line below it, where it
-       is an explanation instead of a headline. [[positivity-check]] */
     return '<h2 class="pt-h pt-h--adapt">Auston’s Table</h2>' +
-      '<p class="pt-adapt-note">No rating and no rung — she finds your level and plays there. ' +
-      'Finish a game and she’ll tell you where you landed.</p>' +
+      '<p class="pt-adapt-note">No rung — she finds your level and plays there. ' +
+      'Her rating climbs when she beats you and drops when you beat her.</p>' +
       '<div class="pt-actions pt-bots pt-bots--adapt">' +
       ids.map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
   }
@@ -1860,8 +1862,9 @@ body_class: theme-hall
          somebody she has never played would describe a game that never happened. */
       var meta = b.diff + ' · ' + b.elo;
       if (b.adaptive) {
-        var lastAt = adaptSeed(id);
-        meta = b.diff + ' · ' + (lastAt ? 'last at ' + lastAt : 'finds your level');
+        var rated = null;
+        try { rated = window.PJCCAuston ? PJCCAuston.herRating() : null; } catch (e) {}
+        meta = b.diff + ' · ' + (rated ? 'rated ' + rated : 'finds your level');
       }
       /* ⭐ THE TWO STARS ARRIVE ONLY ONCE ONE HAS BEEN WON. Sixteen empty outlines across
          a bench nobody has beaten yet is decoration on a promise; the first win turns the
@@ -2283,6 +2286,10 @@ body_class: theme-hall
            08-25, so this has been wrong for half the games played since. */
         PJCCAuston.logGame({ bot: st.bot, result: st.result, side: sidePlayed(st),
                              plies: plies, reason: st.reason });
+        // ⚠ a study is a position she set you, not a game against her: it never rates
+        var ra = isStudy(st) ? null : PJCCAuston.rateGame({ bot: st.bot, result: st.result,
+                   side: sidePlayed(st), level: botAdapt ? botAdapt.settled() : null });
+        if (ra) { st.ra = ra; botSave(st); }
       }
     } catch (e) {}
   }
@@ -2877,6 +2884,7 @@ body_class: theme-hall
              'Push the pieces around; the real board is waiting where you left it.</p>' : '') +
       '<p class="pt-state' + (myTurn && !lab ? ' go' : '') + (lab ? ' pt-state--lab' : '') + '">' + state + '</p>' +
       estimateLine(st, lab) +
+      ratingLine(st, lab) +
       bubble +
       earnedLine(st) +
       capsRail(openingCap(lab ? lab.moves : st.moves, sidePlayed(st)),

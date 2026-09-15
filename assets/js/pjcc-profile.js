@@ -1577,6 +1577,9 @@
     }
     if (keep.length > 40) keep.length = 40;
     out.log = keep;
+    /* her rating is a running value, not a history: the fresher stamp wins, like the ledger */
+    var lR = local.rating, rR = remote.rating;
+    out.rating = (rR && (+rR.t || 0) > ((lR && +lR.t) || 0)) ? rR : (lR || null);
     return out;
   }
   PJCC.mergeAuston = mergeAuston;

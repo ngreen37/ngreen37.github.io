@@ -309,6 +309,8 @@
   var LEDGER_KEY = 'pjcc.auston.v1';   // what she knew when you last sat down
   var LOG_KEY    = 'pjcc.pt.log.v1';   // every finished bot game, newest first
   var LOG_CAP    = 40;
+  var RATING_KEY = 'pjcc.auston.rating.v1';   // {v, r, n, t} — her Elo against you
+  var RATING_START = 1200, RATING_K = 32, RATING_FLOOR = 100;
   var SAID_CAP   = 5;                  // how many recent lines she avoids repeating
 
   /* ── HOW OFTEN SHE IS ELSEWHERE ─────────────────────────────────────────────────
@@ -350,7 +352,7 @@
     bankT = setTimeout(function () {
       try {
         if (window.PJCC && PJCC.setAuston && PJCC.currentUser && PJCC.currentUser()) {
-          PJCC.setAuston({ ledger: readJSON(LEDGER_KEY, null), log: log() }).catch(function () {});
+          PJCC.setAuston({ ledger: readJSON(LEDGER_KEY, null), log: log(), rating: herRating() }).catch(function () {});
         }
       } catch (e) {}
     }, 1200);
@@ -363,8 +365,9 @@
       if (!window.PJCC || !PJCC.getAuston || !PJCC.mergeAuston) return;
       var remote = PJCC.getAuston();
       if (!remote) return;
-      var merged = PJCC.mergeAuston({ ledger: readJSON(LEDGER_KEY, null), log: log() }, remote);
+      var merged = PJCC.mergeAuston({ ledger: readJSON(LEDGER_KEY, null), log: log(), rating: herRating() }, remote);
       if (merged.ledger) localStorage.setItem(LEDGER_KEY, JSON.stringify(merged.ledger));
+      if (merged.rating) localStorage.setItem(RATING_KEY, JSON.stringify(merged.rating));
       if (merged.log) localStorage.setItem(LOG_KEY, JSON.stringify(merged.log));
     } catch (e) {}
   }
@@ -401,6 +404,28 @@
                 w: String(rec.reason || ''), t: Date.now() });
     if (a.length > LOG_CAP) a.length = LOG_CAP;
     writeJSON(LOG_KEY, a);
+  }
+
+  /* ── HER RATING AGAINST YOU (2026-09-15) ────────────────────────────────────────
+     Nate: *"Auston should gain and lose rating with each game against them."* Elo, K=32,
+     against where her dial settled that game. A RECORD, not her strength: the dial still
+     decides how she plays, so a lost game cannot make her weaker next time.
+     ⚠ A decisive game always moves it at least a point — he asked for every game. */
+  function herRating() {
+    var o = readJSON(RATING_KEY, null);
+    return (o && typeof o.r === 'number' && isFinite(o.r)) ? o : null;
+  }
+  function rateGame(rec) {
+    if (!rec || rec.bot !== WHO || !rec.result) return null;
+    var cur = herRating(), from = cur ? cur.r : RATING_START;
+    var g = { r: String(rec.result), p: rec.side === 'b' ? 'b' : 'w' };
+    var s = youWon(g) ? 0 : (youLost(g) ? 1 : 0.5);
+    var opp = (typeof rec.level === 'number' && isFinite(rec.level)) ? rec.level : from;
+    var d = RATING_K * (s - 1 / (1 + Math.pow(10, (opp - from) / 400)));
+    d = s === 1 ? Math.max(1, Math.round(d)) : (s === 0 ? Math.min(-1, Math.round(d)) : Math.round(d));
+    var to = Math.max(RATING_FLOOR, from + d);
+    writeJSON(RATING_KEY, { v: 1, r: to, n: (cur ? cur.n : 0) + 1, t: Date.now() });
+    return { from: from, to: to };
   }
 
   /* ── WHAT IS TRUE RIGHT NOW ──────────────────────────────────────────────────────
@@ -868,16 +893,22 @@
        ⚠ Counted off the GAME LOG, never a stored tally — a counter and a log can
        disagree and only one of them is evidence. */
     milestone: function () { return vsHer().games >= MILESTONE; },
+
+    /* Once per finished game at her table — the room calls it under its `logged` guard.
+       {bot, result (PGN), side, level (where her dial settled)} → {from, to}, or null. */
+    rateGame: rateGame,
+    /* Her rating against you, or null before the first game that counted. */
+    herRating: function () { var o = herRating(); return o ? o.r : null; },
     MILESTONE: MILESTONE,
 
     /* for the test harness and for anyone debugging her in a console —
        everything she currently believes, in one object */
     debug: function () {
-      return { ledger: ledger(), snapshot: snapshot(), vs: vsHer(), log: log(),
+      return { ledger: ledger(), snapshot: snapshot(), vs: vsHer(), log: log(), rating: herRating(),
                observations: observe(snapshot(), ledger()) };
     },
     forget: function () {
-      try { localStorage.removeItem(LEDGER_KEY); localStorage.removeItem(LOG_KEY); } catch (e) {}
+      try { localStorage.removeItem(LEDGER_KEY); localStorage.removeItem(LOG_KEY); localStorage.removeItem(RATING_KEY); } catch (e) {}
     },
     LINES: LINES
   };

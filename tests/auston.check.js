@@ -550,6 +550,44 @@ console.log('\n── AUSTON ─────────────────
     'per-move would let an abandoned losing game re-seed her low forever');
 }
 
+/* ══ HER RATING MOVES WITH EVERY GAME ═════════════════════════════════════════════════
+   Nate 2026-09-15: "Auston should gain and lose rating with each game." A record, not her
+   strength — the dial still plays at your level. */
+{
+  const { A, store } = world(null);
+  check('she has no rating before a game has counted', A.herRating() === null);
+  const lost = A.rateGame({ bot: 'auston', result: '1-0', side: 'w', level: 1200 });
+  check('you beat her as White: her rating drops', lost && lost.from === 1200 && lost.to === 1184,
+    lost && lost.from + ' → ' + lost.to);
+  const won = A.rateGame({ bot: 'auston', result: '1-0', side: 'b', level: 1184 });
+  check('⚠ she beats you while you sit as Black: it climbs — the chair decides who won',
+    won && won.from === 1184 && won.to > 1184, won && won.from + ' → ' + won.to);
+  check('…and the card reads the stored number', A.herRating() === won.to && !!store['pjcc.auston.rating.v1']);
+  const drew = A.rateGame({ bot: 'auston', result: '1/2-1/2', side: 'w', level: won.to });
+  check('an even draw leaves it where it was', drew && drew.to === drew.from);
+  const upset = A.rateGame({ bot: 'auston', result: '0-1', side: 'w', level: 300 });
+  check('⚠ a win she was expected to take still earns her a point',
+    upset && upset.to - upset.from >= 1, upset && '+' + (upset.to - upset.from));
+  const loss2 = A.rateGame({ bot: 'auston', result: '1-0', side: 'w', level: 300 });
+  check('…and a loss she was expected to avoid costs her plenty',
+    loss2 && loss2.from - loss2.to > 25, loss2 && '−' + (loss2.from - loss2.to));
+  const n0 = A.herRating();
+  check('another regular\'s game never touches her rating',
+    A.rateGame({ bot: 'robert', result: '1-0', side: 'w', level: 1800 }) === null && A.herRating() === n0);
+  check('no settled level (the dial never loaded) scores it as an even game',
+    (() => { const w = world(null).A; const r = w.rateGame({ bot: 'auston', result: '0-1', side: 'w' }); return r && r.to === 1216; })());
+  A.forget();
+  check('forget() forgets the rating too', A.herRating() === null);
+
+  check('⚠ the room rates the game inside logFinished, under its saved-state guard',
+    /function logFinished\(st, plies\)\{\s*if \(!st \|\| st\.logged\) return;[\s\S]{0,1200}PJCCAuston\.rateGame\(/.test(ROOM));
+  check('…never for a study', /isStudy\(st\) \? null : PJCCAuston\.rateGame\(/.test(ROOM));
+  check('…against where her dial settled', /level: botAdapt \? botAdapt\.settled\(\) : null/.test(ROOM));
+  check('the finished board shows the change, from the saved board', /ratingLine\(st, lab\) \+/.test(ROOM) && /st\.ra\.from \+ ' → ' \+ st\.ra\.to/.test(ROOM));
+  check('her card says her rating once she has one', /'rated ' \+ rated : 'finds your level'/.test(ROOM));
+  check('⚠ her table no longer claims she has no rating', !/No rating and no rung/.test(ROOM));
+}
+
 /* ══ SHE REMEMBERS YOU ON EVERY DEVICE ══════════════════════════════════
    ⛑⛑ 2026-08-25. Her ledger and her forty-game log were device-local with NO mirror — found
    auditing Nate's rule that *"every feature, stat, progress, and collectable is meant to be
@@ -586,8 +624,14 @@ console.log('\n── AUSTON ─────────────────
     rev.log.length === 3 && rev.ledger.at === 500,
     'a merge that only works one way loses history on the other device');
   check('a device with nothing takes the account wholesale', M(null, laptop).log.length === 2);
+  const rp = { ledger: null, log: [], rating: { v: 1, r: 1240, n: 6, t: 900 } };
+  const rl = { ledger: null, log: [], rating: { v: 1, r: 1180, n: 4, t: 300 } };
+  check('⚠ her rating takes the fresher stamp, in both directions',
+    M(rp, rl).rating.r === 1240 && M(rl, rp).rating.r === 1240);
+  check('…and a device that never played her takes the account\'s rating',
+    M({ ledger: null, log: [] }, rp).rating.r === 1240 && M(rp, { ledger: null, log: [] }).rating.r === 1240);
   check('every write banks to the account',
-    /PJCC\.setAuston\(\{ ledger:/.test(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-auston.js'), 'utf8')),
+    /PJCC\.setAuston\(\{ ledger: [^}]*rating: herRating\(\) \}/.test(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-auston.js'), 'utf8')),
     'writeJSON() is the one door her memory leaves by — hooking it means nothing is missed');
 }
 

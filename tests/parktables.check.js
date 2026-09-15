@@ -1097,6 +1097,44 @@ const BOT = 'maxwell';
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
                            localStorage.removeItem('pjcc.pt.side.v1'); });
 
+  /* ══ AUSTON'S RATING MOVES WITH EVERY GAME (2026-09-15) ═══════════════════════════
+     Its own page, because her day off is a town-date roll and this has to find her in her
+     chair on every day of the year. */
+  const pa = await b.newPage();
+  await pa.setViewport({ width: 1000, height: 1250 });
+  pa.on('dialog', (d) => d.accept());
+  pa.on('pageerror', e => { if (!BENIGN.test(String(e))) errs.push('auston page: ' + String(e).slice(0, 200)); });
+  await pa.evaluateOnNewDocument(() => {
+    let real;
+    Object.defineProperty(window, 'PJCCAuston', { configurable: true,
+      get: () => real, set: (v) => { real = v; if (v) v.awayToday = () => false; } });
+  });
+  await pa.goto(URL, { waitUntil: 'networkidle2' });
+  await pa.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1'); localStorage.removeItem('pjcc.auston.rating.v1');
+                            localStorage.setItem('pjcc.pt.side.v1', 'w'); });
+  await pa.goto(URL + '?table=auston', { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  await pa.evaluate(() => document.getElementById('pt-bot-resign').click());
+  await sleep(700);
+  const herRate = () => pa.evaluate(() => ({
+    line: Array.from(document.querySelectorAll('.pt-est--short')).map(e => e.textContent).find(t => /rating:/.test(t)) || '',
+    stored: JSON.parse(localStorage.getItem('pjcc.auston.rating.v1')) }));
+  if (SHOTS) await pa.screenshot({ path: path.join(SHOTDIR, '20-auston-rating.png') });
+  const r1 = await herRate();
+  ok('resigning to Auston raises her rating, and the finished board says by how much',
+     !!r1.stored && r1.stored.r > 1200 && r1.line === 'Auston’s rating: 1200 → ' + r1.stored.r + ' (+' + (r1.stored.r - 1200) + ')',
+     r1.line);
+  await pa.goto(URL, { waitUntil: 'networkidle2' });
+  await sleep(500);
+  const r2 = await herRate();
+  ok('…counted once: going back to the park does not rate the same game again',
+     !!r2.stored && r2.stored.n === 1 && r2.stored.r === r1.stored.r, JSON.stringify(r2.stored));
+  const card = await pa.evaluate(() => { const c = document.querySelector('[data-bot="auston"]'); return c ? c.textContent : ''; });
+  ok('her card carries the rating she now has', card.indexOf('rated ' + r1.stored.r) > -1, card.replace(/\s+/g, ' ').trim());
+  await pa.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1'); localStorage.removeItem('pjcc.auston.rating.v1');
+                            localStorage.removeItem('pjcc.pt.side.v1'); });
+  await pa.close();
+
   ok('no runtime errors anywhere in the run', errs.length === 0, errs.slice(0, 3).join(' | '));
 
   console.log('\nRESULT: ' + (fail ? 'FAIL' : 'PASS') + ' — ' + pass + ' passed, ' + fail + ' failed');
