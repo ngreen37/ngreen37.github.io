@@ -70,7 +70,7 @@ function build() {
     version: '0.2',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
-    start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice() },
+    start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice(), walls: G.START_WALLS.slice() },
     balance: {
       /* THE DIE ITSELF. Everything below is expressed in pips, so this is the first number
          a second implementation needs and the last one it can afford to assume. */

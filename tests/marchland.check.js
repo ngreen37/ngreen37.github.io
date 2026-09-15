@@ -557,6 +557,60 @@ check('the roll screen says the extra die out loud, not in the fine print',
       /\.chainchip \{/.test(slice('<style>', '</style>')),
       'it used to appear only as ", +1 chained" behind a tap');
 
+/* ══ 8d. THE WALLS ═════════════════════════════════════════════════════════════════
+   ⚑ 2026-09-15, his: "let's do siege holding, but keep it limited to one territory each."
+   A walled holding takes two won battles in the SAME turn: the first only breaks the walls.
+   ⚠⚠ THE INVARIANT THAT MATTERS MOST IS THE LAST CHECK HERE — the walls must not reach the
+   battle. ATT_EDGE is tuned against a measured 40-60% attack-failure rate, so a rule that
+   changed a die or a clock would invalidate the one number this whole game is balanced on.
+   Walls change what a WIN IS WORTH and nothing else. */
+{
+  const w = G.START_WALLS;
+  check('one walled holding a side at the start — "one territory each"',
+        w.length === 2 && own[w[0]] === 'm' && own[w[1]] === 't',
+        w.map((id) => G.LAND[id].nm + ' (' + own[id] + ')').join(' · '));
+  check('…and the two of them border each other', G.ADJ[w[0]].indexOf(w[1]) >= 0,
+        'so the first siege either side can lay is on the other side\'s keep');
+  check('the how-it-works screen states both halves of the rule',
+        /breaks the walls/i.test(flat) && /win again the same turn/i.test(flat) &&
+        /a troop a round/i.test(flat),
+        'two wins to take it, a troop a round to hold it');
+  check('a walled holding is marked on the map, and says so when it cannot be seen in color',
+        /if \(walled\(L\.id\)\) cls \+= ' walls'/.test(slice('function drawMap()', 'function tapLand')) &&
+        /', walls down' : ', walled'/.test(slice('function drawMap()', 'function tapLand')) &&
+        /\.node\.walls \.disc::after \{/.test(slice('<style>', '</style>')),
+        'a rook on the disc, and ", walled" / ", walls down" in the spoken label');
+  check('the price is said before the attack is committed, and again on the roll screen',
+        /siegeHint\(id\)/.test(slice('function tapLand', 'function scout(')) &&
+        /wallchip/.test(slice('function beginBattle(', '/* ── THE ROLL, AS FOUR BEATS')),
+        'tapping the target SPENDS the attack, so the map has to warn first');
+  const resolve = slice('function resolveLand', '/* ── THE RIVAL');
+  check('⚑ a won battle at the walls breaks them and takes no ground',
+        /if \(sieged\(p\.to\)\) \{ G\.down\.push\(p\.to\); return true; \}/.test(resolve) &&
+        resolve.indexOf('sieged(p.to)') < resolve.indexOf('G.own[p.to] = G.own[p.from]'),
+        'the breach returns BEFORE the transfer — order is the rule here');
+  check('…and taking it puts the walls back up for whoever holds it now',
+        /G\.down\.indexOf\(p\.to\)[\s\S]{0,120}splice/.test(resolve));
+  check('a breach lasts one turn — both turn changes clear it',
+        /G\.down = \[\];/.test(slice('function resetTurn()', 'function passTurn')) &&
+        /G\.down = \[\];/.test(slice('function theirTurn()', 'function beat(')),
+        'yours ends at theirTurn, theirs ends at resetTurn — one of the two is not enough');
+  check('holding one pays a troop a round',
+        /wallsFor\(side\)/.test(slice('function deployFor', 'function idsOf')),
+        'what makes the other side\'s keep worth two of your three attacks');
+  const rival = slice('function rivalPlan()', 'function theirTurn');
+  check('the machine books a siege as a pair, or not at all',
+        /var need = cand\[i\]\.siege \? 2 : 1;/.test(rival) &&
+        /if \(attacks\.length \+ need > cap\) continue;/.test(rival),
+        'half a siege spends an attack and takes nothing');
+  /* ⚠⚠ THE MUSTER HALF OF beginBattle: the dice, the budgets, the armies and the board.
+     Anything about the walls appearing in HERE is the balance bug this check exists for. */
+  const battleMath = slice('function beginBattle(', 'G.pending = {');
+  check('⚠⚠ the walls never touch a battle — not a die, not a clock, not the edge',
+        !/walled\(|breached\(|sieged\(|G\.down/.test(battleMath),
+        'ATT_EDGE was measured against a 40-60% failure rate; this is what keeps it true');
+}
+
 /* ⚠⚠ SPLIT PER CHAIR, AND A MUTATION TEST IS WHY. This was ONE check over the whole of
    posVerdict() — and the phrase it looked for appears in BOTH branches, so deleting it from
    the defender's half left the attacker's half satisfying the regex and the gate stayed

@@ -192,6 +192,15 @@
   .cardbar.deal { animation: deal .5s cubic-bezier(.2,.9,.3,1); }
   @keyframes deal { from { transform: translateY(-8px) scaleY(.2); opacity: 0; } to { transform: none; opacity: 1; } }
   .node.truce .nm::before { content: '\2690\00a0'; color: #ffd66a; }
+  /* ⚑ THE WALLS (2026-09-15) — one holding a side. A rook, because a rook IS a castle and
+     this game is chess; and it rides the DISC rather than the name, because .nm already
+     carries the truce flag and "Gauntlet Keep" at 9px has no room for a second glyph.
+     ⚠ COLOR IS NOT THE ONLY TELL: a breached keep also says "walls down" in its aria-label
+     and in the line under the map, so the state survives a player who cannot see the red. */
+  .node.walls .disc { position: relative; }
+  .node.walls .disc::after { content: '\265C'; position: absolute; top: -10px; right: -10px;
+    font-size: 14px; line-height: 1; color: #ffd66a; text-shadow: 0 0 4px #0d0a17; }
+  .node.walls.breached .disc::after { color: var(--theirs); opacity: .6; }
   /* a rank landing, or a holding under an announced attack — both want a beat you can see */
   .node.flash .disc { animation: land .42s ease; }
   .node.doom .disc  { animation: doom .55s ease infinite; }
@@ -238,6 +247,8 @@
   /* the chain's payout, said where the extra die appears rather than in the fine print */
   .chainchip { display: block; margin-top: 3px; font-style: normal; font-size: 9px;
     letter-spacing: .8px; text-transform: uppercase; color: #ffd76e; }
+  /* the walls say their price in the same place the chain says its payout */
+  .wallchip::before { content: '\265C\00a0'; }
   .rowhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
   /* ⚠ THE 10px OF PADDING IS THE CASTLE BADGE'S ROOM, AND IT WAS MEASURED, NOT GUESSED.
@@ -580,10 +591,12 @@
       him &mdash; and <b>an 8</b> brings his rook around and three pawns with him.<br><br>
       <b>7. Fifteen seconds each,</b> a second back on every move. <b>Run your own clock out
       and you lose.</b> Checkmate takes the ground. A draw goes to the defender.<br><br>
-      <b>8. Take every holding to win.</b> Lose them all and the campaign is over.<br><br>
-      <b>9. Fog</b> (an option). You only see troops where you share a border. Tap a <b>?</b>
+      <b>8. One walled holding each.</b> ♜ A win there only <b>breaks the walls</b>; win again
+      the same turn and it is yours. Holding one is <b>a troop a round</b>.<br><br>
+      <b>9. Take every holding to win.</b> Lose them all and the campaign is over.<br><br>
+      <b>10. Fog</b> (an option). You only see troops where you share a border. Tap a <b>?</b>
       twice to scout it &mdash; that costs one of your attacks.<br><br>
-      <b>10. Event cards</b> (an option). Each round opens with a card that bends one rule for
+      <b>11. Event cards</b> (an option). Each round opens with a card that bends one rule for
       both sides.<br><br>
       <b>Coach:</b> on Easy, the roll screen suggests a plan.<br>
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
@@ -819,6 +832,12 @@ var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,5],[3,6],[5,6],[5,7],[
 /* the opening position: five holdings and fifteen ranks a side, mirrored */
 var START_OWN = ['t','t','m','t','t','m','t','m','m','m'];
 var START_RANKS = [ 3 , 3 , 3 , 4 , 2 , 4 , 3 , 2 , 3 , 3 ];
+/* ⚑ THE WALLED HOLDINGS — 2026-09-15, his: "let's do siege holding, but keep it limited to
+   one territory each." Gauntlet Keep is the player's; Sand Mines is theirs, and the two of
+   them border each other, so the first siege either side can lay is on the other's keep.
+   ⚠ WALLS BELONG TO THE GROUND, NOT TO THE SIDE. Take a keep and you inherit its walls and
+   its extra troop — which is the whole reason it is worth two attacks. */
+var START_WALLS = [2, 0];
 
 var ADJ = (function () {
   var a = [], i;
@@ -901,6 +920,7 @@ function newCampaign(diff, mode, opts) {
   G = { own: start.own, ranks: start.ranks, round: 1, sel: -1, busy: false,
         diff: diff || 'medium', mode: mode, day: day, side: 'm',
         fog: opts.fog !== false, cards: !!opts.cards, card: null, truce: -1, lastCard: null,
+        walls: start.walls || START_WALLS.slice(), down: [],
         seen: { m: [], t: [] }, scoutArm: -1,
         phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
         fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
@@ -911,6 +931,28 @@ function newCampaign(diff, mode, opts) {
 }
 function sideName(s) { return s === 'm' ? 'Green' : 'Red'; }
 function sideColor(s) { return s === 'm' ? '#6bffb8' : '#ff6e8a'; }
+
+/* ── THE WALLS ────────────────────────────────────────────────────────────────────
+   A walled holding cannot be taken by one won battle. The first win brings the WALLS DOWN
+   and leaves the holding where it was; a second win in the SAME turn takes it. Walls go
+   back up the moment the turn ends, so a siege costs two of your three attacks in one turn
+   or it costs you nothing but the attacks.
+
+   ⚠⚠ THE WALLS NEVER TOUCH A BATTLE. Not a die, not a clock, not ATT_EDGE — same rule the
+   event cards live under, and for the same reason: the 40-60% attack-failure band was
+   measured, and anything that changes what happens ON the board invalidates it. Walls
+   change only what a WIN is worth.
+   ⚠ `G.down` is cleared at every turn change, so a breach is never inherited by the side
+   that did not make it. */
+function walled(id) { return G.walls.indexOf(id) >= 0; }
+function breached(id) { return G.down.indexOf(id) >= 0; }
+/* true when a win on this holding would only break the walls */
+function sieged(id) { return walled(id) && !breached(id); }
+function wallsFor(side) {
+  var n = 0;
+  for (var i = 0; i < G.walls.length; i++) if (G.own[G.walls[i]] === side) n++;
+  return n;
+}
 
 /* ── FOG ── an enemy holding is hidden unless it borders one of yours or you scouted it this turn */
 function fogged(id) {
@@ -958,6 +1000,16 @@ function playCard(k) {
 function cardAtks() { return G.card === 'march' ? 1 : G.card === 'supply' ? -1 : 0; }
 function cardText() { return CARDS[G.card].txt.replace('{h}', G.truce >= 0 ? LAND[G.truce].nm : ''); }
 function truceLine() { return '<b>Truce</b> at ' + LAND[G.truce].nm + ' — no attacks into or out of it this round.'; }
+/* ⚠ THE ONE WARNING THAT HAS TO ARRIVE BEFORE THE ATTACK IS COMMITTED. Tapping the target
+   spends the attack immediately, so "this one takes two wins" is said when the SOURCE is
+   picked — the roll screen's chip is a confirmation, not a chance to change your mind. */
+function siegeHint(from) {
+  return nbrs(from).filter(function (j) { return G.own[j] !== G.side && walled(j) && j !== G.truce; })
+    .map(function (j) {
+      return breached(j) ? ' <b>' + LAND[j].nm + '</b>: the walls are down — a win takes it.'
+                         : ' <b>' + LAND[j].nm + '</b> is walled — two wins this turn take it.';
+    }).join('');
+}
 /* fortify reach: a neighbor, or under Long Roads anything joined to it through your own holdings */
 function fortReach(from, to) {
   if (from === to || G.own[to] !== G.side) return false;
@@ -988,12 +1040,15 @@ function dayKey() { try { if (window.PJCC_TIME) return PJCC_TIME.dateStr(); } ca
 function dayLabel(k) { var p = String(k).split('-'); return (+p[1]) + '/' + (+p[2]); }
 function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rand() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 /* five holdings a side in the campaign's own 4-3-3-3-2 shape, dealt across the map by the date */
+/* ⚠ the walls are drawn AFTER the shape, at the end of the stream: a draw appended to a seeded
+   run cannot move the ones before it, so every Daily start ever dealt is still the same one */
 function dailyStart(day) {
   return seeded('campaign|start|' + day, function () {
     var ids = shuffle(LAND.map(function (L) { return L.id; }));
     var mShape = shuffle([4, 3, 3, 3, 2]), tShape = shuffle([4, 3, 3, 3, 2]), own = [], ranks = [];
     ids.forEach(function (id, i) { own[id] = i < 5 ? 'm' : 't'; ranks[id] = i < 5 ? mShape[i] : tShape[i - 5]; });
-    return { own: own, ranks: ranks };
+    var walls = [ids[Math.floor(rand() * 5)], ids[5 + Math.floor(rand() * 5)]];
+    return { own: own, ranks: ranks, walls: walls };
   });
 }
 function loadDaily() { try { var o = JSON.parse(localStorage.getItem(DAILY_KEY)); return o && o.day ? o : null; } catch (e) { return null; } }
@@ -1607,10 +1662,12 @@ function say(t) { $('map-say').innerHTML = t; }
    working" — a budget of three turns each attack into a choice with a cost, and it is the
    same number Hard already plays with (LEVELS.hard.maxAtk), so both chairs now share a
    constraint instead of the machine alone wearing one. */
+/* ⚠ a walled holding pays a troop a round to whoever holds it — that is what makes taking
+   the other side's keep worth two attacks, and losing your own worth more than one holding */
 function deployFor(side) {
   var n = 0;
   for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) n++;
-  return Math.max(1, Math.floor(n / 3)) + (G.card === 'reinforce' ? 2 : 0);
+  return Math.max(1, Math.floor(n / 3)) + wallsFor(side) + (G.card === 'reinforce' ? 2 : 0);
 }
 function idsOf(side) {
   var out = [];
@@ -1672,6 +1729,7 @@ function drawMap() {
     if (G.hot && G.hot.to === L.id) cls += ' doom';
     if (fog) cls += ' fog';
     if (G.truce === L.id) cls += ' truce';
+    if (walled(L.id)) cls += ' walls' + (breached(L.id) ? ' breached' : '');
 
     if (chained(G.own, L.id)) cls += ' chained';
 
@@ -1695,7 +1753,8 @@ function drawMap() {
     el.setAttribute('data-id', L.id);
     el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(G.own[L.id]) : mine ? 'yours' : 'theirs') + ', ' +
       (fog ? 'troops unknown' : G.ranks[L.id] + ' troop' + (G.ranks[L.id] === 1 ? '' : 's')) +
-      (chained(G.own, L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : ''));
+      (chained(G.own, L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : '') +
+      (walled(L.id) ? (breached(L.id) ? ', walls down' : ', walled') : ''));
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
     el.innerHTML = '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>';
     el.addEventListener('click', function () { tapLand(L.id); });
@@ -1796,7 +1855,7 @@ function tapLand(id) {
     if (G.ranks[id] < 2) { say(LAND[id].nm + ' has only one troop — it cannot attack.'); drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
     say(G.sel < 0 ? atksLine()
-      : 'From ' + LAND[id].nm + ' &mdash; ' + poolFor(G.ranks[id], false) + ' dice. Choose a neighbor to take.');
+      : 'From ' + LAND[id].nm + ' &mdash; ' + poolFor(G.ranks[id], false) + ' dice. Choose a neighbor to take.' + siegeHint(id));
     drawMap(); return;
   }
   if (G.sel < 0) { say('Start from one of your own holdings.'); return; }
@@ -1821,8 +1880,12 @@ function scout(id, confirmed) {
   setTimeout(function () { G.flash = -1; drawMap(); }, 420);
 }
 function deployLine() {
+  /* ⚠ the keep's troop is NAMED here. A bonus nobody can see is a bonus nobody plays for —
+     the same reason the chain got a counter in the tally. */
+  var w = G.walls.filter(function (id) { return G.own[id] === G.side; });
   return (G.mode === 'two' ? '<b>' + sideName(G.side) + '</b> · ' : '') +
-    'Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace === 1 ? '' : 's') + '.';
+    'Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace === 1 ? '' : 's') + '.' +
+    (w.length ? ' <b>' + w.length + '</b> from ' + w.map(function (id) { return LAND[id].nm; }).join(' and ') + '.' : '');
 }
 function phaseLine() {
   return G.phase === 'deploy' ? deployLine() : G.phase === 'attack' ? atksLine()
@@ -1911,7 +1974,9 @@ function beginBattle(from, to, playerAttacks) {
      ", +1 chained" inside the fine print behind a tap — which is to say the one bonus in
      the game that rewards how you hold the map was invisible at the moment it paid out. */
   $('def-label').innerHTML = (two ? dName + ' defends' : playerAttacks ? 'They defend' : 'You defend') + ' · ' + LAND[to].nm +
-    (dChain ? '<em class="chainchip">chained &middot; +1 die</em>' : '');
+    (dChain ? '<em class="chainchip">chained &middot; +1 die</em>' : '') +
+    (walled(to) ? '<em class="chainchip wallchip">' + (breached(to) ? 'walls down &middot; a win takes it'
+                                                                   : 'walled &middot; a win breaks the walls') + '</em>' : '');
 
   ['att-mat','att-pos','def-mat','def-pos'].forEach(function (k) { $(k).innerHTML = ''; });
   $('v-mat').innerHTML = '&nbsp;'; $('v-mat').className = 'vline';
@@ -2570,7 +2635,7 @@ function finish(how) {
   }
 
   var attackerWon = p.playerAttacks ? playerWon : !playerWon;
-  resolveLand(p, attackerWon);
+  var breach = resolveLand(p, attackerWon);
 
   /* one word for what happened to the GROUND, from your side of the table.
      ⛑ "REPULSED" → "DEFENDED", 2026-08-25, his word. */
@@ -2585,6 +2650,13 @@ function finish(how) {
     if (how === 'won-mate') line = 'Checkmate. ' + LAND[p.to].nm + ' changes hands.';
     else if (how === 'lost-mate') line = 'Checkmate. The attack is broken.';
     else if (how === 'resign') line = (playerWon ? def : att) + ' gave up the fight.';
+  }
+  /* ⚠ A BREACH IS A WON BATTLE THAT TOOK NOTHING, and the card has to say so in the same
+     breath or the map will look broken: the holding is still theirs after a win. */
+  if (breach) {
+    word = 'WALLS DOWN';
+    line = (p.playerAttacks ? 'The walls of ' + LAND[p.to].nm + ' are down. Win there again this turn and it is yours.'
+                            : 'The walls of ' + LAND[p.to].nm + ' are down. Another win this turn and they take it.');
   }
 
   /* ⛑⛑ THE BOARD KEEPS THE SCREEN — 2026-08-25. `show('screen-result')` used to fire here
@@ -2747,17 +2819,22 @@ function hideEndcard() {
   if (old) old.parentNode.removeChild(old);
 }
 
+/* returns true when the win only broke the walls — the ground did NOT change hands */
 function resolveLand(p, attackerWon) {
   G.pending = null;
-  if (attackerWon) {
-    var moved = Math.max(1, p.aRanks - 1);
-    G.own[p.to] = G.own[p.from];
-    G.ranks[p.to] = moved;
-    G.ranks[p.from] = p.aRanks - moved;
-    if (G.ranks[p.from] < 1) G.ranks[p.from] = 1;
-  } else {
-    G.ranks[p.from] = 1;
-  }
+  if (!attackerWon) { G.ranks[p.from] = 1; return false; }
+  /* ⚠ the attacking stack is untouched by a breach: the second attack has to be affordable,
+     or a siege would need three troops-worth of luck instead of two won battles */
+  if (sieged(p.to)) { G.down.push(p.to); return true; }
+  var moved = Math.max(1, p.aRanks - 1);
+  G.own[p.to] = G.own[p.from];
+  G.ranks[p.to] = moved;
+  G.ranks[p.from] = p.aRanks - moved;
+  if (G.ranks[p.from] < 1) G.ranks[p.from] = 1;
+  /* the walls stand again for whoever holds them now */
+  var d = G.down.indexOf(p.to);
+  if (d >= 0) G.down.splice(d, 1);
+  return false;
 }
 
 /* ── THE RIVAL'S TURN, NARRATED ────────────────────────────────────────────────────
@@ -2814,8 +2891,13 @@ function rivalPlan() {
       if (G.own[to] !== 'm' || from === G.truce || to === G.truce) return;
       var s = rk[from] - rk[to];
       if (L.chainAware && chained(G.own, to)) s += 2;
+      /* ⚠ A SIEGE IS TWO ATTACKS OUT OF THREE, so a smart machine wants a point more edge
+         before it starts one. Easy is not siege-aware on purpose: it throws one attack at a
+         walled holding, breaks the walls and cannot follow up — a mistake you can punish. */
+      var siege = sieged(to) && L.smart;
+      if (siege) s -= 1;
       if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing ranks at it
-      cand.push({ from:from, to:to, s:s });
+      cand.push({ from:from, to:to, s:s, siege:siege });
     });
   });
   cand.sort(function (a, b) { return b.s - a.s; });
@@ -2827,8 +2909,13 @@ function rivalPlan() {
   var attacks = [], used = {};
   for (i = 0; i < cand.length && attacks.length < cap; i++) {
     if (used[cand[i].from]) continue;            // one attack per holding a round
+    /* ⚠ the siege is the ONE exception to that: both wins come from the same stack, so the
+       pair is booked together or not at all — half a siege spends an attack and takes nothing */
+    var need = cand[i].siege ? 2 : 1;
+    if (attacks.length + need > cap) continue;
     used[cand[i].from] = 1;
     attacks.push({ from:cand[i].from, to:cand[i].to });
+    if (need === 2) attacks.push({ from:cand[i].from, to:cand[i].to });
   }
 
   /* ── the fortify move: rear to front, and only if it has a rear ── */
@@ -2846,6 +2933,7 @@ function rivalPlan() {
 function theirTurn() {
   setPhase('theirs');
   G.sel = -1; G.busy = true;
+  G.down = [];                                   // walls go back up when your turn ends
   var plan = G.mode === 'daily' ? seeded('campaign|' + G.day + '|' + G.round + '|rival', rivalPlan) : rivalPlan();
   G.q = [{ t:'say', s:'Their turn.' }];
   plan.deploy.forEach(function (id) { G.q.push({ t:'deploy', id:id }); });
@@ -2924,6 +3012,7 @@ function startYourTurn() {
 function resetTurn() {
   G.sel = -1; G.busy = false; G.hot = null; G.flash = -1; G.hurry = false; G.scoutArm = -1;
   G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0; G.fortDone = false;
+  G.down = [];                                   // a breach lasts one turn and no longer
   G.atks = ATTACK_CAP;
   G.atks += cardAtks();
   G.seen[G.side] = [];
@@ -3124,7 +3213,7 @@ function saveCampaign() {
   if (!G || !G.started) return;
   try {
     localStorage.setItem(saveKey(G.mode), JSON.stringify({ v:1, mode:G.mode, day:G.day, side:G.side, seen:G.seen,
-      fog:G.fog, cards:G.cards, card:G.card, truce:G.truce, lastCard:G.lastCard,
+      fog:G.fog, cards:G.cards, card:G.card, truce:G.truce, lastCard:G.lastCard, walls:G.walls, down:G.down,
       own:G.own, ranks:G.ranks, round:G.round, diff:G.diff,
       phase:G.phase, toPlace:G.toPlace, atks:G.atks, fortFrom:G.fortFrom, fortTo:G.fortTo, fortMoved:G.fortMoved,
       fortDone:G.fortDone, q:G.q, pending:G.pending || null }));
@@ -3139,15 +3228,17 @@ function resumeCampaign(o) {
   G = { own:o.own, ranks:o.ranks, round:o.round, sel:-1, busy:false, diff:o.diff || 'medium', phase:o.phase,
         mode:o.mode || 'solo', day:o.day || null, side:o.side || 'm', seen:o.seen || { m: [], t: [] }, scoutArm:-1,
         fog:o.fog !== false, cards:!!o.cards, card:o.card || null, truce:o.truce == null ? -1 : o.truce, lastCard:o.lastCard || null,
+        walls:o.walls || START_WALLS.slice(), down:o.down || [],
         toPlace:o.toPlace, atks:o.atks, fortFrom:o.fortFrom, fortTo:o.fortTo, fortMoved:o.fortMoved,
         fortDone:o.fortDone, flash:-1, hot:null, q:o.q || [], pending:null, started:true };
-  var pend = o.pending;
-  if (pend) resolveLand(pend, !pend.playerAttacks);
+  var pend = o.pending, broke = false;
+  if (pend) broke = resolveLand(pend, !pend.playerAttacks);
   if (campaignCheck()) return;
   show('screen-map');
   if (G.phase === 'theirs') {
     setPhase('theirs'); G.busy = true;
-    say(pend ? 'You left the field. <b>' + LAND[pend.to].nm + '</b> fell.' : 'Their turn.');
+    say(pend ? 'You left the field. ' + (broke ? 'The walls of <b>' + LAND[pend.to].nm + '</b> are down.'
+                                               : '<b>' + LAND[pend.to].nm + '</b> fell.') : 'Their turn.');
     drawMap(); beat(900, pump);
     return;
   }

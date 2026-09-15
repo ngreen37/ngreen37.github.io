@@ -26,7 +26,7 @@ window.__mc = {
   newCampaign: newCampaign, campaignOver: campaignOver, show: show, paintDice: paintDice,
   fogged: fogged, dailyStart: dailyStart, startYourTurn: startYourTurn, startBattle: startBattle, goLive: goLive,
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
-  resumeCampaign: resumeCampaign, paintPreview: paintPreview,
+  resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
     PEND = { from: 5, to: 3, playerAttacks: playerAttacks, aRanks: 4, dRanks: 3, attWhite: true,
@@ -386,7 +386,8 @@ function serve() {
       for (let i = 0; i < 60; i++) { m.drawCard(); if (m.G.card === 'skies') skies++; }
       out.draws = { repeats, skies };
 
-      let G = fresh('reinforce'); out.reinforce = G.toPlace;
+      let G = fresh(null); out.plainPlace = G.toPlace;
+      G = fresh('reinforce'); out.reinforce = G.toPlace;
       G = fresh('march'); out.march = G.atks;
       G = fresh('supply'); out.supply = G.atks;
       G = fresh('skies'); out.skies = m.fogged(1);
@@ -403,7 +404,8 @@ function serve() {
       out.truceTxt = $('card-txt').textContent;
       m.tapLand(5); m.tapLand(3);
       out.truce = { atks: G.atks, roll: $('screen-roll').classList.contains('on') };
-      const siege = G2 => { G2.diff = 'hard'; G2.ranks = G2.own.map(o => o === 't' ? 9 : 1); return m.rivalPlan().attacks; };
+      // no walls here: this measures the card's attack cap, and a siege spends two of them
+      const siege = G2 => { G2.diff = 'hard'; G2.walls = []; G2.ranks = G2.own.map(o => o === 't' ? 9 : 1); return m.rivalPlan().attacks; };
       G = fresh('truce', 'hard'); G.truce = 3; out.rivalTruce = siege(G).filter(a => a.from === 3 || a.to === 3).length;
       G = fresh(null, 'hard'); out.capPlain = siege(G).length;
       G = fresh('march', 'hard'); out.capMarch = siege(G).length;
@@ -433,7 +435,8 @@ function serve() {
     });
     ok(cards.dealt.card && cards.dealt.bar && cards.dealt.nm.length > 2, 'with cards on, a game opens with a card on the map  [' + cards.dealt.nm + ']');
     ok(cards.draws.repeats === 0 && cards.draws.skies === 0, 'the same card never comes twice in a row, and Clear Skies never comes with fog off  [60 draws each]');
-    ok(cards.reinforce === 3, 'Reinforcements: two extra troops to deploy  [' + cards.reinforce + ']');
+    ok(cards.plainPlace === 2 && cards.reinforce === cards.plainPlace + 2,
+      'Reinforcements: two extra troops to deploy  [' + cards.plainPlace + ' -> ' + cards.reinforce + ']');
     ok(cards.march === 4 && cards.supply === 2, 'Forced March and Short Supply: four attacks, or two  [' + cards.march + ', ' + cards.supply + ']');
     ok(cards.skies === false, 'Clear Skies: nothing is hidden');
     ok(cards.mud.flats === 3 && /Mud/.test(cards.mud.say) && !cards.mud.move && cards.plainMove,
@@ -451,6 +454,105 @@ function serve() {
     ok(cards.resume.card === 'rally' && cards.resume.ranks === cards.resume.savedRanks, 'a resumed game keeps its card and does not play it twice');
     ok(cards.two.c1 === cards.two.red && cards.two.round2 && cards.two.round2 !== cards.two.c1,
       'two players: Green and Red play under one card a round  [' + cards.two.c1 + ' → ' + cards.two.round2 + ']');
+
+    /* ── the walled holdings ── */
+    const siege = await E(() => {
+      const m = __mc, $ = id => document.getElementById(id), out = {};
+      const KEEP_M = 2, KEEP_T = 0;              // Gauntlet Keep is Green's, Sand Mines is Red's
+      const start = () => { m.newCampaign('medium'); const G = m.G; G.started = false; m.show('screen-map'); return G; };
+      // the defender's flag: whichever chair the player is in, the attacker won
+      const win = (from, to, playerAttacks) => {
+        const G = m.G;
+        m.setB('4k3/8/8/8/8/8/8/R3K3 w - - 0 1', true);
+        m.PEND = { from, to, playerAttacks, aRanks: G.ranks[from], attWhite: playerAttacks,
+                   dInfo: { castled: false, chain: 0 }, aArmy: [], dArmy: [] };
+        m.finish('time-def');
+        m.drawMap();
+        return { word: $('eword').textContent, line: $('eline').textContent, own: G.own[to],
+                 from: G.ranks[from], node: document.querySelector('.node[data-id="' + to + '"]').className };
+      };
+
+      let G = start();
+      out.start = { ids: G.walls.slice(), sides: G.walls.map(id => G.own[id]).join(''),
+                    border: m.nbrs(G.walls[0]).indexOf(G.walls[1]) >= 0 };
+      G.ranks[KEEP_M] = 4; G.toPlace = 0; m.setPhase('attack'); m.drawMap();
+      const node0 = document.querySelector('.node[data-id="0"]');
+      out.mark = { cls: node0.className, label: node0.getAttribute('aria-label') };
+      m.tapLand(KEEP_M); out.hint = $('map-say').textContent;
+      m.tapLand(KEEP_T);                          // commits the attack: the roll screen opens
+      out.chip = $('def-label').textContent; out.spent = G.atks;
+      m.finishRoll();                             // stops the roll's timers before PEND is replaced below
+      m.show('screen-map'); G.busy = false;
+
+      out.first = win(KEEP_M, KEEP_T, true);
+      out.second = win(KEEP_M, KEEP_T, true);
+      out.after = { own: G.own[KEEP_T], keep: G.ranks[KEEP_T], from: G.ranks[KEEP_M] };
+
+      // their attack on your keep does the same, from the other side of the table
+      G = start(); G.ranks[KEEP_T] = 4;
+      out.theirs = win(KEEP_T, KEEP_M, false);
+
+      // the deploy bonus, isolated: the same five holdings, the walls moved
+      const placeWith = walls => { const G2 = start(); G2.walls = walls; m.resetTurn(); return G2.toPlace; };
+      out.place = { none: placeWith([]), one: placeWith([2]), enemyToo: placeWith([2, 0]), both: placeWith([2, 5]) };
+
+      // a breach lasts one turn: ending yours puts the walls back up
+      G = start(); G.down = [KEEP_T]; G.toPlace = 0; m.setPhase('fortify');
+      $('endturn').click();
+      out.expire = { down: G.down.length, phase: G.phase };
+      clearTimeout(G.beatT); G.beatFn = null; G.q = []; G.busy = false;
+
+      // what the machine plans
+      const plan = (diff, card, down) => {
+        const G2 = start(); G2.diff = diff;
+        if (card) { G2.cards = true; m.playCard(card); }
+        G2.own = G2.own.map((o, i) => i === KEEP_T ? 't' : 'm');
+        G2.ranks = G2.ranks.map(() => 1); G2.ranks[KEEP_T] = 9; G2.ranks[1] = 8; G2.ranks[3] = 8;
+        G2.down = down || [];
+        return m.rivalPlan().attacks;
+      };
+      const shape = a => a.map(x => x.from + '>' + x.to).join(' ');
+      out.hard = shape(plan('hard'));
+      out.hardDown = shape(plan('hard', null, [KEEP_M]));
+      out.easy = shape(plan('easy'));
+      out.noRoom = shape(plan('medium', 'supply'));
+
+      const d1 = m.dailyStart('2026-09-15'), d2 = m.dailyStart('2026-09-15');
+      out.daily = { same: d1.walls.join() === d2.walls.join(), sides: d1.walls.map(id => d1.own[id]).sort().join(''), n: d1.walls.length };
+
+      G = start(); G.started = true; G.down = [KEEP_T]; m.drawMap();
+      const saved = JSON.parse(localStorage.getItem('pjcc.campaign.save.v1'));
+      m.resumeCampaign(saved);
+      out.resume = { walls: m.G.walls.join(), down: m.G.down.join() };
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      m.show('screen-map');
+      return out;
+    });
+    ok(siege.start.ids.length === 2 && siege.start.sides === 'mt' && siege.start.border,
+      'one walled holding a side, and they border each other  [' + siege.start.ids + ']');
+    ok(/\bwalls\b/.test(siege.mark.cls) && /walled/.test(siege.mark.label),
+      'a walled holding is marked on the map and in its spoken label  [' + siege.mark.label + ']');
+    ok(/Sand Mines<\/b> is walled/.test(siege.hint) || /Sand Mines is walled/.test(siege.hint),
+      'picking a neighbor of one warns you before the attack is committed  [' + siege.hint + ']');
+    ok(/walled · a win breaks the walls/.test(siege.chip) && siege.spent === 2,
+      '…and the roll screen says it again over the defender  [' + siege.chip + ']');
+    ok(siege.first.word === 'WALLS DOWN' && siege.first.own === 't' && /Win there again this turn/.test(siege.first.line) && /breached/.test(siege.first.node),
+      'a won battle at the walls takes no ground — it breaks them  [' + siege.first.word + ': ' + siege.first.line + ']');
+    ok(siege.first.from === 4, '…and leaves the attacking stack whole, so the second attack is affordable  [' + siege.first.from + ' troops]');
+    ok(siege.second.word === 'TAKEN' && siege.after.own === 'm' && siege.after.keep === 3 && !/breached/.test(siege.second.node),
+      '…and a second win the same turn takes it, walls and all  [' + siege.after.keep + ' troops in it]');
+    ok(siege.theirs.word === 'WALLS DOWN' && siege.theirs.own === 'm' && /they take it/.test(siege.theirs.line),
+      'their win at your walls is the same bargain  [' + siege.theirs.line + ']');
+    ok(siege.place.none === 1 && siege.place.one === 2 && siege.place.enemyToo === 2 && siege.place.both === 3,
+      'a walled holding you hold is worth a troop a round — theirs is worth none  [' + [siege.place.none, siege.place.one, siege.place.both] + ']');
+    ok(siege.expire.down === 0 && siege.expire.phase === 'theirs', 'the walls go back up when your turn ends');
+    ok(siege.hard === '0>2 0>2', 'the machine books a siege as two attacks from one stack  [' + siege.hard + ']');
+    ok(siege.hardDown === '0>2', '…one, if the walls are already down  [' + siege.hardDown + ']');
+    ok(siege.noRoom === '0>1', '…and none it cannot finish: with one attack left it takes ordinary ground  [' + siege.noRoom + ']');
+    ok(siege.easy === '0>2', 'Easy throws its one attack at the walls and cannot follow up  [' + siege.easy + ']');
+    ok(siege.daily.n === 2 && siege.daily.same && siege.daily.sides === 'mt',
+      "the Daily deals one walled holding a side, the same all day  [" + siege.daily.sides + ']');
+    ok(siege.resume.walls === '2,0' && siege.resume.down === '0', 'a resumed game remembers its walls and the breach in them');
 
     /* ── the coach ── */
     const coach = await E(async () => {
