@@ -183,19 +183,13 @@
            lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
            shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
            closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
-           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. EIGHT links
-           as of 2026-08-25, when the P&JCC row came off (nine from 2026-08-18 — see the note
-           where that row stood): Home→/ · Play Now→Park Tables · The Gauntlet · Games→the
-           arcade hub · Puzzles→Fork in the Road · Academy · McPuppy Studios→the studio ·
-           Follow→Twitch + the socials. The
-           gold `--home` highlight marks whichever link IS home; order is MARKUP order (no
-           nth-child depends on it). ⌘K still reaches everything else. Drawer look lives in
-           _sass/_pjcc-13-nav.scss.
-           ⚠ THE COUNT IN THIS SENTENCE IS LOAD-BEARING AND HAS BEEN WRONG BEFORE — the
-           collapsed rail's short-window guard is sized to it. Change the list, re-measure
-           the guard. (Done 2026-08-25: nine rows ended at 854, eight end at 776, so the
-           guard moved 861 → 783 — measured in a real render, not recomputed. Subtracting a
-           row height would have said 782/789 and been 6px of row gap wrong.)
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. SEVEN links
+           (2026-09-14, Follow came off): Home→/ · Play Now→Park Tables · The Gauntlet ·
+           Games→the arcade hub · Puzzles→Fork in the Road · Academy · McPuppy Studios→the
+           studio. The gold `--home` highlight marks whichever link IS home; order is MARKUP
+           order (no nth-child depends on it). ⌘K still reaches everything else. Drawer look
+           lives in _sass/_pjcc-13-nav.scss.
+           ⚠ CHANGE THE LIST, RE-MEASURE the collapsed rail's short-window guard in that file.
 
            ⚠⚠ EVERY MONOCHROME ICON CARRIES `&#xFE0E;` AND MUST KEEP IT (2026-08-08, when he
            asked for "subtle, on theme color" on the white symbols). U+FE0E is VARIATION
@@ -356,33 +350,6 @@
                the exact defect that got the Home sub rewritten on 2026-08-04. It says what the
                page is for instead. {%- endcomment -%}
           <span class="dl-txt"><b>McPuppy Studios</b><small>The studio, and what it's building</small></span>
-        </a>
-        {%- comment -%} ── THE NINTH ROW (2026-08-18) ────────────────────────────────────────
-             Nate: "can we add a Follow button on the left-hand side bar?"
-
-             ⚠ IT IS LAST, AND FOR THE SAME REASON IT IS LAST ON THE FRONT DOOR. Every row
-             above opens a room you do something in; this one is where you go if you liked
-             it. Order here is MARKUP order — no nth-child depends on it.
-             ⚠ ◉ IS U+25C9 PLUS `&#xFE0E;`, like every other monochrome glyph in this list —
-             without the selector a browser may paint it from the color emoji font and the
-             bone tint in _pjcc-13-nav.scss silently does nothing. The two rows directly above
-             (🎮 🐾) are the opposite kind and must never get one.
-             ⚠⚠ A NINTH ROW IS 78px MORE COLLAPSED RAIL. The short-window guard in
-             _pjcc-13-nav.scss is a MEASURED number (861px) and it moves when this list does —
-             re-measure it, do not recompute it, if a tenth row ever lands here. {%- endcomment -%}
-        {%- comment -%} ⚑ `data-live-door="row"` — this row lights with the front door’s sixth
-             box when the channel is live (2026-08-19). NO chip in here: the rail is 246px and
-             this subtitle was measured to fit on ONE line, so the row says it by tinting the
-             ◉ and swapping the subtitle instead. See assets/js/pjcc-live.js. {%- endcomment -%}
-        <a class="page-link drawer-link" data-live-door="row" href="{{ '/follow/' | relative_url }}">
-          <span class="dl-ico dl-ico--follow" aria-hidden="true">&#9673;&#xFE0E;</span>
-          {%- comment -%} 22 characters, which is exactly "Sit at the Park Tables" — measured to
-               fit the 246px rail on ONE line. "Twitch, and everywhere else" (the front door's
-               wording) wrapped, leaving "else" alone on a second row. The rail's subtitles are
-               already a tighter register than the doors' ("Fork in the Road" here vs "One move
-               wins. Miss it and it shows you why." there), so this is the house style, not a
-               different promise. {%- endcomment -%}
-          <span class="dl-txt"><b>Follow</b><small>Twitch and the socials</small></span>
         </a>
 
         <div class="drawer-div" aria-hidden="true"></div>

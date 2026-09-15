@@ -438,19 +438,6 @@ a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opac
    gone turns that gate red. Restoring the P&JCC row means restoring this line too.) */
 .dl-ico--arcade   { filter: brightness(1.45) saturate(1.15); }        /* 🎮 takes no ink */
 .dl-ico--studio   { filter: brightness(0) invert(1) sepia(1) saturate(0.55) hue-rotate(-8deg) brightness(1.06); }  /* 🐾 → bone */
-/* ⚑ THE NINTH ROW (2026-08-18, Nate: "can we add a Follow button on the left-hand side bar?").
-   ⭐ BONE, TO PAIR WITH THE PAW DIRECTLY ABOVE IT — and that is the rule two paragraphs up
-   being applied, not bent: achromatic in this list means "this row opens the McPuppy BRAND,
-   not another room", and /follow/ is `brand: mcpuppy` down to its tab title. Two bone rows,
-   adjacent, read as the studio pair. Picked off a render of all three candidates in the real
-   drawer ([[pick-visual-values-from-a-render]]): coral is Home's ink and repeating it at the
-   foot implies a tie that isn't there, and violet lands a hair off P&JCC's lilac two rows up.
-   ⚠ A `color`, not a `filter`, because ◉ (U+25C9 + FE0E) is a TEXT glyph — the opposite case
-   from the two rows above it, which are color emoji that take no ink at all.
-   ⚠ NOT RED, however much a record dot wants to be. A permanently red broadcast dot in the
-   nav is a "LIVE" badge by another route, and /follow/ refuses to paint one for all the hours
-   he is not streaming. Hue 40° — outside the 80°–170° green band that means "your move". */
-.dl-ico--follow   { color: #e8e2d6; }
 .dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
 .dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
 .dl-txt small { font-size: 0.72rem; color: #98a0ad; }
@@ -602,38 +589,12 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      block. (The short-window case where those icons WOULD want the scroll is guarded right
      below — visible only holds while the whole column fits.) */
   body.nav-collapsed .site-header .site-nav.drawer { overflow: visible; }
-  /* ── THE SHORT-WINDOW GUARD, AND ITS NUMBER WAS WRONG FOR MONTHS ──────────────────────
-     `overflow: visible` above means a rail taller than the window CANNOT SCROLL, so any icon
-     past the fold is simply unreachable — no scrollbar, no hint, nothing. Below this cut the
-     scrollable column is restored so every icon stays reachable; the hover label re-clips
-     there (`overflow-x: hidden` follows `overflow-y: auto`, you cannot have one axis visible
-     and the other not), which is the accepted trade on a window too short to show the rail
-     in full anyway.
-
-     ⚠⚠ THE OLD CUT WAS 520px AND THE RAIL HAS NEVER FIT IN 520px. The comment derived it as
-     "78px header clearance + 7 × 63px + pad" — but there were EIGHT rows, not seven, and the
-     row height is 72px (`--dl-h`), not 63. **Measured in a real render: the eight-row rail
-     ended at 776px and the nine-row rail ends at 854.** So every window between 520 and ~784
-     tall has been silently dropping the bottom rows of the collapsed rail, with the guard
-     that exists to prevent exactly that sitting 250px too low. Nothing caught it because the
-     formula was written once and then trusted. [[audit-numbers-can-be-wrong]]
-
-     ⚠ AND YESTERDAY'S DEFAULT MADE IT A DEFAULT-PATH BUG. While the rail docked OPEN by
-     default this was a latent edge (the expanded rail has `overflow-y: auto` and scrolls
-     fine); collapsed-by-default put every desktop visitor on the state that can't.
-
-     ⭐ 784 IS MEASURED, NOT DERIVED — re-measure rather than recompute if the roster or the
-     row height changes: render `body.nav-collapsed` at a viewport tall enough not to clamp
-     it, read the last `.drawer-link`'s `getBoundingClientRect().bottom`, add the 8px foot.
-     ⚑ 2026-08-25, AND IT PROVED THE RULE AGAIN. The P&JCC row came off the rail (P&JCC is
-     hidden while it is slow-revealed), leaving EIGHT rows. Recomputing would have said
-     854 − 72 = 782 and set the cut at 789; the real render says the eight-row rail ends at
-     **776**, so the cut is 783. The 6px is the row gap, which no formula here has ever had
-     right — the same 6px the ⚠⚠ note above is about. The instrument was proved first: the
-     nine-row header measured 854 on the nose before the row came out.
-     Today: 66px drawer head + 8 rows + gaps + the header clearance = 776, so a viewport
-     under 784 cannot show the whole column. */
-  @media (max-height: 783px) {
+  /* SHORT-WINDOW GUARD. `overflow: visible` above means a rail taller than the window cannot
+     scroll, so icons past the fold are unreachable; below this cut the scroll comes back.
+     ⚠ MEASURED, NEVER DERIVED (a formula sat 250px wrong for months): render
+     `body.nav-collapsed`, take the last `.drawer-link` bottom, add 8. Seven rows end at 698
+     (2026-09-14). Re-measure whenever a row comes or goes. */
+  @media (max-height: 705px) {
     body.nav-collapsed .site-header .site-nav.drawer { overflow: hidden auto; }
   }
   body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }
@@ -700,44 +661,3 @@ html.reduce-flourish body.nav-collapsed .drawer-link:focus-visible .dl-txt { tra
   border-radius: 50%; background: #5fd08a; box-shadow: 0 0 6px rgba(95, 208, 138, 0.7);
   vertical-align: middle;
 }
-
-/* ══ ON AIR — THE FOLLOW DOOR LIGHTS UP ════════════════════════════════════════════
-   2026-08-19, Nate: *"I want, when I'm streaming or podcasting live, to have that sixth
-   box Follow … light up to show that I'm live."* Painted by `assets/js/pjcc-live.js`
-   from a real answer about this minute, or not painted at all.
-
-   ⚑ RED IS FINALLY EARNED HERE. The rail's Follow row was given a bone ◉ on 2026-08-18
-   for a stated reason — *"a permanent record dot in the nav is a LIVE badge by another
-   route, and that page refuses to paint one."* This is the state that reason was holding
-   the color for. It appears only while the channel is genuinely live, which is exactly
-   what the dot would have been lying about the rest of the time.
-
-   ⚠ TWO SURFACES, ONE CLASS, DIFFERENT TREATMENTS. `[data-live-door="box"]` is the front
-   door's sixth panel and gets the chip; `="row"` is this rail, where 246px and a measured
-   one-line subtitle mean the tint and the words do the whole job. */
-.live-chip {
-  /* ⚠ OUT OF FLOW, ON PURPOSE. `.mc-door` is already `position: relative`, and the front
-     door's left column is measured against the board beside it — a badge that took part in
-     flow would move that column the moment he went live. Zero pixels of reflow. */
-  position: absolute; top: 10px; right: 10px;
-  padding: 2px 7px; border-radius: 999px;
-  font-family: var(--font-ui, system-ui), sans-serif;
-  font-size: 0.58rem; font-weight: 800; letter-spacing: 0.12em; line-height: 1.5;
-  color: #fff; background: #d33b4d; border: 1px solid rgba(255, 255, 255, 0.34);
-  box-shadow: 0 1px 6px rgba(211, 59, 77, 0.45);
-}
-/* The panel itself warms toward the badge rather than turning red — the door is still a
-   door, and a whole box in alarm red next to five parchment ones would read as an error. */
-.mc-door.is-live { border-color: rgba(211, 59, 77, 0.55); }
-.mc-door.is-live::before { background: #d33b4d; opacity: 1; }
-
-/* ── the rail row ──────────────────────────────────────────────────────────────────
-   ⚠ SPECIFICITY IS MEASURED, NOT ASSUMED. `.dl-ico--follow` sets the bone tint at (0,1,0);
-   `.drawer-link.is-live .dl-ico` is (0,3,0) and wins outright, which is the same shape the
-   comment above `.dl-ico--move` already uses for the one other signalling row here. */
-.drawer-link.is-live .dl-ico--follow { color: #ff6274; }
-.site-header .site-nav.drawer .page-link.drawer-link.is-live {
-  border-color: rgba(211, 59, 77, 0.42);
-  background: rgba(211, 59, 77, 0.10);
-}
-.drawer-link.is-live .dl-txt small { color: #ffb3bc; }

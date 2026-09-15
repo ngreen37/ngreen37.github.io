@@ -630,44 +630,6 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        which is worse, and shuffling the grid to hide one gap is how a page ends up with a
        layout nobody chose. If it reads as a hole, the fix is a SIXTH DOOR worth having, not a
        new column count. {%- endcomment -%}
-  {%- comment -%} ══ THE SIXTH DOOR — AND THE HOLE CLOSES (2026-08-18) ═══════════════════════
-       Nate: "Let's make Socials/Twitch the sixth box."
-
-       ⭐ THE NOTE DIRECTLY ABOVE CALLED THIS, and that is the whole reason nothing else here
-       had to move. When Notation Blitz came off the page on 08-11 the grid fell to five and
-       the second row kept an empty cell; the fix was written down that day — "a SIXTH DOOR
-       worth having, not a new column count" — so this is one card added and zero CSS touched.
-       Three across is two clean rows again and the phone stays 2x2x2.
-
-       ⚠ IT IS THE ONE DOOR ON THIS ROW THAT ISN'T SOMETHING TO PLAY, WHICH IS WHY IT IS LAST.
-       Every other card is a room a stranger can walk into and finish something in; this one is
-       where they go if they liked it. Last is the correct slot for that, not an accident of
-       markup order — and the grid's order IS markup order, no nth-child depends on it.
-
-       ⚠ NO NEW INK, ESPECIALLY NOT TWITCH PURPLE. This page bans gold and purple
-       ([[front-door-palette]]) and the one exception on the row — the Gauntlet's brass arch —
-       is a livery that already existed. A Twitch-colored card would be the loudest thing on
-       the front door and it would be loud for the least important box. Plain `.mc-door`.
-       ⚠ ◉ CARRIES `&#xFE0E;` (VARIATION SELECTOR-15) for the same reason every monochrome nav
-       icon does: without it a browser may reach for its color emoji font, `color` silently
-       no-ops, and the glyph lands as something the palette never chose. It reads as the
-       on-air/record dot, which is the half of this page a stranger will care about first.
-       {%- endcomment -%}
-  {%- comment -%} ⚑⚑ THIS BOX LIGHTS UP WHEN HE IS ACTUALLY STREAMING (2026-08-19).
-       Nate: *"I want, when I’m streaming or podcasting live, to have that sixth box
-       Follow … light up to show that I’m live."* `data-live-door="box"` is the only hook
-       `assets/js/pjcc-live.js` looks for — an href match would break on a project-pages
-       build, where `relative_url` prefixes the path.
-       ⚠ NO EMBED HERE, HIS CALL AND MINE ON THE SAME DAY: a Twitch iframe on this page
-       would load for every visitor during the ~99% of hours the channel is dark, on the
-       most measured surface on the site. The player lives one tap away at /follow/.
-       ⚠ AND IT COSTS ZERO PIXELS WHEN IT FIRES. The chip is absolutely positioned, so a
-       live stream cannot move this column against the board beside it. {%- endcomment -%}
-  <a class="mc-door" data-live-door="box" href="{{ '/follow/' | relative_url }}">
-    <span class="mc-door-ico" aria-hidden="true">&#9673;&#xFE0E;</span>
-    <b>Follow</b>
-    <small>Twitch, and everywhere else this lives.</small>
-  </a>
 </div>
 
 {%- comment -%} THE HONEST STRIP MOVED INTO THE HERO (2026-08-11, his #2) — it is now in
@@ -1304,33 +1266,9 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; visibility: v
 .mc-door > b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
 .mc-door > small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
 
-/* ══ THE SIX DOORS LINE UP — TWO THINGS WERE OUT, NOT ONE (2026-08-20) ═══════════════
-   Nate, with a screenshot of this grid: *"It looks fine [on the PC], but on mobile the
-   centering is off on the icons and text — can we clean it up both on the mobile site and
-   the PC site?"*
-
-   ⚠⚠ MEASURED BEFORE ANYTHING MOVED, and the answer was two independent offsets:
-
-     1. THE GAUNTLET'S ART BLOCK WAS 66px, NOT 71 — so its title sat 5px above every
-        neighbor's, on EVERY width including the desktop. The note above this rule claims
-        "`.mc-door-ico` pins the art block to 71px on all four", which is true and is
-        exactly the trap: the Gauntlet's art block is NOT `.mc-door-ico`, it is `.gdoor`,
-        and no rule ever gave it the band. ⭐ A COMMENT CAN DESCRIBE A SAFEGUARD THAT WAS
-        NEVER BUILT FOR THE ONE CASE IT MATTERS FOR. [[audit-numbers-can-be-wrong]]
-
-     2. A TITLE THAT WRAPS PUSHES ITS OWN SUBTITLE OUT OF THE ROW. At 390px "Find Your
-        Rating" takes two lines and "Follow" takes one, so the two subtitles beside each
-        other started 28px apart — measured 164 vs 136 from the top of the card. This is
-        the phone-only half of what he saw, and it is why the desktop "looks fine": at
-        1080px and up every title is one line and the raggedness has nothing to show.
-
-   ⭐ THE FIX IS TWO BANDS, NOT A NEW ALIGNMENT. Nothing here re-centers anything — the
-   front door's doors are left-aligned editorial cards and he said the desktop reads right.
-   Give the art the same height on all six and the title the same height wherever it can
-   wrap, and the icons, the titles and the subtitles each land on one line across a row.
-   ⚠ TITLES ARE PINNED ONLY UNDER 1080px — the same breakpoint that takes the grid to two
-   columns, because that is exactly where a title starts wrapping. Reserving a second line
-   on the desktop would buy nothing and cost 21px of air under all six. */
+/* THE DOORS LINE UP (2026-08-20). Two bands: the art is 71px on every card — the Gauntlet's
+   art is `.gdoor`, not `.mc-door-ico`, so it needs its own rule — and under 1080px a title
+   reserves two lines so a wrapping title can't push its subtitle out of the row. */
 .mc-door--gauntlet .gdoor { min-height: 71px; justify-content: center; }
 @media (max-width: 1080px) {
   /* two lines of the title's own type, stated in its own em so it tracks the font-size */
@@ -1554,8 +1492,7 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; visibility: v
 .mc-bench-seat { min-width: 0; }
 /* ⚠ `.mc-bench-seat > a`, because the <a> is the CHILD of the <li>. The site's bare `a:hover`
    sets `text-decoration: underline`, and `.mc-bench-seat > a:hover` beats it — a pseudo-class
-   scores in the CLASS column, so this is (0,2,1) against (0,1,1). Same rule as `.soc-card:hover`
-   on /follow/ — measured there, not guessed ([[text-clip-glyph-technique]]). */
+   scores in the CLASS column, so this is (0,2,1) against (0,1,1). */
 .mc-bench-seat > a {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
   padding: 7px 4px 8px; min-height: 62px; text-align: center; text-decoration: none;
