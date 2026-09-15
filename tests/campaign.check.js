@@ -25,7 +25,8 @@ window.__mc = {
   playAI: playAI, applyMove: applyMove, autoPromo: autoPromo, pump: pump, setPhase: setPhase, drawMap: drawMap,
   newCampaign: newCampaign, campaignOver: campaignOver, show: show, paintDice: paintDice,
   fogged: fogged, dailyStart: dailyStart, startYourTurn: startYourTurn, startBattle: startBattle, goLive: goLive,
-  finishRoll: finishRoll, nbrs: nbrs,
+  finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
+  resumeCampaign: resumeCampaign, paintPreview: paintPreview,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
     PEND = { from: 5, to: 3, playerAttacks: playerAttacks, aRanks: 4, dRanks: 3, attWhite: true,
@@ -75,7 +76,8 @@ function serve() {
     await page.setViewport({ width: 460, height: 760 });
     page.on('pageerror', e => errs.push(e.message));
     await page.goto(url, { waitUntil: 'load' });
-    await page.evaluate(() => localStorage.clear());
+    // cards off unless a check turns them on: a random card would move the plain-rules checks
+    await page.evaluate(() => { localStorage.clear(); localStorage.setItem('pjcc.campaign.cards', '0'); });
     await page.reload({ waitUntil: 'load' });
     await page.waitForFunction(() => !!window.__mc);
     const E = (fn, ...a) => page.evaluate(fn, ...a);
@@ -251,19 +253,19 @@ function serve() {
     ok(daily.same && daily.differs, "the Daily's start is the same all day and different the next");
     ok(daily.counts.join() === '5,5' && daily.shapes[0] === '23334' && daily.shapes[1] === '23334',
       '…five holdings a side in the 4-3-3-3-2 shape  [' + daily.shapes.join(' vs ') + ']');
-    ok(daily.diff === 'medium', '…at Medium whatever the picker says  [' + daily.diff + ']');
+    ok(daily.diff === 'hard', '…at the difficulty you picked  [' + daily.diff + ']');
     ok(daily.repeat && daily.round2, 'the same attack on the same round rolls the same dice, musters the same armies and builds the same board; another round does not');
     ok(daily.stacked && daily.defSame, "…and a bigger stack adds dice on top of the same ones, without moving the defender's");
 
     const dend = await E(() => {
       const m = __mc, $ = id => document.getElementById(id);
-      localStorage.removeItem('pjcc.campaign.daily.v1');
+      localStorage.removeItem('pjcc.campaign.daily.v2');
       m.newCampaign('medium', 'daily'); m.G.started = true; m.G.round = 2; m.startYourTurn();
       const mid = { round: m.G.round, map: $('screen-map').classList.contains('on') };
       m.startYourTurn();
       const end = { result: $('screen-result').classList.contains('on'), verdict: $('verdict').textContent, share: !$('share').hidden,
         text: $('share').dataset.text, save: localStorage.getItem('pjcc.campaign.save.daily.v1'),
-        rec: JSON.parse(localStorage.getItem('pjcc.campaign.daily.v1') || 'null'), day: m.G.day };
+        rec: JSON.parse(localStorage.getItem('pjcc.campaign.daily.v2') || 'null'), day: m.G.day };
       m.newCampaign('medium', 'daily'); m.G.round = 3; m.startYourTurn();
       const replay = $('share').dataset.text;
       m.newCampaign('medium'); m.G.own = m.G.own.map(() => 'm'); m.campaignOver(true);
@@ -272,8 +274,8 @@ function serve() {
     ok(dend.mid.round === 3 && dend.mid.map, 'the Daily plays round 3');
     ok(dend.end.result && /^DAILY \d+\/\d+ · \d+ OF 10$/.test(dend.end.verdict) && dend.end.save === null,
       '…and ends after it, with the save cleared  [' + dend.end.verdict + ']');
-    ok(dend.end.share && dend.end.rec && dend.end.rec.day === dend.end.day && !/replay/.test(dend.end.text),
-      '…a result you can copy, recorded for today  [' + dend.end.text + ']');
+    ok(dend.end.share && dend.end.rec && dend.end.rec.day === dend.end.day && dend.end.rec.runs['medium-nocards'] && /· Medium · no cards ·/.test(dend.end.text) && !/replay/.test(dend.end.text),
+      '…a result you can copy, filed under its settings for today  [' + dend.end.text + ']');
     ok(/· replay$/.test(dend.replay) && dend.soloShare === false, '…a second finish the same day says replay, and a solo ending offers no copy');
     const dlabel = await E(() => { __mc.show('screen-home'); return document.getElementById('daily').textContent; });
     ok(/^Daily · best \d+\/10$/.test(dlabel), "the home screen's Daily button carries today's best  [" + dlabel + ']');
@@ -345,6 +347,136 @@ function serve() {
     ok(tb.end.word === 'GREEN TAKES IT' && /win/.test(tb.end.cls) && /^Red gave up/.test(tb.end.line),
       'Withdraw gives up for the side to move, defender included  [' + tb.end.word + ' — ' + tb.end.line + ']');
     ok(tb.map && tb.side === 'm' && tb.town === 'm' && tb.from === 1 && tb.phase === 'attack', "…the ground changes hands and the map returns to Green's attacks");
+
+    /* ── game-start options ── */
+    const opts = await E(() => {
+      const $ = id => document.getElementById(id), m = __mc, f = $('opt-fog'), c = $('opt-cards');
+      m.show('screen-home');
+      const before = { fog: f.textContent, cards: c.textContent };
+      f.click();
+      const after = { fog: f.textContent, pressed: f.getAttribute('aria-pressed'), ls: localStorage.getItem('pjcc.campaign.fog') };
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('go').click();
+      const game = { fog: m.G.fog, fogged: m.fogged(1), disc: document.querySelector('.node[data-id="1"] .disc').textContent,
+        cards: m.G.cards, bar: $('cardbar').hidden };
+      f.click();
+      return { before, after, game, kept: m.G.fog, back: f.textContent };
+    });
+    ok(opts.before.fog === 'Fog of War · On' && opts.before.cards === 'Event Cards · Off',
+      'the home screen shows both options and how they are set  [' + opts.before.fog + ' / ' + opts.before.cards + ']');
+    ok(opts.after.fog === 'Fog of War · Off' && opts.after.pressed === 'false' && opts.after.ls === '0', '…a tap flips one, says so, and is remembered');
+    ok(!opts.game.fog && !opts.game.fogged && opts.game.disc !== '?' && !opts.game.cards && opts.game.bar,
+      'a game begun with fog off hides nothing, and with cards off deals none  [The Fork shows ' + opts.game.disc + ']');
+    ok(opts.kept === false && /On$/.test(opts.back), '…and keeps those settings when the options change mid-game');
+
+    /* ── event cards ── */
+    const cards = await E(() => {
+      const m = __mc, $ = id => document.getElementById(id), out = {};
+      const START = [3, 3, 3, 4, 2, 4, 3, 2, 3, 3];
+      const fresh = (k, diff) => {
+        m.newCampaign(diff || 'medium'); const G = m.G; G.started = false; G.cards = true; G.ranks = START.slice();
+        if (k) m.playCard(k);
+        m.resetTurn(); m.show('screen-map'); m.drawMap(); return G;
+      };
+      m.newCampaign('medium', 'solo', { cards: true }); m.G.started = false; m.show('screen-map'); m.drawMap();
+      out.dealt = { card: m.G.card, bar: !$('cardbar').hidden, nm: $('card-nm').textContent };
+      let repeats = 0, skies = 0;
+      for (let i = 0; i < 60; i++) { const prev = m.G.card; m.drawCard(); if (m.G.card === prev) repeats++; }
+      m.newCampaign('medium', 'solo', { cards: true, fog: false });
+      for (let i = 0; i < 60; i++) { m.drawCard(); if (m.G.card === 'skies') skies++; }
+      out.draws = { repeats, skies };
+
+      let G = fresh('reinforce'); out.reinforce = G.toPlace;
+      G = fresh('march'); out.march = G.atks;
+      G = fresh('supply'); out.supply = G.atks;
+      G = fresh('skies'); out.skies = m.fogged(1);
+
+      G = fresh('mud'); G.toPlace = 0; m.setPhase('fortify'); m.tapLand(5); m.tapLand(8);
+      out.mud = { flats: G.ranks[8], say: $('map-say').textContent, move: !!m.rivalPlan().move };
+      G = fresh('reinforce'); out.plainMove = !!m.rivalPlan().move;
+
+      G = fresh('roads'); G.toPlace = 0; m.setPhase('fortify'); m.tapLand(5); m.tapLand(9); out.roads = G.ranks[9];
+      G = fresh('reinforce'); G.toPlace = 0; m.setPhase('fortify'); m.tapLand(5); m.tapLand(9); out.noRoads = G.ranks[9];
+
+      G = fresh('truce'); G.truce = 3; G.toPlace = 0; G.ranks[5] = 4; m.setPhase('attack'); m.drawMap();
+      out.truceNode = document.querySelector('.node[data-id="3"]').className;
+      out.truceTxt = $('card-txt').textContent;
+      m.tapLand(5); m.tapLand(3);
+      out.truce = { atks: G.atks, roll: $('screen-roll').classList.contains('on') };
+      const siege = G2 => { G2.diff = 'hard'; G2.ranks = G2.own.map(o => o === 't' ? 9 : 1); return m.rivalPlan().attacks; };
+      G = fresh('truce', 'hard'); G.truce = 3; out.rivalTruce = siege(G).filter(a => a.from === 3 || a.to === 3).length;
+      G = fresh(null, 'hard'); out.capPlain = siege(G).length;
+      G = fresh('march', 'hard'); out.capMarch = siege(G).length;
+      G = fresh('supply', 'hard'); out.capSupply = siege(G).length;
+
+      m.newCampaign('medium'); G = m.G; G.cards = true; G.ranks = START.slice(); m.playCard('rally'); out.rally = G.ranks.join();
+      m.newCampaign('medium'); G = m.G; G.cards = true; G.ranks = START.slice(); G.ranks[5] = 7; G.ranks[3] = 6; G.ranks[0] = 5;
+      m.playCard('desert'); out.desert = [G.ranks[5], G.ranks[3], G.ranks[0]].join();
+
+      const dealDaily = () => { m.newCampaign('easy', 'daily', { cards: true }); m.G.started = false; const a = m.G.card + '@' + m.G.truce;
+        m.startYourTurn(); return a + '|' + m.G.card + '@' + m.G.truce; };
+      out.daily = [dealDaily(), dealDaily()];
+
+      m.newCampaign('medium', 'solo', { cards: true }); G = m.G; G.started = true; G.ranks = START.slice();
+      m.playCard('rally'); m.drawMap();
+      const saved = JSON.parse(localStorage.getItem('pjcc.campaign.save.v1'));
+      const savedRanks = saved.ranks.join();   // resumeCampaign keeps this same array, so read it first
+      m.resumeCampaign(saved);
+      out.resume = { card: m.G.card, ranks: m.G.ranks.join(), savedRanks };
+      localStorage.removeItem('pjcc.campaign.save.v1');
+
+      m.newCampaign('medium', 'two', { cards: true }); G = m.G; G.started = false;
+      const c1 = G.card; G.toPlace = 0; m.setPhase('fortify'); $('endturn').click();
+      const red = G.card; G.toPlace = 0; m.setPhase('fortify'); $('endturn').click();
+      out.two = { c1, red, round2: G.card };
+      return out;
+    });
+    ok(cards.dealt.card && cards.dealt.bar && cards.dealt.nm.length > 2, 'with cards on, a game opens with a card on the map  [' + cards.dealt.nm + ']');
+    ok(cards.draws.repeats === 0 && cards.draws.skies === 0, 'the same card never comes twice in a row, and Clear Skies never comes with fog off  [60 draws each]');
+    ok(cards.reinforce === 3, 'Reinforcements: two extra troops to deploy  [' + cards.reinforce + ']');
+    ok(cards.march === 4 && cards.supply === 2, 'Forced March and Short Supply: four attacks, or two  [' + cards.march + ', ' + cards.supply + ']');
+    ok(cards.skies === false, 'Clear Skies: nothing is hidden');
+    ok(cards.mud.flats === 3 && /Mud/.test(cards.mud.say) && !cards.mud.move && cards.plainMove,
+      'Mud: no fortify for you or for them  [' + cards.mud.say + ']');
+    ok(cards.roads === 4 && cards.noRoads === 3, 'Long Roads: Chess City reaches Pirc Pass through Endgame Flats — and only under the card');
+    ok(/\btruce\b/.test(cards.truceNode) && /Checker Town/.test(cards.truceTxt) && cards.truce.atks === 3 && !cards.truce.roll,
+      'Truce: the named holding is marked, and attacking it opens nothing  [' + cards.truceTxt + ']');
+    ok(cards.rivalTruce === 0, '…and the machine keeps the truce too');
+    ok(cards.capPlain === 3 && cards.capMarch === 4 && cards.capSupply === 2,
+      'the machine plays under the same card: Hard attacks ' + cards.capPlain + ', ' + cards.capMarch + ' on Forced March, ' + cards.capSupply + ' on Short Supply');
+    ok(cards.rally === '4,4,3,5,2,5,3,3,4,3', 'Rally: every chained holding, on both sides, gains a troop  [' + cards.rally + ']');
+    ok(cards.desert === '6,5,5', 'Desertion: six or more loses one, five does not  [' + cards.desert + ']');
+    ok(cards.daily[0] === cards.daily[1] && cards.daily[0].split('|')[0].split('@')[0] !== cards.daily[0].split('|')[1].split('@')[0],
+      "the Daily deals everyone the same card each round  [" + cards.daily[0] + ']');
+    ok(cards.resume.card === 'rally' && cards.resume.ranks === cards.resume.savedRanks, 'a resumed game keeps its card and does not play it twice');
+    ok(cards.two.c1 === cards.two.red && cards.two.round2 && cards.two.round2 !== cards.two.c1,
+      'two players: Green and Red play under one card a round  [' + cards.two.c1 + ' → ' + cards.two.round2 + ']');
+
+    /* ── the coach ── */
+    const coach = await E(async () => {
+      const m = __mc, $ = id => document.getElementById(id), C = window.PJCCChess;
+      const run = async (diff, mode, fen, attacking) => {
+        m.newCampaign(diff, mode); m.G.started = false;
+        m.PEND = { from: 5, to: 3, aRanks: 4, dRanks: 3, dInfo: { castled: false, chain: 0 },
+          playerAttacks: attacking, attWhite: attacking, board: C.parseFEN(fen).b };
+        m.show('screen-roll'); $('preview').hidden = false; m.paintPreview();
+        await new Promise(r => setTimeout(r, 800));
+        return { hidden: $('coach').hidden, text: $('coach').textContent };
+      };
+      const MATE = '6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1';
+      return {
+        mate: await run('easy', 'solo', MATE, true),
+        threat: await run('easy', 'solo', 'r5k1/8/8/8/8/8/5PPP/6K1 b - - 0 1', false),
+        up: await run('easy', 'daily', '4k3/3ppp2/8/8/8/8/3PPP2/3QK3 w - - 0 1', true),
+        medium: await run('medium', 'solo', MATE, true),
+        two: await run('easy', 'two', MATE, true)
+      };
+    });
+    await E(() => __mc.show('screen-map'));
+    ok(!coach.mate.hidden && /forced mate/.test(coach.mate.text) && /Ra8#/.test(coach.mate.text), 'Easy: the coach names a forced mate and its first move  [' + coach.mate.text + ']');
+    ok(!coach.threat.hidden && /they have a forced mate/.test(coach.threat.text) && /Ra1#/.test(coach.threat.text), '…warns a defender of one coming  [' + coach.threat.text + ']');
+    ok(!coach.up.hidden && /You are up 9\. They have only pawns/.test(coach.up.text) && /Try [A-Z]?[a-h]/.test(coach.up.text), '…and otherwise gives the material and a first move  [' + coach.up.text + ']');
+    ok(coach.medium.hidden && coach.two.hidden, 'no coach on Medium, and none between two people');
 
     /* ── save and continue ── */
     await E(() => localStorage.removeItem('pjcc.campaign.save.v1'));

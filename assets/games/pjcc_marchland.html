@@ -147,6 +147,7 @@
     font: 700 12px 'Trebuchet MS', sans-serif; letter-spacing: .6px; }
   .levels button.on { border-color: var(--mine); color: var(--mine); background: rgba(107,255,184,.09); }
   .lvl-note { text-align: center; font-size: 11px; color: var(--ink-3); margin-top: 7px; min-height: 15px; }
+  .levels.opts { margin-top: 8px; }
   .modes { display: flex; gap: 7px; }
   .modes .btn { flex: 1; min-width: 0; }
   #screen-pass { justify-content: safe center; gap: 6px; }
@@ -182,6 +183,15 @@
   /* two players: the hints wear the color of whoever holds the device */
   #screen-map.red-turn .node.can .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.45); }
   #screen-map.red-turn .node.sel .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.4); }
+  /* the round's event card, and the holding a Truce card names */
+  .cardbar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 2px 7px;
+    margin: 0 0 4px; padding: 5px 10px; border: 1px solid rgba(233,189,60,.45); border-radius: 9px;
+    background: rgba(233,189,60,.07); font-size: 11.5px; line-height: 1.35; color: var(--ink-2); text-align: center; }
+  .cardbar i { font-style: normal; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-3); }
+  .cardbar b { color: #ffd66a; letter-spacing: .4px; }
+  .cardbar.deal { animation: deal .5s cubic-bezier(.2,.9,.3,1); }
+  @keyframes deal { from { transform: translateY(-8px) scaleY(.2); opacity: 0; } to { transform: none; opacity: 1; } }
+  .node.truce .nm::before { content: '\2690\00a0'; color: #ffd66a; }
   /* a rank landing, or a holding under an announced attack — both want a beat you can see */
   .node.flash .disc { animation: land .42s ease; }
   .node.doom .disc  { animation: doom .55s ease infinite; }
@@ -465,11 +475,14 @@
      what you study is what you get. This is the real answer to "sometimes you don't even
      have time to see the position before you lose": by the time the clock starts you have
      already looked at it for as long as you wanted to. */
-  .preview { margin: 6px auto 0; width: 100%; max-width: 258px; }
+  /* ⚠ padding-bottom clears #tobattle's 14px ground ring and its upward shadow, which painted over the coach line */
+  .preview { margin: 6px auto 0; width: 100%; max-width: 258px; padding-bottom: 26px; }
   .previewhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
   .ptally { text-align: center; font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
   .ptally b.m { color: var(--mine); } .ptally b.t { color: var(--theirs); }
+  .coach { text-align: center; font-size: 11.5px; color: var(--ink-2); margin-top: 6px; line-height: 1.45; }
+  .coach b { color: #ffd66a; font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; margin-right: 5px; }
 
   /* ── THE REVEAL BEAT ──────────────────────────────────────────────────────────
      The clock does NOT start with the screen. It starts when this goes away. */
@@ -494,7 +507,7 @@
        INFORMATION (this die castles), not flourish. Stillness must cost the picture, never
        the fact. */
     .die.roll, .die.kept::after, .die.castle::before,
-    .node.flash .disc, .node.doom .disc, .pc.arrive { animation: none; }
+    .node.flash .disc, .node.doom .disc, .pc.arrive, .cardbar.deal { animation: none; }
     .pc { transition: none; }
     .clock.crit { animation: none; }
   }
@@ -518,6 +531,10 @@
       <button data-lvl="hard">Hard</button>
     </div>
     <p class="lvl-note" id="lvl-note">A fair fight that punishes carelessness.</p>
+    <div class="levels opts">
+      <button id="opt-fog" class="on" aria-pressed="true">Fog of War · On</button>
+      <button id="opt-cards" class="on" aria-pressed="true">Event Cards · On</button>
+    </div>
     <button class="btn" id="resume" hidden>Continue the campaign</button>
     <button class="btn" id="go">Begin the campaign</button>
     <div class="modes">
@@ -564,10 +581,13 @@
       <b>7. Fifteen seconds each,</b> a second back on every move. <b>Run your own clock out
       and you lose.</b> Checkmate takes the ground. A draw goes to the defender.<br><br>
       <b>8. Take every holding to win.</b> Lose them all and the campaign is over.<br><br>
-      <b>9. Fog.</b> You only see troops where you share a border. Tap a <b>?</b> twice to
-      scout it &mdash; that costs one of your attacks.<br><br>
+      <b>9. Fog</b> (an option). You only see troops where you share a border. Tap a <b>?</b>
+      twice to scout it &mdash; that costs one of your attacks.<br><br>
+      <b>10. Event cards</b> (an option). Each round opens with a card that bends one rule for
+      both sides.<br><br>
+      <b>Coach:</b> on Easy, the roll screen suggests a plan.<br>
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
-      rounds; hold as much as you can.<br>
+      rounds; hold as much as you can. Scores compare at the same settings.<br>
       <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -600,6 +620,7 @@
       <span>Attacks <b class="m" id="t-atk">3</b></span>
       <span>Round <b id="t-round">1</b></span>
     </div>
+    <p class="cardbar" id="cardbar" hidden><i>Round card</i><b id="card-nm"></b><span id="card-txt"></span></p>
     <div class="mapbox" id="mapbox">
       <svg id="links" viewBox="0 0 100 112" preserveAspectRatio="none"></svg>
     </div>
@@ -633,6 +654,7 @@
         <div class="men" id="pmen"></div>
       </div>
       <p class="ptally" id="ptally"></p>
+      <p class="coach" id="coach" hidden></p>
     </div>
     <button class="btn" id="tobattle" disabled>To the board &rarr;</button>
   </section>
@@ -871,16 +893,20 @@ var B = null;          // battle state
 
 /* mode: 'solo' | 'daily' | 'two'. G.side is whose turn it is at the device — always 'm' outside two-player.
    ⚠ 'm'/'t' stay the COLORS (green/red); player-action code asks G.side, never 'm'. */
-function newCampaign(diff, mode) {
-  mode = mode || 'solo';
+/* opts: { fog, cards } — fog defaults on, cards off, so a bare newCampaign() is the plain rules */
+function newCampaign(diff, mode, opts) {
+  mode = mode || 'solo'; opts = opts || {};
   var day = mode === 'daily' ? dayKey() : null;
   var start = day ? dailyStart(day) : { own: START_OWN.slice(), ranks: START_RANKS.slice() };
   G = { own: start.own, ranks: start.ranks, round: 1, sel: -1, busy: false,
-        diff: day ? 'medium' : (diff || 'medium'), mode: mode, day: day, side: 'm',
+        diff: diff || 'medium', mode: mode, day: day, side: 'm',
+        fog: opts.fog !== false, cards: !!opts.cards, card: null, truce: -1, lastCard: null,
         seen: { m: [], t: [] }, scoutArm: -1,
         phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
         fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
         flash: -1, hot: null, q: [] };
+  drawCard();
+  G.atks = ATTACK_CAP + cardAtks();
   G.toPlace = deployFor(G.side);
 }
 function sideName(s) { return s === 'm' ? 'Green' : 'Red'; }
@@ -889,12 +915,72 @@ function sideColor(s) { return s === 'm' ? '#6bffb8' : '#ff6e8a'; }
 /* ── FOG ── an enemy holding is hidden unless it borders one of yours or you scouted it this turn */
 function fogged(id) {
   var s = G.side;
-  if (G.own[id] === s || G.seen[s].indexOf(id) >= 0) return false;
+  if (!G.fog || G.card === 'skies' || G.own[id] === s || G.seen[s].indexOf(id) >= 0) return false;
   return !nbrs(id).some(function (j) { return G.own[j] === s; });
 }
 
+/* ── EVENT CARDS ── one per round, for both sides. ⚠ none may touch a battle: ATT_EDGE was measured
+   against the 40-60% attack-failure band, and a card that changes dice or clocks invalidates it */
+var CARDS = {
+  skies:     { nm: 'Clear Skies',    txt: 'No fog this round.' },
+  mud:       { nm: 'Mud',            txt: 'Nobody fortifies this round.' },
+  roads:     { nm: 'Long Roads',     txt: 'Fortify along any chain of your own holdings.' },
+  reinforce: { nm: 'Reinforcements', txt: 'Two extra troops to deploy.' },
+  march:     { nm: 'Forced March',   txt: 'One extra attack this round.' },
+  supply:    { nm: 'Short Supply',   txt: 'One attack fewer this round.' },
+  truce:     { nm: 'Truce',          txt: 'Nobody attacks into or out of {h}.' },
+  rally:     { nm: 'Rally',          txt: 'Every chained holding gained a troop.' },
+  desert:    { nm: 'Desertion',      txt: 'Every stack of six or more lost a troop.' }
+};
+var DECK = ['skies', 'mud', 'roads', 'reinforce', 'march', 'supply', 'truce', 'rally', 'desert'];
+function drawCard() {
+  G.card = null; G.truce = -1;
+  if (!G.cards) return;
+  var pick = function () {
+    var deck = DECK.filter(function (k) { return k !== G.lastCard && (k !== 'skies' || G.fog); });
+    playCard(deck[Math.floor(rand() * deck.length)]);
+  };
+  if (G.mode === 'daily') seeded('campaign|' + G.day + '|' + G.round + '|card', pick); else pick();
+}
+/* ⚠ rally and desertion happen HERE, once — a resumed save must never replay them */
+function playCard(k) {
+  var i, ids = LAND.map(function (L) { return L.id; });
+  G.card = G.lastCard = k; G.truce = -1; G.deal = true;
+  if (k === 'truce') {
+    var front = ids.filter(function (id) { return nbrs(id).some(function (j) { return G.own[j] !== G.own[id]; }); });
+    G.truce = front[Math.floor(rand() * front.length)];
+  } else if (k === 'rally') {
+    ids.filter(function (id) { return chained(G.own, id); }).forEach(function (id) { G.ranks[id]++; });
+  } else if (k === 'desert') {
+    for (i = 0; i < G.ranks.length; i++) if (G.ranks[i] >= 6) G.ranks[i]--;
+  }
+}
+function cardAtks() { return G.card === 'march' ? 1 : G.card === 'supply' ? -1 : 0; }
+function cardText() { return CARDS[G.card].txt.replace('{h}', G.truce >= 0 ? LAND[G.truce].nm : ''); }
+function truceLine() { return '<b>Truce</b> at ' + LAND[G.truce].nm + ' — no attacks into or out of it this round.'; }
+/* fortify reach: a neighbor, or under Long Roads anything joined to it through your own holdings */
+function fortReach(from, to) {
+  if (from === to || G.own[to] !== G.side) return false;
+  if (G.card !== 'roads') return adj(from, to);
+  var seen = {}, q = [from];
+  seen[from] = 1;
+  while (q.length) {
+    var ns = nbrs(q.shift());
+    for (var i = 0; i < ns.length; i++) {
+      var j = ns[i];
+      if (seen[j] || G.own[j] !== G.side) continue;
+      if (j === to) return true;
+      seen[j] = 1; q.push(j);
+    }
+  }
+  return false;
+}
+
 /* ── THE DAILY ── same start, and the same attack rolls the same dice, for everyone */
-var DAILY_ROUNDS = 3, DAILY_KEY = 'pjcc.campaign.daily.v1';
+var DAILY_ROUNDS = 3, DAILY_KEY = 'pjcc.campaign.daily.v2';
+/* a Daily score only compares at the same settings, so records are filed under them */
+function variantOf(diff, fog, cards) { return diff + (fog ? '' : '-nofog') + (cards ? '' : '-nocards'); }
+function variantLabel() { return LEVELS[G.diff].nm + (G.fog ? '' : ' · no fog') + (G.cards ? '' : ' · no cards'); }
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function hashStr(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function seeded(key, fn) { RNG = mulberry32(hashStr(key)); try { return fn(); } finally { RNG = null; } }
@@ -1524,7 +1610,7 @@ function say(t) { $('map-say').innerHTML = t; }
 function deployFor(side) {
   var n = 0;
   for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) n++;
-  return Math.max(1, Math.floor(n / 3));
+  return Math.max(1, Math.floor(n / 3)) + (G.card === 'reinforce' ? 2 : 0);
 }
 function idsOf(side) {
   var out = [];
@@ -1564,7 +1650,8 @@ function drawMap() {
     if (G.own[e[0]] === G.own[e[1]] && chained(G.own, e[0]) && chained(G.own, e[1])) {
       cls += G.own[e[0]] === 'm' ? ' chain-m' : ' chain-t';
     }
-    if (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] !== G.side) || (e[1] === G.sel && G.own[e[0]] !== G.side))) {
+    if (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] !== G.side && e[1] !== G.truce) ||
+                       (e[1] === G.sel && G.own[e[0]] !== G.side && e[0] !== G.truce))) {
       cls += ' hot';
     }
     if (G.hot && ((e[0] === G.hot.from && e[1] === G.hot.to) || (e[1] === G.hot.from && e[0] === G.hot.to))) {
@@ -1584,20 +1671,21 @@ function drawMap() {
     if (G.flash === L.id) cls += ' flash';
     if (G.hot && G.hot.to === L.id) cls += ' doom';
     if (fog) cls += ' fog';
+    if (G.truce === L.id) cls += ' truce';
 
     if (chained(G.own, L.id)) cls += ' chained';
 
     if (G.phase === 'deploy' && mine && G.toPlace > 0) cls += ' can';
     if (G.phase === 'attack' && G.atks > 0) {
-      var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.ranks[G.sel] >= 2;
+      var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.ranks[G.sel] >= 2 && L.id !== G.truce;
       if (isTgt) cls += ' tgt';
       if (G.sel >= 0 && !isSel && !isTgt) cls += ' dim';
-      if (G.sel < 0 && mine && G.ranks[L.id] >= 2) cls += ' can';
+      if (G.sel < 0 && mine && G.ranks[L.id] >= 2 && L.id !== G.truce) cls += ' can';
     }
-    if (G.phase === 'fortify' && !G.fortDone) {
+    if (G.phase === 'fortify' && !G.fortDone && G.card !== 'mud') {
       if (G.fortFrom < 0) { if (mine && G.ranks[L.id] >= 2) cls += ' can'; }
       else if (L.id === G.fortFrom) cls += ' sel';
-      else if (mine && adj(G.fortFrom, L.id) && (G.fortTo < 0 || G.fortTo === L.id)) cls += ' can';
+      else if (fortReach(G.fortFrom, L.id) && (G.fortTo < 0 || G.fortTo === L.id)) cls += ' can';
       else cls += ' dim';
     }
 
@@ -1607,7 +1695,7 @@ function drawMap() {
     el.setAttribute('data-id', L.id);
     el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(G.own[L.id]) : mine ? 'yours' : 'theirs') + ', ' +
       (fog ? 'troops unknown' : G.ranks[L.id] + ' troop' + (G.ranks[L.id] === 1 ? '' : 's')) +
-      (chained(G.own, L.id) ? ', chained' : ''));
+      (chained(G.own, L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : ''));
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
     el.innerHTML = '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>';
     el.addEventListener('click', function () { tapLand(L.id); });
@@ -1625,6 +1713,13 @@ function drawMap() {
   $('t-chain').className = $('t-atk').className = G.side;
   $('t-atk').textContent = G.atks;
   $('t-atk').parentNode.className = G.atks ? '' : 'spent';
+  var bar = $('cardbar');
+  bar.hidden = !G.card;
+  if (G.card) {
+    $('card-nm').textContent = CARDS[G.card].nm; $('card-txt').textContent = cardText();
+    bar.classList.toggle('deal', !!G.deal);
+    if (G.deal) setTimeout(function () { G.deal = false; }, 600);
+  }
 }
 
 function tapLand(id) {
@@ -1663,12 +1758,13 @@ function tapLand(id) {
 
   /* ── FORTIFY: pick a source, then tap the destination once per rank ── */
   if (G.phase === 'fortify') {
+    if (G.card === 'mud') { say(phaseLine()); return; }
     if (G.fortDone) { say('You have already fortified this round.'); return; }
     if (G.fortFrom < 0) {
       if (G.own[id] !== G.side) { say('Move troops between your own holdings.'); return; }
       if (G.ranks[id] < 2) { say(LAND[id].nm + ' has one troop — it cannot spare it.'); return; }
       G.fortFrom = id;
-      say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per troop.');
+      say('From ' + LAND[id].nm + ' — tap ' + (G.card === 'roads' ? 'any holding of yours it connects to' : 'a neighbor of yours') + ', once per troop.');
       drawMap(); return;
     }
     if (id === G.fortFrom) {
@@ -1677,8 +1773,8 @@ function tapLand(id) {
       if (G.fortMoved) { G.fortDone = true; say('<b>' + G.fortMoved + '</b> moved to ' + LAND[G.fortTo].nm + '. That is your fortify.'); drawMap(); return; }
       G.fortFrom = -1; G.fortTo = -1;
       say('Pick a holding to move troops from.'); drawMap(); return; }
-    if (G.own[id] !== G.side || !adj(G.fortFrom, id)) {
-      say(LAND[id].nm + ' is not a neighbor you hold.'); return;
+    if (!fortReach(G.fortFrom, id)) {
+      say(LAND[id].nm + (G.card === 'roads' ? ' is not joined to it through your holdings.' : ' is not a neighbor you hold.')); return;
     }
     if (G.fortTo >= 0 && G.fortTo !== id) {
       say('One move a round. ' + LAND[G.fortTo].nm + ' is where these are going.'); return;
@@ -1695,6 +1791,7 @@ function tapLand(id) {
   /* ── ATTACK ── */
   if (G.phase !== 'attack') return;
   if (G.atks <= 0) { say(atksLine()); return; }
+  if (id === G.truce) { say(truceLine()); return; }
   if (G.own[id] === G.side) {
     if (G.ranks[id] < 2) { say(LAND[id].nm + ' has only one troop — it cannot attack.'); drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
@@ -1729,6 +1826,8 @@ function deployLine() {
 }
 function phaseLine() {
   return G.phase === 'deploy' ? deployLine() : G.phase === 'attack' ? atksLine()
+    : G.card === 'mud' ? '<b>Mud</b> — nobody fortifies this round. End your turn.'
+    : G.card === 'roads' ? 'Fortify — move troops along any chain of your own holdings.'
     : 'Fortify — one free move of troops between two holdings you hold.';
 }
 
@@ -1985,6 +2084,9 @@ function paintPreview() {
   }
   $('pmen').innerHTML = mh;
   var mw = material(p.board, 'w'), mb = material(p.board, 'b');
+  $('coach').hidden = true;
+  /* deferred: the search blocks the page for ~250ms, and rollTimers is cleared if the player moves on */
+  if (G.diff === 'easy' && G.mode !== 'two') rollTimers.push(setTimeout(function () { paintCoach(p); }, 40));
   if (G.mode === 'two') {
     var a = G.own[p.from], d = G.own[p.to];
     $('ptally').innerHTML = sideName(a) + ' <b style="color:' + sideColor(a) + '">' + mw + '</b> · ' + sideName(d) + ' <b style="color:' + sideColor(d) + '">' + mb + '</b>' +
@@ -1993,6 +2095,33 @@ function paintPreview() {
   }
   $('ptally').innerHTML = 'you <b class="m">' + mw + '</b> · them <b class="t">' + mb + '</b>' +
     ' &nbsp;·&nbsp; ' + (p.playerAttacks ? 'you move first' : 'they move first');
+}
+
+/* ── THE COACH (Easy only) ── ⚠ every clause is something the referee or the search can check:
+   material, castling, a forced mate, the best first move. Never a guess about what will happen. */
+function coachLine(p) {
+  var S = { b: p.board.slice(), turn: p.attWhite ? 'w' : 'b', cast: { K:false, Q:false, k:false, q:false }, ep: -1, half: 0, full: 1 };
+  var up = material(p.board, 'w') - material(p.board, 'b');     // the player is always White
+  var theirPieces = p.board.filter(function (c) { return c && c >= 'a' && 'kp'.indexOf(c) < 0; }).length;
+  var best = bestMove(S, 250, 3, 0, 0), san = best && best.mv ? C.toSAN(S, best.mv) : '';
+  if (p.playerAttacks) {
+    if (best && best.val >= MATE_SCORE) return 'There is a forced mate here. Start with ' + san + '.';
+    var plan = up >= 5 ? 'You are up ' + up + '. ' + (theirPieces ? 'Trade pieces, then corner the king.' : 'They have only pawns — corner the king.')
+      : up <= -3 ? 'You are down ' + (-up) + '. Look for checks — you need mate fast.'
+      : p.dInfo.castled ? 'Their king is castled. Bring your pieces over before you check.'
+      : 'Their king did not castle. Go after it early.';
+    return san ? plan + ' Try ' + san + '.' : plan;
+  }
+  if (best && best.val >= MATE_SCORE) return 'Careful: they have a forced mate, starting ' + san + '. Cover your king.';
+  if (up >= 3) return 'You are up ' + up + '. Trade pieces — a draw still holds the ground.';
+  return (p.dInfo.castled ? 'Your king is castled. ' : '') + 'You do not need to win: if their clock runs out, you hold.';
+}
+function paintCoach(p) {
+  if (PEND !== p || G.diff !== 'easy') return;
+  var el = $('coach');
+  el.innerHTML = '<b>Coach</b>';
+  el.appendChild(document.createTextNode(coachLine(p)));
+  el.hidden = false;
 }
 
 /* ── BATTLE ────────────────────────────────────────────────────────────────────── */
@@ -2682,7 +2811,7 @@ function rivalPlan() {
   theirs.forEach(function (from) {
     if (rk[from] < 2) return;
     nbrs(from).forEach(function (to) {
-      if (G.own[to] !== 'm') return;
+      if (G.own[to] !== 'm' || from === G.truce || to === G.truce) return;
       var s = rk[from] - rk[to];
       if (L.chainAware && chained(G.own, to)) s += 2;
       if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing ranks at it
@@ -2694,6 +2823,7 @@ function rivalPlan() {
      so this clamp changes nothing today — it is here so raising one number cannot quietly
      give the machine a round the player can never have. */
   var cap = Math.min(L.maxAtk, ATTACK_CAP);
+  cap = Math.max(0, cap + cardAtks());
   var attacks = [], used = {};
   for (i = 0; i < cand.length && attacks.length < cap; i++) {
     if (used[cand[i].from]) continue;            // one attack per holding a round
@@ -2703,7 +2833,7 @@ function rivalPlan() {
 
   /* ── the fortify move: rear to front, and only if it has a rear ── */
   var move = null;
-  if (L.smart && front.length) {
+  if (L.smart && front.length && G.card !== 'mud') {
     var rear = theirs.filter(function (id) { return front.indexOf(id) < 0 && rk[id] >= 2; });
     for (i = 0; i < rear.length && !move; i++) {
       var ns = nbrs(rear[i]).filter(function (j) { return G.own[j] === 't' && front.indexOf(j) >= 0; });
@@ -2785,14 +2915,17 @@ function startYourTurn() {
   if (campaignCheck()) return;
   if (G.mode === 'daily' && G.round >= DAILY_ROUNDS) { campaignOver(null); return; }
   G.round++;
+  drawCard();
   resetTurn();
   say(deployLine());
   drawMap(); show('screen-map');
 }
+/* ⚠ the round's card must be drawn BEFORE this: attacks and troops to place both read it */
 function resetTurn() {
   G.sel = -1; G.busy = false; G.hot = null; G.flash = -1; G.hurry = false; G.scoutArm = -1;
   G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0; G.fortDone = false;
   G.atks = ATTACK_CAP;
+  G.atks += cardAtks();
   G.seen[G.side] = [];
   G.toPlace = deployFor(G.side);
   setPhase('deploy');
@@ -2800,7 +2933,8 @@ function resetTurn() {
 /* two players: hand the device over. ⚠ the curtain goes up BEFORE the map redraws for the next side */
 function passTurn() {
   G.side = G.side === 'm' ? 't' : 'm';
-  if (G.side === 'm') G.round++;
+  if (G.side === 'm') { G.round++; drawCard(); }
+  if (G.card) G.deal = true;
   resetTurn();
   showPass();
 }
@@ -2825,15 +2959,17 @@ function campaignOver(won) {
   $('share').hidden = G.mode !== 'daily';
   if (G.mode === 'daily') {
     var troops = idsOf('m').reduce(function (s, id) { return s + G.ranks[id]; }, 0);
-    var rec = loadDaily(), today = rec && rec.day === G.day ? rec : null;
+    var rec = loadDaily(), runs = rec && rec.day === G.day && rec.runs ? rec.runs : {};
+    var vk = variantOf(G.diff, G.fog, G.cards), today = runs[vk] || null;
     var score = { held: held, troops: troops }, better = !today || held > today.best.held ||
       (held === today.best.held && troops > today.best.troops);
-    try { localStorage.setItem(DAILY_KEY, JSON.stringify({ day: G.day, first: today ? today.first : score, best: better ? score : today.best })); } catch (e) {}
+    runs[vk] = { first: today ? today.first : score, best: better ? score : today.best };
+    try { localStorage.setItem(DAILY_KEY, JSON.stringify({ day: G.day, runs: runs })); } catch (e) {}
     v.textContent = 'DAILY ' + dayLabel(G.day) + ' · ' + held + ' OF ' + LAND.length;
     v.className = 'verdict' + (held > 5 ? ' win' : held < 5 ? ' lose' : '');
     rs.textContent = held + ' holdings and ' + troops + ' troops standing, round ' + G.round + '.' +
       (today ? ' Best today: ' + (better ? held : today.best.held) + ' of ' + LAND.length + '.' : '');
-    $('share').dataset.text = 'ChessWild: Campaign · Daily ' + dayLabel(G.day) + ' · ' + held + '/' + LAND.length +
+    $('share').dataset.text = 'ChessWild: Campaign · Daily ' + dayLabel(G.day) + ' · ' + variantLabel() + ' · ' + held + '/' + LAND.length +
       ' held · ' + troops + ' troops' + (today ? ' · replay' : '');
   } else if (G.mode === 'two') {
     v.textContent = (won ? 'GREEN' : 'RED') + ' TAKES THE MAP';
@@ -2858,8 +2994,20 @@ Array.prototype.forEach.call($('levels').children, function (b) {
     chosenLevel = b.getAttribute('data-lvl');
     Array.prototype.forEach.call($('levels').children, function (o) { o.classList.toggle('on', o === b); });
     $('lvl-note').textContent = LEVELS[chosenLevel].note;
+    paintHome();
   });
 });
+/* game-start options; a game keeps the settings it began with (G.fog, G.cards), whatever these say later */
+var FOG_KEY = 'pjcc.campaign.fog', CARDS_KEY = 'pjcc.campaign.cards', optFog = true, optCards = true;
+function paintOpts() {
+  [['fog', optFog, 'Fog of War'], ['cards', optCards, 'Event Cards']].forEach(function (o) {
+    var b = $('opt-' + o[0]);
+    b.classList.toggle('on', o[1]); b.setAttribute('aria-pressed', String(o[1]));
+    b.textContent = o[2] + ' · ' + (o[1] ? 'On' : 'Off');
+  });
+}
+$('opt-fog').addEventListener('click', function () { optFog = !optFog; try { localStorage.setItem(FOG_KEY, optFog ? '1' : '0'); } catch (e) {} paintOpts(); paintHome(); });
+$('opt-cards').addEventListener('click', function () { optCards = !optCards; try { localStorage.setItem(CARDS_KEY, optCards ? '1' : '0'); } catch (e) {} paintOpts(); paintHome(); });
 function startMode(b, mode) {
   initAudio();
   var o = loadSave(mode);
@@ -2872,8 +3020,8 @@ function startMode(b, mode) {
     return;
   }
   delete b.dataset.armed;
-  if (mode === 'solo') { try { localStorage.setItem(LEVEL_KEY, chosenLevel); } catch (e) {} }
-  newCampaign(chosenLevel, mode);
+  if (mode !== 'two') { try { localStorage.setItem(LEVEL_KEY, chosenLevel); } catch (e) {} }
+  newCampaign(chosenLevel, mode, { fog: optFog, cards: optCards });
   G.started = true;
   setPhase('deploy');
   say(deployLine());
@@ -2917,7 +3065,7 @@ $('endturn').addEventListener('click', function () {
   }
   if (G.phase === 'attack') {
     setPhase('fortify'); G.sel = -1;
-    say('Fortify — one free move of troops between two holdings you hold.');
+    say(phaseLine());
     drawMap(); return;
   }
   if (G.phase === 'fortify') { if (G.mode === 'two') passTurn(); else theirTurn(); return; }
@@ -2953,7 +3101,7 @@ function continueOn() {
        nothing left to do in it. The map still opens first, so you see what you took. */
     if (G.atks <= 0) {
       setPhase('fortify');
-      say('<b>Attacks spent.</b> Fortify — one free move of troops between two holdings you hold.');
+      say('<b>Attacks spent.</b> ' + phaseLine());
     } else {
       setPhase('attack');
       say(atksLine());
@@ -2976,6 +3124,7 @@ function saveCampaign() {
   if (!G || !G.started) return;
   try {
     localStorage.setItem(saveKey(G.mode), JSON.stringify({ v:1, mode:G.mode, day:G.day, side:G.side, seen:G.seen,
+      fog:G.fog, cards:G.cards, card:G.card, truce:G.truce, lastCard:G.lastCard,
       own:G.own, ranks:G.ranks, round:G.round, diff:G.diff,
       phase:G.phase, toPlace:G.toPlace, atks:G.atks, fortFrom:G.fortFrom, fortTo:G.fortTo, fortMoved:G.fortMoved,
       fortDone:G.fortDone, q:G.q, pending:G.pending || null }));
@@ -2989,6 +3138,7 @@ function clearSave() { try { localStorage.removeItem(saveKey(G && G.mode)); } ca
 function resumeCampaign(o) {
   G = { own:o.own, ranks:o.ranks, round:o.round, sel:-1, busy:false, diff:o.diff || 'medium', phase:o.phase,
         mode:o.mode || 'solo', day:o.day || null, side:o.side || 'm', seen:o.seen || { m: [], t: [] }, scoutArm:-1,
+        fog:o.fog !== false, cards:!!o.cards, card:o.card || null, truce:o.truce == null ? -1 : o.truce, lastCard:o.lastCard || null,
         toPlace:o.toPlace, atks:o.atks, fortFrom:o.fortFrom, fortTo:o.fortTo, fortMoved:o.fortMoved,
         fortDone:o.fortDone, flash:-1, hot:null, q:o.q || [], pending:null, started:true };
   var pend = o.pending;
@@ -3011,6 +3161,7 @@ function resumeCampaign(o) {
 }
 function paintHome() {
   var o = loadSave('solo'), d = loadSave('daily'), t = loadSave('two'), r = $('resume'), g = $('go'), rec = loadDaily(), today = dayKey();
+  var best = rec && rec.day === today && rec.runs ? rec.runs[variantOf(chosenLevel, optFog, optCards)] : null;
   r.hidden = !o;
   if (o) {
     var held = o.own.filter(function (x) { return x === 'm'; }).length;
@@ -3020,7 +3171,7 @@ function paintHome() {
   g.textContent = o ? 'Begin a new campaign' : 'Begin the campaign';
   /* ⚠ one line at 320px: "Daily 9/15 · best 5/10" wraps, so a score replaces the date */
   $('daily').textContent = d && d.day === today ? 'Daily · round ' + d.round
-    : rec && rec.day === today ? 'Daily · best ' + rec.best.held + '/' + LAND.length : 'Daily ' + dayLabel(today);
+    : best ? 'Daily · best ' + best.best.held + '/' + LAND.length : 'Daily ' + dayLabel(today);
   $('two').textContent = t ? 'Two players · round ' + t.round : 'Two players';
 }
 $('resume').addEventListener('click', function () { initAudio(); var o = loadSave('solo'); if (o) resumeCampaign(o); });
@@ -3069,6 +3220,8 @@ document.addEventListener('keydown', function (e) {
 });
 
 (function () {
+  try { optFog = localStorage.getItem(FOG_KEY) !== '0'; optCards = localStorage.getItem(CARDS_KEY) !== '0'; } catch (e) {}
+  paintOpts();
   try { var lv = localStorage.getItem(LEVEL_KEY); if (LEVELS[lv]) { var btn = $('levels').querySelector('[data-lvl="' + lv + '"]'); if (btn) btn.click(); } } catch (e) {}
 })();
 setSound(sndOn);

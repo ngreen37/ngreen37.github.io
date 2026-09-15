@@ -718,6 +718,9 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
     const errs = [];
     page.on('pageerror', (e) => errs.push(e.message));
     await page.goto(`http://127.0.0.1:${port}/assets/games/pjcc_marchland.html`, { waitUntil: 'load' });
+    // these are the plain rules: no event card may change the attack count or block a target
+    await page.evaluate(() => localStorage.setItem('pjcc.campaign.cards', '0'));
+    await page.reload({ waitUntil: 'load' });
 
     /* place everything, spend all three attacks, then let them come — the run doubles as
        the attack-budget probe and as the way into a defense */
