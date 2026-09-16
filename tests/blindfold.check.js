@@ -104,6 +104,77 @@ function serve() {
     }
   }
 
+  /* ── The two new motifs, proved by the game's own rules engine ────────────────
+     Run in a vm, not a browser: the point is the chess, and a headless page would only make it
+     slower. Every shipped mate-in-two position is re-proved here on every run, so a typo in a FEN
+     is red before it is ever dealt to anybody. */
+  {
+    const box = { console, Math, Date, JSON };
+    vm.createContext(box);
+    try { vm.runInContext(BFSRC.match(/<script>([\s\S]*?)<\/script>/)[1], box); }
+    catch (e) { ok(false, 'the rules engine runs outside a browser: ' + e.message); }
+    const B = box;
+    if (B.MATE2 && B.forcesMateIn2) {
+      const bands = Object.keys(B.MATE2);
+      const all = bands.reduce((a, k) => a.concat(B.MATE2[k]), []);
+      const unproven = [], shortcut = [], mismatched = [];
+      all.forEach((fen) => {
+        const S = B.parseFEN(fen), mv = B.legalMoves(S);
+        if (mv.some((m) => B.isCheckmate(B.makeMove(S, m)))) { shortcut.push(fen); return; }
+        const forcing = mv.filter((m) => B.forcesMateIn2(S, m));
+        if (!forcing.length) { unproven.push(fen); return; }
+        const dealt = B.mate2From(fen);
+        if (!dealt || dealt.sols.length !== forcing.length) mismatched.push(fen);
+      });
+      ok(all.length >= 12 && bands.length === 3, 'a mate-in-two pool, banded by level  [' + bands.map((k) => k + ':' + B.MATE2[k].length).join(' ') + ']');
+      ok(!unproven.length, '⭐⭐ every shipped mate-in-two really forces mate in two, by the engine  [' + (unproven[0] || all.length + ' proved') + ']');
+      ok(!shortcut.length, '⚠⚠ …and none of them has a mate in ONE standing, which would make the listed answer wrong  [' + (shortcut[0] || 'none') + ']');
+      ok(!mismatched.length, '…and the deal lists EVERY forcing move, so no winning move is marked wrong  [' + (mismatched[0] || 'all match') + ']');
+      /* ⚠⚠ THE POOL CANNOT PROVE THE PROVER. Asking forcesMateIn2 which pool positions force mate
+         uses the very function under test as its own oracle — a version that answered "yes" to
+         everything passed all of the above. These are positions where the answer must be NO, and
+         they are what actually pins it down. */
+      const NOT2 = [
+        ['6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1', 'a mate in ONE is not a mate in two'],
+        ['8/8/8/4k3/8/8/4K3/8 w - - 0 1', 'two bare kings force nothing'],
+        ['8/8/8/3qk3/8/8/4K3/8 w - - 0 1', 'a lone white king forces nothing']
+      ];
+      NOT2.forEach(([fen, why]) => {
+        const S = B.parseFEN(fen), mv = B.legalMoves(S);
+        const claimed = mv.filter((m) => B.forcesMateIn2(S, m));
+        ok(!claimed.length, '…and it says NO when the answer is no: ' + why + '  [' + claimed.length + ' claimed]');
+      });
+      const t0 = Date.now();
+      let got = 0;
+      for (let i = 0; i < 12; i++) if (B.genMate2(1 + (i % 10))) got++;
+      const per = (Date.now() - t0) / 12;
+      ok(got === 12 && per < 400, 'a mate in two is dealt every time, without a stall  [' + got + '/12, ' + per.toFixed(0) + 'ms each]');
+    } else ok(false, 'the mate-in-two pool and its engine check are both present');
+
+    if (B.genDiscovered) {
+      // ⚠ ten samples was too thin: it missed a generator that stopped requiring a check at all
+      let built = 0, bad = [];
+      for (let i = 0; i < 40; i++) {
+        const d = 1 + (i % 10);
+        const p = B.genDiscovered(d);
+        if (!p) continue;
+        built++;
+        const ns = B.makeMove(p.S, p.sols[0]);
+        if (!B.inCheck(ns, 'b')) bad.push('lv' + d + ': no check');
+        else if (B.isCheckmate(ns)) bad.push('lv' + d + ': it is mate, not a discovery');
+        else if (B.isCheckOnlyFrom(ns, p.sols[0].to)) bad.push('lv' + d + ': the mover gave the check itself');
+      }
+      ok(built >= 20, 'a discovered attack is built across the levels  [' + built + '/40]');
+      ok(!bad.length, '⭐ …and the check comes from the line it opened, never from the piece that moved  [' + (bad[0] || built + ' checked') + ']');
+    } else ok(false, 'genDiscovered is present');
+
+    if (B.genFor === undefined) {
+      // genFor lives inside the UI closure; the motif labels are what the Dossier counts by
+      ok(/discovered/.test(BFSRC) && /Mate in two/.test(BFSRC) && /Discovered attack/.test(BFSRC),
+        'the new motifs are labeled, so the Dossier can count them apart');
+    }
+  }
+
   const exe = findChrome();
   if (!exe) { console.log('No Chrome/Edge found.'); process.exit(2); }
   const srv = await serve();
