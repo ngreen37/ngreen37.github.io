@@ -607,6 +607,10 @@
     if (solved > (st.best || 0)) { st.best = solved; changed = true; }
     if (st.solved >= BF_EYE_AT && !st.eye) { st.eye = true; changed = true; }
     if (trophy && !st.trophy) { st.trophy = true; st.eye = true; changed = true; }
+    // ⚠ STICKY, NEVER CLEARED. The Simul and the Final are won once; a device that has not seen
+    // them must not be able to take them back. [[everything-earned-syncs]]
+    if (row.data && row.data.simul && !st.simul) { st.simul = true; changed = true; }
+    if (row.data && row.data.final && !st.final) { st.final = true; changed = true; }
     /* ⭐ THE DAILY CALENDAR IS A UNION, NEVER A COPY. A day you solved the Daily on your phone is
        a day you solved it, and a laptop that has never seen that day must not be able to erase it.
        Sorted and capped so the blob cannot grow without bound. [[everything-earned-syncs]] */

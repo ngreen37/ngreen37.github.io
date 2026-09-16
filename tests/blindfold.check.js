@@ -77,6 +77,15 @@ const HOOK = `
       boards: document.querySelectorAll('#sim-overlay #me-board, #sim-overlay .sq').length,
       hidden: document.getElementById('sim-overlay').classList.contains('hidden') }; },
     simClose: function () { closeSimul(); },
+    finalOpen: function () { openFinal(); },
+    finalWin: function () { winMindsEye(false); },
+    finalState: function () { return { on: meFinal, won: finalWon, tier: meTier, purist: mePurist, blitz: meBlitz,
+      peeked: mePeeked, saved: !!st.final,
+      carryHidden: document.getElementById('tr-carry').hidden,
+      title: document.getElementById('tr-title').textContent }; },
+    carry: function () { return carryToTown(); },
+    townRec: function () { try { return JSON.parse(localStorage.getItem('pjcc.pt.last.v1') || 'null'); } catch (e) { return null; } },
+    fakePeek: function () { mePeeked = true; },
     today: function () { return todayStamp(); },
     shiftDay: function (d, n) { return shiftDay(d, n); },
     say: function (t) { return speechToMove(t); },
@@ -626,6 +635,15 @@ function serve() {
       M.prog({ best_score: 30, data: { days: ['nonsense', 42, null, '2031-01-05'] } });
       const clean = JSON.parse(box.store['pjcc.blindfold.v2']).days;
       ok(clean.join(',') === '2031-01-02,2031-01-05', '…and junk in the row never reaches the calendar  [' + clean.join(' ') + ']');
+      box.store['pjcc.blindfold.v2'] = JSON.stringify({ solved: 30, diff: 5, best: 30, streak: 0, eye: true, trophy: true });
+      M.prog({ best_score: 30, data: { simul: true, final: true } });
+      const won = JSON.parse(box.store['pjcc.blindfold.v2']);
+      ok(won.simul === true && won.final === true,
+        'the Simul and the Final come down to a fresh device  [simul ' + won.simul + ', final ' + won.final + ']');
+      M.prog({ best_score: 30, data: {} });
+      const stuck = JSON.parse(box.store['pjcc.blindfold.v2']);
+      ok(stuck.simul === true && stuck.final === true,
+        '…and a later row that never heard of them cannot take them back  [simul ' + stuck.simul + ']');
     }
 
     /* ── the simul: two games at once, and no board anywhere ──────────────────── */
@@ -707,6 +725,68 @@ function serve() {
     ok(simEnd.b2.ended && /won/.test(simEnd.b2.result), 'a mate ends that board and says so  [' + simEnd.b2.result + ']');
     ok(!simEnd.b1.ended, '⚠ …and the other board carries on — one result is not both  [ended ' + simEnd.b1.ended + ']');
     ok(simEnd.closed, 'leaving the simul closes it');
+
+    /* ── THE FINAL: Checker Town's CEO, blind, and the door back to the town ──── */
+    const fin = await B(async () => {
+      const bf = window.__bf, out = {};
+      localStorage.removeItem('pjcc.pt.last.v1');
+      bf.finalOpen();
+      await new Promise((r) => setTimeout(r, 200));
+      const s0 = bf.finalState();
+      out.setup = { tier: s0.tier, purist: s0.purist, blitz: s0.blitz, on: s0.on };
+      bf.finalWin();
+      await new Promise((r) => setTimeout(r, 900));
+      const s1 = bf.finalState();
+      out.won = s1.won; out.saved = s1.saved; out.carryHidden = s1.carryHidden; out.title = s1.title;
+      out.before = bf.townRec();
+      out.carried = bf.carry();
+      out.after = bf.townRec();
+      return out;
+    });
+    ok(fin.setup.on && fin.setup.tier === 'ceo' && fin.setup.purist && fin.setup.blitz,
+      '⭐ the Final is the CEO, no peeks, on a clock — the settings are not left to you  [' +
+      fin.setup.tier + ', purist ' + fin.setup.purist + ', blitz ' + fin.setup.blitz + ']');
+    ok(fin.won && fin.saved && !fin.carryHidden && /FINAL/.test(fin.title),
+      '…and winning it offers the door back to the town  [' + fin.title + ']');
+    ok(fin.before === null && fin.carried && fin.after && fin.after.bot === 'ceo' && fin.after.won === true && fin.after.clean === true,
+      '⚠⚠ …which writes NOTHING until it is pressed  [before ' + fin.before + ', after ' + (fin.after && fin.after.bot) + ']');
+
+    const cheat = await B(async () => {
+      const bf = window.__bf, out = {};
+      bf.finalOpen();
+      await new Promise((r) => setTimeout(r, 200));
+      bf.fakePeek();                       // one peek and it is not the Final any more
+      bf.finalWin();
+      await new Promise((r) => setTimeout(r, 900));
+      const s = bf.finalState();
+      out.won = s.won; out.carryHidden = s.carryHidden;
+      return out;
+    });
+    ok(!cheat.won && cheat.carryHidden,
+      '⭐⭐ …and a single peek means it was not the Final: no door, nothing carried  [won ' + cheat.won + ']');
+
+    /* ⚠⚠ THE RECORD SHAPE BELONGS TO PARK TABLES. If markLast() there grows a field the town
+       starts reading, a blind win would be quietly refused with nothing red anywhere. So the
+       fields are DERIVED from that file rather than typed here. */
+    {
+      const PT = read('games/park-tables/index.html');
+      /* ⚠ STRIP THE COMMENTS FIRST. markLast() explains `pos` and `clean` in prose right beside
+         them, and a bare field regex over the raw function reads the paragraph as well as the
+         code — the single most common false positive there is on a codebase documented this
+         heavily. And the fields live several-to-a-line, so match inside the object literal. */
+      const nocomment = (x) => x.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+      const lit = (x) => (x.match(/JSON\.stringify\(\{[\s\S]*?\}\)/) || [''])[0];
+      const fields = (x) => Array.from(new Set((lit(x).match(/([a-z]+)\s*:/g) || []).map((y) => y.replace(/\s*:/, ''))));
+      const fn = nocomment((PT.match(/function markLast\(st\)\{?[\s\S]*?\n  \}/) || [''])[0]);
+      const want = fields(fn);
+      const mine = nocomment((BFSRC.match(/localStorage\.setItem\(TOWN_LAST_KEY, JSON\.stringify\(\{[\s\S]*?\}\)\)/) || [''])[0]);
+      const have = fields(mine);
+      ok(want.length >= 4 && fn.length > 200, 'the gate can actually see markLast() in Park Tables  [' + want.length + ' fields, ' + fn.length + ' chars]');
+      const missing = want.filter((f) => have.indexOf(f) === -1);
+      ok(!missing.length,
+        '⚠⚠ …and the Final writes every field Park Tables writes  [' + (missing.length ? 'MISSING ' + missing.join(',') : have.join(' ')) + ']');
+      ok(/clean: true/.test(mine), "…including clean, which is what the town's named squares cost");
+    }
 
     /* ── a mode chip you cannot read is not a chip ──────────────────────────────
        ⛑ `flex:1; min-width:0` squeezed every label until it was cut off — four of six at 390px,

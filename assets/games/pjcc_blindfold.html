@@ -311,7 +311,7 @@
   <div class="me-sub">Achievement unlocked</div>
   <div class="me-title" id="tr-title">THE MIND&rsquo;S EYE</div>
   <p id="tr-msg"></p>
-  <div class="row"><button class="primary" id="tr-ok">Continue</button></div>
+  <div class="row"><button id="tr-carry" hidden></button><button class="primary" id="tr-ok">Continue</button></div>
 </div>
 
 <script>
@@ -1341,6 +1341,7 @@ if (RUN_UI) (function(){
     drawSim(); simAfter();
   };
   document.getElementById('sim-close').onclick=closeSimul;
+  document.getElementById('tr-carry').onclick=carryToTown;
   document.getElementById('fog-btn').onclick=climbFog;
   document.getElementById('mic-btn').onclick=micStart;
   document.getElementById('cp-btn').onclick=askCheckpoint;
@@ -1419,10 +1420,12 @@ if (RUN_UI) (function(){
     var m=document.getElementById('mindseye');
     if(st.eye || st.solved>=UNLOCK_AT){ st.eye=true;
       m.innerHTML='<button class="me-unlock" id="me-launch">👁 THE MIND’S EYE — blindfold duel with the CEO'+(st.trophy?' 🏆':'')+'</button>'
-        + (st.trophy ? '<button class="me-unlock" id="sim-launch">👁👁 THE SIMUL — two of them at once, no board'+(st.simul?' 🏆':'')+'</button>' : '');
+        + (st.trophy ? '<button class="me-unlock" id="sim-launch">👁👁 THE SIMUL — two of them at once, no board'+(st.simul?' 🏆':'')+'</button>'
+             + '<button class="me-unlock" id="final-launch">🏛 THE FINAL — Checker Town’s CEO, played blind'+(st.final?' 🏆':'')+'</button>' : '');
       document.getElementById('me-launch').onclick=openMindsEye;
       // ⚠ the simul is the harder room and it opens only once the Mind's Eye has been beaten once
       var sl=document.getElementById('sim-launch'); if(sl) sl.onclick=openSimul;
+      var fl=document.getElementById('final-launch'); if(fl) fl.onclick=openFinal;
     } else {
       m.innerHTML='<div class="me-locked">🔒 Solve <b>'+UNLOCK_AT+'</b> blindfold puzzles to unlock <b>The Mind’s Eye</b> — a full game against the CEO, played blind. You are at '+st.solved+'.</div>';
     }
@@ -1784,6 +1787,44 @@ if (RUN_UI) (function(){
       }, 360);
     }
   }
+  /* ⭐⭐ THE FINAL — Checker Town's CEO, played blind, and it can COUNT there.
+     The town's last chair is the CEO; beating him is what the sixteen squares were for. This is
+     that same fight with nothing to look at: CEO tier, no peeks, a clock, one board.
+
+     ⚠⚠ IT IS OFFERED, NEVER TAKEN. Winning shows a button; the town's record is written only if
+     you press it. A blind win silently reaching into another game's storage is the kind of thing
+     that is impossible to debug and impossible to trust.
+     ⚠⚠ AND THE TOWN HAS TO BE WAITING. `PJCC.townResult` only answers about the challenge the
+     town is currently pending on, and it compares the timestamp — so this cannot invent a CEO win
+     out of nothing. If you have not taken the errand in the town, the record sits there unread.
+     ⚠ THE SHAPE IS PARK TABLES', NOT MINE. `markLast()` in games/park-tables/index.html owns
+     pjcc.pt.last.v1 and `clean:` is what the town's named squares cost. test:blindfold reads that
+     function out of that file and fails if these two ever stop agreeing — a field added there and
+     missed here would be a win the town quietly refuses. */
+  var TOWN_LAST_KEY = 'pjcc.pt.last.v1', TOWN_CEO = 'ceo';
+  var meFinal = false, finalWon = false;
+  function openFinal(){
+    meFinal = true;
+    openMindsEye();
+    meTier = 'ceo';
+    Array.prototype.forEach.call(document.querySelectorAll('#me-tiers .me-tier'), function(b){
+      b.classList.toggle('active', b.dataset.tier === 'ceo');
+    });
+    document.getElementById('me-purist').checked = true; mePurist = true;
+    document.getElementById('me-blitz').checked = true; meBlitz = true;
+    newMe();
+    setMeStatus('THE FINAL — the CEO, blind. No peeks, and the clock is running.', 'think');
+  }
+  function carryToTown(){
+    try {
+      localStorage.setItem(TOWN_LAST_KEY, JSON.stringify({
+        bot: TOWN_CEO, result: '1-0', won: true, pos: '', clean: true, at: Date.now()
+      }));
+      var b = document.getElementById('tr-carry');
+      b.disabled = true; b.textContent = '✓ Carried to Checker Town';
+      return true;
+    } catch(e){ return false; }
+  }
   function onlyKings(b){ for(var i=0;i<64;i++){ if(b[i] && b[i].toLowerCase()!=='k') return false; } return true; }
   function winMindsEye(byTime){
     endReveal(); setMeStatus((byTime?'Flag fall — ':'CHECKMATE — ')+'you beat '+TIER_LABEL[meTier]+' blind!','good');
@@ -1791,12 +1832,15 @@ if (RUN_UI) (function(){
     var purist = mePurist && !mePeeked;
     var tierBonus = meTier==='board' ? 10 : meTier==='ceo' ? 5 : 0;
     var creds = (firstTime ? 25 : 5) + tierBonus + (purist ? 15 : 0);
-    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits: creds, data:{ trophy:'minds-eye', tier:meTier, purist:purist, firstTime:firstTime } });
+    // the Final only counts as the Final if it really was the CEO, blind, with no peek taken
+    finalWon = meFinal && meTier === 'ceo' && !mePeeked;
+    if (finalWon){ st.final = true; save(); }
+    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits: creds, data:{ trophy:'minds-eye', tier:meTier, purist:purist, firstTime:firstTime, final:finalWon } });
     setTimeout(function(){ showTrophy(firstTime, creds, purist); }, 700);
   }
   document.getElementById('me-peek').onclick=function(){ if(mePeeks<=0||meBusy||mePurist) return; mePeeked=true; mePeeks--; mePeekT=1.2; this.textContent='👁 Peek ('+mePeeks+')'; drawMe(); setTimeout(function(){ mePeekT=0; drawMe(); }, 1200); };
   document.getElementById('me-resign').onclick=function(){ if(!ME||meEnded) return; setMeStatus('You resign. '+TIER_LABEL[meTier]+' smiles.','bad'); endReveal(); };
-  document.getElementById('me-close').onclick=function(){ stopMeClock(); document.getElementById('me-overlay').classList.add('hidden'); renderMindsEye(); };
+  document.getElementById('me-close').onclick=function(){ meFinal=false; finalWon=false; stopMeClock(); document.getElementById('me-overlay').classList.add('hidden'); renderMindsEye(); };
   document.getElementById('me-replay').onclick=replayGame;
   Array.prototype.forEach.call(document.querySelectorAll('#me-tiers .me-tier'), function(b){
     b.onclick=function(){ meTier=b.dataset.tier;
@@ -1812,6 +1856,14 @@ if (RUN_UI) (function(){
     document.getElementById('tr-msg').innerHTML = (firstTime ? 'You held the entire board in your mind and checkmated ' + TIER_LABEL[meTier] + '. ' : 'Bested ' + TIER_LABEL[meTier] + ' again. ') +
       (purist ? '<b style="color:#6bffb8">No peeks — a true purist.</b> ' : '') +
       'Awarded <b style="color:#F5C518">+'+creds+' credits</b>' + (firstTime ? ' and the <b style="color:#F5C518">Mind’s Eye</b> trophy.' : '.');
+    var carry = document.getElementById('tr-carry');
+    carry.hidden = !finalWon;
+    if (finalWon){
+      carry.disabled = false; carry.textContent = '🏛 Carry this to Checker Town ▸';
+      document.getElementById('tr-title').innerHTML = 'THE FINAL';
+      document.getElementById('tr-msg').innerHTML = 'You beat the CEO with nothing to look at. ' +
+        'Carry it across and it fills his chair in the town — the town has to be waiting on the errand for it to land.';
+    }
     document.getElementById('trophy').classList.remove('hidden');
     confetti();
   }
