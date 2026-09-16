@@ -27,6 +27,7 @@ const HOOK = `
       var sols = uci.map(function (u) { return L.filter(function (m) { return nameFromSq(m.from) === u.slice(0, 2) && nameFromSq(m.to) === u.slice(2, 4); })[0]; });
       prob = { S: S, goal: goal, sols: sols, from: nameFromSq(sols[0].from), to: nameFromSq(sols[0].to), clue: describeBoard(S.b), d: 5 };
       clearPieces(); clearMarks(); phase = 'from'; curMistake = false; document.getElementById('reveal').disabled = false;
+      cpDone = false; cpWant = null;
     },
     submit: function (t) { document.getElementById('describe-in').value = t; submitDescribe(); },
     click: function (sq) { clickSquare(sq); },
@@ -38,7 +39,16 @@ const HOOK = `
       log: Array.prototype.map.call(document.querySelectorAll('#me-log > div'), function (d) { return d.textContent; }) }; },
     setME: function (fen) { ME = parseFEN(fen); meMoves = []; meBook = null; meReps = {}; meHalf = 0; meEnded = false; meBusy = false; meSel = null; drawMe(); },
     clock: function (w, b) { meClockW = w; meClockB = b; },
-    startClock: function () { startMeClock(); }
+    startClock: function () { startMeClock(); },
+    sq: function () { return { dark: sqIsDark, knight: knightFrom, drill: drill && { i: drill.i, right: drill.right, kind: drill.q.kind, want: drill.q.want } }; },
+    sqAnswer: function (t) { document.getElementById('describe-in').value = t; submitDescribe(); },
+    sqState: function () { return drill ? { i: drill.i, right: drill.right, kind: drill.q.kind, want: drill.q.want.slice(), q: document.getElementById('clue-text').textContent } : null; },
+    cp: function () { return { peeks: peeks, want: cpWant && cpWant.sq, say: cpWant && cpWant.say, done: cpDone,
+      btn: document.getElementById('cp-btn').disabled, peekBtn: document.getElementById('peek-btn').disabled,
+      shown: Array.prototype.filter.call(document.querySelectorAll('#board .sq'), function (e) { return e.innerHTML; }).length }; },
+    ask: function () { askCheckpoint(); },
+    peek: function () { spendPeek(); },
+    slipped: function () { return curMistake; }
   };
 `;
 
@@ -334,6 +344,105 @@ function serve() {
       return { before, after: !!document.getElementById('me-launch'), solved: document.getElementById('solved').textContent };
     });
     ok(!sync.before && sync.after && sync.solved === '21', "progress merged from the account opens the Mind's Eye without a reload  [solved " + sync.solved + ']');
+
+    /* ── the squares drill ──────────────────────────────────────────────────── */
+    const geo = await B(() => {
+      const s = window.__bf.sq();
+      return {
+        // a1 dark, h8 dark (they are the ends of the long dark diagonal), h1 and a8 light
+        colors: ['a1', 'b1', 'h8', 'e4', 'd4', 'h1', 'a8'].map((n) => (s.dark(n) ? 'd' : 'l')).join(''),
+        corner: s.knight('a1').sort().join(','),
+        middle: s.knight('e4').length
+      };
+    });
+    ok(geo.colors === 'dldldll', 'the drill knows the board: a1 and h8 dark, h1 and a8 light  [' + geo.colors + ']');
+    ok(geo.corner === 'b3,c2', '…and a knight in the corner reaches exactly two squares  [' + geo.corner + ']');
+    ok(geo.middle === 8, '…and eight from the middle  [' + geo.middle + ']');
+    const drill = await B(async () => {
+      const bf = window.__bf; bf.setMode('squares');
+      await new Promise((r) => setTimeout(r, 120));
+      const first = bf.sqState();
+      const seen = [];
+      // answer all ten correctly, whatever it asks
+      for (let i = 0; i < 12; i++) {
+        const st = bf.sqState();
+        if (!st) break;
+        seen.push(st.kind);
+        bf.sqAnswer(st.want[0]);
+        await new Promise((r) => setTimeout(r, 700));
+      }
+      return { first: !!first, n: seen.length, kinds: Array.from(new Set(seen)).sort().join(','),
+               goal: document.getElementById('goal').textContent,
+               best: localStorage.getItem('pjcc.blindfold.squares.v1'),
+               puzzleSolved: String((JSON.parse(localStorage.getItem('pjcc.blindfold.v2') || '{}') || {}).solved),
+               noBoard: document.getElementById('board').classList.contains('no-board') };
+    });
+    ok(drill.first && drill.n === 10, 'the squares drill asks ten and stops  [' + drill.n + ']');
+    ok(drill.best === '10' && /done/.test(drill.goal), '…and a clean round is banked as its own best  [best ' + drill.best + ']');
+    ok(drill.puzzleSolved === '21', "⚠⚠ …and it never touches the SAVED puzzle count that opens the Mind's Eye  [solved " + drill.puzzleSolved + ']');
+    ok(drill.noBoard, '…with no board on the screen at all');
+
+    /* ── a checkpoint earns a peek ──────────────────────────────────────────── */
+    const cp = await B(async () => {
+      const bf = window.__bf; bf.setMode('classic');
+      await new Promise((r) => setTimeout(r, 120));
+      bf.setProb('6k1/5ppp/8/8/8/8/5PPP/R2Q2K1 w - - 0 1', 'Mate in one', ['a1a8']);
+      const out = { start: bf.cp() };
+      bf.ask(); const asked = bf.cp();
+      out.asked = { want: asked.want, say: asked.say, done: asked.done };
+      // a wrong answer costs the checkpoint but must never cost the streak
+      bf.click(asked.want === 'a1' ? 'h1' : 'a1');
+      out.afterWrong = { peeks: bf.cp().peeks, slipped: bf.slipped() };
+      bf.setProb('6k1/5ppp/8/8/8/8/5PPP/R2Q2K1 w - - 0 1', 'Mate in one', ['a1a8']);
+      bf.ask(); const a2 = bf.cp();
+      bf.click(a2.want);
+      out.afterRight = { peeks: bf.cp().peeks, slipped: bf.slipped() };
+      // once a puzzle: asking again must be refused, and the button must say so
+      out.lockedBtn = bf.cp().btn;
+      bf.ask();
+      out.reArmed = !!bf.cp().want;
+      out.beforePeek = bf.cp().shown;
+      bf.peek();
+      out.duringPeek = bf.cp().shown;
+      out.spent = bf.cp().peeks;
+      await new Promise((r) => setTimeout(r, 1200));
+      out.afterPeek = bf.cp().shown;
+      out.stillNoSlip = bf.slipped();
+      return out;
+    });
+    ok(cp.start.peeks === 0 && !cp.start.btn, 'a checkpoint is offered once a puzzle');
+    ok(/^[a-h][1-8]$/.test(cp.asked.want || '') && /queen|rook|king/.test(cp.asked.say || ''),
+      '…and it asks for something really on the board  [' + cp.asked.say + ' on ' + cp.asked.want + ']');
+    ok(cp.afterWrong.peeks === 0 && cp.afterWrong.slipped === false,
+      '⭐ a wrong checkpoint earns nothing and costs nothing — never a slip  [peeks ' + cp.afterWrong.peeks + ', slip ' + cp.afterWrong.slipped + ']');
+    ok(cp.afterRight.peeks === 1 && cp.afterRight.slipped === false,
+      '…and a right one earns a peek  [peeks ' + cp.afterRight.peeks + ']');
+    ok(cp.lockedBtn === true && cp.reArmed === false,
+      '…and it is once a puzzle: the button locks and asking again is refused  [locked ' + cp.lockedBtn + ', re-armed ' + cp.reArmed + ']');
+    ok(cp.duringPeek > cp.beforePeek && cp.spent === 0 && cp.afterPeek === 0 && cp.stillNoSlip === false,
+      '⭐ a peek shows the position, spends itself, and closes again with no slip  [' +
+      cp.beforePeek + ' -> ' + cp.duringPeek + ' -> ' + cp.afterPeek + ']');
+
+    /* ── a mode chip you cannot read is not a chip ──────────────────────────────
+       ⛑ `flex:1; min-width:0` squeezed every label until it was cut off — four of six at 390px,
+       and two even at 760px, which was true before a sixth was ever added. Measured, not eyeballed:
+       scrollWidth beats clientWidth exactly when the text does not fit. */
+    for (const [w, h] of [[302, 505], [390, 780], [760, 900]]) {
+      await page.setViewport({ width: w, height: h });
+      await new Promise((r) => setTimeout(r, 180));
+      const lay = await B(() => {
+        const btns = [...document.querySelectorAll('#modebar .mode-btn')];
+        return {
+          n: btns.length,
+          clipped: btns.filter((x) => x.scrollWidth > x.clientWidth + 1).map((x) => x.textContent.trim()),
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          boardBottom: Math.round(document.getElementById('board').getBoundingClientRect().bottom)
+        };
+      });
+      ok(!lay.clipped.length, w + 'px: every mode chip shows its whole label  [' + (lay.clipped.join(' / ') || lay.n + ' chips') + ']');
+      ok(!lay.sideways && lay.boardBottom <= h, w + 'px: …and nothing is pushed off the screen to do it  [board ends ' + lay.boardBottom + ' of ' + h + ']');
+    }
+    await page.setViewport({ width: 760, height: 900 });
 
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     const calm = await B(() => getComputedStyle(document.getElementById('bf-torch')).animationName);

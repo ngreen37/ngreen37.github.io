@@ -114,7 +114,10 @@
 
   /* ===== modes, combo, describe-only ===== */
   .modebar { display:flex; gap:5px; margin-bottom:8px; flex-wrap:wrap; }
-  .mode-btn { flex:1; min-width:0; background:#1d1140; border:1px solid #3a2a6a; color:#b79aff; border-radius:7px;
+  /* ⛑ MEASURED, NOT GUESSED: `flex:1; min-width:0` let every chip squeeze until its own label was
+     cut off — at 390px four of six were clipped, and two were clipped even at 760px, which had been
+     true since before there were six. A chip you cannot read is not a chip. It wraps now instead. */
+  .mode-btn { flex:1 1 auto; min-width:84px; background:#1d1140; border:1px solid #3a2a6a; color:#b79aff; border-radius:7px;
     padding:7px 4px; font-size:11.5px; font-weight:bold; cursor:pointer; font-family:inherit; transition:border-color .12s,background .12s,color .12s; white-space:nowrap; }
   .mode-btn:hover { border-color:#7a68c0; color:#f0e6ff; }
   .mode-btn.active { background:#2a1a5e; border-color:var(--gold); color:var(--gold); }
@@ -193,10 +196,11 @@
   </div>
   <div class="modebar" id="modebar">
     <button class="mode-btn active" data-mode="classic">Classic</button>
-    <button class="mode-btn" data-mode="speed">⚡ Speed-Vision</button>
-    <button class="mode-btn" data-mode="describe">⌨ Describe-only</button>
-    <button class="mode-btn" data-mode="audio">🔊 Audio-only</button>
+    <button class="mode-btn" data-mode="speed">⚡ Speed</button>
+    <button class="mode-btn" data-mode="describe">⌨ Describe</button>
+    <button class="mode-btn" data-mode="audio">🔊 Audio</button>
     <button class="mode-btn" data-mode="daily">📅 Daily</button>
+    <button class="mode-btn" data-mode="squares">🎯 Squares</button>
   </div>
   <div class="diffbar"><i id="diff-fill"></i></div>
   <div class="clue" id="clue">
@@ -222,6 +226,8 @@
   </div>
   <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target.</div>
   <div class="row">
+    <button id="cp-btn">❓ Checkpoint</button>
+    <button id="peek-btn">👁 Peek 0</button>
     <button id="reveal">Reveal position</button>
     <button class="lights-btn" id="lights-btn">💡 Lights out</button>
     <button class="primary" id="next" disabled>Next &rarr;</button>
@@ -784,7 +790,17 @@ if (RUN_UI) (function(){
 
   function newPuzzle(){
     clearPieces(); clearMarks(); phase='from'; curMistake=false;
+    cpDone=false; cpWant=null; clearTimeout(peekT);
     var dw=document.getElementById('describe-wrap'), bd=document.getElementById('board');
+    if(mode==='squares'){
+      prob=null; dw.hidden=false; bd.classList.add('no-board');
+      document.getElementById('audio-replay').hidden=true;
+      document.getElementById('describe-note').innerHTML='🎯 No board and no pieces — just the squares. Answer as fast as you can.';
+      document.getElementById('reveal').disabled=true;
+      document.getElementById('next').disabled=true;
+      startDrill(); refreshPeek(); renderMindsEye(); return;
+    }
+    document.getElementById('describe-in').placeholder='your move…';
     if(mode==='daily' && dailyDone()){
       prob=null; document.getElementById('goal').textContent='📅 Daily · done';
       document.getElementById('clue-text').innerHTML='📅 You have already solved today’s <b>Daily Blindfold</b>. Everyone gets the same position — come back tomorrow, or switch to Classic / Speed to keep training.';
@@ -824,10 +840,138 @@ if (RUN_UI) (function(){
       }
     }
     else { dw.hidden=true; bd.classList.remove('no-board'); areplay.hidden=true; setMsg('Light the clue, then click the piece that moves.',''); }
+    refreshPeek();
     renderMindsEye();
   }
 
   /* ---- per-motif accuracy + miss log (surfaced on the Dossier) ---- */
+  /* ⭐ THE SQUARES DRILL. Blindfold play falls apart on the board itself, not on the tactics: if
+     you cannot say what color f5 is without counting, you cannot hold a position. Four questions,
+     all pure geometry, none of them needing a puzzle.
+     ⚠ It keeps its OWN tally and its own best. A drill is not a solved puzzle, and folding it into
+     `solved` would open the Mind's Eye with work that never involved a position. */
+  var FILES_L = ['a','b','c','d','e','f','g','h'];
+  function sqName(f, r){ return FILES_L[f] + r; }              // f 0-7, r 1-8
+  function sqIsDark(name){
+    var f = name.charCodeAt(0) - 97, r = +name[1];
+    return ((f + r) % 2) === 1;                                 // a1 dark, b1 light
+  }
+  function knightFrom(name){
+    var f = name.charCodeAt(0) - 97, r = +name[1], out = [];
+    [[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]].forEach(function(d){
+      var nf = f + d[0], nr = r + d[1];
+      if (nf >= 0 && nf < 8 && nr >= 1 && nr <= 8) out.push(sqName(nf, nr));
+    });
+    return out;
+  }
+  function randSq(){ return sqName(rnd(8), 1 + rnd(8)); }
+  var SQ_KEY = 'pjcc.blindfold.squares.v1';
+  function sqBest(){ try { return parseInt(localStorage.getItem(SQ_KEY)) || 0; } catch(e){ return 0; } }
+  function sqSaveBest(v){ try { localStorage.setItem(SQ_KEY, String(v)); } catch(e){} }
+  var DRILL_LEN = 10;
+  var drill = null;
+  function newDrillQ(){
+    var kind = ['color','same','knight','mirror'][rnd(4)], a = randSq(), b;
+    if (kind === 'color') return { kind:kind, q:'What color is <b>' + a + '</b>?', a:a, want:[sqIsDark(a) ? 'dark' : 'light'] };
+    if (kind === 'same'){
+      do { b = randSq(); } while (b === a);
+      return { kind:kind, q:'Are <b>' + a + '</b> and <b>' + b + '</b> the same color?', a:a, b:b,
+               want:[sqIsDark(a) === sqIsDark(b) ? 'yes' : 'no'] };
+    }
+    if (kind === 'knight'){
+      // a corner-ish square would make this a two-answer question; any square is fine, all are listed
+      return { kind:kind, q:'Name one square a knight on <b>' + a + '</b> can reach.', a:a, want:knightFrom(a) };
+    }
+    var f = a.charCodeAt(0) - 97, r = +a[1];
+    return { kind:'mirror', q:'Which square is <b>' + a + '</b> mirrored across the middle of the board?',
+             a:a, want:[sqName(f, 9 - r)] };
+  }
+  function startDrill(){
+    drill = { i:0, right:0, q:null };
+    nextDrillQ();
+  }
+  function nextDrillQ(){
+    if (drill.i >= DRILL_LEN) return endDrill();
+    drill.q = newDrillQ(); drill.i++;
+    document.getElementById('goal').textContent = '🎯 Squares · ' + drill.i + '/' + DRILL_LEN + ' · best ' + sqBest();
+    var ct = document.getElementById('clue-text');
+    ct.innerHTML = drill.q.q;
+    clueEl.classList.add('lit'); ct.style.setProperty('--r','999px');
+    var di = document.getElementById('describe-in');
+    di.value = ''; di.placeholder = drill.q.kind === 'color' ? 'light or dark…'
+      : drill.q.kind === 'same' ? 'yes or no…' : 'a square, like e4…';
+    setTimeout(function(){ try{ di.focus(); }catch(e){} }, 60);
+  }
+  function submitDrill(){
+    var di = document.getElementById('describe-in'), raw = String(di.value || '').trim().toLowerCase();
+    if (!raw) return;
+    var want = drill.q.want, hit = want.some(function(w){
+      return w === raw || (w === 'light' && raw === 'l') || (w === 'dark' && raw === 'd')
+          || (w === 'yes' && (raw === 'y')) || (w === 'no' && (raw === 'n'));
+    });
+    if (hit){ drill.right++; setMsg('✓ ' + (want.length > 1 ? 'Yes — ' + raw : want[0]), 'good'); }
+    else setMsg('✗ ' + (want.length > 1 ? 'A knight on ' + drill.q.a + ' reaches ' + want.join(', ') : want[0]) + '.', 'bad');
+    setTimeout(nextDrillQ, hit ? 550 : 1500);
+  }
+  function endDrill(){
+    var n = drill.right;
+    document.getElementById('goal').textContent = '🎯 Squares · done';
+    document.getElementById('clue-text').innerHTML = 'You got <b>' + n + ' of ' + DRILL_LEN + '</b>.' +
+      (n > sqBest() ? ' That is a new best.' : ' Best is ' + sqBest() + '.');
+    if (n > sqBest()){
+      sqSaveBest(n);
+      // earned, so it syncs — its own row, never the puzzle count
+      try { if (window.PJCC && PJCC.saveScore) PJCC.saveScore('blindfold-squares', n, { data:{ of:DRILL_LEN } }); } catch(e){}
+    }
+    setMsg('Press Next to run it again.', '');
+    document.getElementById('next').disabled = false;
+    drill = null;
+  }
+
+  /* ⭐ A CHECKPOINT BUYS A PEEK. Once a puzzle you can be asked where something is; get it right
+     and you earn a peek you may spend now or keep. Answering wrong costs nothing but the
+     checkpoint — it must never become another way to lose a streak you were about to earn. */
+  var peeks = 0, cpDone = false, cpWant = null, peekT = null;
+  function refreshPeek(){
+    var pb = document.getElementById('peek-btn'), cb = document.getElementById('cp-btn');
+    pb.textContent = '👁 Peek ' + peeks;
+    pb.disabled = peeks <= 0 || !prob || phase === 'done';
+    cb.disabled = cpDone || !prob || phase === 'done' || mode === 'squares';
+  }
+  function askCheckpoint(){
+    if (cpDone || !prob || phase === 'done') return;
+    var b = prob.S.b, want = [];
+    [['q','your queen'],['r','your rook'],['b','your bishop'],['n','your knight']].forEach(function(t){
+      for (var i=0;i<64;i++) if (b[i] === t[0].toUpperCase()) want.push({ sq:nameFromSq(i), say:t[1] });
+    });
+    for (var i=0;i<64;i++) if (b[i] === 'k') want.push({ sq:nameFromSq(i), say:'their king' });
+    if (!want.length) return;
+    cpWant = want[rnd(want.length)]; cpDone = true;
+    setMsg('Checkpoint — where is ' + cpWant.say + '? ' + (typingMode() ? 'Type the square.' : 'Click it.'), '');
+    refreshPeek();
+  }
+  function answerCheckpoint(sq){
+    var right = sq === cpWant.sq;
+    if (right){ peeks = Math.min(3, peeks + 1); setMsg('✓ ' + cpWant.say + ' is on ' + cpWant.sq + '. You earned a peek.', 'good'); }
+    else setMsg('✗ ' + cpWant.say + ' is on ' + cpWant.sq + '. No peek — but no slip either.', '');
+    cpWant = null; refreshPeek();
+    return right;
+  }
+  function spendPeek(){
+    if (peeks <= 0 || !prob || phase === 'done') return;
+    peeks--; refreshPeek();
+    var bd = document.getElementById('board'), was = bd.classList.contains('no-board');
+    bd.classList.remove('no-board');
+    revealAll();
+    clearTimeout(peekT);
+    peekT = setTimeout(function(){
+      if (phase === 'done') return;                 // solved during the peek: leave it shown
+      clearPieces(); clearMarks();
+      if (was) bd.classList.add('no-board');
+      if (prob && prob.fromSq && phase === 'to'){ place(prob.fromSq, pieceAt(prob.fromSq)); sqEls[prob.fromSq].classList.add('from'); }
+    }, 900);
+  }
+
   function motifKey(goal){
     return /discover/i.test(goal) ? 'discovered'
          : /fork/i.test(goal) ? 'fork'
@@ -874,6 +1018,12 @@ if (RUN_UI) (function(){
   }
   function isSol(m){ return prob.sols.some(function(s){ return s.from===m.from && s.to===m.to && (s.promo||'')===(m.promo||''); }); }
   function submitDescribe(){
+    if(mode==='squares'){ if(drill) submitDrill(); return; }
+    if(cpWant){
+      var t=String(document.getElementById('describe-in').value||'').trim().toLowerCase();
+      if(!/^[a-h][1-8]$/.test(t)){ setMsg('A square, like e4.',''); return; }
+      answerCheckpoint(t); document.getElementById('describe-in').value=''; return;
+    }
     if(phase==='done' || !prob) return;
     var di=document.getElementById('describe-in'), raw=di.value;
     if(!raw.trim()) return;
@@ -887,6 +1037,8 @@ if (RUN_UI) (function(){
     else { slip(); setMsg('Not the move — re-read the clue and try again.','bad');
       di.value=''; try{ di.focus(); }catch(e){} }
   }
+  document.getElementById('cp-btn').onclick=askCheckpoint;
+  document.getElementById('peek-btn').onclick=spendPeek;
   document.getElementById('describe-go').onclick=submitDescribe;
   document.getElementById('describe-in').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); submitDescribe(); } });
   document.getElementById('audio-replay').onclick=function(){ if(prob && mode==='audio') speak(speakPosition(prob)); };
@@ -903,6 +1055,8 @@ if (RUN_UI) (function(){
   }
   function solutionFromSquares(){ var o={}; prob.sols.forEach(function(s){ o[nameFromSq(s.from)]=1; }); return o; }
   function clickSquare(sq){
+    if(mode==='squares') return;
+    if(cpWant){ answerCheckpoint(sq); return; }
     if(phase==='done' || typingMode()) return;
     if(phase==='from'){
       if(solutionFromSquares()[sq]){ place(sq, pieceAt(sq)); sqEls[sq].classList.add('from'); prob.fromSq=sq; phase='to'; setMsg('Good — now click where it goes.','good'); }
@@ -917,6 +1071,7 @@ if (RUN_UI) (function(){
   }
   function revealAll(){ var b=prob.S.b; for(var i=0;i<64;i++){ if(b[i]){ var nm=nameFromSq(i); if(!sqEls[nm].innerHTML) place(nm,b[i]); } } }
   function finishSolve(clean){
+    cpWant=null; clearTimeout(peekT); refreshPeek();
     recordStat(prob.goal, clean); if(!clean) recordMiss();
     if(clean){ combo++; st.solved++; st.streak++; st.diff=Math.min(10, st.diff+0.34); if(lightsOut) st.diff=Math.min(10, st.diff+0.2);
       setMsg('Solved! ✓'+(mode==='speed'&&combo>=3?(' ⚡ '+combo+' combo!'):'')+(lightsOut?' ⭐ lights-out':''),'good'); }
