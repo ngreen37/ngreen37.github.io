@@ -374,6 +374,42 @@ window.__t = {
     ok(log && log.flight && log.flight.score === 321 && log.flight.where === 'Checker Town' && log.flight.rank === 'Pawn' && log.flight.end === 'down',
       'the flight log is banked onto the profile with the score  [' + (log && log.flight ? log.flight.where + ' · ' + log.flight.rank + ' · ' + log.flight.score : 'none') + ']');
 
+    // ── Couch co-op: player two flies Crockett ────────────────────────────────
+    const co = await page.evaluate(() => {
+      const out = {}; __saves.length = 0;
+      setAssist(false); setCoop(true); startPlay('normal');
+      G.toSpawn.length = 0; G.enemies.length = 0; G.tokens.length = 0;
+      // WASD is hers alone; the arrows are his
+      const hx = G.tx, dx0 = G.dog.p2x;
+      keys.add('KeyD'); update(0.2); out.herMoved = G.tx > hx; out.dogStill = G.dog.p2x === dx0; keys.clear();
+      keys.add('ArrowRight'); update(0.2); out.dogMoved = G.dog.p2x > dx0; out.herStill = Math.abs(G.tx - (hx + 68)) < 40; keys.clear();
+      /* ⚠⚠ THE TARGET MOVING IS NOT THE DOG MOVING. Fly him hard to the far left, where the old
+         auto-follow (her flank, 40px off her nose) would never put him, and check where he IS. */
+      G.px = G.tx = W / 2; G.py = G.ty = H - 90;
+      keys.add('ArrowLeft'); for (let i = 0; i < 90; i++) update(1 / 30); keys.clear();
+      out.dogFlown = G.dog.x < G.px - 120 && Math.abs(G.dog.x - G.dog.p2x) < 12;
+      out.dogWhere = Math.round(G.dog.x) + ' vs her ' + Math.round(G.px);
+      // he picks a power-up up by flying onto it, and hands it over by flying home
+      G.pwr.bishop = 0;
+      G.tokens.push({ kind: 'bishop', x: G.dog.x, y: G.dog.y, bx: G.dog.x, seed: 0, vy: 0, t: 0 });
+      updateDog(0.001); out.picked = !!G.dog.carry && G.tokens.length === 0;
+      out.notYet = G.pwr.bishop === 0;
+      G.dog.x = G.px; G.dog.y = G.py; updateDog(0.001);
+      out.delivered = G.pwr.bishop > 0 && !G.dog.carry;
+      G.score = 555; gameOver(false); out.slug = __saves[__saves.length - 1].g;
+      // …and solo, the arrows still fly HER: nobody should have to guess which half of the keyboard
+      setCoop(false); startPlay('normal'); const sx = G.tx;
+      keys.add('ArrowRight'); update(0.2); out.soloArrows = G.tx > sx; keys.clear();
+      return out;
+    });
+    ok(co.herMoved && co.dogStill, 'co-op: W A S D flies Princess and leaves Crockett alone');
+    ok(co.dogMoved && co.herStill, '…and the arrows fly Crockett and leave Princess alone');
+    ok(co.dogFlown, '…and he goes where player two flies him, not back to her flank  [' + co.dogWhere + ']');
+    ok(co.picked && co.notYet && co.delivered,
+      '⭐ …player two carries the power-up: it lands when he reaches her, not when he touches it');
+    ok(co.slug === 'sky-run-coop', '…and two hands on it banks under its own name  [' + co.slug + ']');
+    ok(co.soloArrows, 'flying alone, the arrows still fly Princess  [solo=' + co.soloArrows + ']');
+
     // ── COPY PNG copies, and a refused clipboard still hands over the file ──────
     const png = await page.evaluate(async () => {
       // 3s was not enough on a cold canvas — this went red once with the PNG perfectly fine

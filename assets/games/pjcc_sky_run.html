@@ -79,7 +79,8 @@
     <div class="menu-best" id="sky-line" hidden></div>
     <div class="menu-best" id="log-line" hidden></div>
     <div class="menu-best" id="ceo-line" hidden></div>
-    <div class="row"><button class="btn btn-ghost" id="assist-btn" aria-pressed="false">🤝 Assist</button></div>
+    <div class="row"><button class="btn btn-ghost" id="assist-btn" aria-pressed="false">🤝 Assist</button><button class="btn btn-ghost" id="coop-btn" aria-pressed="false">👥 2-Player</button></div>
+    <div class="menu-best" id="coop-line" hidden></div>
   </div>
 
   <!-- PAUSE -->
@@ -165,6 +166,7 @@ function skyOutside(){
              night: PJCC_TIME.phase() === 'night', rare: PJCC_TIME.skyKind() || null };
   } catch(e){ return { kind:'clear', night:false, rare:null }; }
 }
+const DOG_SPD = 300;         // player two's hand on the stick
 const WIND_PUSH = 30;        // rain leans on the ship the whole way; you fly across it
 const MIST_SIGHT = 300, NIGHT_SIGHT = 235;   // how far her light reaches when the town is dark
 const PROMO_Y = 58;          // the eighth rank — a summoned pawn that gets here is promoted
@@ -188,6 +190,17 @@ const BEST_KEY_A = 'pjcc.skyrun.assistbest.v1', ASSIST_KEY = 'pjcc.skyrun.assist
 function loadBestA(){ try { return parseInt(localStorage.getItem(BEST_KEY_A)) || 0; } catch(e){ return 0; } }
 function saveBestA(v){ try { localStorage.setItem(BEST_KEY_A, String(v)); } catch(e){} }
 let assistOn = (function(){ try { return localStorage.getItem(ASSIST_KEY) === '1'; } catch(e){ return false; } })();
+const COOP_KEY = 'pjcc.skyrun.coop';
+let coopOn = (function(){ try { return localStorage.getItem(COOP_KEY) === '1'; } catch(e){ return false; } })();
+function setCoop(on){
+  coopOn = !!on;
+  try { localStorage.setItem(COOP_KEY, coopOn ? '1' : '0'); } catch(e){}
+  const b = $('coop-btn');
+  if (b){ b.setAttribute('aria-pressed', coopOn ? 'true' : 'false'); b.textContent = coopOn ? '👥 2-Player on' : '👥 2-Player'; }
+  const l = $('coop-line');
+  // ⚠ it needs a second set of keys, so it needs a keyboard. Say that before they turn it on.
+  if (l){ l.hidden = !coopOn; l.textContent = 'Player 1 flies Princess with W A S D. Player 2 flies Crockett with the arrows, and carries the power-ups to her.'; }
+}
 function setAssist(on){
   assistOn = !!on;
   try { localStorage.setItem(ASSIST_KEY, assistOn ? '1' : '0'); } catch(e){}
@@ -196,7 +209,8 @@ function setAssist(on){
 }
 function scoreSlug(){
   const base = G.daily ? 'sky-run-daily' : (G.endless ? 'sky-run-endless' : 'sky-run');
-  return G.assist ? base + '-assist' : base;
+  // ⭐ two hands on it is not one player's score, and assist is not a straight flight
+  return G.coop ? base + '-coop' : (G.assist ? base + '-assist' : base);
 }
 const SND_KEY = 'pjcc.skyrun.sound';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
@@ -309,7 +323,7 @@ function newGame(mode){
   if (assistOn) hearts += ASSIST_HEARTS;
   G = {
     mode: mode, daily: daily, endless: endless, loop: 1, day: day,
-    assist: assistOn, sky: sky, tricks: 0, queens: [], digCd: 0, guardCd: 0,
+    assist: assistOn, coop: coopOn, sky: sky, tricks: 0, queens: [], digCd: 0, guardCd: 0,
     time: 0, running: true, over: false, paused: false,
     px: W/2, py: H-90, tx: W/2, ty: H-90, pr: 16,
     hearts: hearts, maxHearts: hearts, inv: 0, score: 0,
@@ -317,7 +331,7 @@ function newGame(mode){
     combo: 0, mult: 1, killAcc: 0, pawns: 0,
     pwr: { bishop:0, knight:0, queen:0 }, guardians: [],
     fireCd: 0, rank: 0, focus: false, promo: null,
-    dog: { x: W/2-40, y: H-70, mode:'follow', target:null, carry:null, biteCd:0, fetchCd:1, bark:0, t:0 },
+    dog: { x: W/2-40, y: H-70, p2x: W/2-40, p2y: H-70, mode:'follow', target:null, carry:null, biteCd:0, fetchCd:1, bark:0, t:0 },
     region: 1, regionIdx: 0, waveIdx: 0, wavesInRegion: 5,
     toSpawn: [], boss: null, phase: 'play',  // play | interstitial | done
     interT: 0, nextRegion: 1,
@@ -554,7 +568,12 @@ function hurtPlayer(){
 const focusBtn=document.getElementById('focus-btn');
 let mouseFocus=false, drag=null, usedTouch=false;
 const keys = new Set();
-const KEYMAP = { ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1], KeyA:[-1,0], KeyD:[1,0], KeyW:[0,-1], KeyS:[0,1] };
+/* ⭐ TWO SETS, ONE MAP. Flying alone, either set flies Princess — nobody should have to find out
+   which half of the keyboard this game wants. In co-op the arrows are taken away from her and
+   given to Crockett, and WASD is hers alone. */
+const KEYMAP_P2 = { ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1] };
+const KEYMAP_P1 = { KeyA:[-1,0], KeyD:[1,0], KeyW:[0,-1], KeyS:[0,1] };
+const KEYMAP = Object.assign({}, KEYMAP_P2, KEYMAP_P1);
 function live(){ return G && G.running && !G.paused; }
 function setFocus(v){ if(G) G.focus=v; if(focusBtn) focusBtn.classList.toggle('on', v); }
 function toCanvas(cx,cy){ const r=canvas.getBoundingClientRect(); return { x:(cx-r.left)*(W/r.width), y:(cy-r.top)*(H/r.height) }; }
@@ -622,10 +641,19 @@ function update(dt){
 
   // held keys fly her at a steady speed
   if (keys.size){
-    let kx=0, ky=0; keys.forEach(c=>{ kx+=KEYMAP[c][0]; ky+=KEYMAP[c][1]; });
+    let kx=0, ky=0, dx=0, dy=0;
+    keys.forEach(c=>{
+      if (G.coop && KEYMAP_P2[c]){ dx+=KEYMAP_P2[c][0]; dy+=KEYMAP_P2[c][1]; }
+      else { kx+=KEYMAP[c][0]; ky+=KEYMAP[c][1]; }
+    });
     if (kx && ky){ kx*=0.7071; ky*=0.7071; }
     const sp=(G.focus?KEY_SPD_FOCUS:KEY_SPD)*dt;
     G.tx=clamp(G.tx+kx*sp,16,W-16); G.ty=clamp(G.ty+ky*sp,60,H-24);
+    if (G.coop && (dx || dy)){
+      if (dx && dy){ dx*=0.7071; dy*=0.7071; }
+      const ds=DOG_SPD*dt;
+      G.dog.p2x=clamp(G.dog.p2x+dx*ds,14,W-14); G.dog.p2y=clamp(G.dog.p2y+dy*ds,54,H-18);
+    }
   }
   // ⭐ RAIN OVER THE TOWN LEANS ON HER. It moves the point she is flying to, not the ship, so a
   // steady hand still wins the fight — it just has to keep correcting, the whole way across.
@@ -870,6 +898,25 @@ function updateDog(dt){
       d.bark=0.35; burst(d.x,d.y,'#c8b088',14); sfx('pawn');
     }
   }
+  /* ⭐ CO-OP: PLAYER TWO FLIES HIM, and he fetches nothing by himself. Flying onto a power-up
+     picks it up and flying back to Princess hands it over — that IS player two's game, and
+     taking it over automatically would play it for them. */
+  if (G.coop){
+    let tx2 = d.p2x, ty2 = d.p2y;
+    if (!d.carry){
+      for (let i=0;i<G.tokens.length;i++){
+        if (dist2(d.x,d.y,G.tokens[i].x,G.tokens[i].y) < 20*20){
+          d.carry=G.tokens[i].kind; G.tokens.splice(i,1); d.mode='carry'; d.bark=0.3;
+          burst(d.x,d.y,POWER_COL[d.carry],10); sfx('pawn'); break;
+        }
+      }
+    } else if (dist2(d.x,d.y,G.px,G.py) < 26*26){
+      applyPower(d.carry, G.px, G.py); d.carry=null; d.mode='follow';
+    }
+    d.x += (tx2-d.x)*Math.min(1, dt*9); d.y += (ty2-d.y)*Math.min(1, dt*9);
+    dogBite(d, dt);
+    return;
+  }
   // free & off cooldown? go fetch the nearest unclaimed token
   if (d.mode==='follow' && d.fetchCd<=0 && G.tokens.length){
     let best=null, bd=1e9;
@@ -894,15 +941,17 @@ function updateDog(dt){
     }
   }
   d.x += (tx-d.x)*Math.min(1, dt*6); d.y += (ty-d.y)*Math.min(1, dt*6);
-  // chomp — a short perimeter bite on the nearest enemy (⭐ HERD widens it and quickens it)
-  if (d.biteCd<=0){
-    const herd = hasTrick('herd'), reach = herd ? 26 : 16;
-    for (let i=0;i<G.enemies.length;i++){ const e=G.enemies[i];
-      if (dist2(d.x,d.y,e.x,e.y) < (e.r+reach)*(e.r+reach)){
-        e.hp -= herd ? 3 : 2; burst(d.x,d.y,'#ffd36b',8); d.bark=0.22; d.biteCd = herd ? 0.34 : 0.5; sfx('pop');
-        if (e.hp<=0){ G.enemies.splice(i,1); killEnemy(e); }
-        break;
-      }
+  dogBite(d, dt);
+}
+// chomp — a short perimeter bite on the nearest enemy (⭐ HERD widens it and quickens it)
+function dogBite(d, dt){
+  if (d.biteCd>0) return;
+  const herd = hasTrick('herd'), reach = herd ? 26 : 16;
+  for (let i=0;i<G.enemies.length;i++){ const e=G.enemies[i];
+    if (dist2(d.x,d.y,e.x,e.y) < (e.r+reach)*(e.r+reach)){
+      e.hp -= herd ? 3 : 2; burst(d.x,d.y,'#ffd36b',8); d.bark=0.22; d.biteCd = herd ? 0.34 : 0.5; sfx('pop');
+      if (e.hp<=0){ G.enemies.splice(i,1); killEnemy(e); }
+      return;
     }
   }
 }
@@ -1055,6 +1104,13 @@ function drawHUD(){
 function drawDog(){
   const d=G.dog; if(!d) return;
   const bob=Math.sin(d.t*8)*2, carrying=d.mode==='carry' && d.carry;
+  // in co-op he is somebody's ship, so he gets a ring of his own to find in a crowded sky
+  if (G.coop){
+    ctx.strokeStyle='rgba(255,211,107,0.65)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(d.x, d.y+bob, 15, 0, 7); ctx.stroke();
+    ctx.fillStyle='rgba(255,211,107,0.85)'; ctx.font='bold 8px Trebuchet MS'; ctx.textAlign='center';
+    ctx.fillText('P2', d.x, d.y+bob+26);
+  }
   blit(carrying ? dogSpr(POWER_COL[d.carry], 16) : dogSpr('#ffd36b', 8), d.x, d.y+bob);
   if (d.bark>0){ ctx.globalAlpha=Math.min(1,d.bark*4); blit(glyphSpr('!', 13, '#fff'), d.x+11, d.y-11+bob); ctx.globalAlpha=1; }
 }
@@ -1113,6 +1169,7 @@ function gameOver(won, quit){
               : 'Princess went down over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.')) +
     '<br>Score <b>'+G.score+'</b>' + (G.score>G.prevBest?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best) +
     (G.assist ? '<br><span style="color:#ffd36b">🤝 Flown with assist — kept on its own board.</span>' : '') +
+    (G.coop ? '<br><span style="color:#ffd36b">👥 Flown by two — kept on its own board.</span>' : '') +
     (G.tricks ? '<br><span style="color:#cfe0ff">Crockett picked up '+G.tricks+' trick'+(G.tricks>1?'s':'')+': '+
         TRICKS.slice(0,G.tricks).map(t=>t.glyph+' '+t.name).join(' · ')+'</span>' : '') +
     // the King you last faced fought a real opening — the door to it opens the deck by name
@@ -1264,9 +1321,11 @@ $('end-btn').addEventListener('click', function(){ gameOver(false, true); });
 $('summon-btn').addEventListener('click', summon);
 document.querySelectorAll('.snd').forEach(b => b.addEventListener('click', function(){ initAudio(); setSound(!sndOn); }));
 $('assist-btn').addEventListener('click', function(){ setAssist(!assistOn); refreshBest(); });
+$('coop-btn').addEventListener('click', function(){ setCoop(!coopOn); refreshBest(); });
 
 setSound(sndOn);
 setAssist(assistOn);
+setCoop(coopOn);
 refreshBest();
 </script>
 </body>
