@@ -236,9 +236,86 @@ window.__t = {
       e.y = 100; e.vy = 0; e.pat = 'straight'; e.shootCd = 0; updateEnemies(0.001); return G.ebullets.length; }).join(''); });
     ok(fire === '01111', 'every piece but the pawn shoots back  [pawn→queen ' + fire + ']');
 
+    // ── A summoned pawn that finds nothing to hit promotes ─────────────────────
+    const promo = await page.evaluate(() => {
+      startPlay('normal'); G.toSpawn.length = 0; G.enemies.length = 0; G.boss = null;
+      G.pawns = 1; const s0 = G.score; summon();
+      const p = G.ppawns[0]; p.delay = 0;
+      for (let i = 0; i < 2000 && G.ppawns.length; i++) updatePawns(1 / 60);
+      const up = { queens: G.queens.length, y: G.queens[0] ? Math.round(G.queens[0].y) : -1, gained: G.score - s0 };
+      // …and one that DOES find something still spends itself on it
+      G.queens.length = 0; G.ppawns.length = 0; G.pawns = 1; summon();
+      spawnEnemy('rook', 220); G.enemies[0].y = 130; const hp0 = G.enemies[0].hp;
+      const q = G.ppawns[0]; q.delay = 0; q.tx = 220; q.ty = 130;
+      for (let i = 0; i < 600 && G.ppawns.length; i++) updatePawns(1 / 60);
+      up.blast = G.enemies.length ? hp0 - G.enemies[0].hp : hp0;
+      up.queensAfter = G.queens.length;
+      return up;
+    });
+    ok(promo.queens === 1 && promo.y === 58 && promo.gained >= 150,
+      'a summoned pawn with nothing to hit flies on and is promoted on the last rank  [queens=' + promo.queens + ' y=' + promo.y + ' +' + promo.gained + ']');
+    ok(promo.blast > 0 && promo.queensAfter === 0,
+      '…and one with a target still spends itself on the blast  [-' + promo.blast + 'hp, promoted=' + promo.queensAfter + ']');
+
+    // ── Crockett learns, and the town's weather reaches the flight ─────────────
+    const dog = await page.evaluate(() => {
+      startPlay('normal');
+      const learned = [];
+      for (let r = 1; r <= 5; r++) { G.waveIdx = G.wavesInRegion; G.enemies.length = 0; G.toSpawn.length = 0;
+        startBoss(); G.boss.entering = false; G.boss.hp = 0; updateBoss(0.001); learned.push(G.tricks);
+        if (G.phase === 'interstitial') { G.interT = 0; update(0.001); } }
+      // GUARD: a shot on the dog is eaten, once, then he needs a moment
+      startPlay('normal'); G.tricks = 2; G.guardCd = 0; G.inv = 99;
+      G.ebullets.length = 0;
+      G.ebullets.push({ x: G.dog.x, y: G.dog.y, vx: 0, vy: 0, r: 5 });
+      updateEBullets(0.001); const ate = G.ebullets.length;
+      G.ebullets.push({ x: G.dog.x, y: G.dog.y, vx: 0, vy: 0, r: 5 });
+      updateEBullets(0.001); const second = G.ebullets.length;
+      return { learned: learned.join(''), ate: ate, second: second, names: TRICKS.map((t) => t.name).join(',') };
+    });
+    ok(dog.learned === '12344', 'Crockett picks up one trick for every region she clears, and stops at four  [' + dog.learned + ']');
+    ok(dog.ate === 0 && dog.second === 1, '⭐ GUARD eats one shot, then has to shake it off  [' + dog.ate + ' then ' + dog.second + ']');
+
+    const wx = await page.evaluate(() => {
+      const out = {};
+      window.PJCC_TIME = { dateStr: () => '2031-01-02', weather: () => ({ kind: 'rain' }), phase: () => 'day', skyKind: () => null };
+      startPlay('normal'); out.kind = G.sky.kind;
+      G.tx = 200; const x0 = G.tx; for (let i = 0; i < 60; i++) update(1 / 60); out.pushed = G.tx > x0;
+      startPlay('daily'); out.dailyKind = G.sky.kind;
+      G.tx = 200; const d0 = G.tx; for (let i = 0; i < 60; i++) update(1 / 60); out.dailyPushed = G.tx > d0;
+      window.PJCC_TIME = { dateStr: () => '2031-01-02' };   // a clock with no weather must not throw
+      startPlay('normal'); out.bare = G.sky.kind;
+      return out;
+    });
+    ok(wx.kind === 'rain' && wx.pushed, "rain over the town leans on the ship  [" + wx.kind + ', pushed=' + wx.pushed + ']');
+    ok(wx.dailyKind === 'clear' && !wx.dailyPushed,
+      '⚠⚠ …but never in the Daily: one flight for everyone, whatever hour they fly it  [' + wx.dailyKind + ']');
+    ok(wx.bare === 'clear', '…and an older town clock with no weather reads as clear, not as a crash');
+
+    // ── Assist is marked, and cannot stand in for a straight flight ────────────
+    const as = await page.evaluate(() => {
+      const out = {}; __saves.length = 0;
+      try { localStorage.setItem('pjcc.skyrun.best.v1', '7777'); localStorage.setItem('pjcc.skyrun.assistbest.v1', '0'); } catch (e) {}
+      setAssist(true); startPlay('normal');
+      out.hearts = G.hearts; out.assist = G.assist;
+      G.ebullets.length = 0; G.ebullets.push({ x: 10, y: 10, vx: 100, vy: 0, r: 4 });
+      updateEBullets(1); out.moved = Math.round(G.ebullets[0].x);
+      G.score = 99999; gameOver(false);
+      out.slug = __saves[__saves.length - 1].g;
+      out.plainBest = localStorage.getItem('pjcc.skyrun.best.v1');
+      out.assistBest = localStorage.getItem('pjcc.skyrun.assistbest.v1');
+      setAssist(false); startPlay('normal'); out.offHearts = G.hearts;
+      return out;
+    });
+    ok(as.hearts === 5 && as.offHearts === 3 && as.moved === 82,
+      'assist gives her two more hearts and slows what is coming at her  [' + as.hearts + ' hearts, bullet ' + as.moved + '/100]');
+    ok(as.slug === 'sky-run-assist' && as.plainBest === '7777' && as.assistBest === '99999',
+      '⭐ …and an assisted run banks under its own name and never touches the straight best  [' + as.slug + ', best still ' + as.plainBest + ']');
+
     // ── COPY PNG copies, and a refused clipboard still hands over the file ──────
     const png = await page.evaluate(async () => {
-      const wait = async (from) => { for (let i = 0; i < 60 && $('png-btn').textContent === from; i++) await new Promise((r) => setTimeout(r, 50)); };
+      // 3s was not enough on a cold canvas — this went red once with the PNG perfectly fine
+      const wait = async (from) => { for (let i = 0; i < 240 && $('png-btn').textContent === from; i++) await new Promise((r) => setTimeout(r, 50)); };
       let type = null, saved = 0; const click0 = HTMLAnchorElement.prototype.click;
       HTMLAnchorElement.prototype.click = function () { if (this.download) saved++; };
       startPlay('normal'); G.score = 42; gameOver(false);
@@ -255,12 +332,17 @@ window.__t = {
     // ── The home screen tells the truth about your bests ───────────────────────
     const bests = await page.evaluate(() => {
       localStorage.setItem(BEST_KEY, '1200'); localStorage.setItem(BEST_KEY_D, JSON.stringify({ d: dayKey(), v: 340 })); localStorage.setItem(BEST_KEY_E, '90');
+      localStorage.setItem(BEST_KEY_A, '0');
       openMenu(); const line = $('best-line').textContent;
+      localStorage.setItem(BEST_KEY_A, '404'); openMenu(); const withAssist = $('best-line').textContent;
+      localStorage.setItem(BEST_KEY_A, '0');
       startPlay('normal'); G.prevBest = G.best = 50; G.score = 50; gameOver(false); const tie = $('res-msg').textContent;
       startPlay('normal'); G.prevBest = G.best = 50; G.score = 51; gameOver(false); const beat = $('res-msg').textContent;
-      return { line, tie: /new best/.test(tie), beat: /new best/.test(beat) };
+      return { line, withAssist, tie: /new best/.test(tie), beat: /new best/.test(beat) };
     });
     ok(bests.line === 'Best: 1200 · today 340 · endless 90', 'the home screen shows all three bests  [' + bests.line + ']');
+    ok(bests.withAssist === 'Best: 1200 · today 340 · endless 90 · assist 404',
+      '…and an assist best is shown as its own line, never folded into the straight one  [' + bests.withAssist + ']');
     ok(!bests.tie && bests.beat, '"new best" only when the old best was actually beaten');
 
     // ── Sound, the sprite cache, and the density ───────────────────────────────

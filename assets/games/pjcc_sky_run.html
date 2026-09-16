@@ -76,6 +76,8 @@
     <div class="menu-tag">The long flight to <b>Chess City</b>.</div>
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ TAKE FLIGHT</button><button class="btn btn-ghost" id="daily-btn">📅 DAILY</button><button class="btn btn-ghost" id="endless-btn">🌊 ENDLESS</button></div>
     <div class="menu-best"><b id="best-line">best: —</b></div>
+    <div class="menu-best" id="sky-line" hidden></div>
+    <div class="row"><button class="btn btn-ghost" id="assist-btn" aria-pressed="false">🤝 Assist</button></div>
   </div>
 
   <!-- PAUSE -->
@@ -148,10 +150,51 @@ const RANK_FIRE_CD = [0.185, 0.165, 0.150, 0.150, 0.135];
 
 const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 3, DROP_ODDS = 0.06, HIT_INV = 1.0;
 const EB_SPD = 220, BOSS_PACE = 0.8, BOSS_SHOT = 1.15, VULN_DUR = 1.8, VULN_EVERY = 9;
+
+// ---------- the town's weather reaches the flight ----------
+// PJCC_TIME is the town clock, so the sky over Sky Run is the sky over Checker Town right now.
+// ⚠⚠ NEVER IN THE DAILY. Everyone gets the same Daily flight whenever they fly it; weather is read
+// at a moment, so a Daily that read it would be a different puzzle at breakfast and at midnight.
+function skyOutside(){
+  try {
+    if (!window.PJCC_TIME) return { kind:'clear', night:false, rare:null };
+    return { kind: (PJCC_TIME.weather() || {}).kind || 'clear',
+             night: PJCC_TIME.phase() === 'night', rare: PJCC_TIME.skyKind() || null };
+  } catch(e){ return { kind:'clear', night:false, rare:null }; }
+}
+const WIND_PUSH = 30;        // rain leans on the ship the whole way; you fly across it
+const MIST_SIGHT = 300, NIGHT_SIGHT = 235;   // how far her light reaches when the town is dark
+const PROMO_Y = 58;          // the eighth rank — a summoned pawn that gets here is promoted
+const ASSIST_HEARTS = 2, ASSIST_EB = 0.72;   // two more hearts, and enemy fire flies slower
+// Crockett is a dog. He never says anything — he learns, and you watch him do it.
+const TRICKS = [
+  { id:'fetch', glyph:'🦴', name:'FETCH', note:'He breaks for a power-up the moment it drops.' },
+  { id:'guard', glyph:'🛡', name:'GUARD', note:'He eats a shot that was going to hit her.' },
+  { id:'dig',   glyph:'⛏', name:'DIG',   note:'He turns one up out of nowhere, once a region.' },
+  { id:'herd',  glyph:'🐾', name:'HERD',  note:'He bites harder, and far more often.' }
+];
+function hasTrick(id){ return !!G && G.tricks > TRICKS.findIndex(t => t.id === id); }
 // Enemy shots hit this core — the dot Focus draws. Bodies still collide at G.pr.
 const CORE_R = 6;
 const KEY_SPD = 340, KEY_SPD_FOCUS = 190;
 const BEST_KEY = 'pjcc.skyrun.best.v1', BEST_KEY_D = 'pjcc.skyrun.dailybest.v1', BEST_KEY_E = 'pjcc.skyrun.endlessbest.v1';
+/* ⭐ ASSIST IS HONEST OR IT IS NOTHING. An assisted run keeps its own best and banks under its own
+   slug, so it can never stand in for a flight flown straight — not in the menu, not on the Daily
+   board, not in the town's mail. It is still saved, still scored, still yours; it is just labeled. */
+const BEST_KEY_A = 'pjcc.skyrun.assistbest.v1', ASSIST_KEY = 'pjcc.skyrun.assist';
+function loadBestA(){ try { return parseInt(localStorage.getItem(BEST_KEY_A)) || 0; } catch(e){ return 0; } }
+function saveBestA(v){ try { localStorage.setItem(BEST_KEY_A, String(v)); } catch(e){} }
+let assistOn = (function(){ try { return localStorage.getItem(ASSIST_KEY) === '1'; } catch(e){ return false; } })();
+function setAssist(on){
+  assistOn = !!on;
+  try { localStorage.setItem(ASSIST_KEY, assistOn ? '1' : '0'); } catch(e){}
+  const b = $('assist-btn');
+  if (b){ b.setAttribute('aria-pressed', assistOn ? 'true' : 'false'); b.textContent = assistOn ? '🤝 Assist on' : '🤝 Assist'; }
+}
+function scoreSlug(){
+  const base = G.daily ? 'sky-run-daily' : (G.endless ? 'sky-run-endless' : 'sky-run');
+  return G.assist ? base + '-assist' : base;
+}
 const SND_KEY = 'pjcc.skyrun.sound';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
 function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
@@ -256,12 +299,17 @@ function newGame(mode){
   mode = mode || 'normal';
   const daily = mode==='daily', endless = mode==='endless', day = dayKey();
   SRNG = daily ? mulberry32(hashStr('sky-run|waves|'+day)) : null;
-  const best = daily ? loadBestD() : (endless ? loadBestE() : loadBest());
+  const best = assistOn ? loadBestA() : (daily ? loadBestD() : (endless ? loadBestE() : loadBest()));
+  // a Daily is one flight for everyone, so it flies in clear air no matter what the town is doing
+  const sky = daily ? { kind:'clear', night:false, rare:null } : skyOutside();
+  let hearts = endless ? 1 : START_HEARTS;
+  if (assistOn) hearts += ASSIST_HEARTS;
   G = {
     mode: mode, daily: daily, endless: endless, loop: 1, day: day,
+    assist: assistOn, sky: sky, tricks: 0, queens: [], digCd: 0, guardCd: 0,
     time: 0, running: true, over: false, paused: false,
     px: W/2, py: H-90, tx: W/2, ty: H-90, pr: 16,
-    hearts: endless ? 1 : START_HEARTS, maxHearts: endless ? 1 : START_HEARTS, inv: 0, score: 0,
+    hearts: hearts, maxHearts: hearts, inv: 0, score: 0,
     best: best, prevBest: best, kills: 0,
     combo: 0, mult: 1, killAcc: 0, pawns: 0,
     pwr: { bishop:0, knight:0, queen:0 }, guardians: [],
@@ -283,7 +331,8 @@ function makeBg(){ const a=[]; for(let i=0;i<60;i++) a.push({ x:Math.random()*W,
 // ---------- region / wave flow ----------
 function startRegion(n){
   G.region = n; G.waveIdx = 0; G.wavesInRegion = 4 + n; G.boss = null; G.phase = 'play';
-  G.enemies.length = 0; G.ebullets.length = 0;
+  G.enemies.length = 0; G.ebullets.length = 0; G.queens.length = 0;
+  G.digCd = 6.0;   // he digs once a region, a little way in
   const r = curRegion();
   G.banner = (r.secret ? '★ ' : '') + r.name.toUpperCase(); G.bannerT = 2.2;
   sfx('boss');
@@ -402,6 +451,36 @@ function summon(){
   }
   sfx('pawn');
 }
+function anythingNear(x,y){
+  const R=74;
+  for (let i=0;i<G.enemies.length;i++){ const e=G.enemies[i]; if (dist2(x,y,e.x,e.y) < (R+e.r)*(R+e.r)) return true; }
+  // a King on his way down is still a target: a pawn must not sail past him to a free crown
+  return !!(G.boss && dist2(x,y,G.boss.x,G.boss.y) < (R+34)*(R+34));
+}
+/* She reaches the last rank and is promoted: a Queen who holds that file for a while, then is gone.
+   ⛑ ONE AT A TIME, MEASURED. summon() sends every banked pawn at once, so a cleared sky crowned
+   three or four together — a standing wall that shot down the leakers and took the bot from 31%
+   wins to 75%. A second crown now relieves the first instead of joining it. */
+function promotePawn(x){
+  if (G.queens.length) G.queens.length = 0;
+  G.queens.push({ x: clamp(x,24,W-24), y: PROMO_Y, life: 4.0, cd: 0, t: 0 });
+  G.score += 150; floater('♕ PROMOTED', x, PROMO_Y+16, '#ff8fd0', true);
+  burst(x, PROMO_Y, '#ff8fd0', 26); ring(x, PROMO_Y, '#ff8fd0');
+  G.pflash=0.6; G.pflashCol='#ff8fd0'; sfx('power');
+}
+function updateQueens(dt){
+  for (let i=G.queens.length-1;i>=0;i--){
+    const q=G.queens[i]; q.life-=dt; q.t+=dt;
+    if (q.life<=0){ burst(q.x,q.y,'#ff8fd0',12); G.queens.splice(i,1); continue; }
+    q.cd-=dt;
+    if (q.cd<=0){
+      q.cd=0.42;
+      // she holds her file and rakes the diagonals — a queen's lines, aimed down the board
+      const S=BSPD*0.8, D=S*0.71;
+      [[0,S],[-D,D],[D,D]].forEach(d=>shoot(q.x,q.y+10,d[0],d[1],false,{r:6}));
+    }
+  }
+}
 function explodePawn(x,y){
   const R=74;
   G.enemies.forEach(e => { if (dist2(x,y,e.x,e.y) < (R+e.r)*(R+e.r)) e.hp -= 4; });
@@ -484,7 +563,7 @@ document.addEventListener('visibilitychange', ()=>{ if (document.hidden) pause()
 window.addEventListener('blur', ()=>{ keys.clear(); if (!usedTouch) pause(); });
 
 // ---------- update ----------
-const STEPS = [updateEnemies, updateBoss, updateBullets, updateEBullets, updatePawns, updateTokens, updateDog, updateParts, updateRings];
+const STEPS = [updateEnemies, updateBoss, updateBullets, updateEBullets, updatePawns, updateQueens, updateTokens, updateDog, updateParts, updateRings];
 function update(dt){
   if (!G.running) return;
   G.time += dt;
@@ -514,6 +593,12 @@ function update(dt){
     if (kx && ky){ kx*=0.7071; ky*=0.7071; }
     const sp=(G.focus?KEY_SPD_FOCUS:KEY_SPD)*dt;
     G.tx=clamp(G.tx+kx*sp,16,W-16); G.ty=clamp(G.ty+ky*sp,60,H-24);
+  }
+  // ⭐ RAIN OVER THE TOWN LEANS ON HER. It moves the point she is flying to, not the ship, so a
+  // steady hand still wins the fight — it just has to keep correcting, the whole way across.
+  if (G.sky.kind === 'rain'){
+    const gust = Math.sin(G.time*0.6) * 0.45 + 0.55;
+    G.tx = clamp(G.tx + WIND_PUSH*gust*dt, 16, W-16);
   }
   // player follow — focus eases her in slower, for precision
   const followLerp = G.focus ? 8 : 14;
@@ -626,6 +711,14 @@ function bossDefeated(){
   // Princess rises a rank for every region she clears — pawn to queen by the gate.
   G.promo = null;
   if (!last && G.rank < 4){ G.rank++; G.promo = RANK_NAME[G.rank]; G.pflash=0.8; G.pflashCol=RANK_COL[G.rank]; sfx('power'); }
+  // ⭐ She rises a rank; he picks something up too. He is a dog — it is shown, never said.
+  if (G.tricks < TRICKS.length){
+    const t = TRICKS[G.tricks++];
+    if (G.dog){
+      G.dog.bark=0.5; burst(G.dog.x,G.dog.y,'#ffd36b',22); ring(G.dog.x,G.dog.y,'#ffd36b');
+      floater(t.glyph, G.dog.x, G.dog.y-26, '#ffd36b', true);   // the glyph, and not one word
+    }
+  }
   G.beat = last ? null : STORY_BEATS[G.region];
   G.phase='interstitial'; G.interT=2.6; G.nextRegion=G.region+1;
   G.banner = last ? (G.endless ? 'THE SEA RISES AGAIN' : 'YOU REACHED THE TOP')
@@ -677,19 +770,36 @@ function updateBullets(dt){
   }
 }
 function updateEBullets(dt){
+  const sd = G.assist ? ASSIST_EB : 1;   // assist slows what is coming AT her, never what she fires
   for (let i=G.ebullets.length-1;i>=0;i--){
-    const b=G.ebullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
+    const b=G.ebullets[i]; b.x+=b.vx*dt*sd; b.y+=b.vy*dt*sd;
     if (b.y>H+12||b.y<-12||b.x<-12||b.x>W+12){ G.ebullets.splice(i,1); continue; }
+    // ⭐ GUARD — the dog puts himself in front of one shot, then needs a moment to shake it off
+    if (hasTrick('guard') && G.guardCd<=0 && G.dog && dist2(b.x,b.y,G.dog.x,G.dog.y) < 17*17){
+      G.ebullets.splice(i,1); G.guardCd=5.0; G.dog.bark=0.3;
+      burst(b.x,b.y,'#ffd36b',9); ring(G.dog.x,G.dog.y,'#ffd36b'); sfx('pawn'); continue;
+    }
     if (G.inv<=0 && dist2(b.x,b.y,G.px,G.py) < (b.r+CORE_R)*(b.r+CORE_R)){ G.ebullets.splice(i,1); hurtPlayer(); if (!G.running) return; }
   }
 }
+/* ⭐ A PAWN THAT FINDS NOTHING TO HIT KEEPS GOING. Summoned pawns used to burst on arrival even
+   over an empty sky, so summoning into a clear screen threw them away. Now the blast only fires
+   if something is in it; otherwise she advances, and the eighth rank promotes her. */
 function updatePawns(dt){
   for (let i=G.ppawns.length-1;i>=0;i--){
     const p=G.ppawns[i];
     if (p.delay>0){ p.delay-=dt; p.x=G.px; p.y=G.py-10; continue; }
     p.t+=dt;
+    if (p.up){
+      p.y -= PAWNSPD*dt;
+      if (p.y<=PROMO_Y){ promotePawn(p.x); G.ppawns.splice(i,1); }
+      continue;
+    }
     const a=Math.atan2(p.ty-p.y, p.tx-p.x); p.x+=Math.cos(a)*PAWNSPD*dt; p.y+=Math.sin(a)*PAWNSPD*dt;
-    if (dist2(p.x,p.y,p.tx,p.ty) < 16*16 || p.t>2.2){ explodePawn(p.x,p.y); G.ppawns.splice(i,1); }
+    if (dist2(p.x,p.y,p.tx,p.ty) < 16*16 || p.t>2.2){
+      if (anythingNear(p.x,p.y)) { explodePawn(p.x,p.y); G.ppawns.splice(i,1); }
+      else p.up = true;
+    }
   }
 }
 function applyPower(kind, x, y){
@@ -715,6 +825,18 @@ function updateTokens(dt){
 function updateDog(dt){
   const d=G.dog; if(!d) return; d.t+=dt;
   d.biteCd-=dt; d.fetchCd-=dt; if(d.bark>0) d.bark-=dt;
+  if (G.guardCd>0) G.guardCd-=dt;
+  /* ⭐ DIG — once a region he turns one up out of bare sky. The kind is picked off the region, not
+     off a roll: a Daily has to drop the same thing for everyone, and dropRoll counts kills. */
+  if (hasTrick('dig')){
+    G.digCd-=dt;
+    if (G.digCd<=0 && G.phase==='play'){
+      G.digCd = 1e9;
+      const kind = POWERS[(G.region-1) % POWERS.length];
+      G.tokens.push({ kind:kind, x:clamp(d.x,30,W-30), y:Math.max(90,d.y-40), bx:d.x, seed:0, vy:40, t:0 });
+      d.bark=0.35; burst(d.x,d.y,'#c8b088',14); sfx('pawn');
+    }
+  }
   // free & off cooldown? go fetch the nearest unclaimed token
   if (d.mode==='follow' && d.fetchCd<=0 && G.tokens.length){
     let best=null, bd=1e9;
@@ -735,15 +857,16 @@ function updateDog(dt){
   } else if (d.mode==='carry'){
     tx = G.px + (G.px<W/2 ? 34 : -34); ty = G.py+10;
     if (dist2(d.x,d.y,tx,ty) < 22*22){                          // delivered
-      applyPower(d.carry, G.px, G.py); d.carry=null; d.mode='follow'; d.fetchCd=2.6;
+      applyPower(d.carry, G.px, G.py); d.carry=null; d.mode='follow'; d.fetchCd = hasTrick('fetch') ? 1.4 : 2.6;
     }
   }
   d.x += (tx-d.x)*Math.min(1, dt*6); d.y += (ty-d.y)*Math.min(1, dt*6);
-  // chomp — a short perimeter bite on the nearest enemy
+  // chomp — a short perimeter bite on the nearest enemy (⭐ HERD widens it and quickens it)
   if (d.biteCd<=0){
+    const herd = hasTrick('herd'), reach = herd ? 26 : 16;
     for (let i=0;i<G.enemies.length;i++){ const e=G.enemies[i];
-      if (dist2(d.x,d.y,e.x,e.y) < (e.r+16)*(e.r+16)){
-        e.hp -= 2; burst(d.x,d.y,'#ffd36b',8); d.bark=0.22; d.biteCd=0.5; sfx('pop');
+      if (dist2(d.x,d.y,e.x,e.y) < (e.r+reach)*(e.r+reach)){
+        e.hp -= herd ? 3 : 2; burst(d.x,d.y,'#ffd36b',8); d.bark=0.22; d.biteCd = herd ? 0.34 : 0.5; sfx('pop');
         if (e.hp<=0){ G.enemies.splice(i,1); killEnemy(e); }
         break;
       }
@@ -799,8 +922,13 @@ function render(){
   if (G.boss) drawBoss(G.boss);
   // enemy bullets
   G.ebullets.forEach(b=>blit(ebSpr(b.r), b.x, b.y));
-  // pawns (summoned)
+  // pawns (summoned) — one on her last rank is drawn already reaching
   if (G.ppawns.length){ const ps=glowGlyphSpr('♙',22,'#ffe27a','#ffd36b',10); G.ppawns.forEach(p=>blit(ps, p.x, p.y)); }
+  // promoted queens, holding the file they were crowned on
+  if (G.queens.length){
+    const qs=glowGlyphSpr('♕',26,'#ffd9f0','#ff8fd0',12);
+    G.queens.forEach(q=>{ ctx.globalAlpha = q.life<1.2 ? Math.max(0,q.life/1.2) : 1; blit(qs, q.x, q.y); }); ctx.globalAlpha=1;
+  }
   // player bullets
   G.bullets.forEach(b=>blit(b.spr, b.x, b.y));
   // guardians
@@ -818,11 +946,38 @@ function render(){
     const x=clamp(f.x,f.hw,W-f.hw); if(f.big){ ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=4; ctx.strokeText(f.txt,x,f.y); } ctx.fillStyle=f.col; ctx.fillText(f.txt,x,f.y); }); ctx.globalAlpha=1;
 
   ctx.restore();
+  drawWeather();
   drawHUD();
   if (G.flash>0){ ctx.fillStyle='rgba(255,40,60,'+(G.flash*0.4)+')'; ctx.fillRect(0,0,W,H); }
   if (G.pflash>0){ ctx.fillStyle='rgba('+hexToRgb(G.pflashCol)+','+(G.pflash*0.3)+')'; ctx.fillRect(0,0,W,H); }
   if (G.phase==='interstitial' && G.beat) drawInterstitial();
   if (G.bannerT>0) drawBanner();
+}
+/* ⭐ THE TOWN'S WEATHER, DRAWN OVER THE FLIGHT. Rain is streaks you can see the lean in; night and
+   mist close the sky down to the reach of her own light. It is one gradient and a few lines —
+   drawn ABOVE the world and BELOW the HUD, so the numbers never dim. [[ambient-layer-cost]] */
+function drawWeather(){
+  const k = G.sky.kind, dark = G.sky.night;
+  if (k === 'rain' && !CALM){
+    ctx.strokeStyle='rgba(180,214,255,0.32)'; ctx.lineWidth=1;
+    ctx.beginPath();
+    for (let i=0;i<46;i++){
+      const s=(i*97)%W, t=(G.time*520 + i*137) % (H+80);
+      ctx.moveTo(s+ (t*0.12), t-16); ctx.lineTo(s + (t*0.12) - 3, t+10);
+    }
+    ctx.stroke();
+  }
+  if (!dark && k !== 'mist') return;
+  const reach = dark ? NIGHT_SIGHT : MIST_SIGHT;
+  if (!drawWeather.g || drawWeather.r !== reach){
+    drawWeather.r = reach;
+    const g = ctx.createRadialGradient(0,0,reach*0.42, 0,0,reach);
+    g.addColorStop(0, 'rgba(4,6,16,0)'); g.addColorStop(1, dark ? 'rgba(4,6,16,0.88)' : 'rgba(150,164,196,0.5)');
+    drawWeather.g = g;
+  }
+  ctx.save(); ctx.translate(G.px, G.py); ctx.fillStyle=drawWeather.g;
+  ctx.fillRect(-W-G.px, -H-G.py, W*3, H*3);
+  ctx.restore();
 }
 function drawEnemy(e){
   blit(enemySpr(e), e.x, e.y);
@@ -908,8 +1063,8 @@ function hideFloats(){ ['menu-btn','summon-btn','focus-btn'].forEach(id=>$(id).c
 function gameOver(won, quit){
   if (!G || G.over) return;
   G.running=false; G.over=true; G.paused=false; keys.clear(); drag=null;
-  if (G.score>G.best){ G.best=G.score; (G.daily?saveBestD:(G.endless?saveBestE:saveBest))(G.best); }
-  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(G.daily?'sky-run-daily':(G.endless?'sky-run-endless':'sky-run'), G.score, { seed: G.daily ? G.day : undefined, credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop } });
+  if (G.score>G.best){ G.best=G.score; (G.assist?saveBestA:(G.daily?saveBestD:(G.endless?saveBestE:saveBest)))(G.best); }
+  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(scoreSlug(), G.score, { seed: G.daily ? G.day : undefined, credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop, assist:G.assist, sky:G.sky.kind } });
   setFocus(false);
   hideFloats();
   $('pause').classList.add('hidden');
@@ -919,7 +1074,10 @@ function gameOver(won, quit){
       ? 'Princess rose from a pawn all the way to the <b>Queen</b> — and flew the whole sky, through the CEO\'s Office and out the other side.'
       : (quit ? 'You ended the run over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.'
               : 'Princess went down over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.')) +
-    '<br>Score <b>'+G.score+'</b>' + (G.score>G.prevBest?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best);
+    '<br>Score <b>'+G.score+'</b>' + (G.score>G.prevBest?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best) +
+    (G.assist ? '<br><span style="color:#ffd36b">🤝 Flown with assist — kept on its own board.</span>' : '') +
+    (G.tricks ? '<br><span style="color:#cfe0ff">Crockett picked up '+G.tricks+' trick'+(G.tricks>1?'s':'')+': '+
+        TRICKS.slice(0,G.tricks).map(t=>t.glyph+' '+t.name).join(' · ')+'</span>' : '');
   sfx(won?'win':'lose');
   $('result').classList.remove('hidden');
 }
@@ -927,7 +1085,11 @@ function pause(){
   if (!live()) return;
   G.paused = true; setFocus(false); keys.clear(); drag = null;
   $('pause-where').textContent = (curRegion().secret ? '★ ' : '') + curRegion().name;
-  $('pause-score').innerHTML = 'Score <b>'+G.score+'</b> · '+RANK_NAME[G.rank];
+  // the pause screen is where his tricks get their names — in the air you only ever see him do them
+  $('pause-score').innerHTML = 'Score <b>'+G.score+'</b> · '+RANK_NAME[G.rank] +
+    (G.assist ? ' · <span style="color:#ffd36b">🤝 assist</span>' : '') +
+    (G.tricks ? '<br><span style="font-size:12px;color:#cfe0ff">Crockett knows: ' +
+        TRICKS.slice(0,G.tricks).map(t=>t.glyph+' <b>'+t.name+'</b> — '+t.note).join('<br>') + '</span>' : '');
   $('pause').classList.remove('hidden');
 }
 function resume(){
@@ -972,10 +1134,17 @@ function copyPng(){
   } catch(e){ download(); }
 }
 function refreshBest(){
-  const b=loadBest(), d=loadBestD(), e=loadBestE(), bits=['Best: '+(b||'—')];
+  const b=loadBest(), d=loadBestD(), e=loadBestE(), a=loadBestA(), bits=['Best: '+(b||'—')];
   if (d) bits.push('today '+d);
   if (e) bits.push('endless '+e);
+  if (a) bits.push('assist '+a);
   $('best-line').textContent = bits.join(' · ');
+  // what the sky over Checker Town is doing right now — and what it will do to the flight
+  const s = skyOutside(), line = $('sky-line');
+  const say = s.kind==='rain' ? '🌧 Rain over the town — the wind will lean on her.'
+            : s.kind==='mist' ? '🌫 Mist over the town — you will not see far.'
+            : s.night ? '🌙 Night over the town — her light only reaches so far.' : '';
+  line.hidden = !say; line.textContent = say;
 }
 function openMenu(){ if(G){ G.running=false; G.paused=false; } setFocus(false); keys.clear(); drag=null;
   $('result').classList.add('hidden'); $('pause').classList.add('hidden'); hideFloats();
@@ -992,8 +1161,10 @@ $('resume-btn').addEventListener('click', resume);
 $('end-btn').addEventListener('click', function(){ gameOver(false, true); });
 $('summon-btn').addEventListener('click', summon);
 document.querySelectorAll('.snd').forEach(b => b.addEventListener('click', function(){ initAudio(); setSound(!sndOn); }));
+$('assist-btn').addEventListener('click', function(){ setAssist(!assistOn); refreshBest(); });
 
 setSound(sndOn);
+setAssist(assistOn);
 refreshBest();
 </script>
 </body>
