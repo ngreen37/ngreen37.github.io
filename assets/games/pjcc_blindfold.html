@@ -221,9 +221,11 @@
     <div class="describe-row">
       <input id="describe-in" class="describe-in" placeholder="your move…" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button id="audio-replay" hidden>🔊 Replay</button>
+      <button id="mic-btn" hidden>🎙 Say it</button>
       <button class="primary" id="describe-go">Play</button>
     </div>
   </div>
+  <div class="msg" id="recap" hidden></div>
   <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target.</div>
   <div class="row">
     <button id="cp-btn">❓ Checkpoint</button>
@@ -724,6 +726,92 @@ if (RUN_UI) (function(){
     try{ window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.96; u.pitch=1; window.speechSynthesis.speak(u); return true; }catch(e){ return false; }
   }
   function typingMode(){ return mode==='describe' || mode==='audio'; }
+
+  /* ⭐⭐ SAY YOUR MOVE. Audio-only reads the position out; this is the other half — you answer out
+     loud, and nothing about the board ever reaches your eyes.
+     ⚠⚠ THE HARD PART IS NOT THE MIC, IT IS THE TRANSCRIPT. A speech engine has never heard of
+     algebraic notation: "Nf3" comes back as "knight to f three", "Be4" as "be for" or "bee e4",
+     "d4" as "d four" or "dee four" or even "before". So the words are normalized to notation FIRST
+     and the result goes through typedMoves, which already knows how to be strict about ambiguity —
+     a transcript that names two different legal moves is refused exactly like typing "Nd2" is.
+     ⚠ This is the one thing here that cannot be tested headlessly: there is no microphone in a
+     test runner. `speechToMove` is a pure function of a string and IS tested, hard; the mic itself
+     is guarded and simply never appears when the browser has no recognizer. */
+  var RecogAPI = (typeof window!=='undefined') && (window.SpeechRecognition || window.webkitSpeechRecognition);
+  var micOK = !!RecogAPI, recog = null, micOn = false;
+  var SAY_PIECE = { knight:'N', horse:'N', night:'N', bishop:'B', rook:'R', castle:'R', queen:'Q', king:'K' };
+  // what a recognizer actually hands back for a bare file letter
+  var SAY_FILE = { ay:'a', eh:'a', a:'a', bee:'b', be:'b', b:'b', see:'c', sea:'c', cee:'c', c:'c',
+                   dee:'d', d:'d', e:'e', ee:'e', ef:'f', eff:'f', f:'f', gee:'g', jee:'g', g:'g',
+                   aitch:'h', h:'h', age:'h' };
+  var SAY_NUM = { one:'1', won:'1', two:'2', to:'2', too:'2', three:'3', four:'4', for:'4', fore:'4',
+                  five:'5', six:'6', sicks:'6', seven:'7', eight:'8', ate:'8' };
+  function speechToMove(raw){
+    var t = String(raw || '').toLowerCase().replace(/[.,!?]/g, ' ').trim();
+    if (!t) return '';
+    if (/castle[s]? (long|queen)/.test(t) || /queen ?side castle/.test(t)) return 'O-O-O';
+    if (/castle/.test(t)) return 'O-O';
+    var words = t.split(/\s+/), out = '';
+    for (var i=0;i<words.length;i++){
+      var w = words[i];
+      /* ⚠ "to" IS BOTH. "knight to f3" and "d to" (d2) come back identically, so the only thing
+         that can tell them apart is what came before: a bare file letter wants a rank next, and
+         anything else is the preposition. */
+      if (w === 'to' || w === 'too') { if (/[a-h]$/.test(out)) out += '2'; continue; }
+      if (w === 'takes' || w === 'take' || w === 'x') { out += 'x'; continue; }
+      if (w === 'check' || w === 'mate' || w === 'checkmate' || w === 'please' || w === 'the') continue;
+      if (w === 'promotes' || w === 'promote' || w === 'equals') { out += '='; continue; }
+      if (SAY_PIECE[w] && !out) { out += SAY_PIECE[w]; continue; }   // a piece only leads
+      if (SAY_PIECE[w] && /=$/.test(out)) { out += SAY_PIECE[w]; continue; }
+      var m = w.match(/^([a-h])([1-8])$/);                   // "f3" came through whole
+      if (m) { out += m[1] + m[2]; continue; }
+      if (SAY_FILE[w]) { out += SAY_FILE[w]; continue; }
+      if (SAY_NUM[w]) { out += SAY_NUM[w]; continue; }
+      var d = w.match(/^([a-h])\s*([1-8])$/);
+      if (d) { out += d[1] + d[2]; continue; }
+      if (/^[1-8]$/.test(w)) { out += w; continue; }
+    }
+    return out;
+  }
+  function micStop(){
+    micOn = false;
+    try { if (recog) recog.stop(); } catch(e){}
+    var b = document.getElementById('mic-btn');
+    if (b) b.textContent = '🎙 Say it';
+  }
+  function micStart(){
+    if (!micOK) return;
+    if (micOn) { micStop(); return; }
+    try {
+      recog = new RecogAPI();
+      recog.lang = 'en-US'; recog.interimResults = false; recog.maxAlternatives = 4;
+      recog.onresult = function(ev){
+        var tries = [];
+        for (var i=0;i<ev.results[0].length;i++) tries.push(ev.results[0][i].transcript);
+        heardMove(tries);
+      };
+      recog.onerror = function(e){ micStop(); setMsg('The microphone did not catch that' + (e && e.error === 'not-allowed' ? ' — it needs permission.' : '.'), ''); };
+      recog.onend = function(){ micStop(); };
+      recog.start(); micOn = true;
+      document.getElementById('mic-btn').textContent = '🎙 Listening…';
+      setMsg('Listening — say your move.', '');
+    } catch(e){ micStop(); }
+  }
+  /* ⚠ A recognizer offers several readings; take the FIRST one that names a legal move rather than
+     the loudest one. "b4" and "before" are the same sound and only one of them is chess. */
+  function heardMove(tries){
+    micStop();
+    if (!prob) return;
+    for (var i=0;i<tries.length;i++){
+      var txt = speechToMove(tries[i]);
+      if (txt && typedMoves(prob.S, txt).length){
+        var di = document.getElementById('describe-in');
+        di.value = txt; setMsg('Heard: ' + tries[i] + ' → ' + txt, '');
+        submitDescribe(); return;
+      }
+    }
+    setMsg('Heard "' + (tries[0] || '') + '" — say it as "knight f three" or "d four".', '');
+  }
   var PNAME={ k:'King', q:'Queen', r:'Rook', b:'Bishop', n:'Knight', p:'Pawn' };
   function piecesSpoken(b, white){ var list=[]; for(var i=0;i<64;i++){ var p=b[i]; if(!p||isW(p)!==white) continue; list.push(PNAME[p.toLowerCase()]+' on '+nameFromSq(i)); } return list; }
   // A memory aid that frames the position without giving away the move.
@@ -790,7 +878,8 @@ if (RUN_UI) (function(){
 
   function newPuzzle(){
     clearPieces(); clearMarks(); phase='from'; curMistake=false;
-    cpDone=false; cpWant=null; clearTimeout(peekT);
+    cpDone=false; cpWant=null; clearTimeout(peekT); micStop();
+    var rc=document.getElementById('recap'); if(rc){ rc.hidden=true; rc.textContent=''; }
     var dw=document.getElementById('describe-wrap'), bd=document.getElementById('board');
     if(mode==='squares'){
       prob=null; dw.hidden=false; bd.classList.add('no-board');
@@ -826,6 +915,7 @@ if (RUN_UI) (function(){
     if(typingMode()){
       dw.hidden=false; bd.classList.add('no-board'); var di=document.getElementById('describe-in'); di.value='';
       setTimeout(function(){ try{ di.focus(); }catch(e){} },60);
+      document.getElementById('mic-btn').hidden = !micOK;
       if(mode==='audio'){
         areplay.hidden=false;
         dnote.innerHTML='🔊 No board, no text. <b>Listen</b> to the position, picture it, then <b>type the winning move</b>.';
@@ -839,10 +929,72 @@ if (RUN_UI) (function(){
         setMsg('Light the clue, picture the board, then type the winning move.','');
       }
     }
-    else { dw.hidden=true; bd.classList.remove('no-board'); areplay.hidden=true; setMsg('Light the clue, then click the piece that moves.',''); }
+    else { dw.hidden=true; bd.classList.remove('no-board'); areplay.hidden=true; document.getElementById('mic-btn').hidden=true; setMsg('Light the clue, then click the piece that moves.',''); }
     refreshPeek();
     renderMindsEye();
   }
+
+  /* ⭐ THE RECAP — what actually happened, played out by the engine rather than described by me.
+     For a mate in two that means finding Black's best try and the move that finishes it, so the
+     line you are told is a line the referee agrees with. For a fork or a discovery it names the two
+     things the move hit, which is the whole point of the motif and the thing you are training to
+     see. It is spoken as well as printed wherever speech works — this room is about hearing a
+     position, and the recap is the part you can check yourself against. */
+  function bestBlackTry(S, m){
+    var after = makeMove(S, m), replies = legalMoves(after);
+    if (!replies.length) return null;
+    // the try that makes White work hardest: prefer one that is not mated at once
+    var best = replies[0];
+    for (var i=0;i<replies.length;i++){
+      var r = makeMove(after, replies[i]), mates = 0, fin = legalMoves(r);
+      for (var j=0;j<fin.length;j++) if (isCheckmate(makeMove(r, fin[j]))) { mates++; break; }
+      if (!mates) return replies[i];                    // it survives — that is the critical try
+      if (replies[i].to !== undefined && makeMove(after, replies[i]).b[replies[i].to]) best = replies[i];
+    }
+    return best;
+  }
+  function finisher(S, m, reply){
+    var r = makeMove(makeMove(S, m), reply), fin = legalMoves(r);
+    for (var i=0;i<fin.length;i++) if (isCheckmate(makeMove(r, fin[i]))) return { S:r, m:fin[i] };
+    return null;
+  }
+  function recapText(){
+    if (!prob || !prob.sols || !prob.sols.length) return '';
+    var S = prob.S, m = prob.sols[0], san = moveSAN(S, m), g = prob.goal || '';
+    if (/two/i.test(g)){
+      var try1 = bestBlackTry(S, m);
+      if (try1){
+        var after = makeMove(S, m), rs = moveSAN(after, try1), fin = finisher(S, m, try1);
+        if (fin) return san + ' — and every answer loses. The best try is ' + rs + ', and then ' +
+                        moveSAN(fin.S, fin.m) + ' is mate.';
+      }
+      return san + ' forces mate next move.';
+    }
+    if (/discover/i.test(g)){
+      var ns = makeMove(S, m), hit = [];
+      for (var i=0;i<64;i++){ var p = ns.b[i];
+        if (p && isB(p) && p.toLowerCase() !== 'k' && isAttacked(ns.b, i, 'w')) hit.push(p.toLowerCase() === 'q' ? 'the queen' : 'the ' + ({r:'rook',b:'bishop',n:'knight',p:'pawn'})[p.toLowerCase()] + ' on ' + nameFromSq(i));
+      }
+      return san + ' — stepping aside opens the check, and the piece that moved takes aim at ' +
+             (hit.length ? hit.slice(0,2).join(' and ') : 'what it left behind') + '. The king must answer first.';
+    }
+    if (/fork/i.test(g)){
+      var nf = makeMove(S, m), got = [];
+      for (var k=0;k<64;k++){ var q = nf.b[k];
+        if (q && isB(q) && isAttacked(nf.b, k, 'w')) got.push(q.toLowerCase()==='k' ? 'the king' : q.toLowerCase()==='q' ? 'the queen' : 'the ' + ({r:'rook',b:'bishop',n:'knight',p:'pawn'})[q.toLowerCase()]);
+      }
+      return san + ' hits ' + (got.length > 1 ? got.slice(0,2).join(' and ') : 'two things at once') + '. Only one of them can move.';
+    }
+    return san + ' is mate — the king has no square left.';
+  }
+  function showRecap(){
+    var t = recapText();
+    if (!t) return;
+    var el = document.getElementById('recap');
+    el.hidden = false; el.textContent = '🧠 ' + t;
+    if (speechOK && (mode === 'audio' || recapSpeak)) speak(t);
+  }
+  var recapSpeak = false;
 
   /* ---- per-motif accuracy + miss log (surfaced on the Dossier) ---- */
   /* ⭐ THE SQUARES DRILL. Blindfold play falls apart on the board itself, not on the tactics: if
@@ -1037,6 +1189,7 @@ if (RUN_UI) (function(){
     else { slip(); setMsg('Not the move — re-read the clue and try again.','bad');
       di.value=''; try{ di.focus(); }catch(e){} }
   }
+  document.getElementById('mic-btn').onclick=micStart;
   document.getElementById('cp-btn').onclick=askCheckpoint;
   document.getElementById('peek-btn').onclick=spendPeek;
   document.getElementById('describe-go').onclick=submitDescribe;
@@ -1072,6 +1225,7 @@ if (RUN_UI) (function(){
   function revealAll(){ var b=prob.S.b; for(var i=0;i<64;i++){ if(b[i]){ var nm=nameFromSq(i); if(!sqEls[nm].innerHTML) place(nm,b[i]); } } }
   function finishSolve(clean){
     cpWant=null; clearTimeout(peekT); refreshPeek();
+    showRecap();
     recordStat(prob.goal, clean); if(!clean) recordMiss();
     if(clean){ combo++; st.solved++; st.streak++; st.diff=Math.min(10, st.diff+0.34); if(lightsOut) st.diff=Math.min(10, st.diff+0.2);
       setMsg('Solved! ✓'+(mode==='speed'&&combo>=3?(' ⚡ '+combo+' combo!'):'')+(lightsOut?' ⭐ lights-out':''),'good'); }
@@ -1097,7 +1251,7 @@ if (RUN_UI) (function(){
     document.getElementById('board').classList.remove('no-board'); document.getElementById('describe-wrap').hidden=true;
     recordStat(prob.goal, false); recordMiss(); combo=0; updateCombo();
     revealAll(); clearMarks(); sqEls[prob.from].classList.add('from'); sqEls[prob.to].classList.add('target');
-    phase='done'; curMistake=true; st.streak=0; st.diff=Math.max(1, st.diff-0.7); save();
+    phase='done'; curMistake=true; st.streak=0; st.diff=Math.max(1, st.diff-0.7); save(); showRecap();
     document.getElementById('streak').textContent=st.streak; document.getElementById('diff-fill').style.width=(st.diff/10*100)+'%';
     setMsg('Answer: ' + prob.from + ' → ' + prob.to + '.','');
     document.getElementById('next').disabled=false;

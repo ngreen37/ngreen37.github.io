@@ -28,6 +28,7 @@ const HOOK = `
       prob = { S: S, goal: goal, sols: sols, from: nameFromSq(sols[0].from), to: nameFromSq(sols[0].to), clue: describeBoard(S.b), d: 5 };
       clearPieces(); clearMarks(); phase = 'from'; curMistake = false; document.getElementById('reveal').disabled = false;
       cpDone = false; cpWant = null;
+      var rc = document.getElementById('recap'); rc.hidden = true; rc.textContent = '';
     },
     submit: function (t) { document.getElementById('describe-in').value = t; submitDescribe(); },
     click: function (sq) { clickSquare(sq); },
@@ -48,7 +49,18 @@ const HOOK = `
       shown: Array.prototype.filter.call(document.querySelectorAll('#board .sq'), function (e) { return e.innerHTML; }).length }; },
     ask: function () { askCheckpoint(); },
     peek: function () { spendPeek(); },
-    slipped: function () { return curMistake; }
+    slipped: function () { return curMistake; },
+    setMate2: function (fen) {
+      var p = mate2From(fen); if (!p) return null;
+      prob = { S: p.S, goal: p.goal, sols: p.sols, from: nameFromSq(p.sols[0].from), to: nameFromSq(p.sols[0].to), clue: describeBoard(p.S.b), d: 5 };
+      clearPieces(); clearMarks(); phase = 'from'; curMistake = false; cpDone = false; cpWant = null;
+      var rc = document.getElementById('recap'); rc.hidden = true; rc.textContent = '';
+      return { from: prob.from, to: prob.to, n: p.sols.length };
+    },
+    say: function (t) { return speechToMove(t); },
+    heard: function (list) { heardMove(list); },
+    recap: function () { return { text: recapText(), shown: document.getElementById('recap').textContent, hidden: document.getElementById('recap').hidden }; },
+    micOK: function () { return { api: micOK, btnHidden: document.getElementById('mic-btn').hidden }; }
   };
 `;
 
@@ -422,6 +434,71 @@ function serve() {
     ok(cp.duringPeek > cp.beforePeek && cp.spent === 0 && cp.afterPeek === 0 && cp.stillNoSlip === false,
       '⭐ a peek shows the position, spends itself, and closes again with no slip  [' +
       cp.beforePeek + ' -> ' + cp.duringPeek + ' -> ' + cp.afterPeek + ']');
+
+    /* ── saying the move out loud ───────────────────────────────────────────────
+       The microphone cannot be tested here — there isn't one. What CAN be tested is the part that
+       actually breaks: a speech engine has never heard of algebraic notation, and hands back
+       "knight to f three" and "be for" and "dee four". */
+    const heard = await B(() => {
+      const bf = window.__bf, say = bf.say;
+      return {
+        pairs: [
+          ['knight to f three', 'Nf3'], ['knight f3', 'Nf3'], ['night f three', 'Nf3'],
+          ['queen h five', 'Qh5'], ['queen takes h seven', 'Qxh7'],
+          ['d four', 'd4'], ['dee four', 'd4'], ['e4', 'e4'],
+          ['bishop to see four', 'Bc4'], ['rook a one', 'Ra1'],
+          ['castles', 'O-O'], ['castle long', 'O-O-O'], ['castle queen side', 'O-O-O'],
+          ['d to', 'd2'], ['bishop to c4', 'Bc4'],
+          ['e eight equals queen', 'e8=Q'], ['knight f three check', 'Nf3'],
+          ['', ''], ['what time is it', '']
+        ].map(([said, want]) => [said, say(said), want]),
+        api: bf.micOK()
+      };
+    });
+    const wrong = heard.pairs.filter(([, got, want]) => got !== want);
+    ok(!wrong.length, '⭐⭐ spoken words become notation  [' +
+      (wrong.length ? wrong.map((w) => '"' + w[0] + '"→' + w[1] + ' want ' + w[2]).join(' | ') : heard.pairs.length + ' phrases') + ']');
+    const mic = await B(async () => {
+      const bf = window.__bf; bf.setMode('describe');
+      await new Promise((r) => setTimeout(r, 120));
+      bf.setProb('6k1/5ppp/8/8/8/8/5PPP/R2Q2K1 w - - 0 1', 'Mate in one', ['a1a8']);
+      // a recognizer hands back several readings; the one that is chess must win, wherever it sits
+      bf.heard(['before', 'rook a eight', 'rook eight']);
+      return { st: bf.state(), val: document.getElementById('describe-in').value };
+    });
+    ok(mic.st.phase === 'done', '…and the reading that names a legal move wins, not the loudest one  [' + mic.val + ']');
+    const deaf = await B(async () => {
+      const bf = window.__bf;
+      bf.setProb('6k1/5ppp/8/8/8/8/5PPP/R2Q2K1 w - - 0 1', 'Mate in one', ['a1a8']);
+      bf.heard(['what time is it', 'lunch']);
+      return { st: bf.state() };
+    });
+    ok(deaf.st.phase !== 'done' && deaf.st.slip === false,
+      '…and a transcript with no move in it is not a slip, it is a re-ask  [slip ' + deaf.st.slip + ']');
+
+    /* ── the recap plays the line out, it does not describe it ──────────────── */
+    const rc = await B(async () => {
+      const bf = window.__bf; const out = {};
+      bf.setMode('classic');                      // ⚠ clicks do nothing in a no-board mode
+      await new Promise((r) => setTimeout(r, 120));
+      bf.setProb('6k1/5ppp/8/8/8/8/5PPP/R2Q2K1 w - - 0 1', 'Mate in one', ['a1a8']);
+      out.one = bf.recap().text;
+      // a real mate in two out of the shipped pool: the recap must name Black's try and the finish
+      // ⚠ the ENGINE picks the key move here. An earlier version of this test typed one in and
+      // was testing a move that merely hangs a rook.
+      out.key = bf.setMate2('8/8/6R1/k3K3/8/8/8/6R1 w - - 0 1');
+      out.two = bf.recap().text;
+      out.hiddenFirst = bf.recap().hidden;
+      bf.click(out.key.from); bf.click(out.key.to);
+      out.shown = bf.recap().shown;
+      out.hiddenAfter = bf.recap().hidden;   // ⚠ text in a hidden div is not a recap anybody reads
+      return out;
+    });
+    ok(/mate/i.test(rc.one), 'the recap says why a mate in one is mate  [' + rc.one + ']');
+    ok(/best try is [KQRBN]?[a-h]?[1-8]?x?[a-h][1-8]/.test(rc.two) && /is mate\.$/.test(rc.two),
+      "⭐ …and for a mate in two it plays out Black's best try and the move that finishes it  [" + rc.two + ']');
+    ok(rc.hiddenFirst === true && rc.hiddenAfter === false && /🧠/.test(rc.shown),
+      '…and it is hidden until the puzzle is over, then shown  [' + (rc.key ? rc.key.from + rc.key.to : 'no key') + ']');
 
     /* ── a mode chip you cannot read is not a chip ──────────────────────────────
        ⛑ `flex:1; min-width:0` squeezed every label until it was cut off — four of six at 390px,
