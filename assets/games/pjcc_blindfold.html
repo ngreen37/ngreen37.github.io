@@ -122,6 +122,21 @@
   .mode-btn:hover { border-color:#7a68c0; color:#f0e6ff; }
   .mode-btn.active { background:#2a1a5e; border-color:var(--gold); color:var(--gold); }
   .combo-chip { color:#6bffb8; } .combo-chip b { color:#6bffb8; }
+  /* the Daily calendar — five weeks of dots, and nothing in it is a fixed pixel width */
+  /* the simul — two columns of moves, stacking to one on a phone */
+  .sim-lead { color:#c9a7ff; font-size:13px; max-width:420px; margin:0 auto 10px; line-height:1.5; }
+  .sim-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; max-width:460px; margin:0 auto; }
+  .sim-col { background:#120a26; border:1px solid #2a1d54; border-radius:8px; padding:8px; text-align:left; }
+  .sim-col.turn { border-color:var(--gold); }
+  .sim-who { color:var(--gold); font-size:12px; font-weight:bold; margin-bottom:4px; }
+  .sim-state { color:#b79aff; font-size:11.5px; margin-bottom:5px; }
+  .sim-moves { color:#e7ddff; font-size:11.5px; line-height:1.6; max-height:150px; overflow:auto; word-break:break-word; }
+  .cal { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:8px 0 0; }
+  .cal-lab { color:#b79aff; font-size:12px; } .cal-lab b { color:var(--gold); }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; flex:1 1 150px; max-width:220px; }
+  .cal-d { display:block; aspect-ratio:1; border-radius:2px; background:#1d1140; border:1px solid #2a1d54; }
+  .cal-d.on { background:var(--gold); border-color:var(--gold); }
+  .cal-d.now { outline:1px solid #7a68c0; outline-offset:1px; }
   .describe-wrap { background:#120a26; border:1px solid #2a1d54; border-radius:8px; padding:12px; margin:8px 0; }
   .describe-note { color:#b79aff; font-size:12.5px; line-height:1.5; margin-bottom:8px; }
   .describe-note b { color:var(--gold); }
@@ -225,9 +240,11 @@
       <button class="primary" id="describe-go">Play</button>
     </div>
   </div>
+  <div class="cal" id="cal" hidden></div>
   <div class="msg" id="recap" hidden></div>
   <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target.</div>
   <div class="row">
+    <button id="fog-btn">🌫 Fog: a square</button>
     <button id="cp-btn">❓ Checkpoint</button>
     <button id="peek-btn">👁 Peek 0</button>
     <button id="reveal">Reveal position</button>
@@ -263,6 +280,26 @@
       <button id="me-replay" hidden>▶ Replay</button>
       <button id="me-resign">Resign</button>
       <button id="me-close">Leave</button>
+    </div>
+  </div>
+</div>
+
+<!-- The simul: two games at once, and no board anywhere on the screen -->
+<div class="overlay hidden" id="sim-overlay">
+  <div class="me-wrap">
+    <div class="me-sub">Two at once</div>
+    <div class="me-title">THE SIMUL</div>
+    <p class="sim-lead">You are White on both boards and there is no board to look at. Type a move for the
+      board that is waiting, or put its number first — <b>1 e4</b>, <b>2 Nf3</b>.</p>
+    <div class="sim-grid" id="sim-grid"></div>
+    <div class="me-status think" id="sim-status">Board 1 — your move.</div>
+    <div class="describe-row" style="max-width:340px;margin:8px auto 0;">
+      <input id="sim-in" class="describe-in" placeholder="your move…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="primary" id="sim-go">Play</button>
+    </div>
+    <div class="row">
+      <button id="sim-resign">Resign both</button>
+      <button id="sim-close">Leave</button>
     </div>
   </div>
 </div>
@@ -878,7 +915,7 @@ if (RUN_UI) (function(){
 
   function newPuzzle(){
     clearPieces(); clearMarks(); phase='from'; curMistake=false;
-    cpDone=false; cpWant=null; clearTimeout(peekT); micStop();
+    cpDone=false; cpWant=null; fogRung=0; fogWait=0; clearTimeout(peekT); micStop();
     var rc=document.getElementById('recap'); if(rc){ rc.hidden=true; rc.textContent=''; }
     var dw=document.getElementById('describe-wrap'), bd=document.getElementById('board');
     if(mode==='squares'){
@@ -887,9 +924,12 @@ if (RUN_UI) (function(){
       document.getElementById('describe-note').innerHTML='🎯 No board and no pieces — just the squares. Answer as fast as you can.';
       document.getElementById('reveal').disabled=true;
       document.getElementById('next').disabled=true;
-      startDrill(); refreshPeek(); renderMindsEye(); return;
+      startDrill(); refreshPeek(); refreshFog(); renderMindsEye(); return;
     }
     document.getElementById('describe-in').placeholder='your move…';
+    // ⚠ ABOVE the early return: a finished Daily is exactly when you want to see the streak
+    document.getElementById('cal').hidden = (mode!=='daily');
+    if(mode==='daily') renderCalendar();
     if(mode==='daily' && dailyDone()){
       prob=null; document.getElementById('goal').textContent='📅 Daily · done';
       document.getElementById('clue-text').innerHTML='📅 You have already solved today’s <b>Daily Blindfold</b>. Everyone gets the same position — come back tomorrow, or switch to Classic / Speed to keep training.';
@@ -930,7 +970,7 @@ if (RUN_UI) (function(){
       }
     }
     else { dw.hidden=true; bd.classList.remove('no-board'); areplay.hidden=true; document.getElementById('mic-btn').hidden=true; setMsg('Light the clue, then click the piece that moves.',''); }
-    refreshPeek();
+    refreshPeek(); refreshFog();
     renderMindsEye();
   }
 
@@ -1080,11 +1120,65 @@ if (RUN_UI) (function(){
     drill = null;
   }
 
+  /* ⭐⭐ THE FOG LADDER — a square, then a rank, then the whole board, and each rung costs more
+     than the last. The point is that giving up is not one button: when you are stuck, the cheapest
+     honest thing is to ask about ONE square, and most of the time that is all you needed.
+     ⚠⚠ THE RUNGS ARE PRICED, AND THE PRICE IS THE WHOLE DESIGN. A square is free — glimpsing one
+     square is what blindfold practice IS. A rank is a slip: it hands you eight squares at once, so
+     the solve still counts but the streak does not. The board is the reveal that was already here,
+     and it ends the puzzle. Anything cheaper than that and the ladder is just a Reveal button with
+     extra steps.
+     ⚠ YOU choose the square and the rank. Showing the rank the answer lives on would hand over the
+     answer, which is the one thing a hint must not do. */
+  var FOG_RUNGS = [
+    { n:'a square', note:'Tap any square — you will be told what is on it. Free.' },
+    { n:'a rank',   note:'Tap a square — its whole rank lights up. Counts as a slip.' },
+    { n:'the board', note:'The whole position, and the puzzle is over.' }
+  ];
+  var fogRung = 0, fogWait = 0;   // fogWait: 1 = waiting for a square, 2 = waiting for a rank
+  function refreshFog(){
+    var b = document.getElementById('fog-btn');
+    if (!b) return;
+    b.disabled = !prob || phase === 'done' || mode === 'squares';
+    b.textContent = '🌫 Fog: ' + (FOG_RUNGS[Math.min(fogRung, 2)].n);
+  }
+  function climbFog(){
+    if (!prob || phase === 'done' || mode === 'squares') return;
+    if (fogRung >= 2){ failReveal(); return; }
+    fogWait = fogRung + 1;
+    setMsg('🌫 ' + FOG_RUNGS[fogRung].note, '');
+    if (typingMode()) setMsg('🌫 ' + FOG_RUNGS[fogRung].note.replace('Tap any square', 'Type a square (like e4)').replace('Tap a square', 'Type a square (like e4)'), '');
+  }
+  function fogAt(sq){
+    var bd = document.getElementById('board'), was = bd.classList.contains('no-board');
+    if (was) bd.classList.remove('no-board');       // a no-board mode still gets to SEE the glimpse
+    var b = prob.S.b;
+    if (fogWait === 1){
+      var p = b[sqFromName(sq)];
+      if (p) place(sq, p);
+      sqEls[sq].classList.add('from');
+      setTimeout(function(){ if (phase !== 'done') sqEls[sq].classList.remove('from'); }, 700);
+      setMsg(sq + ': ' + (p ? (isW(p) ? 'your ' : 'their ') + ({k:'king',q:'queen',r:'rook',b:'bishop',n:'knight',p:'pawn'})[p.toLowerCase()] : 'empty') + '.', '');
+    } else {
+      var r = +sq[1], shown = 0;
+      for (var f=0; f<8; f++){
+        var nm = String.fromCharCode(97+f) + r, pc = b[sqFromName(nm)];
+        if (pc){ place(nm, pc); shown++; }
+      }
+      slip();                                        // eight squares at once is worth the streak
+      setMsg('Rank ' + r + ': ' + (shown ? shown + (shown === 1 ? ' piece.' : ' pieces.') : 'empty.') + ' That counts as a slip.', '');
+    }
+    fogRung++; fogWait = 0;
+    if (was) setTimeout(function(){ if (phase !== 'done' && was) bd.classList.add('no-board'); }, 1400);
+    refreshFog();
+  }
+
   /* ⭐ A CHECKPOINT BUYS A PEEK. Once a puzzle you can be asked where something is; get it right
      and you earn a peek you may spend now or keep. Answering wrong costs nothing but the
      checkpoint — it must never become another way to lose a streak you were about to earn. */
   var peeks = 0, cpDone = false, cpWant = null, peekT = null;
   function refreshPeek(){
+    refreshFog();
     var pb = document.getElementById('peek-btn'), cb = document.getElementById('cp-btn');
     pb.textContent = '👁 Peek ' + peeks;
     pb.disabled = peeks <= 0 || !prob || phase === 'done';
@@ -1122,6 +1216,51 @@ if (RUN_UI) (function(){
       if (was) bd.classList.add('no-board');
       if (prob && prob.fromSq && phase === 'to'){ place(prob.fromSq, pieceAt(prob.fromSq)); sqEls[prob.fromSq].classList.add('from'); }
     }, 900);
+  }
+
+  /* ⭐⭐ THE DAILY CALENDAR. A streak you cannot see is a streak you do not feel, and a streak that
+     lives on one device is a reason not to change devices. Every solved Daily writes its date into
+     the same blob the account already merges, so the calendar follows you.
+     ⚠⚠ THE STREAK COUNTS BACK FROM TODAY, AND YESTERDAY STILL COUNTS. Counting back from the most
+     recent entry would keep a dead streak alive for months; counting only from today would break
+     it every morning before you have played. So: today or yesterday to be alive, then back day by
+     day. [[everything-earned-syncs]] */
+  function dayList(){ return Array.isArray(st.days) ? st.days : []; }
+  function addDailyDay(){
+    var d = todayStamp(), l = dayList();
+    if (l.indexOf(d) !== -1) return l;
+    l = l.concat([d]).sort();
+    if (l.length > 400) l = l.slice(l.length - 400);
+    st.days = l; save();
+    return l;
+  }
+  function shiftDay(ds, n){
+    var p = ds.split('-'), t = Date.UTC(+p[0], +p[1]-1, +p[2]) + n*86400000, d = new Date(t);
+    return d.toISOString().slice(0,10);
+  }
+  function dailyStreak(){
+    var have = {}, l = dayList();
+    for (var i=0;i<l.length;i++) have[l[i]] = 1;
+    var today = todayStamp(), cur = have[today] ? today : (have[shiftDay(today,-1)] ? shiftDay(today,-1) : null);
+    if (!cur) return 0;
+    var n = 0;
+    while (have[cur]){ n++; cur = shiftDay(cur, -1); }
+    return n;
+  }
+  var CAL_DAYS = 35;
+  function renderCalendar(){
+    var el = document.getElementById('cal');
+    if (!el) return;
+    var have = {}, l = dayList();
+    for (var i=0;i<l.length;i++) have[l[i]] = 1;
+    var today = todayStamp(), cells = [];
+    for (var k=CAL_DAYS-1; k>=0; k--){
+      var ds = shiftDay(today, -k), on = !!have[ds], isToday = (ds === today);
+      cells.push('<i class="cal-d' + (on ? ' on' : '') + (isToday ? ' now' : '') + '" title="' + ds + '"></i>');
+    }
+    var n = dailyStreak();
+    el.innerHTML = '<span class="cal-lab">📅 Daily streak <b>' + n + '</b>' +
+      (n ? ' day' + (n===1?'':'s') : '') + '</span><span class="cal-grid">' + cells.join('') + '</span>';
   }
 
   function motifKey(goal){
@@ -1171,6 +1310,11 @@ if (RUN_UI) (function(){
   function isSol(m){ return prob.sols.some(function(s){ return s.from===m.from && s.to===m.to && (s.promo||'')===(m.promo||''); }); }
   function submitDescribe(){
     if(mode==='squares'){ if(drill) submitDrill(); return; }
+    if(fogWait){
+      var ft=String(document.getElementById('describe-in').value||'').trim().toLowerCase();
+      if(!/^[a-h][1-8]$/.test(ft)){ setMsg('A square, like e4.',''); return; }
+      fogAt(ft); document.getElementById('describe-in').value=''; return;
+    }
     if(cpWant){
       var t=String(document.getElementById('describe-in').value||'').trim().toLowerCase();
       if(!/^[a-h][1-8]$/.test(t)){ setMsg('A square, like e4.',''); return; }
@@ -1189,6 +1333,15 @@ if (RUN_UI) (function(){
     else { slip(); setMsg('Not the move — re-read the clue and try again.','bad');
       di.value=''; try{ di.focus(); }catch(e){} }
   }
+  document.getElementById('sim-go').onclick=function(){ simPlay(document.getElementById('sim-in').value); };
+  document.getElementById('sim-in').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); simPlay(this.value); } });
+  document.getElementById('sim-resign').onclick=function(){
+    if(!SIM) return;
+    SIM.forEach(function(b){ if(!b.ended){ b.ended=true; b.result='✗ Resigned'; } });
+    drawSim(); simAfter();
+  };
+  document.getElementById('sim-close').onclick=closeSimul;
+  document.getElementById('fog-btn').onclick=climbFog;
   document.getElementById('mic-btn').onclick=micStart;
   document.getElementById('cp-btn').onclick=askCheckpoint;
   document.getElementById('peek-btn').onclick=spendPeek;
@@ -1209,6 +1362,7 @@ if (RUN_UI) (function(){
   function solutionFromSquares(){ var o={}; prob.sols.forEach(function(s){ o[nameFromSq(s.from)]=1; }); return o; }
   function clickSquare(sq){
     if(mode==='squares') return;
+    if(fogWait){ fogAt(sq); return; }
     if(cpWant){ answerCheckpoint(sq); return; }
     if(phase==='done' || typingMode()) return;
     if(phase==='from'){
@@ -1238,7 +1392,8 @@ if (RUN_UI) (function(){
     document.getElementById('next').disabled=false;
     var motif={}; try{ motif=JSON.parse(localStorage.getItem('pjcc.blindfold.stats.v1'))||{}; }catch(e){}
     if(window.PJCC){
-      if(mode==='daily'){ markDaily({ done:true, solved:clean }); PJCC.saveScore('blindfold', st.solved, { seed: todayStamp(), credits: clean?2:1, data:{ daily:true, motif:motif } }); }
+      if(mode==='daily'){ markDaily({ done:true, solved:clean }); var days=addDailyDay(); renderCalendar();
+        PJCC.saveScore('blindfold', st.solved, { seed: todayStamp(), credits: clean?2:1, data:{ daily:true, motif:motif, days:days.slice(-60) } }); }
       else { var creds = mode==='speed' ? Math.min(5, 1+Math.floor(combo/3)) : 1; PJCC.saveScore('blindfold', st.solved, { credits:creds, data:{ streak:st.streak, diff:Math.round(st.diff), motif:motif } }); }
     }
     renderMindsEye();
@@ -1263,12 +1418,114 @@ if (RUN_UI) (function(){
   function renderMindsEye(){
     var m=document.getElementById('mindseye');
     if(st.eye || st.solved>=UNLOCK_AT){ st.eye=true;
-      m.innerHTML='<button class="me-unlock" id="me-launch">👁 THE MIND’S EYE — blindfold duel with the CEO'+(st.trophy?' 🏆':'')+'</button>';
+      m.innerHTML='<button class="me-unlock" id="me-launch">👁 THE MIND’S EYE — blindfold duel with the CEO'+(st.trophy?' 🏆':'')+'</button>'
+        + (st.trophy ? '<button class="me-unlock" id="sim-launch">👁👁 THE SIMUL — two of them at once, no board'+(st.simul?' 🏆':'')+'</button>' : '');
       document.getElementById('me-launch').onclick=openMindsEye;
+      // ⚠ the simul is the harder room and it opens only once the Mind's Eye has been beaten once
+      var sl=document.getElementById('sim-launch'); if(sl) sl.onclick=openSimul;
     } else {
       m.innerHTML='<div class="me-locked">🔒 Solve <b>'+UNLOCK_AT+'</b> blindfold puzzles to unlock <b>The Mind’s Eye</b> — a full game against the CEO, played blind. You are at '+st.solved+'.</div>';
     }
   }
+
+  /* ⭐⭐ THE SIMUL — two games at once, and there is no board on the screen at all. That is the
+     whole feature: the Mind's Eye still draws a board you may peek at, and holding TWO positions
+     with nothing to look at is a different skill entirely.
+     ⚠ THE OPPONENTS ARE THIS ROOM'S OWN (Intern / CEO / Board). The Park Tables bench lives in
+     `BOTS` in games/park-tables/index.html, mirrored into `_data/regulars.yml` and gated by
+     `test:regulars` — typing those names here would be a THIRD copy of a roster this file does not
+     own, which is the exact trap that gate exists to catch.
+     ⚠⚠ THE TWO GAMES SHARE NOTHING. Every bit of state is per board, in an array. The Mind's Eye
+     keeps its state in a dozen module-level vars and reusing them would have made board 2 a
+     corrupted copy of board 1. */
+  var SIM = null, simBusy = false;
+  var SIM_PAIR = ['intern', 'ceo'];
+  function simNew(){
+    SIM = SIM_PAIR.map(function(t, i){
+      return { n:i+1, tier:t, S:parseFEN(START_FEN), moves:[], ended:false, result:'', busy:false };
+    });
+    simBusy = false;
+    drawSim(); setSimStatus('Board 1 — your move.', 'think');
+  }
+  function simWaiting(){
+    for (var i=0;i<SIM.length;i++) if (!SIM[i].ended && !SIM[i].busy && SIM[i].S.turn === 'w') return SIM[i];
+    return null;
+  }
+  function setSimStatus(t, cls){ var e=document.getElementById('sim-status'); e.textContent=t; e.className='me-status '+(cls||'think'); }
+  function drawSim(){
+    var g = document.getElementById('sim-grid'), want = simWaiting();
+    g.innerHTML = SIM.map(function(b){
+      var line = '', n = 0;
+      for (var i=0;i<b.moves.length;i+=2){
+        n++; line += '<b style="color:#F5C518">' + n + '.</b> ' + b.moves[i] + ' ' + (b.moves[i+1] || '') + ' ';
+      }
+      return '<div class="sim-col' + (want && want.n === b.n ? ' turn' : '') + '">' +
+        '<div class="sim-who">Board ' + b.n + ' · ' + TIER_LABEL[b.tier] + '</div>' +
+        '<div class="sim-state">' + (b.ended ? b.result : (b.busy ? 'thinking…' : (b.S.turn === 'w' ? 'your move' : '…'))) + '</div>' +
+        '<div class="sim-moves">' + (line || '—') + '</div></div>';
+    }).join('');
+  }
+  function simOver(b){
+    if (isCheckmate(b.S)){ b.ended = true; b.result = b.S.turn === 'b' ? '✓ You won' : '✗ You lost'; return true; }
+    if (isStalemate(b.S)){ b.ended = true; b.result = '½ Stalemate'; return true; }
+    if (b.moves.length >= 160){ b.ended = true; b.result = '½ Called a draw'; return true; }
+    return false;
+  }
+  function simReply(b){
+    b.busy = true; drawSim();
+    setTimeout(function(){
+      if (!SIM || b.ended) return;
+      var mv = aiMove(b.S, TIER_DEPTH[b.tier] || 2);
+      if (mv){ b.moves.push(moveSAN(b.S, mv)); b.S = makeMove(b.S, mv); simOver(b); }
+      b.busy = false;
+      drawSim(); simAfter();
+    }, 120);
+  }
+  function simAfter(){
+    if (!SIM) return;
+    if (SIM.every(function(b){ return b.ended; })){
+      var won = SIM.filter(function(b){ return /won/.test(b.result); }).length;
+      setSimStatus('Both boards finished — you won ' + won + ' of ' + SIM.length + '.', won ? 'good' : 'bad');
+      if (won === SIM.length) simTrophy();
+      return;
+    }
+    var w = simWaiting();
+    setSimStatus(w ? ('Board ' + w.n + ' — your move.') : 'They are thinking…', 'think');
+  }
+  function simTrophy(){
+    if (st.simul) return;
+    st.simul = true; save();
+    try { if (window.PJCC && PJCC.saveScore) PJCC.saveScore('blindfold', st.solved, { credits:5, data:{ simul:true } }); } catch(e){}
+    document.getElementById('tr-title').innerHTML = 'THE SIMUL';
+    document.getElementById('tr-msg').innerHTML = 'Two games at once, both won, and no board on the screen at any point. ' +
+      'Awarded <b style="color:#F5C518">+5 credits</b>.';
+    document.getElementById('trophy').classList.remove('hidden');
+    confetti();
+  }
+  function simPlay(raw){
+    if (!SIM) return;
+    var t = String(raw || '').trim();
+    if (!t) return;
+    var b = null, m = t.match(/^([12])\s*[.:]?\s+(.+)$/);
+    if (m){ b = SIM[+m[1] - 1]; t = m[2]; }
+    else b = simWaiting();
+    if (!b) { setSimStatus('Both boards are thinking — wait a moment.', 'think'); return; }
+    if (b.ended){ setSimStatus('Board ' + b.n + ' is over.', ''); return; }
+    if (b.busy || b.S.turn !== 'w'){ setSimStatus('Board ' + b.n + ' is not waiting on you.', ''); return; }
+    var ms = typedMoves(b.S, speechToMove(t) || t);
+    if (!ms.length){ setSimStatus('That is not a legal move on board ' + b.n + '.', 'bad'); return; }
+    if (ms.length > 1){ setSimStatus('More than one move fits that on board ' + b.n + ' — add the piece letter.', 'bad'); return; }
+    b.moves.push(moveSAN(b.S, ms[0])); b.S = makeMove(b.S, ms[0]);
+    document.getElementById('sim-in').value = '';
+    if (simOver(b)){ drawSim(); simAfter(); return; }
+    drawSim(); simReply(b);
+  }
+  function openSimul(){
+    document.getElementById('sim-overlay').classList.remove('hidden');
+    simNew();
+    setTimeout(function(){ try{ document.getElementById('sim-in').focus(); }catch(e){} }, 80);
+  }
+  function closeSimul(){ SIM = null; document.getElementById('sim-overlay').classList.add('hidden'); renderMindsEye(); }
 
   /* ===== Flashlight beam — afterglow, pickups, lock & arrow-nudge ===== */
   var clueEl=document.getElementById('clue'), clueText=document.getElementById('clue-text'),

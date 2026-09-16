@@ -57,6 +57,28 @@ const HOOK = `
       var rc = document.getElementById('recap'); rc.hidden = true; rc.textContent = '';
       return { from: prob.from, to: prob.to, n: p.sols.length };
     },
+    fog: function () { return { rung: fogRung, waiting: fogWait, label: document.getElementById('fog-btn').textContent,
+      disabled: document.getElementById('fog-btn').disabled,
+      shown: Array.prototype.filter.call(document.querySelectorAll('#board .sq'), function (e) { return e.innerHTML; }).length }; },
+    climbFog: function () { climbFog(); },
+    cal: function () { return { days: (st.days || []).slice(), streak: dailyStreak(), html: document.getElementById('cal').innerHTML,
+      hidden: document.getElementById('cal').hidden, on: document.querySelectorAll('#cal .cal-d.on').length,
+      cells: document.querySelectorAll('#cal .cal-d').length }; },
+    setDays: function (d) { st.days = d; save(); renderCalendar(); },
+    answer: function () { return prob ? { from: prob.from, to: prob.to } : null; },
+    simOpen: function () { openSimul(); },
+    simPlay: function (t) { simPlay(t); },
+    simSet: function (i, fen) { SIM[i].S = parseFEN(fen); SIM[i].moves = []; drawSim(); },
+    sim: function () { return SIM ? SIM.map(function (b) { return { n: b.n, tier: b.tier, turn: b.S.turn, moves: b.moves.slice(),
+      ended: b.ended, result: b.result, busy: b.busy,
+      board: b.S.b.map(function (x) { return x || '.'; }).join('') }; }) : null; },
+    simUI: function () { return { status: document.getElementById('sim-status').textContent,
+      cols: document.querySelectorAll('#sim-grid .sim-col').length,
+      boards: document.querySelectorAll('#sim-overlay #me-board, #sim-overlay .sq').length,
+      hidden: document.getElementById('sim-overlay').classList.contains('hidden') }; },
+    simClose: function () { closeSimul(); },
+    today: function () { return todayStamp(); },
+    shiftDay: function (d, n) { return shiftDay(d, n); },
     say: function (t) { return speechToMove(t); },
     heard: function (list) { heardMove(list); },
     recap: function () { return { text: recapText(), shown: document.getElementById('recap').textContent, hidden: document.getElementById('recap').hidden }; },
@@ -499,6 +521,192 @@ function serve() {
       "⭐ …and for a mate in two it plays out Black's best try and the move that finishes it  [" + rc.two + ']');
     ok(rc.hiddenFirst === true && rc.hiddenAfter === false && /🧠/.test(rc.shown),
       '…and it is hidden until the puzzle is over, then shown  [' + (rc.key ? rc.key.from + rc.key.to : 'no key') + ']');
+
+    /* ── the fog ladder: a square, then a rank, then the board ─────────────────── */
+    const fog = await B(async () => {
+      const bf = window.__bf, out = {};
+      bf.setMode('classic'); await new Promise((r) => setTimeout(r, 120));
+      // a1 rook, d1 queen, g1 king, f2/g2/h2 pawns — a rank with five men on it
+      bf.setProb('6k1/5ppp/8/8/8/8/5PPP/R2Q2K1 w - - 0 1', 'Mate in one', ['a1a8']);
+      out.rung0 = bf.fog().label;
+      // rung 1: one square, free
+      bf.climbFog(); out.waiting1 = bf.fog().waiting;
+      bf.click('d1');
+      out.afterSquare = { rung: bf.fog().rung, shown: bf.fog().shown, slip: bf.slipped(), label: bf.fog().label };
+      // rung 2: a whole rank, and it costs the streak
+      bf.climbFog(); out.waiting2 = bf.fog().waiting;
+      bf.click('c2');
+      out.afterRank = { rung: bf.fog().rung, shown: bf.fog().shown, slip: bf.slipped(), label: bf.fog().label };
+      // rung 3: the board, and the puzzle is over
+      bf.climbFog();
+      out.afterBoard = { phase: bf.state().phase, done: bf.state().reveal };
+      // a new puzzle lowers the fog again — through the REAL newPuzzle, not the test hook
+      bf.setMode('classic');
+      await new Promise((r) => setTimeout(r, 200));
+      out.reset = bf.fog().rung;
+      return out;
+    });
+    ok(/a square/.test(fog.rung0) && fog.waiting1 === 1,
+      'the fog ladder starts at one square  [' + fog.rung0 + ']');
+    ok(fog.afterSquare.rung === 1 && fog.afterSquare.shown === 1 && fog.afterSquare.slip === false,
+      '⭐ …a glimpsed square shows exactly one piece and costs nothing  [' + fog.afterSquare.shown + ' shown, slip ' + fog.afterSquare.slip + ']');
+    ok(/a rank/.test(fog.afterSquare.label) && fog.waiting2 === 2, '…and the next rung up is a rank  [' + fog.afterSquare.label + ']');
+    ok(fog.afterRank.shown >= 3 && fog.afterRank.slip === true,
+      '⭐⭐ …a rank hands over the whole row, and THAT is what costs the streak  [' + fog.afterRank.shown + ' shown, slip ' + fog.afterRank.slip + ']');
+    ok(/the board/.test(fog.afterRank.label) && fog.afterBoard.phase === 'done',
+      '…and the top rung is the reveal, which ends the puzzle  [' + fog.afterRank.label + ']');
+    ok(fog.reset === 0, '…and a new puzzle lowers the fog again  [rung ' + fog.reset + ']');
+
+    /* ── the Daily calendar, and the streak it counts ──────────────────────────── */
+    const cal = await B(async () => {
+      const bf = window.__bf, out = {}, t = bf.today(), d = (n) => bf.shiftDay(t, n);
+      out.yesterdayCounts = (bf.setDays([d(-1), d(-2), d(-3)]), bf.cal().streak);
+      out.todayToo = (bf.setDays([t, d(-1), d(-2), d(-3)]), bf.cal().streak);
+      out.gapBreaks = (bf.setDays([t, d(-1), d(-3), d(-4)]), bf.cal().streak);
+      out.deadStreak = (bf.setDays([d(-9), d(-10), d(-11)]), bf.cal().streak);
+      out.none = (bf.setDays([]), bf.cal().streak);
+      bf.setDays([t, d(-1), d(-4)]);
+      const c = bf.cal();
+      out.cells = c.cells; out.on = c.on; out.html = c.html;
+      bf.setMode('daily'); await new Promise((r) => setTimeout(r, 200));
+      out.shownInDaily = !bf.cal().hidden;
+      bf.setMode('classic'); await new Promise((r) => setTimeout(r, 200));
+      out.hiddenElsewhere = bf.cal().hidden;
+      return out;
+    });
+    ok(cal.todayToo === 4 && cal.yesterdayCounts === 3,
+      '⭐ a streak counts back from today, and yesterday still counts before you have played  [today ' + cal.todayToo + ', yesterday ' + cal.yesterdayCounts + ']');
+    ok(cal.gapBreaks === 2 && cal.deadStreak === 0 && cal.none === 0,
+      '⚠⚠ …a gap ends it, and a streak that ended last week is zero, not three  [gap ' + cal.gapBreaks + ', dead ' + cal.deadStreak + ']');
+    ok(cal.cells === 35 && cal.on === 3, 'the calendar draws five weeks and lights the days you solved  [' + cal.on + ' of ' + cal.cells + ']');
+    ok(cal.shownInDaily && cal.hiddenElsewhere, '…and it belongs to the Daily, not to every mode');
+
+    /* ⚠⚠ …and the thing the calendar is FOR: solving today's Daily has to write today down, and
+       carry it up to the account. Every check above this one set the days by hand — a version that
+       never recorded a day at all passed all of them. */
+    const wrote = await B(async () => {
+      const bf = window.__bf;
+      localStorage.removeItem('pjcc.bf.daily');
+      bf.setDays([]);
+      const sent = [];
+      const p0 = PJCC.saveScore;
+      PJCC.saveScore = function (g, sc, x) { sent.push({ g: g, data: x && x.data }); return Promise.resolve({ saved: 'local' }); };
+      bf.setMode('daily');
+      await new Promise((r) => setTimeout(r, 250));
+      const a = bf.answer();
+      bf.click(a.from); bf.click(a.to);
+      await new Promise((r) => setTimeout(r, 150));
+      PJCC.saveScore = p0;
+      const c = bf.cal();
+      return { today: bf.today(), days: c.days, streak: c.streak, lit: c.on,
+               pushed: (sent.filter((x) => x.g === 'blindfold')[0] || {}).data };
+    });
+    ok(wrote.days.indexOf(wrote.today) !== -1 && wrote.streak === 1 && wrote.lit === 1,
+      "⭐⭐ solving today's Daily writes today into the calendar  [" + wrote.days.join(' ') + ', streak ' + wrote.streak + ']');
+    ok(wrote.pushed && Array.isArray(wrote.pushed.days) && wrote.pushed.days.indexOf(wrote.today) !== -1,
+      '…and carries it up to the account, so another device can have it  [' + (wrote.pushed && wrote.pushed.days ? wrote.pushed.days.join(' ') : 'not pushed') + ']');
+
+    /* ── the calendar is a union across devices, never a copy ──────────────────── */
+    {
+      const src = PROF.slice(PROF.indexOf('var NRUN_KEY ='), PROF.indexOf('var TOWN_KEY'));
+      const box = { store: {}, out: null };
+      box.localStorage = { getItem: (k) => (k in box.store ? box.store[k] : null), setItem: (k, v) => { box.store[k] = String(v); } };
+      vm.createContext(box);
+      vm.runInContext(src + '\nout = { prog: bfProgressMerge };', box);
+      const M = box.out;
+      box.store['pjcc.blindfold.v2'] = JSON.stringify({ solved: 30, diff: 5, best: 30, streak: 0, eye: true, trophy: false, days: ['2031-01-02', '2031-01-03'] });
+      M.prog({ best_score: 30, data: { days: ['2031-01-01', '2031-01-03', '2031-01-04'] } });
+      const merged = JSON.parse(box.store['pjcc.blindfold.v2']).days;
+      ok(merged.join(',') === '2031-01-01,2031-01-02,2031-01-03,2031-01-04',
+        '⭐⭐ a day solved on another device is added, and a day this one knows is never dropped  [' + merged.join(' ') + ']');
+      M.prog({ best_score: 30, data: {} });
+      const kept = JSON.parse(box.store['pjcc.blindfold.v2']).days;
+      ok(kept.length === 4, '…and a row carrying no calendar at all cannot erase one  [' + kept.length + ' days]');
+      box.store['pjcc.blindfold.v2'] = JSON.stringify({ solved: 30, diff: 5, best: 30, streak: 0, eye: true, trophy: false, days: ['2031-01-02'] });
+      M.prog({ best_score: 30, data: { days: ['nonsense', 42, null, '2031-01-05'] } });
+      const clean = JSON.parse(box.store['pjcc.blindfold.v2']).days;
+      ok(clean.join(',') === '2031-01-02,2031-01-05', '…and junk in the row never reaches the calendar  [' + clean.join(' ') + ']');
+    }
+
+    /* ── the simul: two games at once, and no board anywhere ──────────────────── */
+    const sim = await B(async () => {
+      const bf = window.__bf, out = {};
+      /* ⚠⚠ THE BOTS REPLY ON A TIMER, so every snapshot here has to wait for BOTH boards to be
+         idle. A fixed sleep passed, then failed twice in a row on a slower run, then passed —
+         a flaky gate rejects real pushes. */
+      const idle = async () => {
+        for (let i = 0; i < 200; i++) {
+          const s = bf.sim();
+          if (s && s.every((b) => !b.busy)) return;
+          await new Promise((r) => setTimeout(r, 25));
+        }
+      };
+      bf.simOpen();
+      await idle();
+      out.start = bf.sim().map((b) => b.tier).join(',');
+      out.cols = bf.simUI().cols;
+      out.noBoard = bf.simUI().boards;
+      out.status0 = bf.simUI().status;
+      // a move with no number goes to the board that is waiting — board 1
+      bf.simPlay('e4');
+      await idle();
+      const a = bf.sim();
+      out.b1 = a[0].moves.slice(0, 1).join(''); out.b1len = a[0].moves.length; out.b2len = a[1].moves.length;
+      // …and a numbered move goes where it is sent, not where the cursor was
+      bf.simPlay('2 d4');
+      await idle();
+      const c = bf.sim();
+      out.b2 = c[1].moves.slice(0, 1).join(''); out.b2after = c[1].moves.length;
+      out.b1after = c[0].moves.length;
+      // an illegal move on the board it names is refused and changes nothing
+      const before = bf.sim()[0].moves.length;
+      bf.simPlay('1 Qh8');
+      out.refused = bf.sim()[0].moves.length === before;
+      out.refusedMsg = bf.simUI().status;
+      // the two games really are separate positions
+      /* ⚠⚠ A BOARD READ WITH join('') IS NOT A POSITION. Empty squares are '' and vanish, so a
+         pawn on d4 and a pawn on e4 produce the same string — this check passed, then failed
+         twice, then passed, entirely on which reply the bots chose. The hook pads them now. */
+      out.differ = bf.sim()[0].board !== bf.sim()[1].board;
+      out.dbg = bf.sim().map((x) => x.moves.join(' ')).join(' || ');
+      return out;
+    });
+    ok(sim.cols === 2 && sim.start === 'intern,ceo', 'the simul runs two games at once  [' + sim.start + ']');
+    ok(sim.noBoard === 0, '⭐⭐ …and there is no board on the screen at all — that is the whole feature');
+    ok(sim.b1 === 'e4' && sim.b1len === 2 && sim.b2len === 0,
+      'a move with no number goes to the board that is waiting, and only that one  [b1 ' + sim.b1len + ' plies, b2 ' + sim.b2len + ']');
+    ok(sim.b2 === 'd4' && sim.b2after === 2 && sim.b1after === 2,
+      '…and a numbered move goes where it is sent  [b1 ' + sim.b1after + ', b2 ' + sim.b2after + ']');
+    ok(sim.refused && /not a legal move on board 1/.test(sim.refusedMsg),
+      '…an illegal move is refused on the board it named  [' + sim.refusedMsg + ']');
+    ok(sim.differ, '⚠⚠ …and the two boards are separate positions, not one shared by both  [' + sim.dbg + ']');
+
+    const simEnd = await B(async () => {
+      const bf = window.__bf, out = {};
+      // ⚠ the first draft of this handed board 2 a position that was ALREADY mate, so the move
+      // was simply illegal and nothing ended. White has to be the one DELIVERING it.
+      const idle = async () => {
+        for (let i = 0; i < 200; i++) {
+          const s = bf.sim();
+          if (s && s.every((b) => !b.busy)) return;
+          await new Promise((r) => setTimeout(r, 25));
+        }
+      };
+      await idle();
+      bf.simSet(1, '6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1');
+      bf.simPlay('2 Ra8');
+      await idle();
+      const a = bf.sim();
+      out.b2 = { ended: a[1].ended, result: a[1].result };
+      out.b1 = { ended: a[0].ended };
+      out.status = bf.simUI().status;
+      bf.simClose();
+      out.closed = bf.simUI().hidden;
+      return out;
+    });
+    ok(simEnd.b2.ended && /won/.test(simEnd.b2.result), 'a mate ends that board and says so  [' + simEnd.b2.result + ']');
+    ok(!simEnd.b1.ended, '⚠ …and the other board carries on — one result is not both  [ended ' + simEnd.b1.ended + ']');
+    ok(simEnd.closed, 'leaving the simul closes it');
 
     /* ── a mode chip you cannot read is not a chip ──────────────────────────────
        ⛑ `flex:1; min-width:0` squeezed every label until it was cut off — four of six at 390px,

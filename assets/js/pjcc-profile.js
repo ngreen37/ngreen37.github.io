@@ -607,6 +607,19 @@
     if (solved > (st.best || 0)) { st.best = solved; changed = true; }
     if (st.solved >= BF_EYE_AT && !st.eye) { st.eye = true; changed = true; }
     if (trophy && !st.trophy) { st.trophy = true; st.eye = true; changed = true; }
+    /* ⭐ THE DAILY CALENDAR IS A UNION, NEVER A COPY. A day you solved the Daily on your phone is
+       a day you solved it, and a laptop that has never seen that day must not be able to erase it.
+       Sorted and capped so the blob cannot grow without bound. [[everything-earned-syncs]] */
+    var days = (row.data && Array.isArray(row.data.days)) ? row.data.days : null;
+    if (days && days.length) {
+      var have = {}, out = [];
+      (Array.isArray(st.days) ? st.days : []).concat(days).forEach(function (d) {
+        if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && !have[d]) { have[d] = 1; out.push(d); }
+      });
+      out.sort();
+      if (out.length > 400) out = out.slice(out.length - 400);
+      if (out.length !== (st.days || []).length) { st.days = out; changed = true; }
+    }
     if (changed) { try { localStorage.setItem(BF_KEY, JSON.stringify(st)); } catch (e) { return false; } }
     return changed;
   }
