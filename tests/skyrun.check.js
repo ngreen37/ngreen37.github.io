@@ -56,6 +56,12 @@ window.__t = {
     s = await G();
     ok(s.boss && s.boss.vuln > 0, 'boss opens a weak-point window  [vuln=' + (s.boss && s.boss.vuln) + ']');
 
+    // He is a fight, not a wall: Princess meets the first King as a Pawn — one shot, one damage.
+    const ttk = await page.evaluate(() => ({ hp: G.boss.maxhp, dps: 1 / RANK_FIRE_CD[0] }));
+    ok(ttk.hp / ttk.dps < 25,
+      "the region-1 King falls inside 25s of a Pawn's honest fire (he was a 73-second wall)  [" +
+      ttk.hp + 'hp / ' + ttk.dps.toFixed(1) + 'dps = ' + (ttk.hp / ttk.dps).toFixed(0) + 's]');
+
     // Promotion arc (#1)
     const before = (await G()).rank;
     await page.evaluate(() => window.__t.killBoss()); await sleep(500);

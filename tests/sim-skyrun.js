@@ -2,7 +2,8 @@
 /*! tests/sim-skyrun.js — HOW HARD IS SKY RUN, MEASURED
  * A bot plays full normal runs through update() and prints how far it gets. A MEASUREMENT, not a
  * gate. REACT=seconds between re-plans: 0 is inhuman, 0.25 is roughly a person.
- * 2026-09-15 baseline at REACT=0.25: 94% wins on 5 hearts → 69% after the harder pass.
+ * 2026-09-15 baseline at REACT=0.25, 3 hearts: 31% wins; boss fights 14 / 18.5 / 19 / 34 / 41s.
+ *   (94% then 69% were measured on 5 hearts, before the cut — don't compare them to a 3-heart run.)
  *   npm run sim:skyrun -- [runs]      REACT=0.25 npm run sim:skyrun -- 16
  */
 const path = require('path');

@@ -313,12 +313,16 @@ function startWave(){
 // Each region's King fights differently; the CEO fights in phases. Every boss
 // periodically drops its guard — a telegraphed WEAK-POINT window that rewards focus fire.
 const BOSS_KIND = ['aim','sweep','burst','royal','ceo'];
+// HP is tuned to how long the fight RUNS — `npm run sim:skyrun` prints median seconds per region.
+// The hopper teleports into your fire, so the same bar melts three times faster; it gets its own weight.
+const BOSS_HP_MUL = { burst: 1.8 };
 function startBoss(){
   if (G.boss) return;
   const r = curRegion();
-  const hp = Math.round((200 + G.region*130) * (1+(G.loop-1)*0.5));
+  const kind = BOSS_KIND[(G.region-1) % BOSS_KIND.length];
+  const hp = Math.round((85 + (G.region-1)*95) * (BOSS_HP_MUL[kind] || 1) * (1+(G.loop-1)*0.5));
   G.boss = { x: W/2, y: -40, ty: 96, hp: hp, maxhp: hp, t: 0, fireCd: 1.4, addCd: 5, dir: 1, entering: true,
-    kind: BOSS_KIND[(G.region-1) % BOSS_KIND.length], phase: 1, vuln: 0, vulnCd: 6,
+    kind: kind, phase: 1, vuln: 0, vulnCd: 6,
     name: r.secret ? 'THE CEO' : r.name + ' King',
     // his reinforcements draw from their own stream: how fast you reach him cannot reorder the waves
     rng: G.daily ? mulberry32(hashStr('sky-run|adds|'+G.day+'|'+G.loop+'|'+G.region)) : null };
