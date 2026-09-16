@@ -77,6 +77,8 @@
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ TAKE FLIGHT</button><button class="btn btn-ghost" id="daily-btn">📅 DAILY</button><button class="btn btn-ghost" id="endless-btn">🌊 ENDLESS</button></div>
     <div class="menu-best"><b id="best-line">best: —</b></div>
     <div class="menu-best" id="sky-line" hidden></div>
+    <div class="menu-best" id="log-line" hidden></div>
+    <div class="menu-best" id="ceo-line" hidden></div>
     <div class="row"><button class="btn btn-ghost" id="assist-btn" aria-pressed="false">🤝 Assist</button></div>
   </div>
 
@@ -97,6 +99,7 @@
     <div class="eyebrow" id="res-eye">Shot down</div>
     <div class="big-title" id="res-title" style="font-size:26px;">SKY RUN</div>
     <div class="blurb" id="res-msg"></div>
+    <div class="blurb" id="res-board" hidden></div>
     <div class="row">
       <button class="btn btn-gold" id="retry-btn">FLY AGAIN</button>
       <button class="btn btn-ghost" id="png-btn">📋 COPY PNG</button>
@@ -324,6 +327,19 @@ function newGame(mode){
   startRegion(1);
 }
 function curRegion(){ return REGIONS[G.region-1]; }
+/* ⭐ THE DOOR MARKED ★ IS ONLY UNLOCKED ON A RARE SKY NIGHT — a meteor shower, an aurora, an
+   eclipse. Every other night the flight ends at Chess City and that IS the win.
+   ⚠ skyKind() is a pure function of the date, so everyone who flies a given Daily gets the same
+   answer: this can gate the Daily and the Daily is still one flight. The Daily asks with its own
+   date on purpose — a ?sky= preview must never change what today's Daily is.
+   ⚠ Endless keeps him. It is survival, not the story, and a loop that stopped short of the top
+   would just be a shorter loop. */
+function ceoOpen(){
+  if (!G) return false;
+  if (G.endless) return true;
+  try { return !!(window.PJCC_TIME && PJCC_TIME.skyKind(G.daily ? G.day : undefined)); } catch(e){ return false; }
+}
+function lastRegion(){ return ceoOpen() ? REGIONS.length : REGIONS.length - 1; }
 
 // ---------- background (parallax flight) ----------
 function makeBg(){ const a=[]; for(let i=0;i<60;i++) a.push({ x:Math.random()*W, y:Math.random()*H, z:0.3+Math.random()*1.4, s:0.6+Math.random()*1.8 }); return a; }
@@ -362,6 +378,22 @@ function startWave(){
 // Each region's King fights differently; the CEO fights in phases. Every boss
 // periodically drops its guard — a telegraphed WEAK-POINT window that rewards focus fire.
 const BOSS_KIND = ['aim','sweep','burst','royal','ceo'];
+/* ⭐ EVERY KING FIGHTS AN OPENING, and the opening is the one his pattern actually behaves like:
+   the Scandinavian comes straight at you on move one, the Italian spreads across the center, the
+   Pirc gives ground and answers, the Queen's Gambit offers men to take the middle, the Sicilian
+   is the sharpest fight on the board and changes shape twice.
+   ⚠⚠ THESE LINK TO TABIYA, NOT TO THE ACADEMY'S OPENING TRAINER. The Trainer teaches the Pirc and
+   only the Pirc today, so five Kings pointing at it would send four of you to the wrong lesson.
+   The deck ids here are Tabiya's own — `test:skyrun` reads them out of that file, so renaming a
+   deck over there turns this red instead of shipping a door into an empty room. */
+const BOSS_BOOK = {
+  aim:   { name:'the Scandinavian',   deck:'scandi'   },
+  sweep: { name:'the Italian Game',   deck:'italian'  },
+  burst: { name:'the Pirc Defense',   deck:'pirc'     },
+  royal: { name:"the Queen's Gambit", deck:'queens'   },
+  ceo:   { name:'the Sicilian',       deck:'sicilian' }
+};
+const TABIYA_URL = '/games/pirc-protocol/';
 // HP is tuned to how long the fight RUNS — `npm run sim:skyrun` prints median seconds per region.
 // The hopper teleports into your fire, so the same bar melts three times faster; it gets its own weight.
 const BOSS_HP_MUL = { burst: 1.8 };
@@ -375,6 +407,7 @@ function startBoss(){
     name: r.secret ? 'THE CEO' : r.name + ' King',
     // his reinforcements draw from their own stream: how fast you reach him cannot reorder the waves
     rng: G.daily ? mulberry32(hashStr('sky-run|adds|'+G.day+'|'+G.loop+'|'+G.region)) : null };
+  G.lastKing = { name: G.boss.name, book: BOSS_BOOK[kind] };
   G.banner = '⚠ ' + G.boss.name.toUpperCase(); G.bannerT = 2.0; sfx('boss');
 }
 
@@ -579,7 +612,7 @@ function update(dt){
   if (G.phase==='interstitial'){
     G.interT -= dt; updateParts(dt);
     if (G.interT<=0){
-      if (G.nextRegion > REGIONS.length){
+      if (G.nextRegion > lastRegion()){
         if (G.endless){ G.loop++; G.nextRegion=1; startRegion(1); G.banner='LOOP '+G.loop+' ▸ THE SEA RISES'; G.bannerT=2.4; }
         else { gameOver(true); return; }
       } else startRegion(G.nextRegion);
@@ -707,7 +740,7 @@ function bossDefeated(){
   G.enemies.forEach(e=>{ G.score += e.pts; burst(e.x, e.y, e.fill, 10); });
   G.enemies.length=0; G.ppawns.length=0;
   G.boss=null; G.ebullets.length=0;
-  const last = G.region>=REGIONS.length;
+  const last = G.region>=lastRegion();
   // Princess rises a rank for every region she clears — pawn to queen by the gate.
   G.promo = null;
   if (!last && G.rank < 4){ G.rank++; G.promo = RANK_NAME[G.rank]; G.pflash=0.8; G.pflashCol=RANK_COL[G.rank]; sfx('power'); }
@@ -1015,7 +1048,9 @@ function drawHUD(){
   if (bossBar){ const bw=W-80, pct=Math.max(0,G.boss.hp/G.boss.maxhp);
     ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(40,52,bw,8); ctx.fillStyle='#ff5b6e'; ctx.fillRect(40,52,bw*pct,8);
     ctx.strokeStyle='#ffb0bb'; ctx.lineWidth=1; ctx.strokeRect(40,52,bw,8);
-    ctx.fillStyle='#ffd9df'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText(G.boss.name, W/2, 43); }
+    ctx.fillStyle='#ffd9df'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText(G.boss.name, W/2, 43);
+    const bk=BOSS_BOOK[G.boss.kind];
+    if (bk){ ctx.fillStyle='#cfe0ff'; ctx.font='8px Trebuchet MS'; ctx.fillText('fights ' + bk.name, W/2, 68); } }
 }
 function drawDog(){
   const d=G.dog; if(!d) return;
@@ -1064,22 +1099,82 @@ function gameOver(won, quit){
   if (!G || G.over) return;
   G.running=false; G.over=true; G.paused=false; keys.clear(); drag=null;
   if (G.score>G.best){ G.best=G.score; (G.assist?saveBestA:(G.daily?saveBestD:(G.endless?saveBestE:saveBest)))(G.best); }
-  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(scoreSlug(), G.score, { seed: G.daily ? G.day : undefined, credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop, assist:G.assist, sky:G.sky.kind } });
+  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(scoreSlug(), G.score, { seed: G.daily ? G.day : undefined, credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop, assist:G.assist, sky:G.sky.kind, flight: flightLog(won, quit) } });
   setFocus(false);
   hideFloats();
   $('pause').classList.add('hidden');
   $('res-eye').textContent = won ? 'The summit' : (quit ? 'Run ended' : 'Shot down');
   $('res-title').textContent = won ? 'CHESS CITY REACHED ★' : 'SKY RUN';
   $('res-msg').innerHTML = (won
-      ? 'Princess rose from a pawn all the way to the <b>Queen</b> — and flew the whole sky, through the CEO\'s Office and out the other side.'
+      ? (G.region >= REGIONS.length
+          ? 'Princess rose from a pawn all the way to the <b>Queen</b> — and flew the whole sky, through the CEO\'s Office and out the other side.'
+          : 'Princess rose from a pawn all the way to the <b>Queen</b> and made <b>Chess City</b>. The door past it was shut tonight.')
       : (quit ? 'You ended the run over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.'
               : 'Princess went down over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.')) +
     '<br>Score <b>'+G.score+'</b>' + (G.score>G.prevBest?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best) +
     (G.assist ? '<br><span style="color:#ffd36b">🤝 Flown with assist — kept on its own board.</span>' : '') +
     (G.tricks ? '<br><span style="color:#cfe0ff">Crockett picked up '+G.tricks+' trick'+(G.tricks>1?'s':'')+': '+
-        TRICKS.slice(0,G.tricks).map(t=>t.glyph+' '+t.name).join(' · ')+'</span>' : '');
+        TRICKS.slice(0,G.tricks).map(t=>t.glyph+' '+t.name).join(' · ')+'</span>' : '') +
+    // the King you last faced fought a real opening — the door to it opens the deck by name
+    (G.lastKing && G.lastKing.book ? '<br><span style="color:#9fe8ff">'+G.lastKing.name+' fought '+G.lastKing.book.name+
+        ' · <a href="'+TABIYA_URL+'?deck='+G.lastKing.book.deck+'" target="_top" style="color:#ffe27a">learn it ▸</a></span>' : '');
   sfx(won?'win':'lose');
+  showBoard();
   $('result').classList.remove('hidden');
+}
+/* ⭐ TODAY'S DAILY BOARD, and only on the Daily: it is the one flight everybody flew the same, so
+   it is the only score here that can be ranked honestly. An assisted Daily is not on it — it is on
+   its own slug — and the board says so rather than quietly leaving you off.
+   ⚠ The read is async and cached; the screen paints now and fills in when the rows land. */
+function showBoard(){
+  const el = $('res-board');
+  el.hidden = true; el.innerHTML = '';
+  if (!G.daily || !window.PJCC || !PJCC.dailyBoard) return;
+  el.hidden = false;
+  const slug = scoreSlug(), day = G.day;
+  const paint = () => {
+    if (!G || !G.over) return;
+    const b = PJCC.dailyBoard(slug, day);
+    if (b.state === 'loading' || (!b.rows.length && b.state !== 'empty' && b.state !== 'offline')) {
+      el.innerHTML = '<span style="color:#8fb8ff">Reading today\'s board…</span>';
+      setTimeout(paint, 700); return;
+    }
+    if (b.state === 'offline'){ el.innerHTML = '<span style="color:#8fb8ff">Today\'s board is not reachable right now.</span>'; return; }
+    const head = '<b style="color:#ffe27a">📅 TODAY\'S DAILY · '+dayLabel(day)+'</b>' + (G.assist ? ' <span style="color:#ffd36b">(assist board)</span>' : '');
+    if (!b.rows.length){
+      el.innerHTML = head + '<br><span style="color:#cfe0ff">Nobody has posted today\'s flight yet. Yours goes up when you are signed in.</span>';
+      return;
+    }
+    el.innerHTML = head + '<br>' + b.rows.map(r =>
+      '<span style="color:'+(r.mine?'#6bffb8':'#cfe0ff')+'">'+r.rank+'. '+esc(r.who)+' — '+r.score+(r.mine?' ◂ you':'')+'</span>'
+    ).join('<br>');
+  };
+  paint();
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+/* ⭐ THE FLIGHT LOG. saveScore merges into game_stats.data, so this one object IS the card on your
+   profile — it survives a reload, a new phone, a cleared cache. Kept small and flat on purpose:
+   it is read back by a menu line, not replayed. */
+function flightLog(won, quit){
+  return { at: new Date().toISOString().slice(0,10), score: G.score, region: G.region,
+           where: curRegion().name, rank: RANK_NAME[G.rank], kills: G.kills, tricks: G.tricks,
+           mode: G.mode, assist: !!G.assist, sky: G.sky.kind,
+           end: won ? 'won' : (quit ? 'ended' : 'down') };
+}
+function showFlightLog(){
+  const el = $('log-line');
+  if (!el) return;
+  el.hidden = true;
+  if (!window.PJCC || !PJCC.myGameData) return;
+  const paint = (tries) => {
+    const d = PJCC.myGameData('sky-run');
+    const f = d && d.flight;
+    if (!f){ if (tries > 0) setTimeout(()=>paint(tries-1), 700); return; }
+    el.hidden = false;
+    el.textContent = '🛩 Last flight · ' + f.where + ' · ' + f.rank + ' · ' + f.score +
+      (f.end === 'won' ? ' · reached the top' : '') + ' · ' + f.at;
+  };
+  paint(4);
 }
 function pause(){
   if (!live()) return;
@@ -1120,7 +1215,7 @@ function copyPng(){
   cx.fillStyle='#ffe27a'; cx.font='900 70px Trebuchet MS'; cx.fillText(String(G.score), cw/2, 152);
   cx.fillStyle='#cfe0ff'; cx.font='600 18px Trebuchet MS'; cx.fillText('score', cw/2, 180);
   cx.fillStyle='#f0e6ff'; cx.font='bold 22px Trebuchet MS';
-  const won = G.over && G.region>=REGIONS.length && !G.endless;
+  const won = G.over && G.region>=lastRegion() && !G.endless;
   cx.fillText((won?'Reached Chess City ★':'Down over '+r.name) + (G.endless?(' · loop '+G.loop):''), cw/2, 224);
   cx.fillStyle='#cfe0ff'; cx.font='600 15px Trebuchet MS'; cx.fillText(won?'crowned the Queen':'rose to '+RANK_NAME[G.rank], cw/2, 248);
   cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   mcpuppystudios.com', cw/2, 270);
@@ -1145,6 +1240,13 @@ function refreshBest(){
             : s.kind==='mist' ? '🌫 Mist over the town — you will not see far.'
             : s.night ? '🌙 Night over the town — her light only reaches so far.' : '';
   line.hidden = !say; line.textContent = say;
+  // the door past Chess City, and whether it is open tonight
+  const ceo = $('ceo-line');
+  let rare = null;
+  try { rare = window.PJCC_TIME && PJCC_TIME.skyKind ? PJCC_TIME.skyKind() : null; } catch(e){ rare = null; }
+  ceo.hidden = !rare;
+  if (rare) ceo.textContent = '★ A ' + rare + ' sky tonight — the door past Chess City is open.';
+  showFlightLog();
 }
 function openMenu(){ if(G){ G.running=false; G.paused=false; } setFocus(false); keys.clear(); drag=null;
   $('result').classList.add('hidden'); $('pause').classList.add('hidden'); hideFloats();

@@ -1289,6 +1289,16 @@ function showSummary() {
 }
 
 let selectedDeck = 'pirc';
+/* ⭐ A DECK CAN BE LINKED TO — `?deck=scandi`, or `#scandi`. Sky Run's Kings each fight in a named
+   opening and point here, and a link that dropped you on the Pirc whichever King you just beat
+   would teach the wrong thing. ⚠ A name this room does not have leaves the default alone: this
+   never throws and never opens an empty library. */
+(function () {
+  try {
+    const q = new URLSearchParams(location.search).get('deck') || (location.hash || '').replace(/^#/, '');
+    if (q && DECKS.some((d) => d.id === q)) selectedDeck = q;
+  } catch (e) {}
+})();
 function buildDeckList() {
   const list = document.getElementById('deck-list');
   list.innerHTML = '';

@@ -312,6 +312,68 @@ window.__t = {
     ok(as.slug === 'sky-run-assist' && as.plainBest === '7777' && as.assistBest === '99999',
       '⭐ …and an assisted run banks under its own name and never touches the straight best  [' + as.slug + ', best still ' + as.plainBest + ']');
 
+    // ── The door past Chess City opens only on a rare sky ──────────────────────
+    const ceo = await page.evaluate(() => {
+      const out = {};
+      const setSky = (k) => { window.PJCC_TIME = { dateStr: () => '2031-01-02', skyKind: (ds) => (ds ? null : k) }; };
+      setSky(null); startPlay('normal'); out.plainLast = lastRegion();
+      setSky('meteor'); startPlay('normal'); out.rareLast = lastRegion();
+      // an ordinary night ends at Chess City, and that IS the win
+      setSky(null); startPlay('normal'); G.region = 4; G.waveIdx = G.wavesInRegion;
+      G.enemies.length = 0; G.toSpawn.length = 0; startBoss(); G.boss.entering = false; G.boss.hp = 0;
+      updateBoss(0.001); G.interT = 0; update(0.001);
+      out.plainWon = !!(G.over && /CHESS CITY/.test($('res-title').textContent));
+      out.plainMsg = /door past it was shut/.test($('res-msg').textContent);
+      // the Daily asks with its OWN date, so a ?sky= preview cannot change what today's Daily is
+      window.PJCC_TIME = { dateStr: () => '2031-01-02', skyKind: (ds) => (ds ? null : 'aurora') };
+      startPlay('daily'); out.dailyLast = lastRegion();
+      // ⚠ an ORDINARY sky here, or this passes on the rare night instead of on the Endless rule
+      setSky(null); startPlay('endless'); out.endlessLast = lastRegion();
+      window.PJCC_TIME = { dateStr: () => '2031-01-02' };
+      startPlay('normal'); out.bareLast = lastRegion();
+      return out;
+    });
+    ok(ceo.plainLast === 4 && ceo.rareLast === 5,
+      '⭐ the CEO is only in on a rare sky night  [ordinary ends at ' + ceo.plainLast + ', rare at ' + ceo.rareLast + ']');
+    ok(ceo.plainWon && ceo.plainMsg, '…and on an ordinary night Chess City IS the win, and says why the door was shut');
+    ok(ceo.dailyLast === 4, "⚠⚠ …and the Daily asks with its own date: a sky preview cannot change today's Daily  [" + ceo.dailyLast + ']');
+    ok(ceo.endlessLast === 5, '…Endless keeps him — it is survival, not the story');
+    ok(ceo.bareLast === 4, '…and a town clock with no rare sky at all shuts the door rather than throwing');
+
+    // ── Every King fights a real opening, and the deck he points at exists ─────
+    const book = await page.evaluate(() => {
+      startPlay('normal'); G.waveIdx = G.wavesInRegion; G.enemies.length = 0; G.toSpawn.length = 0;
+      startBoss(); G.boss.entering = false; G.score = 10; gameOver(false);
+      const a = $('res-msg').querySelector('a');
+      return { kinds: BOSS_KIND.every((k) => BOSS_BOOK[k] && BOSS_BOOK[k].deck),
+               decks: BOSS_KIND.map((k) => BOSS_BOOK[k].deck),
+               href: a ? a.getAttribute('href') : null, top: a ? a.getAttribute('target') : null };
+    });
+    ok(book.kinds, 'every King fights a named opening  [' + book.decks.join(', ') + ']');
+    ok(book.href === '/games/pirc-protocol/?deck=scandi' && book.top === '_top',
+      "…and the result screen opens that deck in the top window, not inside the game frame  [" + book.href + ']');
+    const fs = require('fs');
+    const tabiya = fs.readFileSync(path.join(__dirname, '..', 'assets', 'games', 'pjcc_pirc.html'), 'utf8');
+    const haveDecks = (tabiya.match(/\{ id: '([a-z]+)'/g) || []).map((m) => m.slice(7, -1));
+    const missing = book.decks.filter((d) => haveDecks.indexOf(d) === -1);
+    ok(missing.length === 0,
+      '⚠⚠ …and every deck a King names is really in Tabiya  [' + (missing.length ? 'MISSING ' + missing.join(',') : haveDecks.length + ' decks') + ']');
+    const wrap = fs.readFileSync(path.join(__dirname, '..', 'games', 'pirc-protocol', 'index.html'), 'utf8');
+    ok(/location\.search/.test(wrap) && /f\.src = f\.src\.split\('\?'\)\[0\] \+ location\.search/.test(wrap),
+      '…and the wrapper forwards the query into the iframe, or the link would arrive and do nothing');
+
+    // ── The flight log is banked with the score ───────────────────────────────
+    const log = await page.evaluate(() => {
+      __saves.length = 0; __saveData = null;
+      const p0 = PJCC.saveScore;
+      PJCC.saveScore = function (g, s, x) { window.__saveData = x && x.data; return p0.apply(this, arguments); };
+      startPlay('normal'); G.score = 321; G.kills = 9; gameOver(false);
+      PJCC.saveScore = p0;
+      return window.__saveData;
+    });
+    ok(log && log.flight && log.flight.score === 321 && log.flight.where === 'Checker Town' && log.flight.rank === 'Pawn' && log.flight.end === 'down',
+      'the flight log is banked onto the profile with the score  [' + (log && log.flight ? log.flight.where + ' · ' + log.flight.rank + ' · ' + log.flight.score : 'none') + ']');
+
     // ── COPY PNG copies, and a refused clipboard still hands over the file ──────
     const png = await page.evaluate(async () => {
       // 3s was not enough on a cold canvas — this went red once with the PNG perfectly fine

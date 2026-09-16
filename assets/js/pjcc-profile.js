@@ -1316,6 +1316,65 @@
     return townPostCache;
   };
 
+  /* ⭐ TODAY'S BOARD FOR ONE GAME — a Daily is the same puzzle for everybody, so it is the only
+     score on this site that can honestly be ranked. Read-only, anon-readable, cached for a minute.
+     ⚠⚠ ONE ROW PER PLAYER, THE BEST. Somebody's eleventh run of the morning is not eleven players.
+     ⚠ A codename we cannot resolve is dropped, not printed as a raw uuid.
+     ⚠ NEVER falls back to an all-time board: a table of strangers' lifetime bests dressed as
+     "today" is a lie the empty state does not tell. */
+  var boardCache = {}, BOARD_TTL = 60000, BOARD_MAX = 10;
+  PJCC.dailyBoard = function (game, seed) {
+    var key = game + '|' + seed, c = boardCache[key];
+    if (!c || (Date.now() - c.at > BOARD_TTL && !c.busy)) {
+      c = boardCache[key] = { at: c ? c.at : 0, busy: true, rows: c ? c.rows : null, state: c ? c.state : 'loading' };
+      loadDailyBoard(game, seed).then(function (r) { c.rows = r.rows; c.state = r.state; },
+                                      function () { c.rows = []; c.state = 'offline'; })
+        .then(function () { c.at = Date.now(); c.busy = false; });
+    }
+    return { state: c.state, rows: c.rows || [] };
+  };
+  async function loadDailyBoard(game, seed) {
+    if (!sb) return { state: 'offline', rows: [] };
+    var s = await sb.from('scores').select('user_id,score').eq('game', game).eq('seed', seed)
+      .order('score', { ascending: false }).limit(200);
+    if (s.error) return { state: 'offline', rows: [] };
+    var rows = s.data || [];
+    if (!rows.length) return { state: 'empty', rows: [] };
+    var best = {};
+    rows.forEach(function (r) { if (!best[r.user_id] || r.score > best[r.user_id]) best[r.user_id] = r.score; });
+    var ids = Object.keys(best);
+    var p = await sb.from('profiles').select('id,codename').in('id', ids.slice(0, 100));
+    if (p.error) return { state: 'offline', rows: [] };
+    var who = {};
+    (p.data || []).forEach(function (r) { who[r.id] = r.codename; });
+    var me = PJCC.currentUser();
+    var out = ids.filter(function (id) { return who[id]; })
+      .map(function (id) { return { who: who[id], score: best[id], mine: !!(me && me.id === id) }; })
+      .sort(function (a, b) { return b.score - a.score; });
+    out.forEach(function (r, i) { r.rank = i + 1; });
+    return { state: 'ok', rows: out.slice(0, BOARD_MAX).concat(out.slice(BOARD_MAX).filter(function (r) { return r.mine; })) };
+  }
+
+  /* Your own `game_stats.data` for one game, read back. saveScore MERGES into that blob, so
+     anything a game banks there is on your profile and follows you to another device.
+     ⚠ Signed out it is null, never {} — a caller must be able to tell "nothing saved" from
+     "nobody is signed in". */
+  var myDataCache = {};
+  PJCC.myGameData = function (game) {
+    var c = myDataCache[game];
+    if (!c || (Date.now() - c.at > 60000 && !c.busy)) {
+      c = myDataCache[game] = { at: c ? c.at : 0, busy: true, data: c ? c.data : null };
+      (async function () {
+        var u = PJCC.currentUser();
+        if (!sb || !u) return null;
+        var r = await sb.from('game_stats').select('data,best_score,plays').eq('user_id', u.id).eq('game', game).maybeSingle();
+        return (r && !r.error && r.data) ? r.data : null;
+      })().then(function (d) { c.data = d; }, function () { c.data = null; })
+        .then(function () { c.at = Date.now(); c.busy = false; });
+    }
+    return c.data;
+  };
+
   function gameName(slug) {
     try {
       var g = (window.PJCC_GAMES || []).filter(function (x) { return x && x.slug === slug; })[0];

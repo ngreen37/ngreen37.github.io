@@ -14,6 +14,19 @@ permalink: /games/pirc-protocol/
   ></iframe>
 </div>
 
+<script>
+/* ⚠⚠ THE GAME IS IN AN IFRAME, SO `?deck=` ON THIS PAGE DOES NOT REACH IT. Sky Run's Kings link
+   here by opening name; without this the link arrives and the library shrugs. Jekyll cannot read a
+   query string, so the forward has to happen here, and only when there is one to forward. */
+(function () {
+  try {
+    if (!location.search) return;
+    var f = document.querySelector('.pirc-frame iframe');
+    if (f) f.src = f.src.split('?')[0] + location.search;
+  } catch (e) {}
+})();
+</script>
+
 <style>
 /* Pirc plays on a near-square board — give it a roomier library frame */
 .pirc-frame { max-width: 680px; }
