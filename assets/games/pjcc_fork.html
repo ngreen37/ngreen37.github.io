@@ -1698,9 +1698,18 @@ function takeRetry(){
    region gates, the retry queue, the map) — the puzzles are real and the rating still
    settles, because that is a measurement either way. */
 const SCOUT_KEY = 'pjcc.gauntlet.scout.v1';
+/* ⚠⚠ THE QUERY IS ON THE WRAPPER, NOT ON THIS FILE. This room is an iframe whose src is a
+   bare /assets/games/pjcc_fork.html, so `?warmup=` lands on /games/fork-in-the-road/ and
+   never reaches here. Caught on the LIVE site — a local harness that opens this file
+   directly passes either way, which is exactly why it has to be tested through the wrapper. */
+function searchStr(){
+  if (/[?&]warmup=/.test(location.search)) return location.search;
+  try { if (window.parent && window.parent !== window && /[?&]warmup=/.test(window.parent.location.search)) return window.parent.location.search; } catch(e){}
+  return location.search;
+}
 function warmupArgs(){
   try {
-    const q = new URLSearchParams(location.search), cat = q.get('warmup');
+    const q = new URLSearchParams(searchStr()), cat = q.get('warmup');
     if (!cat || !GEN_FOR[cat]) return null;
     return { cat: cat, n: Math.max(1, Math.min(5, parseInt(q.get('n'), 10) || 3)),
              floor: parseInt(q.get('floor'), 10), name: (q.get('name') || 'the next floor').slice(0, 40) };
