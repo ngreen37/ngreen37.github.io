@@ -16,7 +16,7 @@ permalink: /the-gambit/
 
   <!-- gate: needs an account (the altar weighs what you've earned) -->
   <div id="gm-gate" class="gm-gate" hidden>
-    <div class="gambit-altar" aria-hidden="true"><div class="gambit-glow"></div><div class="gambit-coin">♟</div></div>
+    <div class="gambit-altar" aria-hidden="true" data-stage-model="{{ '/assets/models/gambit-altar.glb' | relative_url }}" data-stage-glow="Material.001"><div class="gambit-glow"></div><div class="gambit-coin">♟</div></div>
     <h2 class="gambit-tagline">The altar weighs what you've earned.</h2>
     <p class="gambit-lede" id="gm-gate-msg">
       Claim a codename on your <a href="/dossier/">player profile</a> to bring your <strong>credits</strong> and
@@ -27,7 +27,7 @@ permalink: /the-gambit/
 
   <!-- the working altar -->
   <div id="gm-main" class="gm-main" hidden>
-    <div class="gambit-altar" aria-hidden="true">
+    <div class="gambit-altar" id="gm-altar" aria-hidden="true" data-stage-model="{{ '/assets/models/gambit-altar.glb' | relative_url }}" data-stage-glow="Material.001">
       <div class="gambit-glow"></div>
       <div class="gambit-coin" id="gm-coin">♟</div>
     </div>
@@ -134,12 +134,15 @@ permalink: /the-gambit/
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-stage.js' | relative_url }}" defer></script>
 <script>
 (function () {
   'use strict';
   var CAP = 3, COOL = 45000, LK = 'pjcc.gambit.v1', OWED = 'pjcc.gambit.owed';
   var $ = function (id) { return document.getElementById(id); };
   var gate = $('gm-gate'), main = $('gm-main');
+  // the 3D altar is decoration: it must never throw into commit(), whose catch says nothing was taken
+  function altarFx(kind) { try { var a = $('gm-altar'); if (a && a.pjccStage) a.pjccStage.react(kind); } catch (e) {} }
   var me = null, credits = 0, owned = [], bestVal = 0, selColl = null, offerCredits = 0, armed = false, busy = false, coolTimer = null;
   // rested = the altar closes after EVERY sacrifice (Nate 2026-07-14): you leave the
   // screen or refresh to come back. Not persisted — leaving IS the reset.
@@ -661,7 +664,7 @@ permalink: /the-gambit/
     if (busy) return; busy = true;
     var btn = $('gm-offer'); btn.disabled = true;
     var ov = offerValue(), c = courage(), coll = selColl, credOffer = offerCredits;
-    var coin = $('gm-coin'); coin.classList.add('spin');
+    var coin = $('gm-coin'); coin.classList.add('spin'); altarFx('offer');
     try {
       if (credOffer > 0) await PJCC.spendCredits(credOffer);
       if (coll) await PJCC.burnCollectable(coll.kind, coll.key);
@@ -783,7 +786,8 @@ permalink: /the-gambit/
       }
       bumpCap();
       // let the coin spin a beat, then reveal — and the altar closes behind it
-      setTimeout(function () { coin.classList.remove('spin'); reveal(tier, ov, reward, boon, coll, repay, c, homed); rested = true; refresh(); busy = false; }, 900);
+      altarFx(tier.mult > 1 ? 'gain' : win ? 'even' : 'loss');
+      setTimeout(function () { coin.classList.remove('spin'); reveal(tier, ov, reward, boon, coll, repay, c, homed); rested = true; altarFx('rest'); refresh(); busy = false; }, 900);
     } catch (e) {
       coin.classList.remove('spin'); busy = false;
       $('gm-result').hidden = false;
@@ -1043,7 +1047,9 @@ permalink: /the-gambit/
 
 <style>
 .gambit { max-width: 640px; margin: 0 auto 1.2rem; text-align: center; }
-.gambit-altar { position: relative; height: 130px; display: flex; align-items: center; justify-content: center; margin: 6px 0; }
+.gambit-altar { position: relative; height: 170px; display: flex; align-items: center; justify-content: center; margin: 6px 0; }
+.gambit-altar.is-3d .gambit-glow { display: none; }
+.stage-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 .gambit-coin { position: relative; font-size: 4.4rem; line-height: 1; color: #F5C518;
   filter: drop-shadow(0 6px 18px rgba(245,197,24,0.5)); animation: gambit-bob 3.4s ease-in-out infinite; z-index: 1; }
 .gambit-coin.spin { animation: gambit-spin 0.9s cubic-bezier(.4,0,.3,1); }
