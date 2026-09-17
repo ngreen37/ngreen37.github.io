@@ -307,6 +307,15 @@
      only runs on the menu / tower / boss screens, so once Randy's first line lands the
      band is already there for the REST OF THE MATCH. It was never transient — it just
      arrived late, which is exactly what made it look like the rail was leaving. */
+  /* ⚑ THE SCOUTING REPORT (2026-09-16, his item 3, earned with item 7). Every line in it is
+     read off the dials the engine is really running — see scoutLines(). */
+  .scout { max-width:330px; margin:10px auto 0; text-align:left; }
+  .scout-head { font-size:9px; letter-spacing:0.14em; color:#9a8fc0; text-transform:uppercase; margin-bottom:5px; text-align:center; }
+  .scout ul { list-style:none; margin:0; padding:0; }
+  .scout li { font-size:11.5px; line-height:1.5; color:#efe7ff; padding:3px 0 3px 16px; position:relative; }
+  .scout li::before { content:'·'; position:absolute; left:5px; color:#F5C518; font-weight:900; }
+  .scout li b { color:#F5C518; font-weight:800; }
+  .scout-locked { font-size:11.5px; line-height:1.55; color:#c9b6ef; text-align:center; }
   .booth { position:relative; display:flex; justify-content:center; align-items:center; min-height:56px; padding:6px 6px 0; pointer-events:none; }
   .booth.hidden { visibility:hidden; }
   .booth-card { max-width:100%; display:flex; align-items:flex-start; gap:8px; background:rgba(10,7,26,0.92);
@@ -430,6 +439,7 @@
     <div class="boss-bio" id="boss-bio">—</div>
     <div class="boss-quote" id="boss-quote">—</div>
     <div class="boss-note" id="boss-note">—</div>
+    <div class="scout" id="scout"></div>
     <div class="row" id="boss-row"></div>
   </div>
 </div>
@@ -1095,6 +1105,62 @@ function playstyleOf(p){ var aggr=p.aggr||0, mat=p.mat||1, pst=p.pst||0, d=p.dep
   if (pst>=0.9) return 'Positional'; return 'Balanced'; }
 function pipStr(n){ var s=''; for (var i=1;i<=5;i++) s += (i<=n?'◆':'◇'); return s; }
 
+/* ══ THE SCOUTING REPORT (item 3) — earned by warm-up puzzles (item 7) ═══════════════════
+   ⚠⚠ EVERY LINE IS READ OFF THE DIALS THAT PLAY. personaForElo() below 1400 (the measured
+   ladder), and nothing at all above it, where Stockfish plays and there is no persona to
+   read — that floor's report says so rather than inventing a habit.
+   The motif you practice is the one that actually works on that floor: a depth-2 engine
+   cannot see a three-move tactic, which is exactly what a fork or a skewer is. */
+var SCOUT_KEY = 'pjcc.gauntlet.scout.v1';
+function scoutRead(){ try { return JSON.parse(localStorage.getItem(SCOUT_KEY)) || {}; } catch(e){ return {}; } }
+function scouted(idx){ return !!scoutRead()[idx]; }
+function scoutMotif(idx){
+  var pers = personaFor(idx);
+  if (!pers) return 'mate';                       // Stockfish floors: the one thing depth cannot dodge
+  return (pers.depth || 2) <= 2 ? 'fork' : (pers.depth === 3 ? 'discovered' : 'pin');
+}
+var MOTIF_WORD = { fork: 'knight fork', skewer: 'skewer', pin: 'pin', discovered: 'discovered check',
+                   material: 'winning material', mate: 'back-rank mate' };
+function scoutLines(idx){
+  var r = LADDER[idx], pers = personaFor(idx), out = [];
+  if (!pers){
+    out.push('<b>A full engine.</b> No habits to read, no tells, no tilt.');
+    out.push('Rated <b>' + r.elo + '</b>. Beating him is chess, not a trick.');
+    return out;
+  }
+  var d = pers.depth || 2;
+  out.push('Calculates <b>' + d + ' move' + (d === 1 ? '' : 's') + '</b> ahead' +
+    (d <= 2 ? ' — a three-move tactic is past him.' : '.'));
+  if (pers.noise >= 100) out.push('Misjudges a quiet position by up to <b>two pawns</b>.');
+  else if (pers.noise >= 40) out.push('Misjudges a quiet position by up to <b>a pawn</b>.');
+  else out.push('Judges the position <b>accurately</b>. No free ground.');
+  out.push(pers.tilt >= 0.5 ? '<b>Comes apart</b> the moment he is losing.'
+    : pers.tilt > 0 ? '<b>Wobbles</b> when he is a piece down.'
+    : '<b>Holds it together</b> even when he is losing.');
+  if (pers.neverCastle) out.push('<b>Never castles.</b> His king stays in the middle.');
+  if (pers.blunder > 0) out.push('About <b>one move in ' + Math.round(1 / pers.blunder) + '</b> is a throwaway.');
+  if ((pers.aggr || 0) >= 4) out.push('Crowds your king — <b>he will overextend</b>.');
+  if ((pers.mat || 1) >= 1.2) out.push('<b>Greedy.</b> He will take what you leave hanging.');
+  return out;
+}
+function paintScout(idx){
+  var host = document.getElementById('scout'); if (!host) return;
+  var motif = scoutMotif(idx), r = LADDER[idx];
+  if (scouted(idx)){
+    host.innerHTML = '<div class="scout-head">🔍 Scouting report</div><ul>' +
+      scoutLines(idx).map(function(l){ return '<li>' + l + '</li>'; }).join('') + '</ul>';
+    return;
+  }
+  host.innerHTML = '<div class="scout-head">🔍 Scouting report — locked</div>' +
+    '<div class="scout-locked">Solve <b>three ' + MOTIF_WORD[motif] + ' puzzles</b> clean and the room will tell you ' +
+    'what he sees, what he misses, and what he does when he is losing.</div>';
+  var row = document.getElementById('boss-row');
+  addBtn(row, '🔍 SCOUT HIM', 'btn-ghost', function(){
+    var url = '/games/fork-in-the-road/?warmup=' + motif + '&n=3&floor=' + idx + '&name=' + encodeURIComponent(r.name);
+    try { (window.top || window).location.href = url; } catch(e){ location.href = url; }
+  });
+}
+
 // #4 — the cinematic reveal before a match
 function showBossCard(idx){
   if (G){ G.over = true; }
@@ -1146,6 +1212,7 @@ function showBossCard(idx){
   var row = document.getElementById('boss-row'); row.innerHTML = '';
   addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ beginRung(idx, pc); });
   addBtn(row, '◂ Tower', 'btn-ghost', showLadder);
+  paintScout(idx);   // …and the report, or the errand that earns it
   document.getElementById('boss-screen').classList.remove('hidden');
 }
 

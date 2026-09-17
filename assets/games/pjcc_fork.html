@@ -1149,7 +1149,10 @@ function motifMix(diff){
 const THEME_OF = new Map([[genBackRankMate, 'Back Rank'], [genDoubleAttack, 'Winning Material'],
   [genKnightFork, 'Knight Fork'], [genSkewer, 'Skewer'], [genPinWin, 'The Pin'], [genDiscovered, 'Discovered Check']]);
 // `avoid` = themes served recently. Dropped only while something else is left to pick.
-function pickMotif(diff, rnd, avoid){
+const GEN_FOR = { fork: genKnightFork, skewer: genSkewer, pin: genPinWin,
+                  discovered: genDiscovered, material: genDoubleAttack, mate: genBackRankMate };
+function pickMotif(diff, rnd, avoid, only){
+  if (only && GEN_FOR[only]) return GEN_FOR[only];   // a warm-up asks for ONE motif
   let mix = motifMix(diff);
   if (avoid && avoid.length){ const keep = mix.filter(e => !avoid.includes(THEME_OF.get(e[0]))); if (keep.length) mix = keep; }
   let total = 0; mix.forEach(e => total += e[1]);
@@ -1194,7 +1197,7 @@ function puzzleCode(p){
   for (let i = 0; i < 8; i++){ out = A[n % 32] + out; n = Math.floor(n / 32); }
   return out.slice(0, 4) + '-' + out.slice(4);
 }
-function genPuzzle(diff, rnd, avoid){
+function genPuzzle(diff, rnd, avoid, only){
   rnd = rnd || Math.random;
   try {
     /* A WALL CLOCK ON TOP OF THE NODE BUDGET. The budget bounds one proof; this bounds the
@@ -1207,7 +1210,7 @@ function genPuzzle(diff, rnd, avoid){
       clutterEase = (a < 6 && late < 260) ? 1 : (a < 12 && late < 620) ? 0.7 : 0.45;
       /* ⚠ A FAILED PICK IS RE-PICKED. It used to fall back to a Knight Fork, which is most
          of why forks dominated: measured 29% of level 2 and 21% of level 5. */
-      const p = pickMotif(diff, rnd, avoid)(diff, rnd);
+      const p = pickMotif(diff, rnd, avoid, only)(diff, rnd);
       if (p && puzzleSane(p)) { p.id = puzzleCode(p); p.rating = puzzleRating(p, diff); return p; }
     }
     // guaranteed fallbacks — still gated; the last resort is a known-sane composition
@@ -1687,8 +1690,53 @@ function takeRetry(){
   }
   return null;
 }
+/* ══ THE SCOUT'S WARM-UP (2026-09-16) ═════════════════════════════════════════════════
+   The Gauntlet sends you here to earn a floor's scouting report: `?warmup=<motif>&n=3&
+   floor=<i>&name=<champion>`. Three CLEAN solves of one motif and the report unlocks, in
+   `pjcc.gauntlet.scout.v1`, which the Gauntlet reads on its boss card.
+   ⚠ IT IS NOT THE ROAD. `mode:'warmup'` keeps every road-only branch out (the step, the
+   region gates, the retry queue, the map) — the puzzles are real and the rating still
+   settles, because that is a measurement either way. */
+const SCOUT_KEY = 'pjcc.gauntlet.scout.v1';
+function warmupArgs(){
+  try {
+    const q = new URLSearchParams(location.search), cat = q.get('warmup');
+    if (!cat || !GEN_FOR[cat]) return null;
+    return { cat: cat, n: Math.max(1, Math.min(5, parseInt(q.get('n'), 10) || 3)),
+             floor: parseInt(q.get('floor'), 10), name: (q.get('name') || 'the next floor').slice(0, 40) };
+  } catch(e){ return null; }
+}
+let lastWarmup = null;
+function startWarmup(w){
+  lastWarmup = w;
+  const pzNow = myPuzzleRating(), pr = loadProg();
+  run = { mode: 'warmup', idx: 0, legLen: w.n, cat: w.cat, floor: w.floor, name: w.name,
+          diff: pzNow ? ratingToDiff(pzNow.rating) : pr.diff, served: 0, retry: [], recent: [],
+          stats: { solved:0, clean:0, streak:0, best:0, hints:0, rating0: pzNow ? pzNow.rating : null } };
+  hideOverlays();
+  document.getElementById('menu-btn').classList.remove('hidden');
+  loadPuzzle();
+}
+function unlockScout(floor){
+  try {
+    const o = JSON.parse(localStorage.getItem(SCOUT_KEY)) || {};
+    o[floor] = 1; localStorage.setItem(SCOUT_KEY, JSON.stringify(o));
+  } catch(e){}
+}
 function loadPuzzle(){
   let p;
+  if (run.mode === 'warmup'){
+    p = genPuzzle(Math.max(1, Math.min(10, Math.round(run.diff))), Math.random, run.recent, run.cat);
+    run.recent = [p.theme].concat(run.recent || []).slice(0, 2);
+    run.served++;
+    clearRefutation(); hintCard = null;
+    G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, revealed: false, hintLevel: 0, phase: 'await', orient: p.side };
+    document.getElementById('hint-btn').classList.remove('hidden');
+    document.getElementById('report-btn').classList.remove('hidden');
+    document.getElementById('analysis-btn').classList.add('hidden');
+    updateHintBtn(); bannerT = -1;
+    return;
+  }
   const back = takeRetry();
   if (back){
     // a second look at one you didn't earn. Same position, and it says so.
@@ -2144,6 +2192,12 @@ function drawHeader(){
      The top row has real space: the ☰ menu button is an HTML overlay pinned to the right
      and the SECOND LOOK chip only appears on a repeat, so the middle of that row is empty.
      Same vertical center as that chip (y=17) so the row reads as one line. */
+  if (run && run.mode === 'warmup'){
+    ctx.fillStyle = C.gold; ctx.font = 'bold 11px Trebuchet MS'; ctx.textAlign = 'center';
+    // ⚠ SHORT ON PURPOSE: the rating chip is right-aligned at x=380 on this same row, and
+    //   the champion's name ran straight under it. The name is in the ribbon instead.
+    ctx.fillText('🔍 SCOUTING  ·  ' + Math.min(run.idx + 1, run.legLen) + ' of ' + run.legLen, W/2 - 40, 17);
+  }
   if (run && run.mode === 'journey'){
     if (p.boss){
       ctx.fillStyle = C.gold; ctx.font = 'bold 12px Trebuchet MS'; ctx.textAlign = 'center';
@@ -2254,6 +2308,7 @@ function drawPuzzleCode(){
 }
 function drawRibbon(){
   const y = H - 34, x0 = 30, x1 = W - 30, n = run.legLen || (run.queue ? run.queue.length : 5);
+  const warm = run.mode === 'warmup';
   ctx.strokeStyle = 'rgba(245,197,24,0.3)'; ctx.lineWidth = 4; ctx.setLineDash([2, 6]); ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); ctx.setLineDash([]);
   for (let i = 0; i <= n; i++){
@@ -2283,6 +2338,11 @@ function drawRibbon(){
      The dots are one five-puzzle leg; the far label is 200 clean solves away. So the far
      label now carries the COUNT, and a tap on this band opens the map (see openMap). */
   ctx.fillStyle = C.muted; ctx.font = '9px Trebuchet MS'; ctx.textBaseline = 'top';
+  if (warm){
+    ctx.textAlign = 'left'; ctx.fillText(run.name + ' · ' + (CAT_LABEL[run.cat] || run.cat), x0 - 6, y + 9);
+    ctx.textAlign = 'right'; ctx.fillText(run.stats.clean + ' of ' + run.legLen + ' clean', x1 + 6, y + 9);
+    return;
+  }
   const here = run.mode === 'journey' ? stopAt(run.step) : 0, next = STOPS[Math.min(STOPS.length - 1, here + 1)];
   ctx.textAlign = 'left'; ctx.fillText(STOPS[here].name, x0 - 6, y + 9);
   ctx.textAlign = 'right';
@@ -2424,6 +2484,31 @@ function showMenu(){ G=null; run=null; document.getElementById('menu-btn').class
 function showSummary(){
   G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); document.getElementById('analysis-btn').classList.add('hidden');
   const s = run.stats;
+  if (run.mode === 'warmup'){
+    const won = s.clean >= run.legLen;
+    if (won) unlockScout(run.floor);
+    document.getElementById('sum-mode').textContent = 'Scouting ' + run.name;
+    document.getElementById('sum-title').textContent = won ? 'REPORT UNLOCKED 🔍' : s.clean + ' OF ' + run.legLen + ' CLEAN';
+    document.getElementById('sum-msg').innerHTML = won
+      ? 'Three clean solves. The scouting report is on his door in the tower — what he sees, what he misses, and what happens to him when he is losing.'
+      : 'The report wants ' + run.legLen + ' solved clean — no hints, no wrong turns. Nothing is lost; go again.';
+    document.getElementById('sum-solved').textContent = s.solved;
+    document.getElementById('sum-clean').textContent = s.clean;
+    document.getElementById('sum-streak').textContent = s.best;
+    document.getElementById('sum-tactics').innerHTML = '';
+    const row = document.getElementById('sum-row') || document.getElementById('sum-again').parentNode;
+    document.getElementById('sum-again').textContent = won ? 'Another set' : 'Try again';
+    let back = document.getElementById('sum-gauntlet');
+    if (!back){
+      back = document.createElement('button');
+      back.id = 'sum-gauntlet'; back.className = 'btn btn-gold';
+      back.addEventListener('click', () => { try { (window.top || window).location.href = '/games/the-gauntlet/'; } catch(e){ location.href = '/games/the-gauntlet/'; } });
+      row.insertBefore(back, row.firstChild);
+    }
+    back.textContent = '◂ Back to the Gauntlet';
+    document.getElementById('summary-screen').classList.remove('hidden');
+    return;
+  }
   if (run.mode === 'journey'){
     const reg = STOPS[stopAt(run.step)].name, done = run.step >= JOURNEY_LEN;
     let beat = '';
@@ -2525,6 +2610,8 @@ function showSummary(){
 
 function go(){ initAudio(); if (actx.state === 'suspended') actx.resume(); }
 document.getElementById('journey-btn').addEventListener('click', ()=>{ go(); startRun(); });
+/* the Gauntlet's errand — see THE SCOUT'S WARM-UP. Read at boot, before the menu paints. */
+(function(){ const w = warmupArgs(); if (w) startWarmup(w); })();
 /* ⚑ REPORT A PUZZLE (rebuilt 2026-07-27 — Nate: "Maybe a Report Puzzle option that
    comes to me somehow"). It was one small pill firing a bare mailto: from inside an
    iframe — easy to miss, and if the browser has no mail handler the report vanished
@@ -2705,7 +2792,7 @@ function openMap(){
   menu.classList.add('hidden');
   document.getElementById('map-screen').classList.remove('hidden');
 }
-document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(); });
+document.getElementById('sum-again').addEventListener('click', ()=>{ go(); if (lastWarmup) startWarmup(lastWarmup); else startRun(); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
 document.getElementById('reset-prog').addEventListener('click', ()=>{ saveProg({ step:0, diff:2, best:0 }); updateJourneyLine(); });
 document.getElementById('snd-toggle').addEventListener('click', ()=>{ sndOn=!sndOn; if(master) master.gain.value=sndOn?0.85:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 Sound: On':'🔇 Sound: Off'; });
