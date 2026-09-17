@@ -178,6 +178,19 @@
     display:flex; align-items:center; justify-content:center; background:#1a1040; border:2px solid #6b5fa0;
     box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:border-color .2s, transform .2s; }
   .opp-face.react { transform:scale(1.1); }
+  /* ⚑ THE TELLS (2026-09-16). Body language is the only help in this room that teaches
+     something: an exposed piece is a thing you can learn to SEE. Loud on the low floors,
+     nothing at all from 1400 up — see tellLevel(). */
+  .opp-face.tell-shake { animation:opp-shake 0.5s ease-in-out 2; }
+  .opp-face.tell-sweat { box-shadow:0 0 0 2px rgba(143,227,255,0.55); }
+  .opp-face.tell-smug  { transform:translateY(-3px) rotate(-4deg); }
+  @keyframes opp-shake { 25%{transform:translateX(-2px) rotate(-3deg)} 75%{transform:translateX(2px) rotate(3deg)} }
+  /* composure — shown ONLY on floors whose dials really do come apart (persona.tilt) */
+  .opp-comp { width:100%; height:4px; margin-top:4px; border-radius:99px; background:rgba(255,255,255,0.16); overflow:hidden; }
+  .opp-comp.hidden { display:none; }
+  .opp-comp i { display:block; height:100%; width:100%; background:#6bffb8; transition:width .5s ease, background .5s ease; }
+  .opp-comp.cracked i { background:#ff6b6b; }
+  /* the conversion coach speaks in the BOOTH — see coachTrade for why it has no furniture */
   .opp-glyph { font-size:22px; line-height:1; }
   .opp-mood { position:absolute; right:-6px; bottom:-6px; font-size:15px; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }
   .opp-meta { min-width:0; }
@@ -336,7 +349,8 @@
 
     <div class="opp hidden" id="opp" aria-hidden="true">
       <div class="opp-face" id="opp-face"><span class="opp-glyph" id="opp-glyph">♟</span><span class="opp-mood" id="opp-mood">🙂</span></div>
-      <div class="opp-meta"><div class="opp-name" id="opp-name">—</div><div class="opp-sub" id="opp-sub">—</div></div>
+      <div class="opp-meta"><div class="opp-name" id="opp-name">—</div><div class="opp-sub" id="opp-sub">—</div>
+        <div class="opp-comp hidden" id="opp-comp" role="img" aria-label="Composure"><i id="opp-comp-fill"></i></div></div>
       <div class="opp-bubble" id="opp-bubble"></div>
     </div>
   </div>
@@ -736,7 +750,7 @@ function restoreMatch(sv){
   var rung = LADDER[sv.idx], S;
   try { S = C.parseFEN(sv.fen); } catch(e){ return false; }
   if (!S || C.gameResult(S, (sv.reps && sv.reps[C.posKey(S)]) || 1)) return false;   // stale/finished
-  G = { idx:sv.idx, rung:rung, persona:rung.persona, pc:sv.pc,
+  G = { idx:sv.idx, rung:rung, persona:rung.persona, pc:sv.pc, coachSq:-1, coachAt:null,
         S:S, reps:sv.reps || {}, sel:-1, legal:[], over:false, result:null,
         last:sv.last || null, thinking:false, promo:null, log:sv.log || [], uci:sv.uci || [],
         roundStartMat:null, crockett:(sv.crockett == null ? -1 : sv.crockett) };
@@ -787,7 +801,7 @@ function startRung(idx, pc){
         // the opposition's e-pawn: a small white dog with black spots rides along
         // every match — usually the first one sacrificed, never seems to mind.
         // Unlabeled by design; the spots are the whole of it.
-        crockett: (pc === 'w') ? 12 : 52 };
+        crockett: (pc === 'w') ? 12 : 52, coachSq:-1, coachAt:null };
   bumpRep();
   if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }   // boot Stockfish in the background for this match
   G.legal = C.legalMoves(G.S);
@@ -800,6 +814,7 @@ function startRung(idx, pc){
   document.getElementById('resign-btn').classList.remove('hidden');
   mountReplay();
   setupPortrait(rung, idx);
+  readTable();   // composure belongs to the floor, so it is set before the first move
   G.roundStartMat = matPOV(G.S, G.pc);
   boothLast = 0;
   setTimeout(function(){ if (G) announceColor(); }, 260);
@@ -860,6 +875,7 @@ function applyPlayerMove(m){
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
   saveGame();   // the board survives a refresh from this move on
+  readTable();
   var psan = G.log[G.log.length-1] || '';
   if (psan.indexOf('#')<0){ if (psan.indexOf('+')>=0) callOut('pcheck'); else if (psan.indexOf('x')>=0 && Math.random()<0.34) callOut('pcap'); }
   aiTurnSoon();
@@ -922,6 +938,7 @@ function applyAiMove(myG, S, m){
   var esan = G.log[G.log.length-1] || '';
   if (esan.indexOf('#')<0){ if (esan.indexOf('+')>=0) callOut('echeck'); else if (esan.indexOf('x')>=0 && Math.random()<0.30) callOut('ecap'); }
   judgeRound();   // react to how the player just played, now that the reply has landed
+  readTable();    // …and read the table: tells, composure, the coach, a resignation
 }
 
 // ---- promotion picker ----
@@ -950,6 +967,7 @@ function endGame(result){
   document.getElementById('resign-btn').classList.add('hidden');
   var prog = loadProg(), playerWon = false, draw = false, title, msg, eye;
   if (result === 'checkmate'){ playerWon = (G.S.turn !== G.pc); }   // side to move is mated
+  else if (result === 'opp-resign'){ playerWon = true; }             // they put their hand out
   else if (result === 'resign' || result === 'flag'){ playerWon = false; }
   else { draw = true; }                                              // stalemate / material / fifty / threefold
 
@@ -975,7 +993,7 @@ function endGame(result){
         (G.rung.lore ? '   ◈ FRAGMENT RECOVERED — ' + G.rung.lore : '') +
         (isFinal ? '   Below the vault, the tower. Above it, everything. There is no one left to beat.' : '');
     } else {
-      eye = 'Rung ' + (G.idx+1) + ' cleared'; title = 'VICTORY ♛';
+      eye = (result === 'opp-resign' ? 'They resign · rung ' : 'Rung ') + (G.idx+1) + ' cleared'; title = 'VICTORY ♛';
       msg = G.rung.win;
     }
   } else if (draw){
@@ -1242,6 +1260,65 @@ var PVAL = { p:100, n:320, b:330, r:500, q:900, k:0 };
 function matPOV(S, pc){ var s=0, i, p; for(i=0;i<64;i++){ p=S.b[i]; if(!p) continue;
   s += (C.colorOf(p)===pc ? 1 : -1) * (PVAL[p.toLowerCase()]||0); } return s; }
 var MOODS = { intro:'🙂', blunder:'😏', good:'😟', ponder:'🤔', neutral:'🙂' };
+
+/* ══ WHAT THE TABLE GIVES AWAY (2026-09-16) — Nate's list, items 1, 2 and 9 ═══════════
+   Everything below is a fact about the POSITION or about the dials the engine is really
+   running. Nothing here asks the engine what it intends to play: a tell you can learn to
+   read teaches chess, and an engine line piped to the player is just the answer.
+   ⚠⚠ personaForElo() IS THE ONE THAT PLAYS below 1400 — the floors' own `persona:` blocks
+   are the hand-authored guesses the 09-13 recalibration replaced (see aiMove). Reading the
+   wrong one would put a composure meter on a bot that never tilts. */
+function personaFor(idx){
+  var r = LADDER[idx];
+  return (ENGINE && ENGINE.personaForElo) ? (ENGINE.personaForElo(r.elo) || null) : null;
+}
+// the most valuable man of `side` that is attacked and undefended. Pawns are not a tell.
+function looseFor(S, side){
+  var foe = side === 'w' ? 'b' : 'w', worst = 0;
+  for (var i = 0; i < 64; i++){
+    var p = S.b[i]; if (!p || C.colorOf(p) !== side) continue;
+    var v = PVAL[p.toLowerCase()] || 0;
+    if (v < 300) continue;
+    if (C.isAttacked(S.b, i, foe) && !C.isAttacked(S.b, i, side) && v > worst) worst = v;
+  }
+  return worst;
+}
+// 2 = loud (the early floors), 1 = quiet, 0 = poker face. Nobody above 1250 gives you anything.
+function tellLevel(){ return !G ? 0 : G.rung.elo <= 650 ? 2 : G.rung.elo <= 1250 ? 1 : 0; }
+var tellMood = MOODS.neutral;
+function readTable(){
+  if (!G || G.over) return;
+  var face = document.getElementById('opp-face'); if (!face) return;
+  var oppC = G.pc === 'w' ? 'b' : 'w';
+  var theirs = looseFor(G.S, oppC), mine = looseFor(G.S, G.pc);
+  var behind = -matPOV(G.S, oppC);                       // + = the rival is down material
+  var lvl = tellLevel();
+  face.classList.remove('tell-shake', 'tell-sweat', 'tell-smug');
+  tellMood = MOODS.neutral;
+  if (lvl > 0){
+    if (theirs >= 300){ tellMood = '😬'; if (lvl === 2){ void face.offsetWidth; face.classList.add('tell-shake'); } }
+    else if (mine >= 300){ tellMood = '😏'; if (lvl === 2) face.classList.add('tell-smug'); }
+    else if (behind >= 300){ tellMood = '😓'; face.classList.add('tell-sweat'); }
+  }
+  setMood(tellMood);
+  /* ⚑ COMPOSURE, AND ONLY WHERE IT IS TRUE. `tilt` is a per-move probability of losing a
+     ply while the engine is ≥300 behind (pjcc-chess-ai.js). Floors from 1400 up run
+     Stockfish and have no such dial, so they get no meter rather than a decorative one.
+     The bar reads MATERIAL, which is the dominant term in the eval that arms tilt. */
+  var pers = personaFor(G.idx), comp = document.getElementById('opp-comp');
+  if (comp){
+    if (!pers || !pers.tilt){ comp.classList.add('hidden'); }
+    else {
+      comp.classList.remove('hidden');
+      var left = Math.max(0, Math.min(100, 100 - (behind - 60) / 8));
+      document.getElementById('opp-comp-fill').style.width = left + '%';
+      comp.classList.toggle('cracked', behind >= 300);
+      comp.setAttribute('aria-label', 'Composure ' + Math.round(left) + '%');
+    }
+  }
+  coachTrade();
+  oppResign();
+}
 var bubbleTimer=null, moodTimer=null;
 function setMood(emoji){ var el=document.getElementById('opp-mood'); if(el) el.textContent=emoji; }
 function showBubble(text, mood){
@@ -1251,7 +1328,7 @@ function showBubble(text, mood){
   setMood(mood||MOODS.neutral);
   clearTimeout(bubbleTimer); clearTimeout(moodTimer);
   bubbleTimer=setTimeout(function(){ b.classList.remove('show'); if(face) face.classList.remove('react'); }, 2600);
-  moodTimer=setTimeout(function(){ setMood(MOODS.neutral); }, 3200);
+  moodTimer=setTimeout(function(){ setMood(tellMood); }, 3200);
 }
 function reactOpp(kind){
   if(!G || !G.rung.react) return;
@@ -1291,6 +1368,47 @@ function hidePortrait(){ var opp=document.getElementById('opp'); if(opp) opp.cla
   clearTimeout(bubbleTimer); clearTimeout(moodTimer); }
 // Judge the player's last move by net material over the full round (their move + the
 // reply) — this nets out ordinary trades and only fires on a real swing.
+/* ⚑ THE CONVERSION COACH (item 9). Beginners win a piece and then lose the endgame; the
+   one rule that fixes it is "trade pieces when you are ahead". It only speaks when the
+   advice is TRUE — you are a piece up and an even trade is actually on the board — and
+   only below 1400, where the player it is for is playing. */
+function coachTrade(){
+  /* ⚠ IT BORROWS THE BOOTH, AND THAT IS A LAYOUT DECISION. A pill of its own under the board
+     is a new flow child of #stage, and the frame budget's worst case (a 306px stage) has 16px
+     of slack — a 36px pill would have clipped the room on a phone the first time somebody won
+     a piece. The booth's 56px is already reserved at every width. */
+  var hide = function(){ G.coachSq = -1; };
+  if (!G || G.over || G.rung.elo >= 1400 || G.S.turn !== G.pc) return hide();
+  if (matPOV(G.S, G.pc) < 300) return hide();
+  if (G.coachAt != null && G.log.length - G.coachAt < 8) return;
+  var best = null;
+  (G.legal || []).forEach(function(m){
+    var t = G.S.b[m.to]; if (!t) return;
+    var mine = PVAL[(G.S.b[m.from] || '').toLowerCase()] || 0, theirs = PVAL[t.toLowerCase()] || 0;
+    if (theirs < 300 || Math.abs(theirs - mine) > 60) return;       // an even trade of PIECES
+    if (!C.isAttacked(G.S.b, m.to, G.pc === 'w' ? 'b' : 'w')) return;  // undefended is a gift, not a trade
+    if (!best) best = m;
+  });
+  if (!best) return hide();
+  G.coachAt = G.log.length; G.coachSq = best.to;
+  bcast('chipper', 'Up a piece — trade pieces, not pawns. ' + C.nameFromSq(best.to) + ' is an even trade.', true);
+  setTimeout(function(){ if (G && G.coachSq === best.to) G.coachSq = -1; }, 6000);
+}
+
+/* ⚑ THEY RESIGN (item 8). A champion who is hopelessly lost puts their hand out instead of
+   making a beginner find mate from a queen up. ⚠ THE FLOOR DECIDES WHEN: a 350 plays on to
+   the end the way a beginner does, a club player folds a rook down. Never in the opening,
+   and never while they still have a check to try — being mated-in-one is not resigning. */
+function resignAt(elo){ return elo < 800 ? 900 : elo < 1400 ? 550 : 480; }
+function oppResign(){
+  if (!G || G.over || G.S.turn !== G.pc) return;          // only after their move lands
+  if (G.log.length < 16) return;                          // give the game a game
+  var oppC = G.pc === 'w' ? 'b' : 'w';
+  if (-matPOV(G.S, oppC) < resignAt(G.rung.elo)) return;
+  if (C.inCheck(G.S, G.pc)) return;                       // they are still attacking; that is not lost
+  endGame('opp-resign');
+}
+
 function judgeRound(){
   if(!G || G.roundStartMat==null) return;
   var delta = matPOV(G.S, G.pc) - G.roundStartMat;   // + = player won material this round
@@ -1334,6 +1452,10 @@ function render(){
   // last move
   if (VLAST){ [VLAST.from,VLAST.to].forEach(function(sq){ var s=idxToScreen(sq);
     ctx.fillStyle='rgba(245,197,24,0.28)'; ctx.fillRect(BX+s.col*TILE, BY+s.row*TILE, TILE, TILE); }); }
+  // the coach's even trade — a soft ring, only while the pill is up (see coachTrade)
+  if (!VW && G.coachSq >= 0){ var cs = cellXY(G.coachSq);
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(107,255,184,0.85)';
+    ctx.beginPath(); ctx.arc(cs.x, cs.y, TILE*0.44, 0, 7); ctx.stroke(); }
   // check
   if (C.inCheck(VS, VS.turn)){ var ks=C.kingSq(VS.b, VS.turn); if(ks>=0){ var s2=idxToScreen(ks);
     ctx.fillStyle='rgba(255,80,110,0.5)'; ctx.fillRect(BX+s2.col*TILE, BY+s2.row*TILE, TILE, TILE); } }
