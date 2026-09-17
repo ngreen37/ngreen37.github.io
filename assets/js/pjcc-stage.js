@@ -36,8 +36,9 @@
     var canvas = document.createElement('canvas');
     canvas.className = 'stage-canvas';
     canvas.setAttribute('aria-hidden', 'true');
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
-    // MSAA is ~8x the canvas in GPU memory; a 2x screen hides the edges without it
+    var dpr = Math.min(3, window.devicePixelRatio || 1);
+    // MSAA is ~8x the canvas in GPU memory; native 2x/3x hides the edges without it. Capping a
+    // 3x iPhone at 2 upscales the canvas and the stair-steps show.
     var r = new T.WebGLRenderer({ canvas: canvas, alpha: true, antialias: dpr < 2, powerPreference: 'low-power' });
     r.outputColorSpace = T.SRGBColorSpace;
     r.toneMapping = T.ACESFilmicToneMapping;
