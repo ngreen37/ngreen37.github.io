@@ -12,7 +12,16 @@ const { withGame, report } = require('./harness');
 const GAME = path.join(__dirname, '..', 'assets', 'games', 'pjcc_gauntlet.html');
 const MARKER = 'loop();'; // the final bottom kick, after every def
 const HOOK = `window.__t = { G:function(){return G;}, LADDER:LADDER, VISIBLE:VISIBLE,
-  prog:loadProg, fromAccount:restoreFromAccount,
+  prog:loadProg, fromAccount:restoreFromAccount, RIVAL:RIVAL_IDX,
+  rivalElo:rivalElo, rivalRung:rivalRung, startRung:startRung, card:showBossCard,
+  toFEN:function(){ return C.toFEN(G.S); },
+  /* play a whole match in one call: stage a finished position and let endGame() decide it,
+     which is the only way the rival's record, the crests and the file are ever written */
+  play:function(idx, win, mod){ startRung(idx, 'w', mod || null);
+    G.log = new Array(30).fill('Nf3'); G.uci = new Array(30).fill('g1f3');
+    if (win) G.S.turn = 'b';
+    endGame('checkmate');
+    return document.getElementById('over-eye').textContent; },
   geo:function(){ return { W:W, H:H, TILE:TILE, BOARD:BOARD, BX:BX, BY:BY }; } };`;
 
 const PKEY = 'pjcc.gauntlet.v2';
@@ -397,6 +406,167 @@ const PKEY = 'pjcc.gauntlet.v2';
        (dM ? dM[1] : '?') + '/' + (pM ? pM[1] : '?') + ' vs test ' +
        FRAME_DESKTOP + '/' + FRAME_PHONE + ']');
 
+    /* ══ THE RIVAL, THE CRESTS AND THE FILE (2026-09-16) ════════════════════════════════
+       The rival is the one feature in this room that can corrupt a climb it never played:
+       `Object.keys(prog.beaten).length` is the leaderboard score AND the number
+       restoreFromAccount() rebuilds a whole ladder from on another device. So the first
+       check below is not about the rival at all — it is about the ten floors. */
+    await seed(null);
+    const play = (i, w, m) => page.evaluate((i, w, m) => window.__t.play(i, w, m || null), i, w, m || null);
+    const prog2 = () => page.evaluate(() => window.__t.prog());
+
+    await play(1, false);
+    ok(!(await prog2()).rival, 'ONE loss to a floor makes no rival — a bad night is not a pattern');
+    await play(1, false);
+    let pr = await prog2();
+    ok(pr.rival && pr.rival.idx === 1 && pr.rival.stage === 'marked',
+       'TWO losses to the same champion marks them  [' + JSON.stringify(pr.rival) + ']');
+    ok(!(await page.evaluate(() => { window.showLadder(); return !!document.querySelector('.tw-rival'); })),
+       '…but a marked champion is still holding their floor, so no door in the tower yet');
+    await play(1, true);
+    pr = await prog2();
+    ok(pr.rival.stage === 'following', 'taking their floor is what sends them after you');
+    ok(await page.evaluate(() => { window.showLadder(); return !!document.querySelector('.tw-rival'); }),
+       '…and NOW the tower has a rival door');
+
+    /* ⚠⚠ THE ONE THAT MATTERS. A rival win must not land in prog.beaten: `cleared` is the
+       leaderboard score and restoreFromAccount() deduces "cleared = N means floors 1..N" on
+       every other device. One stray key here hands a player floors they never played, on a
+       machine that has no way to tell where they came from. */
+    const clearedBefore = Object.keys((await prog2()).beaten).length;
+    await play(99, true);
+    pr = await prog2();
+    const clearedAfter = Object.keys(pr.beaten).length;
+    ok(clearedBefore === clearedAfter && !(99 in pr.beaten),
+       'beating the RIVAL hands out no floors  [cleared ' + clearedBefore + ' → ' + clearedAfter +
+       '; keys ' + Object.keys(pr.beaten).join(',') + ']');
+    ok(pr.rival.w === 1 && !pr.rival.l, 'the head-to-head record is where the win went instead');
+    await play(99, false);
+    ok((await prog2()).rival.l === 1, 'and a loss to them is recorded too');
+
+    /* THE RIVAL KEEPS PACE. Their rating is the strongest floor you have actually beaten —
+       and their dials come from that rating, never from the persona block of the floor they
+       used to hold (blunder:0.28 carried up to 1800 is a "1800" playing like a 500). */
+    const pace = await page.evaluate(() => {
+      const out = [];
+      const g = window.__t.prog();
+      [1, 4, 7, 9].forEach((n) => {
+        for (let i = 0; i < n; i++) g.beaten[i] = true;
+        localStorage.setItem('pjcc.gauntlet.v2', JSON.stringify(g));
+        out.push({ cleared: n, elo: window.__t.rivalElo(),
+                   blunder: window.__t.rivalRung().persona.blunder });
+      });
+      return out;
+    });
+    const ladderElo = await page.evaluate(() => window.__t.LADDER.map(r => r.elo));
+    const theirFloor = await page.evaluate(() => window.__t.LADDER[window.__t.prog().rival.idx].elo);
+    // ⚠ never BELOW the floor they walked away from: a rival who followed you off floor 2
+    // does not get weaker because you have only cleared floor 1.
+    ok(pace.every(p => p.elo === Math.max(theirFloor, ladderElo[p.cleared - 1])) &&
+       pace[0].elo < pace[3].elo,
+       'the rival is rated at the top floor you have cleared, and climbs with you  [' +
+       pace.map(p => p.cleared + '→' + p.elo).join(' ') + ', their old floor ' + theirFloor + ']');
+    ok(pace.every(p => p.blunder < 0.1),
+       'their dials come from that rating, not from the floor they walked away from  [blunder ' +
+       pace.map(p => p.blunder).join(' ') + ']');
+
+    /* MODIFIER REMATCHES — each is one honest change, and only on a floor already cleared. */
+    const fens = await page.evaluate(() => {
+      const o = {};
+      window.__t.startRung(2, 'w', 'odds');  o.oddsW = window.__t.toFEN();
+      window.__t.startRung(2, 'b', 'odds');  o.oddsB = window.__t.toFEN();
+      window.__t.startRung(2, 'w', null);    o.plain = window.__t.toFEN();
+      window.__t.startRung(2, 'w', 'sixty'); o.sixty = window.__t.G().clockMs;
+      window.__t.startRung(2, 'w', null);    o.noClock = window.__t.G().clockMs;
+      window.__t.startRung(2, 'w', 'poker'); o.poker = window.__t.G().mod;
+      return o;
+    });
+    ok(fens.oddsW.split(' ')[0].endsWith('RNB1KBNR') && fens.plain.split(' ')[0].endsWith('RNBQKBNR'),
+       'Queen Odds takes YOUR queen off, and only yours  [' + fens.oddsW.split(' ')[0] + ']');
+    ok(fens.oddsB.split(' ')[0].startsWith('rnb1kbnr') && fens.oddsB.indexOf('RNBQKBNR') > 0,
+       '…the black side of it too  [' + fens.oddsB.split(' ')[0] + ']');
+    ok(fens.sixty === 60000 && fens.noClock === 0,
+       'Sixty Seconds puts a clock on a floor that has none  [' + fens.sixty + ' vs ' + fens.noClock + ']');
+
+    /* POKER FACE switches off everything this room added on 09-16 — and the check only means
+       something if the same position WITHOUT it lights all of them up. A mode toggle is a
+       PAIR [[measure-the-real-game]]. */
+    const face = await page.evaluate(() => {
+      const read = (mod) => {
+        window.__t.startRung(1, 'w', mod);
+        const G = window.__t.G();
+        G.S = C.parseFEN('4k3/8/5n2/6B1/8/8/8/4K3 w - - 0 1');
+        G.legal = C.legalMoves(G.S); G.log = new Array(10).fill('e4');
+        readTable();
+        return { tell: tellLevel(), mood: document.getElementById('opp-mood').textContent,
+                 shake: /tell-/.test(document.getElementById('opp-face').className),
+                 comp: !document.getElementById('opp-comp').classList.contains('hidden') };
+      };
+      return { off: read(null), on: read('poker') };
+    });
+    ok(face.off.tell === 2 && face.off.shake && face.off.comp,
+       'the same position without it: the tell fires and the meter shows  [' + JSON.stringify(face.off) + ']');
+    ok(face.on.tell === 0 && !face.on.shake && !face.on.comp,
+       'Poker Face takes the tell, the twitch and the composure meter away  [' + JSON.stringify(face.on) + ']');
+
+    /* BLINDFOLD is a drawing change, so count what actually reached the canvas. */
+    const blind = await page.evaluate(() => {
+      const real = PJCCPieces.draw; let bag = null;
+      PJCCPieces.draw = function (c, x, y, sz, ch, col) { if (bag) bag.push(col); return real.apply(this, arguments); };
+      const paint = (mod) => { window.__t.startRung(2, 'w', mod); bag = []; render();
+        return bag.filter(c => c === 'b').length; };
+      const o = { blind: paint('blind'), plain: paint(null) };
+      PJCCPieces.draw = real;
+      return o;
+    });
+    ok(blind.plain === 16 && blind.blind === 0,
+       'Blindfold paints none of their men, and the plain board paints all sixteen  [' +
+       blind.blind + ' vs ' + blind.plain + ']');
+
+    /* A CREST IS WON, NOT ATTENDED. */
+    await seed({ unlocked: 4, beaten: { 0: true, 1: true, 2: true, 3: true } });
+    await play(2, false, 'odds');
+    ok(!((await prog2()).crests || {})['2'], 'losing a modifier rematch earns no crest');
+    await play(2, true, 'odds');
+    ok(((await prog2()).crests || {})['2'].odds === 1, 'winning one does');
+    ok(await page.evaluate(() => { window.showLadder();
+         const r = [...document.querySelectorAll('.tw-floor')].find(e => /^3\. /m.test(e.innerText));
+         return !!(r && r.querySelector('.tw-crests')); }),
+       '…and the tower wears it on that floor');
+    ok(await page.evaluate(() => { window.__t.card(9); return document.getElementById('mods').classList.contains('hidden'); }),
+       'a floor you have NOT cleared offers no modifiers');
+
+    /* ⚠⚠ THE DOOR NEVER PAYS FOR AN OVERFLOWING CARD. `.boss-stage` holds only absolutely
+       positioned children, so its min-content height is zero, and in a flex column that
+       overflows it was the one item that could shrink — to nothing. Every boss card on a
+       phone showed a gold sliver where the door goes. The check insists the card really
+       does overflow first, or it proves nothing. */
+    const vp = page.viewport();
+    await page.setViewport({ width: 390, height: 560 });
+    await sleep(150);
+    const door = await page.evaluate(() => { window.__t.card(2);
+      const sc = document.getElementById('boss-screen'), st = document.querySelector('.boss-stage');
+      return { h: Math.round(st.getBoundingClientRect().height), content: sc.scrollHeight, box: sc.clientHeight }; });
+    ok(door.content > door.box && door.h === 128,
+       'an overflowing boss card still gives the door its full height  [door ' + door.h +
+       'px · card ' + door.content + ' in ' + door.box + ']');
+    await page.setViewport(vp);
+    await sleep(150);
+
+    /* THE FILE reads your own finished games, and says nothing until it has three of them.
+       ⚠ Handicap games are excluded on purpose — see fileLog(). */
+    await page.evaluate(() => localStorage.removeItem('pjcc.gauntlet.file.v1'));
+    await play(0, false); await play(0, false);
+    ok(await page.evaluate(() => fileLines().length === 0), 'two games is an anecdote — the file stays shut');
+    await play(0, false);
+    const file = await page.evaluate(() => ({ lines: fileLines().length, games: fileRead().games, taunt: fileTaunt() }));
+    ok(file.lines > 0 && file.games === 3, 'three opens it  [' + file.lines + ' lines from ' + file.games + ' games]');
+    await play(0, false, 'blind'); await play(0, false, 'poker');
+    ok((await page.evaluate(() => fileRead().games)) === 3,
+       'handicap games are never filed — a blindfold habit is not your habit');
+    ok(!!file.taunt && await page.evaluate(() => !window.__t.rivalRung || speaks(window.__t.LADDER[1]) && !speaks(window.__t.LADDER[0])),
+       'the champion who cannot speak does not suddenly speak (Argus growls; the booth reads his file)');
+
     /* ══ THE TOWER REACHES THE TOP (2026-08-14) ═════════════════════════════════════════
        Nate: "the tower isn't completely visible. The scrolling stops halfway to Floor ten."
        It was never the scrolling — a centered flex column pushes its first children out
@@ -425,5 +595,5 @@ const PKEY = 'pjcc.gauntlet.v2';
        tower.justify + ']');
   }, { rewriteAssets: true });   // the Gauntlet loads the REAL chess engine via /assets/*
 
-  process.exit(report('The Gauntlet — resume + random colors', results, errors) ? 0 : 1);
+  process.exit(report('The Gauntlet — resume, colors, the rival, crests and the file', results, errors) ? 0 : 1);
 })();

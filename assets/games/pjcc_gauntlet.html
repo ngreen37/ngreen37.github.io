@@ -277,7 +277,12 @@
      exactly like the hall and the front door, and "only a door" and "matches the hall"
      arrive together. The in-game exception list is ONE item now (`pointer-events:none`).
      Fewer differences is the mechanism; diligence was never going to be. */
-  .boss-stage { position:relative; width:100px; height:128px; margin:0 auto 12px; }
+  /* ⚠⚠ flex-shrink:0 — THE DOOR WAS VANISHING ON PHONES. The card is a flex column and this box
+     holds nothing but absolutely-positioned children, so its min-content height is ZERO: the
+     moment the card overflowed, this was the one item that could give, and it gave all 128px.
+     Measured 2026-09-16 at 390x844: stage 0px on every card, the door a gold sliver. The card
+     overflows by design now (safe center scrolls it); the door must not be what pays for it. */
+  .boss-stage { position:relative; width:100px; height:128px; margin:0 auto 12px; flex-shrink:0; }
   .boss-stage .gdoor { position:absolute; inset:0; align-items:center; justify-content:center; gap:0; }
   /* ⚑ SIZE AND NOTHING ELSE (2026-08-05). The radius and the glyph size that stood here
      were hand-corrections for a leaf that did not scale with its arch; the partial states
@@ -316,6 +321,28 @@
   .scout li::before { content:'·'; position:absolute; left:5px; color:#F5C518; font-weight:900; }
   .scout li b { color:#F5C518; font-weight:800; }
   .scout-locked { font-size:11.5px; line-height:1.55; color:#c9b6ef; text-align:center; }
+  /* the house file reads like the scouting report on purpose — same shape, other direction */
+  .scout--file li::before { color:#ff9ec9; }
+  .scout--file li b { color:#ff9ec9; }
+  .scout--file .scout-head { color:#c98fae; }
+  /* ⚑ MODIFIER REMATCHES. A crest is 44px tall because it is a tap target on a phone
+     [[tap-targets-and-audit-numbers]]; the row wraps to two before it shrinks below that. */
+  /* width:100% — the card is a centered flex column, and without it the grid gets only its
+     content's width: four 68px chips in a 142px box on every screen */
+  .mods { width:100%; max-width:330px; margin:12px auto 0; }
+  .mod-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .mod { min-width:0; min-height:44px; display:flex; flex-direction:column; align-items:center;
+         justify-content:center; gap:1px; padding:5px 4px; border-radius:9px; cursor:pointer;
+         background:#1a1140; border:1px solid #4a3a86; color:#cdbcf2; font-family:inherit; }
+  .mod-crest { font-size:15px; line-height:1; }
+  .mod-name { font-size:8.5px; font-weight:800; letter-spacing:0.06em; }
+  .mod:hover { border-color:#F5C518; color:#efe7ff; }
+  .mod.on { border-color:#F5C518; background:#2b1f05; color:#F5C518; box-shadow:0 0 0 1px #F5C518; }
+  .mod.won { border-color:#6bffb8; color:#6bffb8; }
+  .mod.won.on { border-color:#F5C518; }
+  .mod.won .mod-crest::after { content:'✓'; font-size:8px; vertical-align:super; margin-left:1px; }
+  .tw-crests { flex-shrink:0; font-size:11px; letter-spacing:1px; color:#6bffb8; margin-right:4px; }
+  .tw-floor.tw-rival { border-color:#ff9ec9; box-shadow:0 0 18px -8px #ff9ec9; }
   .booth { position:relative; display:flex; justify-content:center; align-items:center; min-height:56px; padding:6px 6px 0; pointer-events:none; }
   .booth.hidden { visibility:hidden; }
   .booth-card { max-width:100%; display:flex; align-items:flex-start; gap:8px; background:rgba(10,7,26,0.92);
@@ -439,7 +466,9 @@
     <div class="boss-bio" id="boss-bio">—</div>
     <div class="boss-quote" id="boss-quote">—</div>
     <div class="boss-note" id="boss-note">—</div>
+    <div class="scout scout--file" id="dossier"></div>
     <div class="scout" id="scout"></div>
+    <div class="mods hidden" id="mods"></div>
     <div class="row" id="boss-row"></div>
   </div>
 </div>
@@ -459,7 +488,7 @@ var C = window.PJCCChess, AI = window.PJCCChessAI, ENGINE = window.PJCCGauntletE
 // the local copy is the fallback for the case where the bridge did not load, and it must stay
 // byte-identical (tests/ladders.check.js compares them).
 function skillForRung(idx){
-  var elo = (LADDER[idx] && LADDER[idx].elo) || 800;
+  var r = rungAt(idx), elo = (r && r.elo) || 800;
   if (ENGINE && ENGINE.skillForElo) return ENGINE.skillForElo(elo);
   if (elo < 1400) return 0;
   return Math.min(20, Math.round(3 + (elo - 1400) * 0.017));   // 1400→3 … 2400→20
@@ -739,6 +768,151 @@ var PKEY = 'pjcc.gauntlet.v2';
 function loadProg(){ try { return Object.assign({ unlocked:0, beaten:{} }, JSON.parse(localStorage.getItem(PKEY))||{}); } catch(e){ return { unlocked:0, beaten:{} }; } }
 function saveProg(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
 
+/* ══ THE RIVAL WHO CLIMBS WITH YOU (2026-09-16) ═════════════════════════════════════════
+   The first champion to beat you TWICE stops being a floor. Clear that floor afterward and
+   they do not go back to the post — they ride the elevator up with you, heckle from the
+   booth while you fight everyone else, and wait in the tower as a door rated wherever you
+   have actually got to. The payoff is the head-to-head record, which is the one thing a
+   ladder of ten fixed opponents cannot give you.
+
+   ⚠⚠ THE RIVAL IS NOT A FLOOR, AND THIS IS THE INVARIANT THE FILE CANNOT BREAK.
+   `Object.keys(prog.beaten).length` is both the leaderboard score AND the number
+   restoreFromAccount() reconstructs a whole climb from on a new device ("cleared = 5 can
+   only mean floors 1-5 — the ladder is linear"). One `prog.beaten[RIVAL_IDX] = true` and
+   that deduction hands out floors nobody played, on another machine, with nothing in the
+   data to say where they came from. The record lives in prog.rival.w / .l and touches the
+   cleared count nowhere. tests/gauntlet.check.js fails if that ever changes.
+
+   ⚠ THEIR STRENGTH COMES FROM THEIR ELO, NEVER FROM THEIR OLD FLOOR'S persona BLOCK. The
+   Foreman's own block carries blunder:0.28; carried up to 1800 that is a Stockfish throwing
+   a move away every fourth turn — a rival labeled 1800 playing like a 500. personaAtElo()
+   asks the same calibration every other seat on this site asks. */
+var RIVAL_IDX = 99;                      // deliberately not an index into LADDER
+function rungAt(idx){ return idx === RIVAL_IDX ? rivalRung() : LADDER[idx]; }
+function rivalOf(prog){ var r = prog && prog.rival; return (r && LADDER[r.idx]) ? r : null; }
+function following(prog){ var r = rivalOf(prog); return (r && r.stage === 'following') ? r : null; }
+// how high you have actually climbed — LADDER elo is monotonic, so the last floor you
+// cleared is also the strongest one you have beaten
+function rivalHeight(){ var prog = loadProg(), top = -1, i;
+  for (i = 0; i < LADDER.length; i++) if (prog.beaten[i]) top = i;
+  return top; }
+function rivalElo(){ var r = rivalOf(loadProg()); if (!r) return 350;
+  var h = rivalHeight();
+  return Math.max(LADDER[r.idx].elo, h >= 0 ? LADDER[h].elo : 0); }
+/* the clock and the board set the rival plays on are the ones for the height you have
+   reached — they hold no floor of their own to take them from */
+function floorOf(idx){ return idx === RIVAL_IDX ? Math.max(0, rivalHeight()) : idx; }
+function personaAtElo(elo, base){
+  var m = (ENGINE && ENGINE.personaForElo) ? ENGINE.personaForElo(elo) : null;
+  if (m){ m.timeMs = base.timeMs; return m; }     // under 1400 — exactly the measured ladder
+  /* 1400 and up Stockfish plays, and only blunder + timeMs reach it; depth and aggr are read
+     by the boss card's pips and its playstyle label, and nowhere else. */
+  return { depth: elo >= 2000 ? 5 : 4, mat:1, pst:1.1, aggr:base.aggr, timeMs:base.timeMs,
+           blunder: (ENGINE && ENGINE.blunderForElo) ? ENGINE.blunderForElo(elo) : 0 };
+}
+/* ⚠ COPY, NOT A REFERENCE. The rival wears a floor's name, glyph, accent and voice, but the
+   floor is still standing and still playable — mutating LADDER[idx] here would rewrite the
+   champion you go back and rematch. */
+function rivalRung(){
+  var r = rivalOf(loadProg()); if (!r) return null;
+  var base = LADDER[r.idx], elo = rivalElo();
+  return { name: base.name, glyph: base.glyph, accent: base.accent, region: 'No floor at all',
+    elo: elo, isRival: true, react: base.react,
+    blurb: 'Gave up a floor to follow you. Has climbed every step you have, and turns up on ' +
+           'each one already knowing how you got there.',
+    win: 'The board goes back in the box without a word. The elevator is still going up, and ' +
+         'so is your rival.',
+    persona: personaAtElo(elo, base.persona) };
+}
+// a rival who cannot speak (Argus growls — only humans talk in this universe) gets their
+// lines read by the booth instead. The asterisk is the tell, and it is in the data already.
+function speaks(rung){ return !/^\*/.test((rung && rung.react && rung.react.intro && rung.react.intro[0]) || ''); }
+var RIVAL_WATCH = [
+  '{r} is at the back of the room. Not playing. Watching.',
+  '{r} rode up in the elevator with you and has not sat down since.',
+  'That is {r} by the door — seen this position before, from the other side of it.',
+  '{r} is taking notes. That is a new habit.',
+  'Somebody tell {r} the seats down here are for people with a floor.'
+];
+
+/* ══ THE FILE ON YOU (2026-09-16) ══════════════════════════════════════════════════════
+   The house keeps a record of how you actually play — measured from YOUR OWN finished games
+   in this room, never from a guess — and the next champion reads it back to you on their
+   door. It is intimidation, not information: it is your own habit, quoted.
+   ⚠⚠ IT CHANGES NO DIAL. Nothing here is fed to personaAtElo, skillForRung or the engine's
+   options; a champion who "plays for" your weakness because a hidden number moved is a
+   difficulty setting you never agreed to. If that ever changes, the card has to say so.
+   ⚠ THREE GAMES BEFORE IT SAYS ANYTHING. Two games is an anecdote with an average on it. */
+var FILE_KEY = 'pjcc.gauntlet.file.v1';
+function fileBlank(){ return { games:0, hang:0, hangSum:0, castle:0, castleSum:0,
+                               plies:0, mate:0, flag:0, resign:0, first:{} }; }
+function fileRead(){ try { return Object.assign(fileBlank(), JSON.parse(localStorage.getItem(FILE_KEY)) || {}); }
+                     catch(e){ return fileBlank(); } }
+function fileLog(result, playerWon){
+  if (!G || !G.log.length) return;
+  // ⚠ MODIFIER GAMES ARE NOT FILED. A Blindfold game says how you play blindfolded, and
+  // averaging it into "hangs a piece around move 12" makes the one honest line in here a lie.
+  if (G.mod) return;
+  var f = fileRead(), mine = (G.pc === 'w') ? 0 : 1, i, at = 0;
+  f.games++; f.plies += G.log.length;
+  if (G.firstHang){ f.hang++; f.hangSum += G.firstHang; }
+  for (i = mine; i < G.log.length; i += 2) if (/^O-O/.test(G.log[i])){ at = ((i / 2) | 0) + 1; break; }
+  if (at){ f.castle++; f.castleSum += at; }
+  if (G.log.length > mine){ var op = G.log[mine]; f.first[op] = (f.first[op] || 0) + 1; }
+  if (!playerWon){ if (result === 'flag') f.flag++;
+                   else if (result === 'resign') f.resign++;
+                   else if (result === 'checkmate') f.mate++; }
+  try { localStorage.setItem(FILE_KEY, JSON.stringify(f)); } catch(e){}
+}
+function fileLines(){
+  var f = fileRead(), out = [], best = null, k;
+  if (f.games < 3) return out;
+  if (f.hang >= 2) out.push('Hangs the first piece around <b>move ' + Math.round(f.hangSum / f.hang) + '</b>.');
+  if (!f.castle) out.push('<b>Has never castled.</b> Not once, on record.');
+  else if (f.castle * 2 < f.games) out.push('Castles in <b>' + f.castle + ' of ' + f.games + '</b> games.');
+  else out.push('Castles by <b>move ' + Math.round(f.castleSum / f.castle) + '</b>.');
+  for (k in f.first) if (f.first.hasOwnProperty(k) && (!best || f.first[k] > f.first[best])) best = k;
+  if (best && f.first[best] >= 2) out.push('Opens <b>' + best + '</b> — ' + f.first[best] + ' games of ' + f.games + '.');
+  if (f.flag >= 2) out.push('<b>' + f.flag + '</b> games lost to the clock, not to the board.');
+  else if (f.resign >= 2) out.push('<b>Resigns</b> rather than play it out — ' + f.resign + ' times to ' + f.mate + ' mated.');
+  out.push('Games run <b>' + Math.max(1, Math.round(f.plies / f.games / 2)) + ' moves</b>.');
+  return out.slice(0, 4);
+}
+// the one line a champion says out loud. Same facts, spoken rather than filed.
+function fileTaunt(){
+  var f = fileRead();
+  if (f.games < 3) return '';
+  if (f.hang >= 2) return 'Your file says you drop a piece around move ' + Math.round(f.hangSum / f.hang) + '.';
+  if (!f.castle) return 'Your file says you never castle. I read it twice.';
+  if (f.flag >= 2) return 'Your file says the clock beats you more often than the board does.';
+  if (f.resign >= 2) return 'Your file says you put your hand out early. We will see.';
+  return 'Your file runs ' + f.games + ' games. I have read all of them.';
+}
+
+/* ══ MODIFIER REMATCHES (2026-09-16) ═══════════════════════════════════════════════════
+   A cleared floor is a dead floor. Each of these turns one back into a fight with its own
+   crest, and each is ONE honest change rather than a difficulty slider:
+     odds  — the start position, minus your queen
+     sixty — the clock this room already runs, set to a minute on any floor
+     poker — every tell, meter, coach line and reaction this room added on 09-16, switched off
+     blind — their men are never drawn; the move list is all you get
+   ⚠ A MODIFIER NEVER TOUCHES PROGRESS. The floor was already cleared to unlock them, so
+   `prog.beaten` cannot move, and the crest is stored beside it in `prog.crests`. */
+var MODS = {
+  odds:  { crest:'♛', name:'QUEEN ODDS',   note:'You start without your queen.' },
+  sixty: { crest:'⏱', name:'SIXTY SEC',    note:'One minute on your clock, all game.' },
+  poker: { crest:'🎭', name:'POKER FACE',   note:'No tells, no meter, no coach, no words.' },
+  blind: { crest:'👁', name:'BLINDFOLD',    note:'Their pieces are never drawn.' }
+};
+var MOD_ORDER = ['odds', 'sixty', 'poker', 'blind'];
+function crestsFor(prog, idx){ return (prog.crests && prog.crests[idx]) || {}; }
+function queenOddsFEN(pc){
+  // the same parser builds this position as builds every other game in the room — only the
+  // rank string differs, so nothing downstream has to know a queen is missing
+  return pc === 'w' ? C.START_FEN.replace('RNBQKBNR', 'RNB1KBNR')
+                    : C.START_FEN.replace('rnbqkbnr', 'rnb1kbnr');
+}
+
 // ---- THE MID-GAME SAVE (2026-07-16 Nate: "add a save, in case they leave and come
 // back, or refresh") ----. Before this, a reload mid-match silently forfeited the
 // board. Now every move writes the whole match — position, move log, rep counts,
@@ -752,15 +926,19 @@ function saveGame(){
   var ms = G.clockMs;
   if (G.clockOn && G.clockTick) ms = Math.max(0, G.clockMs - (Date.now() - G.clockTick));
   try { localStorage.setItem(SKEY, JSON.stringify({ v:1, idx:G.idx, pc:G.pc, fen:C.toFEN(G.S),
-    reps:G.reps, log:G.log, uci:G.uci, clockOn:G.clockOn, clockMs:ms, crockett:G.crockett, last:G.last })); } catch(e){}
+    reps:G.reps, log:G.log, uci:G.uci, clockOn:G.clockOn, clockMs:ms, crockett:G.crockett, last:G.last,
+    /* ⚠ THE MODIFIER RIDES ALONG. The FEN restores a missing queen on its own, but a refresh
+       under Blindfold or Poker Face would otherwise hand the position back in plain sight. */
+    mod:G.mod, hang:G.firstHang })); } catch(e){}
 }
 function clearSave(){ try { localStorage.removeItem(SKEY); } catch(e){} }
 function restoreMatch(sv){
-  if (!sv || sv.v !== 1 || !LADDER[sv.idx] || (sv.pc !== 'w' && sv.pc !== 'b')) return false;
-  var rung = LADDER[sv.idx], S;
+  if (!sv || sv.v !== 1 || !rungAt(sv.idx) || (sv.pc !== 'w' && sv.pc !== 'b')) return false;
+  var rung = rungAt(sv.idx), S;
   try { S = C.parseFEN(sv.fen); } catch(e){ return false; }
   if (!S || C.gameResult(S, (sv.reps && sv.reps[C.posKey(S)]) || 1)) return false;   // stale/finished
-  G = { idx:sv.idx, rung:rung, persona:rung.persona, pc:sv.pc, coachSq:-1, coachAt:null,
+  G = { idx:sv.idx, floor:floorOf(sv.idx), rung:rung, persona:rung.persona, pc:sv.pc, coachSq:-1, coachAt:null,
+        mod:sv.mod || null, firstHang:sv.hang || 0,
         S:S, reps:sv.reps || {}, sel:-1, legal:[], over:false, result:null,
         last:sv.last || null, thinking:false, promo:null, log:sv.log || [], uci:sv.uci || [],
         roundStartMat:null, crockett:(sv.crockett == null ? -1 : sv.crockett) };
@@ -801,12 +979,14 @@ function mountReplay(){
 function replayBumped(){ if (RN) RN.refresh(); }
 function hideReplay(){ var h = document.getElementById('replay-bar'); if (h) h.classList.remove('on'); if (G) G.viewPos = null; }
 
-function startRung(idx, pc){
+function startRung(idx, pc, mod){
   clearSave();   // a fresh board supersedes any half-played save
-  var rung = LADDER[idx];
+  var rung = rungAt(idx);
+  mod = MODS[mod] ? mod : null;
   pc = (pc === 'w' || pc === 'b') ? pc : randColor();   // random unless the boss card already drew one
-  G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
-        S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
+  G = { idx:idx, floor:floorOf(idx), rung:rung, persona:rung.persona, pc:pc, mod:mod, firstHang:0,
+        S:C.parseFEN(mod === 'odds' ? queenOddsFEN(pc) : C.START_FEN),
+        reps:{}, sel:-1, legal:[], over:false, result:null,
         last:null, thinking:false, promo:null, log:[], uci:[], roundStartMat:null,
         // the opposition's e-pawn: a small white dog with black spots rides along
         // every match — usually the first one sacrificed, never seems to mind.
@@ -816,8 +996,8 @@ function startRung(idx, pc){
   if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }   // boot Stockfish in the background for this match
   G.legal = C.legalMoves(G.S);
   // the player's clock (floors 5+): counts down on YOUR turn only; run dry = flag fall
-  G.clockOn = clockMsFor(idx) > 0;
-  G.clockMs = clockMsFor(idx);
+  G.clockMs = (mod === 'sixty') ? 60000 : clockMsFor(G.floor);
+  G.clockOn = G.clockMs > 0;
   G.clockTick = (G.clockOn && G.S.turn === G.pc) ? Date.now() : null;
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
@@ -830,9 +1010,26 @@ function startRung(idx, pc){
   setTimeout(function(){ if (G) announceColor(); }, 260);
   setTimeout(function(){ if (G && !G.over) reactOpp('intro'); }, 650);
   setTimeout(function(){ if (G && !G.over) callOut('open', true); }, 900);   // #5 — booth opens the broadcast
+  openingBeats(idx);
   setTimeout(function(){ if (G && !G.over) callOut('open', true); }, 4200);
   // if the player is Black, the AI (White) moves first
   if (G.S.turn !== G.pc) aiTurnSoon();
+}
+/* The two things that happen only at the top of a match: the champion quotes your own file
+   back at you, and — every match that is not against them — the booth notices your rival
+   standing at the back. ⚠ A champion who cannot speak does not suddenly speak: Argus growls,
+   so the booth reads the file for him. */
+function openingBeats(idx){
+  var prog = loadProg(), riv = following(prog), taunt = (G.mod === 'poker') ? '' : fileTaunt();
+  if (taunt) setTimeout(function(){
+    if (!G || G.over) return;
+    if (speaks(G.rung)) showBubble(taunt, MOODS.blunder);
+    else bcast('pittsy', 'The house keeps a file on this one. ' + taunt.replace(/^Your file says /, 'It says ') , true);
+  }, 3400);
+  if (riv && idx !== RIVAL_IDX) setTimeout(function(){
+    if (!G || G.over) return;
+    bcast('pittsy', pick(RIVAL_WATCH).replace('{r}', LADDER[riv.idx].name), true);
+  }, 12000);
 }
 function bumpRep(){ var k = C.posKey(G.S); G.reps[k] = (G.reps[k]||0) + 1; return G.reps[k]; }
 // Follow the spotted pawn square-to-square; if the square no longer holds the
@@ -976,12 +1173,21 @@ function endGame(result){
   hideBooth();
   document.getElementById('resign-btn').classList.add('hidden');
   var prog = loadProg(), playerWon = false, draw = false, title, msg, eye;
+  var isRival = (G.idx === RIVAL_IDX), rivalNote = '';
   if (result === 'checkmate'){ playerWon = (G.S.turn !== G.pc); }   // side to move is mated
   else if (result === 'opp-resign'){ playerWon = true; }             // they put their hand out
   else if (result === 'resign' || result === 'flag'){ playerWon = false; }
   else { draw = true; }                                              // stalemate / material / fifty / threefold
+  fileLog(result, playerWon);
 
-  if (playerWon){
+  if (playerWon && isRival){
+    /* ⚠⚠ NOT prog.beaten. See THE RIVAL WHO CLIMBS WITH YOU — the cleared count is the
+       leaderboard score and the thing a whole climb is deduced from on another device. */
+    var rw = prog.rival; rw.w = (rw.w || 0) + 1; saveProg(prog);
+    eye = 'Your rival · head to head ' + rw.w + '–' + (rw.l || 0);
+    title = 'RIVAL BEATEN ♛';
+    msg = G.rung.win + ' Rated ' + G.rung.elo + ' tonight. Next time, whatever you have climbed to by then.';
+  } else if (playerWon){
     prog.beaten[G.idx] = true;
     if (G.idx + 1 > prog.unlocked) prog.unlocked = Math.min(LADDER.length, G.idx + 1);
     var isFinal = (G.idx + 1 === LADDER.length);       // the Founder — nothing above
@@ -989,6 +1195,13 @@ function endGame(result){
     var isTop   = (G.idx === VISIBLE - 1);             // floor 10 — THE CORONATION
     var isSecret= (G.idx >= VISIBLE);                  // a bonus floor, for the strongest
     if (isCEO) prog.secret = true;
+    // the champion who beat you twice, and whose floor you have just taken, walks out with you
+    var rm = prog.rival;
+    if (rm && rm.idx === G.idx && rm.stage === 'marked'){
+      rm.stage = 'following';
+      rivalNote = '   ' + G.rung.name + ' does not go back to the post. The elevator ' +
+                  'door holds a beat, and they step in after you.';
+    }
     saveProg(prog);
     if (isTop){
       // CROWNED — beating the ten public floors IS the crown (2026-07-15 Nate). The
@@ -1014,20 +1227,49 @@ function endGame(result){
              threefold:'Threefold repetition.' }[result]) || 'Drawn.') +
           ' Half a point: you held your ground, but the rung only opens on a win. Line up and go again.';
   } else {
-    prog.losses = (prog.losses || 0) + 1; saveProg(prog);   // the Chess City checkpoint keeps count
-    eye = 'Defeat'; title = result === 'resign' ? 'YOU RESIGNED' : result === 'flag' ? 'FLAG FALL ⏱' : 'CHECKMATED';
+    prog.losses = (prog.losses || 0) + 1;                   // the Chess City checkpoint keeps count
+    if (isRival){ var rl = prog.rival; rl.l = (rl.l || 0) + 1; }
+    else {
+      /* TWICE IS THE TRIGGER. One loss is a bad night; two to the same champion is a pattern,
+         and it is the only moment in this room that turns an opponent into a person.
+         ⚠ PUBLIC FLOORS ONLY — a secret floor is a bonus boss, not somebody with a shift. */
+      prog.lossBy = prog.lossBy || {};
+      prog.lossBy[G.idx] = (prog.lossBy[G.idx] || 0) + 1;
+      if (!prog.rival && G.idx < VISIBLE && prog.lossBy[G.idx] >= 2){
+        prog.rival = { idx:G.idx, stage:'marked', w:0, l:0 };
+        rivalNote = '   That is twice now. ' + G.rung.name + ' has stopped treating ' +
+                    'you like traffic — and is not going to forget your name.';
+      }
+    }
+    saveProg(prog);
+    eye = isRival ? 'Your rival · head to head ' + ((prog.rival.w) || 0) + '–' + prog.rival.l
+                  : 'Defeat';
+    title = result === 'resign' ? 'YOU RESIGNED' : result === 'flag' ? 'FLAG FALL ⏱' : 'CHECKMATED';
     msg = (result === 'flag' ? 'Your clock ran dry. ' : '') +
       'The ' + G.rung.name.replace(/^The\s+/,'') + ' holds the line. Study the board and try again.';
+  }
+  msg += rivalNote;
+  /* the crest. A modifier is only ever offered on a floor already cleared, so nothing about
+     progress can move here — only the mark that says you did it the hard way. */
+  if (playerWon && G.mod && !isRival){
+    prog.crests = prog.crests || {};
+    (prog.crests[G.idx] = prog.crests[G.idx] || {})[G.mod] = 1;
+    saveProg(prog);
+    eye = MODS[G.mod].crest + ' ' + MODS[G.mod].name + ' · ' + eye;
   }
   // record to the profile / leaderboard
   if (window.PJCC && PJCC.saveScore){
     PJCC.saveScore('the-gauntlet', Object.keys(prog.beaten).length, {
       credits: playerWon ? 2 : 1,
-      data: { rung: G.idx+1, opponent: G.rung.name, result: playerWon?'win':(draw?'draw':'loss'), cleared: Object.keys(prog.beaten).length }
+      data: { rung: isRival ? 0 : G.idx+1, opponent: G.rung.name + (isRival ? ' (your rival)' : ''),
+              mod: G.mod || undefined,
+              result: playerWon?'win':(draw?'draw':'loss'), cleared: Object.keys(prog.beaten).length }
     });
   }
   var row = document.getElementById('over-row'); row.innerHTML = '';
-  if (playerWon && G.idx+1 < LADDER.length){
+  if (isRival){
+    addBtn(row, 'AGAIN ▸', 'btn-gold', function(){ showBossCard(RIVAL_IDX); });
+  } else if (playerWon && G.idx+1 < LADDER.length){
     addBtn(row, G.idx === VISIBLE - 1 ? '▲ TAKE THE ELEVATOR' : 'NEXT CHALLENGER ▸', 'btn-gold', function(){ startRung(G.idx+1); });
     // the CEO's map also opens the way down, secret climb or not
     if (G.idx === VISIBLE) addBtn(row, '▾ THE MAP — SAND MINE DEPTHS', 'btn-ghost', function(){ try { (window.top||window).location.href = '/games/sand-mine-depths/'; } catch(e){ window.location.href = '/games/sand-mine-depths/'; } });
@@ -1122,10 +1364,10 @@ function scoutMotif(idx){
 var MOTIF_WORD = { fork: 'knight fork', skewer: 'skewer', pin: 'pin', discovered: 'discovered check',
                    material: 'winning material', mate: 'back-rank mate' };
 function scoutLines(idx){
-  var r = LADDER[idx], pers = personaFor(idx), out = [];
+  var r = rungAt(idx), pers = personaFor(idx), out = [];
   if (!pers){
     out.push('<b>A full engine.</b> No habits to read, no tells, no tilt.');
-    out.push('Rated <b>' + r.elo + '</b>. Beating him is chess, not a trick.');
+    out.push('Rated <b>' + r.elo + '</b>. Beating them is chess, not a trick.');
     return out;
   }
   var d = pers.depth || 2;
@@ -1134,18 +1376,18 @@ function scoutLines(idx){
   if (pers.noise >= 100) out.push('Misjudges a quiet position by up to <b>two pawns</b>.');
   else if (pers.noise >= 40) out.push('Misjudges a quiet position by up to <b>a pawn</b>.');
   else out.push('Judges the position <b>accurately</b>. No free ground.');
-  out.push(pers.tilt >= 0.5 ? '<b>Comes apart</b> the moment he is losing.'
-    : pers.tilt > 0 ? '<b>Wobbles</b> when he is a piece down.'
-    : '<b>Holds it together</b> even when he is losing.');
-  if (pers.neverCastle) out.push('<b>Never castles.</b> His king stays in the middle.');
+  out.push(pers.tilt >= 0.5 ? '<b>Comes apart</b> the moment they are losing.'
+    : pers.tilt > 0 ? '<b>Wobbles</b> when they are a piece down.'
+    : '<b>Holds it together</b> even when they are losing.');
+  if (pers.neverCastle) out.push('<b>Never castles.</b> That king stays in the middle.');
   if (pers.blunder > 0) out.push('About <b>one move in ' + Math.round(1 / pers.blunder) + '</b> is a throwaway.');
-  if ((pers.aggr || 0) >= 4) out.push('Crowds your king — <b>he will overextend</b>.');
-  if ((pers.mat || 1) >= 1.2) out.push('<b>Greedy.</b> He will take what you leave hanging.');
+  if ((pers.aggr || 0) >= 4) out.push('Crowds your king — <b>they will overextend</b>.');
+  if ((pers.mat || 1) >= 1.2) out.push('<b>Greedy.</b> They will take what you leave hanging.');
   return out;
 }
 function paintScout(idx){
   var host = document.getElementById('scout'); if (!host) return;
-  var motif = scoutMotif(idx), r = LADDER[idx];
+  var motif = scoutMotif(idx), r = rungAt(idx);
   if (scouted(idx)){
     host.innerHTML = '<div class="scout-head">🔍 Scouting report</div><ul>' +
       scoutLines(idx).map(function(l){ return '<li>' + l + '</li>'; }).join('') + '</ul>';
@@ -1153,12 +1395,55 @@ function paintScout(idx){
   }
   host.innerHTML = '<div class="scout-head">🔍 Scouting report — locked</div>' +
     '<div class="scout-locked">Solve <b>three ' + MOTIF_WORD[motif] + ' puzzles</b> clean and the room will tell you ' +
-    'what he sees, what he misses, and what he does when he is losing.</div>';
+    'what they see, what they miss, and what happens to them when they are losing.</div>';
   var row = document.getElementById('boss-row');
-  addBtn(row, '🔍 SCOUT HIM', 'btn-ghost', function(){
+  addBtn(row, '🔍 SCOUT THEM', 'btn-ghost', function(){
     var url = '/games/fork-in-the-road/?warmup=' + motif + '&n=3&floor=' + idx + '&name=' + encodeURIComponent(r.name);
     try { (window.top || window).location.href = url; } catch(e){ location.href = url; }
   });
+}
+
+function paintFile(){
+  var host = document.getElementById('dossier'); if (!host) return;
+  var lines = fileLines();
+  if (!lines.length){ host.innerHTML = ''; return; }   // under three games there is nothing honest to say
+  host.innerHTML = '<div class="scout-head">◈ The file on you</div><ul>' +
+    lines.map(function(l){ return '<li>' + l + '</li>'; }).join('') + '</ul>';
+}
+
+/* The crest row. ⚠ TAPPING A CREST MUST NOT REDRAW THE CARD — showBossCard() draws your
+   color with randColor(), so re-running it to repaint four chips would deal you a different
+   color than the one the card announced, which is the exact thing tests/gauntlet.check.js
+   pins. Only the chips, the note and the button's label are repainted. */
+var pickedMod = null, modBtn = null, modIdx = -1, modNote = '', modNoteColor = '', modColor = '';
+function modLabel(beaten){
+  return pickedMod ? MODS[pickedMod].crest + ' ' + MODS[pickedMod].name + ' ▸' : (beaten ? 'REMATCH ▸' : 'FIGHT ▸');
+}
+function refreshMods(beaten){
+  var host = document.getElementById('mods'), note = document.getElementById('boss-note');
+  if (modIdx < 0){ host.innerHTML = ''; host.classList.add('hidden'); return; }
+  var won = crestsFor(loadProg(), modIdx), row = document.createElement('div');
+  host.innerHTML = '<div class="scout-head">⚔ Rematch, the hard way</div>';
+  row.className = 'mod-row';
+  MOD_ORDER.forEach(function(k){
+    var m = MODS[k], b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'mod' + (won[k] ? ' won' : '') + (pickedMod === k ? ' on' : '');
+    b.setAttribute('aria-pressed', pickedMod === k ? 'true' : 'false');
+    b.setAttribute('aria-label', m.name + (won[k] ? ' — won' : '') + '. ' + m.note);
+    b.innerHTML = '<span class="mod-crest">' + m.crest + '</span><span class="mod-name">' + m.name + '</span>';
+    b.onclick = function(){ pickedMod = (pickedMod === k) ? null : k; refreshMods(beaten); };
+    row.appendChild(b);
+  });
+  host.appendChild(row);
+  host.classList.remove('hidden');
+  if (note){
+    // ⚠ the color you drew still has to be on the card — tests/gauntlet.check.js reads this
+    // line to prove the card announces the color the match actually deals.
+    note.textContent = pickedMod ? MODS[pickedMod].crest + ' ' + MODS[pickedMod].note + ' · ' + modColor : modNote;
+    note.style.color = pickedMod ? '#F5C518' : modNoteColor;
+  }
+  if (modBtn) modBtn.textContent = modLabel(beaten);
 }
 
 // #4 — the cinematic reveal before a match
@@ -1166,7 +1451,10 @@ function showBossCard(idx){
   if (G){ G.over = true; }
   hidePortrait(); hideBooth(); hideOverlays();
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
-  var rung = LADDER[idx], pc = randColor(), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
+  var rung = rungAt(idx); if (!rung) return showLadder();
+  var pc = randColor(), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
+  var riv = (idx === RIVAL_IDX) ? prog.rival : null;
+  pickedMod = null;                         // a pick belongs to the card it was made on
   // #4b — the challenger's door: closed on show, themed to the floor's accent, then slid
   // open a beat later onto a lit doorway (floor 6 = the frosted Auditor door).
   var gate = document.getElementById('boss-gate');
@@ -1176,8 +1464,12 @@ function showBossCard(idx){
     // on the floor you're ABOUT to play; in here that's this rung, so they agree. (Secret
     // floors past the public ten have no treatment of their own and get the plain door.)
     gate.style.setProperty('--acc', acc);
-    gate.setAttribute('data-floor', idx + 1);
-    gate.setAttribute('data-grand', idx === 0 ? 0 : idx <= 2 ? 1 : idx <= 4 ? 2 : idx <= 6 ? 3 : idx <= 8 ? 4 : 5);
+    /* the rival holds no floor, so no floor treatment — and the arch is the one for the height
+       you have reached, like their clock and their board. ⚠ Not 5: that arch wears the crown,
+       and the crown means floor ten. */
+    var gi = riv ? floorOf(idx) : idx;
+    gate.setAttribute('data-floor', riv ? 0 : idx + 1);
+    gate.setAttribute('data-grand', gi === 0 ? 0 : gi <= 2 ? 1 : gi <= 4 ? 2 : gi <= 6 ? 3 : gi <= 8 ? 4 : 5);
     /* ⚑ THE LEAF CARRIES ITS FLOOR'S PIECE AGAIN — 2026-08-13, and this line is load-bearing
        twice over. The portrait behind the door is gone, so there is nothing left for the
        hidden glyph to avoid duplicating; and the hall sets `GLYPHS[cur]` on EVERY visit, so
@@ -1194,9 +1486,11 @@ function showBossCard(idx){
       if (gate.isConnected) gate.classList.add('is-open');
     }, 480);
   }
-  document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · ' +
-    (idx < VISIBLE ? 'Floor ' + (idx+1) + ' of ' + VISIBLE : 'Secret Floor ' + (idx - VISIBLE + 1) + ' of ' + (LADDER.length - VISIBLE)) +
-    ' · Rated ' + rung.elo;
+  document.getElementById('boss-eye').textContent = riv
+    ? 'Your rival · no floor · Rated ' + rung.elo + ' · head to head ' + (riv.w||0) + '–' + (riv.l||0)
+    : (beaten?'Rematch':'Challenger') + ' · ' +
+      (idx < VISIBLE ? 'Floor ' + (idx+1) + ' of ' + VISIBLE : 'Secret Floor ' + (idx - VISIBLE + 1) + ' of ' + (LADDER.length - VISIBLE)) +
+      ' · Rated ' + rung.elo;
   document.getElementById('boss-name').textContent = rung.name;
   var sub = document.getElementById('boss-sub'); sub.textContent = rung.region; sub.style.color = acc;
   var pips = document.getElementById('boss-pips'); pips.textContent = pipStr(strengthOf(rung.persona)); pips.style.color = acc;
@@ -1204,15 +1498,22 @@ function showBossCard(idx){
   [playstyleOf(rung.persona), difficultyOf(rung.persona)].forEach(function(t){ var s=document.createElement('span'); s.className='boss-tag'; s.style.borderColor=acc; s.textContent=t; tags.appendChild(s); });
   document.getElementById('boss-bio').textContent = rung.blurb;   // a little intro for each opponent
   document.getElementById('boss-quote').textContent = '“' + (rung.react && rung.react.intro ? rung.react.intro[0] : rung.blurb) + '”';
-  var note = document.getElementById('boss-note'), youW = (pc==='w');
-  // floors 5+ announce the clock (2026-07-16 Nate) — yours only; the rival never runs one
-  note.textContent = (youW ? '♔ You play White this round' : '♚ You play Black this round') +
-    (clockMsFor(idx) > 0 ? ' · ⏱ ' + fmtClock(clockMsFor(idx)) + ' on your clock — your rival takes none' : '');
-  note.style.color = youW ? '#efe7cf' : '#8fe3ff';
+  var note = document.getElementById('boss-note'), youW = (pc==='w'), fl = floorOf(idx);
+  // floors 5+ announce the clock (2026-07-16 Nate) — yours only; the opposition never runs one
+  modColor = youW ? '♔ You play White' : '♚ You play Black';
+  modNote = (youW ? '♔ You play White this round' : '♚ You play Black this round') +
+    (clockMsFor(fl) > 0 ? ' · ⏱ ' + fmtClock(clockMsFor(fl)) + ' on your clock — your rival takes none' : '');
+  modNoteColor = youW ? '#efe7cf' : '#8fe3ff';
+  note.textContent = modNote; note.style.color = modNoteColor;
   var row = document.getElementById('boss-row'); row.innerHTML = '';
-  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ beginRung(idx, pc); });
+  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ beginRung(idx, pc, pickedMod); });
+  modBtn = row.lastChild;
   addBtn(row, '◂ Tower', 'btn-ghost', showLadder);
+  paintFile();       // what the house has on you
   paintScout(idx);   // …and the report, or the errand that earns it
+  // a modifier is a reason to go back to a floor you have already taken
+  modIdx = (beaten && idx !== RIVAL_IDX) ? idx : -1;
+  refreshMods(beaten);
   document.getElementById('boss-screen').classList.remove('hidden');
 }
 
@@ -1233,19 +1534,20 @@ function showBossCard(idx){
    ⚠ `hideOverlays()` FIRST, or the boss card sits under a translucent-edged card for the
    whole 2.6 seconds and the wipe-out reveals it again, which reads as the animation having
    failed. All of this is safe to double-fire: PJCCVs.cut resolves exactly once. */
-function beginRung(idx, pc){
-  var rung = LADDER[idx];
+function beginRung(idx, pc, mod){
+  var rung = rungAt(idx);
   hideOverlays();
   var prof = (window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null;
   var me   = (prof && prof.codename) ? prof.codename : 'You';
   PJCCVs.cut(document.getElementById('stage'), {
     opp: { name: rung.name, color: rung.accent, glyph: rung.glyph,
-           sub: (idx < VISIBLE ? 'Floor ' + (idx + 1) : 'Secret Floor ' + (idx - VISIBLE + 1)) +
+           sub: (idx === RIVAL_IDX ? 'Your rival'
+                 : idx < VISIBLE ? 'Floor ' + (idx + 1) : 'Secret Floor ' + (idx - VISIBLE + 1)) +
                 ' · Rated ' + rung.elo },
     you: { name: me, color: PJCCVs.color(prof),
            glyph: (window.PJCC && PJCC.avatarEmoji) ? PJCC.avatarEmoji(prof) : '♟',
-           sub: pc === 'w' ? 'Playing White' : 'Playing Black' }
-  }).then(function(){ startRung(idx, pc); });
+           sub: (MODS[mod] ? MODS[mod].crest + ' ' + MODS[mod].name : (pc === 'w' ? 'Playing White' : 'Playing Black')) }
+  }).then(function(){ startRung(idx, pc, mod); });
 }
 
 // #5 — the commentary booth (Randy = play-by-play, Chipper = color, Pittsy = the story). Text only.
@@ -1336,8 +1638,8 @@ var MOODS = { intro:'🙂', blunder:'😏', good:'😟', ponder:'🤔', neutral:
    are the hand-authored guesses the 09-13 recalibration replaced (see aiMove). Reading the
    wrong one would put a composure meter on a bot that never tilts. */
 function personaFor(idx){
-  var r = LADDER[idx];
-  return (ENGINE && ENGINE.personaForElo) ? (ENGINE.personaForElo(r.elo) || null) : null;
+  var r = rungAt(idx);
+  return (r && ENGINE && ENGINE.personaForElo) ? (ENGINE.personaForElo(r.elo) || null) : null;
 }
 // the most valuable man of `side` that is attacked and undefended. Pawns are not a tell.
 function looseFor(S, side){
@@ -1351,7 +1653,7 @@ function looseFor(S, side){
   return worst;
 }
 // 2 = loud (the early floors), 1 = quiet, 0 = poker face. Nobody above 1250 gives you anything.
-function tellLevel(){ return !G ? 0 : G.rung.elo <= 650 ? 2 : G.rung.elo <= 1250 ? 1 : 0; }
+function tellLevel(){ return (!G || G.mod === 'poker') ? 0 : G.rung.elo <= 650 ? 2 : G.rung.elo <= 1250 ? 1 : 0; }
 var tellMood = MOODS.neutral;
 function readTable(){
   if (!G || G.over) return;
@@ -1374,7 +1676,7 @@ function readTable(){
      The bar reads MATERIAL, which is the dominant term in the eval that arms tilt. */
   var pers = personaFor(G.idx), comp = document.getElementById('opp-comp');
   if (comp){
-    if (!pers || !pers.tilt){ comp.classList.add('hidden'); }
+    if (!pers || !pers.tilt || G.mod === 'poker'){ comp.classList.add('hidden'); }
     else {
       comp.classList.remove('hidden');
       var left = Math.max(0, Math.min(100, 100 - (behind - 60) / 8));
@@ -1398,7 +1700,7 @@ function showBubble(text, mood){
   moodTimer=setTimeout(function(){ setMood(tellMood); }, 3200);
 }
 function reactOpp(kind){
-  if(!G || !G.rung.react) return;
+  if(!G || G.mod === 'poker' || !G.rung.react) return;
   var lines=G.rung.react[kind]; if(!lines || !lines.length) return;
   showBubble(lines[(Math.random()*lines.length)|0], MOODS[kind]);
 }
@@ -1424,7 +1726,9 @@ function setupPortrait(rung, idx){
   var opp=document.getElementById('opp'); if(!opp) return;
   document.getElementById('opp-glyph').textContent=rung.glyph;
   document.getElementById('opp-name').textContent=rung.name;
-  document.getElementById('opp-sub').textContent=(idx < VISIBLE ? 'Rung '+(idx+1)+'/'+VISIBLE : 'Secret '+(idx-VISIBLE+1)+'/'+(LADDER.length-VISIBLE))+' · '+rung.region+' · Rated '+rung.elo;
+  document.getElementById('opp-sub').textContent=(idx === RIVAL_IDX ? 'Your rival'
+      : idx < VISIBLE ? 'Rung '+(idx+1)+'/'+VISIBLE : 'Secret '+(idx-VISIBLE+1)+'/'+(LADDER.length-VISIBLE))+
+    ' · '+rung.region+' · Rated '+rung.elo;
   document.getElementById('opp-face').style.borderColor=rung.accent;
   document.getElementById('opp-bubble').classList.remove('show');
   setMood(MOODS.neutral);
@@ -1445,7 +1749,7 @@ function coachTrade(){
      of slack — a 36px pill would have clipped the room on a phone the first time somebody won
      a piece. The booth's 56px is already reserved at every width. */
   var hide = function(){ G.coachSq = -1; };
-  if (!G || G.over || G.rung.elo >= 1400 || G.S.turn !== G.pc) return hide();
+  if (!G || G.over || G.mod === 'poker' || G.rung.elo >= 1400 || G.S.turn !== G.pc) return hide();
   if (matPOV(G.S, G.pc) < 300) return hide();
   if (G.coachAt != null && G.log.length - G.coachAt < 8) return;
   var best = null;
@@ -1480,7 +1784,10 @@ function judgeRound(){
   if(!G || G.roundStartMat==null) return;
   var delta = matPOV(G.S, G.pc) - G.roundStartMat;   // + = player won material this round
   G.roundStartMat=null;
-  if(delta <= -250){ reactOpp('blunder'); callOut('pblunder', true); }
+  if(delta <= -250){
+    // the move the swing COMPLETED on — your move plus their reply, which is when it is a fact
+    if (!G.firstHang) G.firstHang = Math.ceil(G.log.length / 2);
+    reactOpp('blunder'); callOut('pblunder', true); }
   else if(delta >= 250){ reactOpp('good'); callOut('pgood', true); }
 }
 
@@ -1500,7 +1807,7 @@ function render(){
       G.clockMs - (Date.now() - G.clockTick) <= 0){ endGame('flag'); }
   // the set you're playing on, and the house watching you play on it (drawn at the foot
   // of this function — they stand between you and the board)
-  var SET = setFor(G.idx);
+  var SET = setFor(G.floor);
   var mat = matPOV(VS, 'w');
   if (G.crowdMat === undefined) G.crowdMat = mat;
   if (mat !== G.crowdMat){ G.crowdRoar = 1; G.crowdMat = mat; }   // something was taken
@@ -1530,7 +1837,9 @@ function render(){
   if (G.sel>=0 && !VW){ var ss=idxToScreen(G.sel); ctx.fillStyle='rgba(245,197,24,0.34)'; ctx.fillRect(BX+ss.col*TILE, BY+ss.row*TILE, TILE, TILE);
     G.legal.forEach(function(m){ if(m.from!==G.sel) return; var d=cellXY(m.to), cap=G.S.b[m.to];
       ctx.fillStyle='rgba(107,255,184,0.65)';
-      if (cap){ ctx.lineWidth=4; ctx.strokeStyle='rgba(107,255,184,0.7)'; ctx.beginPath(); ctx.arc(d.x,d.y,TILE*0.42,0,7); ctx.stroke(); }
+      // ⚠ under Blindfold the capture RING is a leak: it draws a circle on every enemy man
+      // your selection can reach, which is most of the position by the middlegame.
+      if (cap && G.mod !== 'blind'){ ctx.lineWidth=4; ctx.strokeStyle='rgba(107,255,184,0.7)'; ctx.beginPath(); ctx.arc(d.x,d.y,TILE*0.42,0,7); ctx.stroke(); }
       else { ctx.beginPath(); ctx.arc(d.x,d.y,7,0,7); ctx.fill(); } }); }
   // coordinate labels (oriented to the player). Embossed — a light underlay then a dark
   // fill — so they read on BOTH the cream and the walnut squares of the canon board.
@@ -1548,10 +1857,14 @@ function render(){
   // a dim wash under the pieces, so browsing can never be mistaken for the live board
   if (VW){ ctx.fillStyle = 'rgba(12,8,32,0.28)'; ctx.fillRect(BX, BY, BOARD, BOARD); }
   // pieces
-  for (var j=0;j<64;j++){ var p=VS.b[j]; if(!p) continue; var c=cellXY(j);
+  for (var j=0;j<64;j++){ var p=VS.b[j]; if(!p) continue;
+    // ⚠ THE BROWSED POSITION IS BLINDFOLDED TOO. The last entry in the move browser IS the
+    // live position, so exempting it would make the replay bar a reveal button.
+    if (G.mod === 'blind' && C.colorOf(p) !== G.pc) continue;
+    var c=cellXY(j);
     PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), SET.pal); }
   // two faint spots on the opposition's e-pawn — visually unremarkable, never explained
-  if (G.crockett >= 0 && !VW && G.S.b[G.crockett]){
+  if (G.crockett >= 0 && !VW && G.mod !== 'blind' && G.S.b[G.crockett]){
     var cd = cellXY(G.crockett), aiIsWhite = (G.pc !== 'w');
     ctx.fillStyle = aiIsWhite ? 'rgba(74,54,24,0.5)' : 'rgba(239,228,255,0.26)';
     ctx.beginPath(); ctx.arc(cd.x - TILE*0.07, cd.y + TILE*0.10, TILE*0.048, 0, 7); ctx.fill();
@@ -1559,7 +1872,7 @@ function render(){
   }
   // the gallery, from floor 8 — foreground, so after the pieces, but it only ever reaches
   // the outer edge of the frame
-  drawCrowd(G.idx, G.crowdRoar);
+  drawCrowd(G.floor, G.crowdRoar);
   drawClock();
   // the browsing badge goes on last — over the pieces, at the foot of the board, where
   // neither the rival's portrait bubble (top) nor the pieces can bury it
@@ -1637,6 +1950,12 @@ function loop(){ render(); raf = requestAnimationFrame(loop); }
 // ---- screens ----
 function hideOverlays(){ ['menu-screen','ladder-screen','over-screen','boss-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); clearFx(); }
 function showMenu(){ hideReplay(); G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideBooth(); hideOverlays(); refreshMenu(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function crestStr(prog, i){
+  var c = crestsFor(prog, i), got = MOD_ORDER.filter(function(k){ return c[k]; });
+  if (!got.length) return '';
+  return '<span class="tw-crests" aria-label="' + got.map(function(k){ return MODS[k].name; }).join(', ') + ' won">' +
+    got.map(function(k){ return MODS[k].crest; }).join('') + '</span>';
+}
 function showLadder(){
   if (G){ G.over = true; }
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
@@ -1644,6 +1963,23 @@ function showLadder(){
   hideOverlays();
   var prog = loadProg(), cur = nextFloor(prog), host = document.getElementById('rungs'); host.innerHTML = '';
   var lastZone = null, curEl = null;
+  /* THE RIVAL'S DOOR sits above the whole tower, because they are above the whole tower —
+     they hold no floor and their rating is whatever you have climbed to. */
+  var riv = following(prog);
+  if (riv){
+    var rbase = LADDER[riv.idx];
+    var rz = document.createElement('div'); rz.className = 'tw-zone'; rz.style.color = rbase.accent;
+    rz.innerHTML = '<span class="tz-name">Following you up</span><span class="tz-line"></span>';
+    host.appendChild(rz);
+    var rel = document.createElement('div'); rel.className = 'tw-floor tw-rival';
+    rel.innerHTML =
+      '<div class="tw-badge" style="border-color:'+rbase.accent+';color:'+rbase.accent+'">'+rbase.glyph+'</div>' +
+      '<div class="tw-body"><div class="tw-name">★ '+rbase.name+'</div>' +
+        '<div class="tw-sub">Rated '+rivalElo()+' · head to head '+(riv.w||0)+'–'+(riv.l||0)+'</div>' +
+      '</div><span class="tw-chip" style="background:#3a1330;color:#ff9ec9">⚔ RIVAL</span>';
+    rel.onclick = function(){ showBossCard(RIVAL_IDX); };
+    host.appendChild(rel);
+  }
   // the secret floors exist only for those who beat the top of the public tower
   var top = (secretOpen(prog) ? LADDER.length : VISIBLE) - 1;
   if (!secretOpen(prog)){
@@ -1671,7 +2007,7 @@ function showLadder(){
       '<div class="tw-body"><div class="tw-name">'+(i < VISIBLE ? (i+1)+'. ' : '★ ')+rung.name+'</div>' +
         '<div class="tw-sub">Rated '+rung.elo+' · '+playstyleOf(rung.persona)+' · '+difficultyOf(rung.persona)+' · ♔/♚ drawn</div>' +
         (isCur?'<span class="tw-here">YOU ARE HERE</span>':'') +
-      '</div>' + chip;
+      '</div>' + crestStr(prog, i) + chip;
     if (unlocked) (function(k){ el.onclick = function(){ showBossCard(k); }; })(i);
     if (isCur) curEl = el;
     host.appendChild(el);
