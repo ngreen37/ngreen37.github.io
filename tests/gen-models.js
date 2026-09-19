@@ -18,6 +18,7 @@ const BLEND_DIR = process.env.BLEND_DIR || path.join(os.homedir(), 'Desktop', 'B
 // Documents/ is a model the next rebuild loses.
 const MODELS = [
   { name: 'Altar', out: 'assets/models/gambit-altar.glb' },
+  { name: 'Checker', out: 'assets/models/checker.glb' },
   { name: 'Nate', out: 'assets/models/nate.glb', godot: 'nate.glb' },
 ];
 
@@ -36,14 +37,23 @@ function findBlender() {
   throw new Error('Blender not found — set BLENDER=path/to/blender.exe');
 }
 
-// ⚠⚠ THE VERSION IS A NUMBER, NOT AN INTEGER. He saves `Nate_0.6.blend`, which an integer-only
-// pattern matched not at all — the row would have reported "no Nate_N.blend" with two of them
-// sitting in the folder. parseFloat also keeps 0.10 above 0.9, which a digit compare would not.
+// ⚠⚠ THE VERSION IS DOTTED, NOT DECIMAL. He counts 0.9 → 0.10 the way software does, and
+// parseFloat read that as 0.1 — so Nate_0.10.blend lost to Nate_0.9.blend and his newest save
+// silently never shipped. Compare segment by segment; mtime only breaks a true tie.
 function newestSave(name) {
-  const re = new RegExp('^' + name + '(?:_(\\d+(?:\\.\\d+)?))?\\.blend$', 'i');
+  const re = new RegExp('^' + name + '(?:_(\\d+(?:\\.\\d+)*))?\\.blend$', 'i');
+  const ver = (v) => (v || '0').split('.').map(Number);
+  const cmp = (a, b) => {
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      const d = (b[i] || 0) - (a[i] || 0);
+      if (d) return d;
+    }
+    return 0;
+  };
   const hits = fs.readdirSync(BLEND_DIR)
     .map(f => ({ f, m: f.match(re) })).filter(x => x.m)
-    .sort((a, b) => (parseFloat(b.m[1]) || 0) - (parseFloat(a.m[1]) || 0));
+    .map(x => ({ f: x.f, v: ver(x.m[1]), t: fs.statSync(path.join(BLEND_DIR, x.f)).mtimeMs }))
+    .sort((a, b) => cmp(a.v, b.v) || b.t - a.t);
   return hits.length ? path.join(BLEND_DIR, hits[0].f) : null;
 }
 

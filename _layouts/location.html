@@ -19,7 +19,7 @@ layout: default
     {% endif %}
   </header>
 
-  <div class="location-art">
+  <div class="location-art{% if page.model and page.video == nil %} has-model{% endif %}">
     {% if page.video %}
       {%- comment -%} 2026-07-24: sources are typed correctly per extension now (a bare .mkv
            tagged type="video/mp4" was a claim no browser could honor), an optional WebM can
@@ -33,6 +33,22 @@ layout: default
         <source src="{{ page.video | relative_url }}"{% if vext == 'mp4' %} type="video/mp4"{% elsif vext == 'webm' %} type="video/webm"{% endif %}>
         Your browser does not support the video tag.
       </video>
+    {% elsif page.model %}
+      {%- comment -%} A Blender model stands in for the art. The placeholder stays INSIDE the
+           host: pjcc-stage.js puts its canvas in front of it, so a visitor with no WebGL — or
+           a 404 on the .glb — still sees the same card this page had before. {%- endcomment -%}
+      <div class="location-art-stage" data-stage-model="{{ page.model | relative_url }}"
+           {% if page.model_glow %}data-stage-glow="{{ page.model_glow }}"{% endif %}
+           {% if page.model_aim %}data-stage-aim="{{ page.model_aim }}"{% endif %}
+           {% if page.model_fill %}data-stage-fill="{{ page.model_fill }}"{% endif %}
+           {% if page.model_tints %}data-stage-tints="{{ page.model_tints | jsonify | xml_escape }}"{% endif %}
+           {% if page.model_scene %}data-stage-copies="{{ page.model_scene | jsonify | xml_escape }}"{% endif %}>
+        <div class="location-art-inner">
+          <span class="location-art-icon">&#9812;</span>
+          <span class="location-art-label">Art &amp; Map: Building</span>
+        </div>
+      </div>
+      <script src="{{ '/assets/js/pjcc-stage.js' | relative_url }}" defer></script>
     {% else %}
       <div class="location-art-inner">
         <span class="location-art-icon">&#9812;</span>

@@ -108,8 +108,18 @@ const BOT = 'maxwell';
 
 (async () => {
   fs.writeFileSync(TMP, render(fs.readFileSync(SRC, 'utf8')));
+  /* ⚠ THE OPT-IN IS STRIPPED FROM THE HARNESS'S OWN COPY OF THE STYLESHEET, not from the site.
+     `@view-transition { navigation: auto }` cross-fades same-origin navigations, and this run
+     drives several `location.href` hops back to back; Chrome rejects the superseded transition
+     and the wording of that rejection changes between versions (it was "AbortError: Transition
+     was skipped", it is now "InvalidStateError: … ViewTransition opt-in disabled"), so the
+     BENIGN filter below went stale and failed a clean tree. Removing the at-rule here means the
+     artifact cannot happen at all. ⚠ Verified 2026-09-19 in Chrome 153 that a REAL click between
+     two opted-in pages still transitions (`pagereveal` carries a viewTransition) — the site's
+     feature is untouched and this is only the harness declining to use it. */
   fs.writeFileSync(TMPCSS, sass.compileString(fs.readFileSync(path.join(ROOT, 'assets/css/style.scss'), 'utf8')
-    .replace(/^---[\s\S]*?---\s*/, ''), { loadPaths: [path.join(ROOT, '_sass')], style: 'expanded' }).css);
+    .replace(/^---[\s\S]*?---\s*/, ''), { loadPaths: [path.join(ROOT, '_sass')], style: 'expanded' }).css
+    .replace(/@view-transition\s*\{[^}]*\}/g, ''));
   if (SHOTS) fs.mkdirSync(SHOTDIR, { recursive: true });
   await new Promise(r => server.listen(PORT, r));
   const b = await puppeteer.launch({ executablePath: findChrome(), args: ['--no-sandbox'] });

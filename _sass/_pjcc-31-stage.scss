@@ -1,0 +1,36 @@
+/* 31 — Blender models on the page (assets/js/pjcc-stage.js). The canvas is inserted as the
+   host's FIRST child, so anything authored inside the host stays on top of the model and is
+   also what a visitor sees if WebGL, the bundle or the .glb never arrives. */
+
+.stage-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+/* the location card's art box: a model fills it, so the "nothing here yet" dashes go */
+.location-art.has-model {
+  border-style: solid;
+  border-color: #2a1a5e;
+  background: radial-gradient(ellipse at 50% 120%, #241356 0%, #12093a 70%);
+}
+
+.location-art-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* the canvas is transparent, so the standing-in placeholder would otherwise show through it */
+.location-art-stage.is-3d .location-art-inner { display: none; }
+
+/* a portrait box fits the model by its WIDTH, so 420px tall is mostly empty sky on a phone */
+@media (max-width: 600px) {
+  .location-art.has-model { height: 280px; }
+}
