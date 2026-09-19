@@ -52,14 +52,11 @@
     rim.position.set(-4, 2, -4);
     scene.add(sky, key, rim);
 
-    // ⚠ TINT ONLY WHILE THE ART IS SILENT. A named material is his color decision; Blender's
-    // default "Material*" and no material at all are not. Same rule as the town's player.
-    var painted = false;
-    model.traverse(function (o) {
-      if (o.isMesh) [].concat(o.material).forEach(function (m) {
-        if (m && m.name && !/^Material(\.\d+)?$/.test(m.name)) painted = true;
-      });
-    });
+    /* ⚠⚠ WHO PICKS THE COLOR: the PAGE, when it names one — otherwise the model's own paint.
+       A prop is not a character. One checker mesh has to be red here and black beside it, so a
+       color named in front matter wins over the material in the .blend; a page that names none
+       shows exactly what he painted. (The town's PLAYER keeps the opposite rule — a character's
+       colors are his, and player_model.gd retires its tint the moment he names a material.) */
     /* ⚠⚠ NORMALIZE BEFORE CLONING, or a stack does not stack: Blender's origin can sit
        anywhere in the piece, so a copy placed at y=1 leaves a gap or sinks. `norm` holds the
        model centered on x/z with its BASE at y=0 — then y is in piece-heights and a copy at
@@ -85,7 +82,7 @@
           one.rotation.y = (c.ry || 0) + i * (c.twist === undefined ? 0.38 : c.twist);
           one.userData.wantY = (c.y || 0) + i * s;   // where its base belongs, in pieces
           var paint = c.tint || tints[(i + (c.t0 || 0)) % (tints.length || 1)];
-          if (paint && !painted) one.traverse(function (o) {
+          if (paint) one.traverse(function (o) {
             if (!o.isMesh) return;
             o.material = [].concat(o.material).map(function (m) {
               var d = m.clone();

@@ -7,7 +7,9 @@ model: /assets/models/checker.glb
 # The houses, per this page: enormous checker pieces that fell from the sky, stacked into
 # buildings. One model, repeated. x/y/z are in PIECE widths and heights; `n` stacks that
 # many, `s` scales the whole tower, `t0` starts it on the other color.
-# ⚠ the tints are ignored the moment the .blend has named materials: his paint wins.
+# ⚠ THESE COLORS WIN over the material in the .blend — a prop is dressed by the scene, so
+# one checker mesh can be light here and dark beside it. Delete model_tints and his own
+# paint (currently a red checkers piece) is what shows.
 model_tints: ["#e8e0cf", "#6a56c8"]
 # ⚠ laid out as a RING, not a row: the view turns, and a row hides itself end-on.
 model_scene:

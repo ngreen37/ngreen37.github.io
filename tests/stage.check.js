@@ -77,19 +77,20 @@ for (const h of hosts) {
   check(`${h.page}: what renders it loads pjcc-stage.js`, /<script[^>]*src="[^"]*\/assets\/js\/pjcc-stage\.js[^"]*"/.test(h.src));
 
   if (!h.scene) continue;
-  /* ⚠ A TINTED SCENE OVER PAINTED ART IS A SCENE THAT DOES NOTHING — the script drops the
-     tints the moment a material carries a real name, so a page that leans on them has to be
-     over a model that has none (or only Blender's defaults). */
   const rows = [...h.scene.matchAll(/^\s+-\s*\{(.+)\}\s*$/gm)]
     .map(m => m[1]).map(s => Object.fromEntries([...s.matchAll(/([a-z][a-z0-9]*):\s*("?[^,"]+"?)/g)]
       .map(p => [p[1], p[2].replace(/"/g, '')])));
   check(`${h.page}: the scene rows parse`, rows.length > 0 && rows.every(r =>
     Object.entries(r).every(([k, v]) => k === 'tint' ? /^#[0-9a-f]{6}$/i.test(v) : !isNaN(parseFloat(v)))),
     rows.length + ' rows');
-  const named = mats.filter(m => !/^Material(\.\d+)?$/.test(m));
-  if (h.tints || rows.some(r => r.tint)) check(`${h.page}: its model is unpainted, so the tints apply`,
-    named.length === 0, named.length ? 'named materials win: ' + JSON.stringify(named) : 'no named materials');
 }
+
+/* The model's own color, as the browser will see it. glTF stores it linear; sRGB is what
+   three.js puts on screen, and what the untinted check below compares against. */
+const linearToHex = (c) => '#' + [0, 1, 2].map(i => {
+  const v = c[i] <= 0.0031308 ? 12.92 * c[i] : 1.055 * Math.pow(c[i], 1 / 2.4) - 0.055;
+  return Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, '0');
+}).join('');
 
 /* ⚠⚠ THE LAYOUT IS WHERE FRONT MATTER BECOMES ATTRIBUTES, and the live run below assembles
    its own page from the front matter — so nothing else here would notice a layout that quietly
@@ -149,8 +150,11 @@ const artBox = (copies) => `<div class="location-art has-model" style="width:900
     <div class="location-art-inner" id="loc-placeholder">Art &amp; Map: Building</div>
   </div></div>`;
 
+const artBoxNoTints = artBox(true).replace(/data-stage-tints='[^']*'/, '');
 const PAGES = {
   '/p/town.html': page({ body: artBox(true), css: '.location-art-stage.is-3d .location-art-inner{display:none}' }),
+  // the same arrangement with no palette: every copy must keep the color he painted
+  '/p/town-plain.html': page({ body: artBoxNoTints, css: '.location-art-stage.is-3d .location-art-inner{display:none}' }),
   '/p/one.html': page({ body: artBox(false), css: '.location-art-stage.is-3d .location-art-inner{display:none}' }),
   '/p/main.html': page({}),
   '/p/pair.html': page({ body: altarTag + `<div hidden>${altarTag.replace('id="gm-altar"', 'id="gm-hidden"')}</div>` }),
@@ -275,8 +279,20 @@ const PAGES = {
     await p.close();
     p = await open('/p/one.html');
     const single = await p.evaluate(() => document.getElementById('gm-altar').pjccStage);
-    check('no arrangement means one piece, untinted', single.pieces === 1 && single.colors.length === 1,
-      JSON.stringify(single));
+    /* ⚠⚠ THE OTHER HALF OF THE RULE, and the one that rots silently: name no color and what
+       he painted in Blender is what shows. Without this, a page could paint over his art for
+       good and every check above would still be green. */
+    const own = glbJson(path.join(ROOT, town.url)).materials.map(m => linearToHex(m.pbrMetallicRoughness.baseColorFactor));
+    check('name no color and his own paint shows', single.pieces === 1 &&
+      JSON.stringify(single.colors) === JSON.stringify(own.sort()),
+      `${town.url} is painted ${JSON.stringify(own)}, page showed ${JSON.stringify(single.colors)}`);
+    await p.close();
+    // ⚠ and the same through the COPIES path, which is the one a village actually takes
+    p = await open('/p/town-plain.html');
+    const plain = await p.evaluate(() => document.getElementById('gm-altar').pjccStage);
+    check('…in a whole arrangement too', plain.pieces > 1 &&
+      JSON.stringify(plain.colors) === JSON.stringify(own.sort()),
+      `${plain.pieces} copies, colors ${JSON.stringify(plain.colors)}`);
     await p.close();
 
     p = await open('/p/pair.html');
