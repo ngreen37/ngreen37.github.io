@@ -399,7 +399,7 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
    correction will be right at exactly one size. */
 {
   const CALLERS = ['index.md', 'games.md', 'assets/games/pjcc_gauntlet.html',
-    '_layouts/home.html'];   /* studio-home deleted 2026-08-19 (orphaned since 08-03) */
+    '_layouts/home.html'];
   const ALLOWED = /^(width|height|gap|column-gap|row-gap|margin|margin-\w+|align-items|justify-content|position|inset|display|top|left|right|bottom|transform|animation|opacity|background|z-index)$/;
   const bad = [];
   for (const f of CALLERS) {

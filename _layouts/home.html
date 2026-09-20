@@ -2,10 +2,6 @@
 layout: default
 ---
 
-{% comment %} (2026-07-21) The `days_since` day counter that stood here — start_ts /
-     now_ts / days_since, March 1 2026 as Unix 1772337600 — is deleted. Nothing on this
-     page has read it in a long time; the two live counters are on /projects/ and compute
-     themselves in JS. {% endcomment %}
 
 {% comment %} Structured data: the show itself — this is what lets Google build a
      rich result (name, poster image) for "Princess and the Journey to Chess City". {% endcomment %}
@@ -89,8 +85,6 @@ layout: default
 .ticker-badge-name { font-size: 10px; }
 .ticker-outer { padding: 8px 0 10px; }
 
-/* (#5 folded-wire mobile state removed 2026-07-11 — the static peek read as a
-   broken ticker and the tap-to-open as a glitch; phones get the live crawl.) */
 
 /* ── #5 phones: compact hero — the top band declutters (2026-07-11): the
    eyebrow plate and the door's caption step aside; sun/moon + plate + lamps
@@ -110,7 +104,6 @@ layout: default
      whole reason the line moved up. */
   .hero-lede { font-size: 13.5px; margin-top: 9px; max-width: 30ch; }
   .hero-eyebrow { display: none; }
-  /* (the .hero-skyline phone rules went with the skyline itself, 2026-07-21) */
   /* height is aspect-ratio's job now (2026-07-22) — the 8 files stay square only while
      height tracks width/4, and a fixed 64px here would have squashed them back into
      stripes on exactly the screen where the board is narrowest. */
@@ -132,8 +125,6 @@ layout: default
      which was quietly acting as clearance. Measured on the live phone hero, 0.62 left the
      king 2px under the world line where the old art had 6. This buys it back. */
   .hero-pieces .hp { --s: 0.56; }
-  /* (.hero-tagline phone sizing removed 2026-07-24 with the tagline cut.) */
-  /* (.hero-world phone rule removed with the world-line links, 2026-07-23) */
 }
 
 /* ── #2 one-screen desktop ── */
@@ -172,7 +163,6 @@ layout: default
      at bottom:40px and the tallest piece reaches ~64px above it, so anything less puts
      the king through the world line. Verified after the fact at five viewport sizes. ── */
   .hero-title { max-width: 21ch; }
-  /* (.hero-tagline desktop sizing removed 2026-07-24 with the tagline cut.) */
   /* THE POSTER (2026-07-21) — this is the site's front door now, so the title is sized
      like one: was clamp(34px, 4.8vw, 52px). The lower bound clears the "small type"
      complaint on the modernization doc's list outright. */
@@ -564,7 +554,6 @@ html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; opacity:1; }
    banner, here it is the poster's subtitle and sits directly under the title.
    The 110px height is the cycle's own — every word is absolutely positioned inside it,
    so the block cannot collapse and the words cannot push each other around. */
-/* (.hero-tagline placement rule removed 2026-07-24 with the tagline cut.) */
 /* the tg-x link needs no pointer-events re-arm here: that rule exists on the splash only
    because .studio-content turns pointers off for the whole stage. Nothing does that here. */
 
@@ -634,14 +623,8 @@ html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; opacity:1; }
 .home-hero::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
   border-radius:inherit; background:linear-gradient(180deg, transparent 46%, rgba(8,6,24,0.30) 100%); }
 
-/* (DAY/DUSK/NIGHT hero skies + the hero sun/rays/corona/clouds/stars were all removed
-   2026-07-18 — that whole diorama is what the shared town sky already does. The two
-   dawn/dusk rules that warmed the checker stacks went with the skyline on 2026-07-21;
-   the hero's per-phase look is now entirely the shared sky showing through it.) */
 html.sky-night .home-hero { border-color:#2a1d5e; }
 
-/* (#18 the staged "takes its seats" first-arrival fade went with the intro 2026-07-17 —
-   the ticker + cast just render now; nothing adds .first-arrival / .arrive-in anymore.) */
 
 /* #9 — the title simply RISES up once, calm and confident (2026-07-17 Nate: "drop the
    intro… we can do without it"). The per-letter white-hot typing (its JS is gone below)
@@ -997,8 +980,6 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    CTA was demoted; that note lived in the media query that just left with the band.) */
 </style>
 
-{% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now
-     things to be DECODED by users as they play, not laid out here. See FUTURE-IDEAS. {% endcomment %}
 
 {% comment %} (the basement / #20 street band removed 2026-07-10 — the page now ends
      at the cast; restore from git if ever missed.) {% endcomment %}

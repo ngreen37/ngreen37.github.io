@@ -45,7 +45,6 @@ input:focus-visible,
    (.nav-toggle, .cmdk-trigger, .lang-toggle) are listed in the sweep's report as a
    deliberate follow-up, because widening the header is a design change, not a fix. */
 @media (pointer: coarse) {
-  /* (.home-replay dropped 2026-08-03 — the Replay-intro link left with the intro.) */
   .awake-more, .awake-post, .home-shuffle, .home-section-link {
     display: inline-flex; align-items: center; min-height: 44px;
   }

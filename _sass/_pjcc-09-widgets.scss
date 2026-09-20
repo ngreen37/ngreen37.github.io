@@ -84,7 +84,6 @@
 
 
 
-/* (Arc Panel near-unlock glow removed 2026-07-11 — dead since the film strip left.) */
 
 /* =============================================================
    COMMAND CENTER — SANDBOX PAGE (/sandbox/)
@@ -240,10 +239,6 @@
 
 
 
-/* (.ow-name / .ow-tag / .frag-grid — leftovers from an old operative-watch widget and
-   the dossier's fragment grid — deleted 2026-07-12. Nothing had used them for a long
-   time; they only looked ALIVE to the dead-code sweep because their names were
-   substrings of markup that this same batch removed from the dossier.) */
 
 
 
@@ -274,7 +269,6 @@
 
 
 
-/* (2 — chess notation watermark + arc-section flair removed 2026-07-11 — no markup anywhere.) */
 
 /* 3 — CRT scanline animation on classified */
 @keyframes crt-scan {
@@ -306,7 +300,6 @@
 }
 .data-stream-card:hover .ds-flow { opacity: 0.65; }
 
-/* (8 — arc panel floating star removed 2026-07-11 — dead since the film strip left.) */
 
 /* 9 — Transmission Received toast */
 .tx-toast {
@@ -347,7 +340,6 @@
   animation: redact-static 0.2s ease-in-out infinite;
 }
 
-/* (11 — ink-wipe block removed 2026-07-11 — no markup anywhere.) */
 
 /* (12 — Aurora bands removed 2026-07-12, Nate. The whole .aurora-wrap/.aurora-band
    system + its markup + the offscreen-pause observer are gone; the hero's ambient

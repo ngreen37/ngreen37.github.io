@@ -471,10 +471,6 @@ permalink: /dossier/
     });
     html += '</div>';
 
-    /* TITLE FLAIR removed 2026-07-27 (Nate: "Get rid of Title flair"). It was a row of
-       chips picking a label to hang off your codename — a third identity control on a page
-       we were trying to shrink. Titles themselves still exist (the Quartermaster sells two,
-       and the altar's vault hands out two more); this page just doesn't run a picker. */
 
     /* SERVICE RECORD — folded shut by default (2026-07-13, Nate: "can we make the service
        record section collapse and expand? Default Collapse? I'm trying to cut down on all

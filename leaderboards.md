@@ -37,11 +37,6 @@ body_class: theme-hall
   })();
   </script>
 
-  {% comment %} The Hall of Fame plate that stood here was removed 2026-07-12 (Nate: "remove
-       the hall of fame completely, from all pages"). The whole feature — the /hall-of-fame/
-       page, PJCC.HALL_OF_FAME, the season-champion framing — is gone with it, and the idea is
-       parked in FUTURE-IDEAS. It was a trophy case with nothing in it: no season has ever
-       closed, so it advertised an empty room on the busiest page in the arcade. {% endcomment %}
 
   <div class="lb-tabs" id="lb-tabs"></div>
   <div class="lbtv-screen">
@@ -119,7 +114,6 @@ body_class: theme-hall
 .lbtv-show { margin-left:auto; color:#8b93a1; font-size:0.7rem; }
 .lbtv-sub { color:#b9c0cb; font-size:0.88rem; }
 
-/* (the Hall of Fame plate + its styles were removed 2026-07-12 with the feature) */
 
 /* ── SPLIT BOARD — one chip, two boards (2026-07-12, Nate) ────────────────────
    Siege is one game with two modes scored in different units (score / wave), so a

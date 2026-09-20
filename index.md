@@ -150,11 +150,6 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 <section class="mc-table" aria-labelledby="h-play">
 <h2 id="h-play" class="sr-only">Play Chess Now</h2>
 <section class="mc-hero">
-    {%- comment -%} THE EYEBROW IS GONE (2026-08-04, Nate: "We've got 'By McPuppy Studios' on
-         the top left and 'From McPuppy Studios' in the center. Delete the latter."). The
-         drawer already says it, permanently, on every page — saying it twice on the one
-         screen was the studio introducing itself to someone who came to play chess.
-         The brand stack is unchanged; it just isn't announced twice. {%- endcomment -%}
     {%- comment -%} THE TITLE LEFT THIS BLOCK (2026-08-04, Nate: "let's move the
          chesswild.com title outside of the white box. it is taking up too much space").
          It is printed by the layout now, above the card, on the sky — `title_outside: true`

@@ -209,10 +209,6 @@
   position: absolute; inset: 0; background: #fff; opacity: 0;
   animation: vs-flash 0.3s ease-out 0.54s both;
 }
-/* (.vs-cut-skip — the "TAP TO SKIP" hint in the bottom-right — was DELETED 2026-08-19.
-   Nate: "take out the skip intro on the intro — it's so short anyway." Its @keyframes
-   vs-skip-in went with it, and so did the tap/keydown handlers in pjcc-vs.js; the card
-   now plays its 2.6s and leaves on its own. Nothing else styled the class.) */
 
 @keyframes vs-lines   { to { transform: translateX(-72px); } }
 @keyframes vs-band-in-l { from { transform: translateX(-118%) rotate(-7deg); opacity: 0; }

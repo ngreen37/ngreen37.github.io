@@ -448,9 +448,6 @@ for (const [where, seat] of [['the game', bots.find(b => b.key === 'princess')],
         seat ? 'she wears ' + seat.icon
              : 'no princess seat found at all');
 }
-/* (The old "draws the bench from site.data.regulars" check was removed 2026-08-18 — the loop
-   is over `open_seats` now, and the check directly above says so more precisely. Two gates
-   asserting the same fact with one of them out of date is worse than one.) */
 /* ⚠ U+FE0E or the tint silently no-ops on a browser that reaches for its color emoji font —
    the same failure [[text-clip-glyph-technique]] records for the drawer icons. */
 check('…and gives every seat glyph a text-presentation selector',

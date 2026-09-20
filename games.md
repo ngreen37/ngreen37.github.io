@@ -20,7 +20,6 @@ permalink: /games/
    no layer at all. Restore: put the animation back and know what it costs. */
 .ghub::before { opacity:.56; }
 
-/* (.ghub-title rules deleted 2026-07-16 with the "Choose Your Hall" heading.) */
 
 /* The gold rule under the header, with a shimmer that sweeps along it.
    ─────────────────────────────────────────────────────────────────────────────
@@ -45,9 +44,6 @@ permalink: /games/
   50%      { transform:translateX(-114px); }   /* 60% of 190px = 114px — fully off the left */
 }
 
-/* (The category-portal treatment — the glowing gateways, spinning rune-rings and ENTER
-   tags — was removed 2026-07-18 with the portals themselves; the hall is one games grid
-   now, using the shared .gcard cards. See games.md markup + _pjcc-15-games.scss.) */
 
 @media (prefers-reduced-motion: reduce){
   .ghub, .ghub::before, .ghub-rule i { animation:none; }
@@ -410,10 +406,6 @@ permalink: /games/
     </a>
     <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
 
-    {%- comment -%} THE PARK TABLES entrance was removed from the games hall 2026-07-22
-         (Nate: "Get rid of the Park table link"). Park Tables is the "Play Now" link in the
-         site drawer now, so the games hall no longer duplicates it. The .ptdoor CSS above is
-         left in place (harmless, unused) in case the entrance is ever restored. {%- endcomment -%}
 
     {%- comment -%} THE GAMBIT ALTAR is not in this row: out 2026-07-24 to the grid's last cell,
          then out of the grid 2026-09-07 to .gm-shrine, its own centered row under the games.
@@ -422,8 +414,6 @@ permalink: /games/
   </div>
 
   <div class="ghub-head">
-    {%- comment -%} "Choose Your Hall" removed 2026-07-16 (Nate). The eyebrow is the
-         page's h1 now so the hall keeps a real heading. {%- endcomment -%}
     <h1 class="ghub-eyebrow" data-hb>◆ The ChessWild Arcade</h1>
     {%- comment -%} "· works offline" added 2026-08-12 (Nate: "say 'works offline' in the games
          hall, per your advice"). The front door has carried this fact since 2026-08-04 and the
