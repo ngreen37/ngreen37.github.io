@@ -9,11 +9,10 @@ layout: default
 {
   "@context": "https://schema.org",
   "@type": "TVSeries",
-  {%- comment -%} The rich-result entity for the show. Anchored to /pjcc/ (2026-07-22): the
-       show's page is the PJCC landing again after the second front-door move, while `/` is
-       now the McPuppy Studios home. head.html's Organization + WebSite nodes stay
-       root-anchored (the WebSite is the studio's site as a whole); the TVSeries points at
-       the world's own page so the schema is true. {%- endcomment -%}
+  {%- comment -%} The rich-result entity for the show, anchored to /pjcc/: the show's page is
+         the PJCC landing, while `/` is the McPuppy Studios home. head.html's Organization +
+         WebSite nodes stay root-anchored (the WebSite is the studio's site as a whole); the
+         TVSeries points at the world's own page so the schema is true. {%- endcomment -%}
   "@id": "{{ site.url }}/pjcc/#show",
   "name": "Princess and the Journey to Chess City",
   "alternateName": ["P&JCC", "PJCC"],
@@ -25,13 +24,10 @@ layout: default
 }
 </script>
 
-{% comment %} Aurora bands + ambient paint-drips removed 2026-07-12 (Nate). The
-     ambient glow behind the hero is now just the sky-phase gradient + weather;
-     restore either from git before this commit if ever missed. {% endcomment %}
 
 <div class="home-flow">
 
-{% comment %} ── 0. THE CHYRON — the news wire runs at the very top (moved 2026-07-10) ──
+{% comment %} ── 0. THE CHYRON — the news wire runs at the very top ──
    ✏️ TICKER DIALOGUE LIVES HERE — every headline is one <span class="ticker-item">
    line below. Edit / add / delete lines freely; promos use ticker-item--promo.
    Items are listed ONCE; the JS clones the set for a seamless loop, sets a calm
@@ -65,11 +61,10 @@ layout: default
       <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
       <span class="ticker-item ticker-item--promo">◆ THE IDENTITY FORGE: BUILD YOUR OWN CHARACTER &amp; COMPANION — FREE, AND RENAMEABLE ANY TIME YOU LIKE</span>
       <span class="ticker-item ticker-item--promo">◆ BUILDING — A GODOT ROGUELITE FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
-      {%- comment -%} DAY 47 was frozen in the markup since June; in a town that keeps real
-           Eastern time, one hand-typed counter that never moves is the only clock on the
-           site that lies. It counts for itself now — permit filed 22 May 2026, counted in
-           JS (NOT Liquid: Pages only rebuilds on push, so `site.time` would freeze the
-           number again between deploys). The 47 below is the no-JS fallback. {%- endcomment -%}
+      {%- comment -%} ⚠ The day counter counts itself in JS, NOT Liquid — Pages only rebuilds on
+                 push, so `site.time` freezes the number between deploys and the one clock on a site
+                 that keeps real Eastern time starts lying. Permit filed 22 May 2026; the 47 below is
+                 the no-JS fallback. {%- endcomment -%}
       <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY <span id="tk-permit-day">47</span></span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
@@ -79,19 +74,19 @@ layout: default
 </div>
 <style>
 /* ── #1 the chyron: flush under the site header, gold rule below, hero follows.
-   2026-07-10: the station plate (LIVE · CHECKER TOWN NEWS) sits ABOVE the crawl. ── */
+   The station plate (LIVE · CHECKER TOWN NEWS) sits ABOVE the crawl. ── */
 .world-ticker-wrap { flex-direction: column; align-items: stretch; margin: -20px -28px 26px; border-top: none; }
 .ticker-badge { align-self: flex-start; padding: 5px 16px 5px 18px; gap: 8px; }
 .ticker-badge-name { font-size: 10px; }
 .ticker-outer { padding: 8px 0 10px; }
 
 
-/* ── #5 phones: compact hero — the top band declutters (2026-07-11): the
-   eyebrow plate and the door's caption step aside; sun/moon + plate + lamps
-   + door keep the story without the crowd. ── */
+/* ── #5 phones: compact hero — the top band declutters: the eyebrow plate and the
+   door's caption step aside; sun/moon + plate + lamps + door keep the story
+   without the crowd. ── */
 @media (max-width: 700px) {
-  /* the doors left the hero (they're .home-plays below now), so the top no longer
-     has to clear a door zone — the hero opens up (2026-07-17). */
+  /* the doors are .home-plays below, not in the hero, so the top does not have to
+       clear a door zone. */
   /* bottom padding 34px → 78px, same reason as the desktop rule: the board carries
      pieces now and needs clear air below the world line. */
   .home-hero { padding: 46px 20px 78px; min-height: 300px; margin-bottom: 20px; }
@@ -104,9 +99,9 @@ layout: default
      whole reason the line moved up. */
   .hero-lede { font-size: 13.5px; margin-top: 9px; max-width: 30ch; }
   .hero-eyebrow { display: none; }
-  /* height is aspect-ratio's job now (2026-07-22) — the 8 files stay square only while
-     height tracks width/4, and a fixed 64px here would have squashed them back into
-     stripes on exactly the screen where the board is narrowest. */
+  /* Height is aspect-ratio's job — the 8 files stay square only while height tracks
+       width/4, and a fixed 64px here squashes them back into stripes on exactly the
+       screen where the board is narrowest. */
   .hero-board { bottom: 30px; }
   /* the board is shorter and narrower on a phone, so the pieces follow it down and the
      back row of each town is dropped — seven pieces across a 320px board is clutter, and
@@ -115,180 +110,131 @@ layout: default
   .hero-pieces { bottom: 30px; height: 36px; }
   .hero-pieces .hp:nth-child(1),
   .hero-pieces .hp:nth-child(5) { display: none; }
-  /* 0.72 → 0.62 (2026-07-22), and set once as a SCALE rather than twice as a size: the
-     pieces stand a fixed PERCENTAGE apart, and a phone board is 335px where the desktop
-     one is 620 — so the same percentages are barely half the distance in pixels. At the
-     old scale the new huddles fused into one blob. Shrinking the pieces by the difference
-     keeps the phone gaps reading like the desktop gaps. */
-  /* 0.62 → 0.56 (2026-07-22): the drawn pieces are taller than the glyphs they replaced
-     AND their box is all ink — a glyph box carries empty ascender room above the piece,
-     which was quietly acting as clearance. Measured on the live phone hero, 0.62 left the
-     king 2px under the world line where the old art had 6. This buys it back. */
+  /* Set once as a SCALE, not twice as a size: the pieces stand a fixed PERCENTAGE
+       apart, and a phone board is 335px where the desktop one is 620 — so the same
+       percentages are barely half the distance in pixels. Any larger and the huddles
+       fuse into one blob. */
+  /* ⚠ The drawn pieces are taller than the glyphs they replaced AND their box is all
+       ink — a glyph box carries empty ascender room that was quietly acting as clearance.
+       Measured on the live phone hero: 0.62 left the king 2px under the world line where
+       the old art had 6. 0.56 buys it back. */
   .hero-pieces .hp { --s: 0.56; }
 }
 
 /* ── #2 one-screen desktop ── */
 @media (min-width: 900px) {
-  /* bottom padding 54px → 104px (2026-07-22): the board is absolutely positioned at
-     bottom:40px, so it used to sit in the same band as the world line and read as texture
-     behind it. Now that there are PIECES on it, that overlap is a collision — the pawns
-     landed on top of "Chess City". The extra room is the board's stage; the flow content
-     above it does not move relative to itself. */
+  /* ⚠ The board is absolutely positioned at bottom:40px, so with PIECES on it a small
+       bottom padding is a collision, not texture — the pawns land on top of "Chess City".
+       The extra room is the board's stage; flow content above does not move. */
   .home-hero { padding: 42px 40px 104px; margin-bottom: 0; }
   .hero-lede { margin-top: var(--space-2); }  /* 8px = --space-2 exact (adoption) */
 
-  /* ── THE DESKTOP DOOR (2026-07-22, Nate: "go on the desktop problem") ──────────────
-     Measured on the live site, the Gauntlet door — the front page's ONE call to action —
-     was cut off or entirely below the fold on every common desktop:
-
-        1440x900 cut by 152px · 1920x1080 cut by 102px · 1440x820 fully below
-        1536x730 fully below  · 2560x1300 the only size that showed it
-
-     It predates the lede (it was 97px past the fold before that line went in), and it is
-     the reverse of the phone, where the door lands with room to spare. A stranger on a
-     laptop met a poster and no way in.
-
-     Nothing here is a redesign — it is 152px reclaimed from four places that were spending
-     it on air, which is why the hero still reads as a poster:
-
-       · the TITLE now breaks in TWO lines instead of three (max-width 16ch -> 21ch). Same
-         typeface, same 76px, ~84px shorter. At 16ch "Princess and the Journey to Chess
-         City" could only ever be three short lines; at 21ch `text-wrap:balance` finds two
-         even ones, and a wider two-line lockup is MORE poster, not less.
-       · the TAGLINE block is a fixed 110px tall to hold one cycling word of ~14px. 76px
-         still clears it with air to spare — 34px back.
-       · hero top padding 58 -> 42 and the gap under it 14 -> 8 — 22px back.
-
-     What is NOT touched: the 104px bottom padding, which is load-bearing. The board sits
-     at bottom:40px and the tallest piece reaches ~64px above it, so anything less puts
-     the king through the world line. Verified after the fact at five viewport sizes. ── */
+  /* ── THE DESKTOP DOOR ──────────────────────────────────────────────
+       The Gauntlet door is the front page's ONE call to action and it must stay ABOVE THE
+       FOLD on a laptop — it was once cut off or fully below it on every common desktop size
+       but 2560x1300. The title's 21ch max-width is part of that: at 16ch the name can only
+       break into three lines, and two even ones are ~84px shorter.
+       ⚠⚠ THE 104px BOTTOM PADDING IS LOAD-BEARING — the board sits at bottom:40px and the
+       tallest piece reaches ~64px above it, so anything less puts the king through the
+       world line. Verified at five viewport sizes. ── */
   .hero-title { max-width: 21ch; }
-  /* THE POSTER (2026-07-21) — this is the site's front door now, so the title is sized
-     like one: was clamp(34px, 4.8vw, 52px). The lower bound clears the "small type"
-     complaint on the modernization doc's list outright. */
+  /* THE POSTER — this is the site's front door, so the title is sized like one. The
+       lower bound is what clears the "small type" complaint outright. */
   .hero-title { font-size: clamp(44px, 6vw, 76px); }
 }
 
-/* ── trim the tail (2026-07-11 Nate): the cast is the last section, so its
-   52px bottom margin + the page's 60px bottom padding stacked into a big empty
-   gap under "Meet them all" before the footer's gold rule. Pull both in. ── */
+/* ── Trim the tail: the cast is the last section, so its bottom margin and the page's
+   bottom padding stack into a big empty gap under "Meet them all" before the footer's
+   gold rule. Both are pulled in. ── */
 .home-flow .home-section--cast { margin-bottom: 0; }
-.page-content:has(.home-flow) { padding-bottom: 6px; }   /* tightened 20→6 to help the page fit one window (2026-07-15) */
+.page-content:has(.home-flow) { padding-bottom: 6px; }   
 </style>
 
 {% comment %} ── 1. HERO ─────────────────────────────────────────── {% endcomment %}
 <section class="home-hero">
-  {% comment %} #16 — the sky, played UP (2026-07-11): sun/moon + stars + a hero
-       gradient per phase. Everything here is STATIC paint (no per-frame cost);
-       the only motion is two 2px stars twinkling at night. {% endcomment %}
-  {% comment %} SKY COLLAPSED 2026-07-18 (Nate: "collapse the two systems"). The hero used
-       to paint its OWN sky here — a second sun (.hs-orb), its own stars, its own per-phase
-       gradient — on top of the site-wide town sky. That's the two-sun problem at the root.
-       The hero is TRANSPARENT now and the ONE shared town sky (_pjcc-20-town-sky.scss:
-       gradient + arcing sun/moon + stars + clouds) shows straight through it. The hero
-       keeps only its own foreground: the title, the Checker Town↔Chess City skyline, and
-       the rare lightning that backlights it. Restore the hero sky from git if ever missed. {% endcomment %}
-  {% comment %} The rain is no longer the hero's own (2026-07-12): the town weather now
-       falls on EVERY page (pjcc-weather.js → .town-weather-overlay), so the hero would
-       have doubled up. What stays here is the hero's one exclusive trick — rare strikes
-       backlight the distant Chess City skyline. The town engine lights it. {% endcomment %}
+  {% comment %} #16 — the sky, played UP: sun/moon + stars + a hero gradient per phase.
+         ⚠ Everything here is STATIC paint (no per-frame cost); the only motion is two
+         2px stars twinkling at night. {% endcomment %}
+  {% comment %} ⚠⚠ THE HERO PAINTS NO SKY OF ITS OWN — it is TRANSPARENT, and the ONE shared
+         town sky (_pjcc-20-town-sky.scss: gradient + arcing sun/moon + stars + clouds) shows
+         straight through it. Giving the hero its own sun/stars/gradient again is the two-sun
+         problem. The hero keeps only its foreground: the title, the Checker Town↔Chess City
+         skyline, and the rare lightning that backlights it. {% endcomment %}
+  {% comment %} ⚠ The rain is NOT the hero's own — town weather falls on every page
+         (pjcc-weather.js → .town-weather-overlay), so a hero copy would double up. What
+         stays here is the hero's one exclusive trick: rare strikes backlight the distant
+         Chess City skyline. The town engine lights it. {% endcomment %}
   <div class="hero-skyflash" aria-hidden="true"></div>
-  {% comment %} 2026-07-14 (Nate): the eyebrow is a DOOR now — it leads to the studio.
-       2026-07-21: this sat above a tagline whose last line ALSO said "McPuppy Studios",
-       so the studio was credited twice within 200px. 2026-07-22, Nate's call on which
-       one goes: "I like the McPuppy Presents up top; cut the one above 'Million Stories
-       to Tell'." So the eyebrow STAYS and the tagline's studio line is gone — see the
-       tagline below. {% endcomment %}
+  {% comment %} The eyebrow is a DOOR — it leads to the studio. It is the only place the
+         studio is credited up here; the tagline that also said "McPuppy Studios" is gone,
+         so this must not be doubled. {% endcomment %}
   <a class="hero-eyebrow" href="{{ '/projects/' | relative_url }}">McPuppy Studios Presents</a>
   <div class="hero-board" aria-hidden="true"></div>
 
-  {% comment %} ── THE TWO TOWNS, IN THEIR OWN PIECES (2026-07-22, Nate) ───────────────
-       "slightly transparent red/black checker pieces on the left side of the
-       checkerboard … and black and white chess pieces on the right … to help elucidate
-       the disparity between the two towns, with their game pieces to symbolize."
-
-       So the board under the title is shared ground with a different game played at each
-       end. Checker Town's draughts lie FLAT — they are discs on a board, so they take the
-       board's own foreshortening and read as ellipses. Chess City's pieces STAND, so they
-       are upright glyphs with a cast shadow beneath. That contrast is the point: one town
-       plays a game you look down on, the other plays a game that looks back at you.
-
-       The chess pieces take their colors from the CHESS CANON tokens
-       (_sass/_pjcc-22-chess-canon.scss), never their own — so "white" and P&JCC's purple
-       "black" match every real board on the site. Restyling is a token edit, as always.
-       Filled glyphs only (♟♜♞): the outline forms (♙♖♘) will not take a fill.
-
-       Everything here is static paint inside an aria-hidden layer — no animation, no
-       hit target, nothing for a screen reader to read out. {% endcomment %}
-  {% comment %} 2026-07-22, second pass (Nate): "put them closer together, as if they are
-       preparing for a physical battle. Same with the checker pieces; they are too spaced
-       out." Both towns were a scatter across their half of the board — decoration. Now
-       each is a HUDDLE: within a town the pieces stand a piece-width apart and the front
-       row overlaps the back, and the two towns have moved in off the rim toward each
-       other. The board reads as a stand-off with a gap in the middle rather than as
-       texture at both edges.
-
-       The cast is his too: white Queen, black King, white Bishop. King is the tallest and
-       centered, the two whites flank it — one back, one front. "Black" is the CANON purple
-       (--piece-b-fill), same as every board on the site; say the word and I'll fork a
-       literally-black one for this hero only. {% endcomment %}
+  {% comment %} ── THE TWO TOWNS, IN THEIR OWN PIECES ──────────────────────────
+         The board under the title is shared ground with a different game at each end.
+         Checker Town's draughts lie FLAT — discs taking the board's foreshortening, so they
+         read as ellipses. Chess City's pieces STAND — upright glyphs with a cast shadow.
+         That contrast is the point: one town plays a game you look down on, the other plays
+         a game that looks back at you.
+         ⚠ The chess pieces take the CHESS CANON tokens (_sass/_pjcc-22-chess-canon.scss),
+         never their own, so "white" and P&JCC's purple "black" match every real board on
+         the site. Restyling is a token edit.
+         ⚠ FILLED GLYPHS ONLY (♟♜♞) — the outline forms (♙♖♘) will not take a fill.
+         Everything here is static paint inside an aria-hidden layer. {% endcomment %}
+  {% comment %} Each town is a HUDDLE, not a scatter: within a town the pieces stand a
+         piece-width apart and the front row overlaps the back, and both towns sit in off the
+         rim toward each other, so the board reads as a stand-off with a gap in the middle
+         rather than texture at both edges.
+         The cast is white Queen, black King, white Bishop — the King is tallest and centered,
+         the two whites flank it, one back and one front. "Black" is the canon purple
+         (--piece-b-fill), same as every board on the site. {% endcomment %}
   <div class="hero-pieces" aria-hidden="true">
     <span class="hp hp-ck hp-ck--r" style="--x:29%;  --b:24px; --w:17px; --o:0.34"></span>
     <span class="hp hp-ck hp-ck--b" style="--x:32.5%;--b:16px; --w:22px; --o:0.44"></span>
     <span class="hp hp-ck hp-ck--r" style="--x:35.5%;--b:5px;  --w:27px; --o:0.52"></span>
-    {%- comment -%} 2026-07-22 (Nate): "move the bottom black checker a little higher, and
-         to the left so it has its own room but it's also on the board." Was 30.5% / 1px —
-         tucked under the red one and sitting on the board's very front lip. 26% / 7px
-         gives it clear air on both sides and puts a rank of squares underneath it.
-    {%- endcomment -%}
+    {%- comment -%} ⚠ The bottom black checker needs clear air on both sides AND a rank of
+             squares underneath it — tucked lower it sits on the board's very front lip and reads
+             as falling off. {%- endcomment -%}
     <span class="hp hp-ck hp-ck--b" style="--x:26%;  --b:7px;  --w:29px; --o:0.5"></span>
     {%- comment -%} --w is a HEIGHT for these (the art shares a 60x130 viewBox), and the
          ceiling is not taste, it is the world line: measured on the live hero, the tallest
          piece clears the bottom of CHECKER TOWN -> CHESS CITY by 9px at these sizes and
          COLLIDES at the next step up. So the pieces grew by dropping --b as much as they
          gained in height — bigger against the bigger squares, same headroom. {%- endcomment -%}
-    {%- comment -%} --o was 1, then 0.85, then 0.72, now 0.55 (2026-07-24, Nate keeps asking
-         for "a little more transparent"). The checkers sit at 0.34–0.52; each step lets more
-         sky graze the fill so the pieces breathe the checkers' air — full 0.5 would turn ivory
-         to slate, so 0.55 (2026-07-24) sits just above the top of the checkers' range. The
-         black KING fights this: more transparency fades it into a night sky, so it gets its
-         own treatment — a white keyline — to keep it standing out (see .hp-cs--b below). {%- endcomment -%}
+    {%- comment -%} ⚠ --o is tied to the CHECKERS' range, not chosen alone: they sit at
+             0.34–0.52, so this must stay just above the top of that range — the pieces breathe
+             the checkers' air, and a full 0.5 turns ivory to slate.
+             ⚠ The black KING fights transparency: more of it fades him into a night sky, so he
+             gets a white keyline instead (.hp-cs--b below). {%- endcomment -%}
     <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.55">{% include chess-piece.html piece='bishop' side='w' %}</span>
     <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.55">{% include chess-piece.html piece='king'   side='b' %}</span>
     <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.55">{% include chess-piece.html piece='queen'  side='w' %}</span>
   </div>
-  {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
-       title; at poster size the first line no longer fits, so the break landed mid-phrase
-       and the title read "Princess and the / Journey / to Chess City". `text-wrap:balance`
-       in the stylesheet lets the browser choose even lines at whatever size the clamp
-       lands on, which is the only thing that works across a 360px phone and a 2560px
-       display. {% endcomment %}
-  {% comment %} FUN FLAIR (2026-07-22, Nate: "give the hero title a fun flair"). Each WORD is
-       its own .ht-w span so it can carry a gentle tilt. (Its per-word GLINT — a bright ::after
-       copy revealed through a sweeping mask band — was removed 2026-07-23; the data-w attrs
-       below are now dormant but kept on the spans so the glint is a one-edit restore.) The ✦
-       are decorative twinkles. aria-label carries the clean title so a screen reader hears it
-       once, not the spans / sparkles. Styles: .ht-w / .ht-spark / @keyframes htTwinkle below. {% endcomment %}
+  {% comment %} ⚠ NO <br> IN THE TITLE. A hard break is tuned to one size; at poster size
+         it lands mid-phrase and the title reads "Princess and the / Journey / to Chess City".
+         `text-wrap:balance` in the stylesheet lets the browser pick even lines at whatever
+         size the clamp gives it — the only thing that works from a 360px phone to a 2560px
+         display. {% endcomment %}
+  {% comment %} FUN FLAIR — each WORD is its own .ht-w span so it can carry a gentle tilt,
+         and the ✦ are decorative twinkles. aria-label carries the clean title so a screen
+         reader hears it once, not the spans and sparkles.
+         ⚠ The data-w attributes are DORMANT on purpose: they fed a per-word glint that is
+         retired, and they stay so the glint is a one-edit restore. Styles: .ht-w / .ht-spark
+         / @keyframes htTwinkle below. {% endcomment %}
   <h1 class="hero-title" aria-label="Princess and the Journey to Chess City">
-    {%- comment -%} ⚑ THE FAULTY BULB (2026-08-10, Nate: "make the 'i' in 'princess' twitch
-         ever-so-slightly — like a light up sign that has a faulty bulb").
-
-         ⚠⚠ IT DIMS; IT DOES NOT DROP OUT, AND THAT DISTINCTION IS LOad-BEARING. The other
-         flickering `i` on this page — in "an animated series in the mak*i*ng" below — is the
-         ONLY door to /classified/, and it works by going `visibility: hidden` so the letter
-         vanishes completely. If this one vanished too, the site would have two identical
-         disappearing i's and the secret would read as a site-wide tic rather than a signal.
-         A bulb that browns out and comes back is a different event from a bulb that is gone,
-         and a reader who notices both can still tell which one is a door.
-
-         ⭐ `opacity` is safe HERE and would not be on the splash: this title is solid gold
-         with a text-shadow extrude, not a `background-clip: text` fill — inside one of those,
-         `opacity` on a child does nothing at all and `visibility` is the only lever that
-         reaches the glyph. [[text-clip-glyph-technique]]
-
-         ⚠ `<i>` for the letter, with font-style: inherit — the tag is the shortest thing that
-         can carry the class, and without the reset it would render italic inside a display
-         title. Same trick, same reason, as .tg-x-glyph. {%- endcomment -%}
+    {%- comment -%} ⚡ THE FAULTY BULB — the "i" in Princess twitches ever so slightly, like a
+             lit sign with a bad bulb.
+             ⚠⚠ IT DIMS; IT DOES NOT DROP OUT, AND THAT DISTINCTION IS LOAD-BEARING. The other
+             flickering "i" on this page — in "an animated series in the mak*i*ng" below — is the
+             ONLY door to /classified/, and that one goes to `opacity: 0`, vanishing completely.
+             If this one vanished too the site would have two identical disappearing i's and the
+             secret would read as a site-wide tic rather than a signal. A bulb that browns out
+             and comes back is a different event from a bulb that is gone.
+             ⚠ Nothing here dips below 0.42; a letter that goes to 0 is the other i's job.
+             ⚠ `<i>` for the letter, with font-style: inherit — the shortest tag that can carry
+             the class, and without the reset it renders italic inside a display title. Same
+             trick, same reason, as .tg-x-glyph. {%- endcomment -%}
     <span class="ht-w" data-w="Princess">Pr<i class="ht-bulb">i</i>ncess</span>
     <span class="ht-w" data-w="and">and</span>
     <span class="ht-w" data-w="the">the</span>
@@ -302,53 +248,35 @@ layout: default
     <i class="ht-spark ht-spark--4" aria-hidden="true">&#10022;</i>
   </h1>
 
-  {%- comment -%} REFOCUSED to the WORLD 2026-07-24 (Nate, "commit it to the world"). Was a
-       games/site pitch ("Real chess and more…"); now it LEADS with the show — the animated
-       series, the destination — and puts the arcade second, matching this page's actual job.
-       It also became the new home of the flickering-"i" DAY door to /classified/ (rehomed from
-       the cut studio tagline below; the ✦ star in town-sky stays the night door). The visible
-       egg is aria-hidden; an .sr-only "i" beside it keeps "making" whole for screen readers.
-       Flicker CSS = `.hero-lede .tg-x*` in the style block below, reusing @keyframes tgx-radio. {%- endcomment -%}
+  {%- comment -%} The lede LEADS with the show — the animated series, the destination — and
+         puts the arcade second, matching this page's job.
+         ⚠ It also hosts the flickering-"i" DAY door to /classified/ (the ✦ star in town-sky is
+         the night door). The visible egg is aria-hidden; an .sr-only "i" beside it keeps
+         "making" whole for screen readers. Flicker CSS = `.hero-lede .tg-x*` in the style
+         block below, reusing @keyframes tgx-radio. {%- endcomment -%}
   <p class="hero-lede" data-hb>An animated series in the mak<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>ng — and a free chess arcade set in its world.</p>
 
-  {%- comment -%} THE STUDIO TAGLINE CYCLE was CUT here 2026-07-24 (Nate, "commit it to the
-       world"). It read Chess · Blog · Podcast · Academy · Games · Animation · "A Million
-       Stories to Tell" — the STUDIO's output menu, a front-door pitch left over from when this
-       page WAS the site's front door (that moved to index.md 2026-07-23). On the world landing
-       it spoke for McPuppy, not for Princess's world, so it competed with the page's one job.
-       The flickering-"i" /classified/ DAY door it carried is rehomed into the lede above (the
-       night ✦ star is unchanged in town-sky). The .studio-tagline / .tagline-* CSS stays in
-       _pjcc-04-flair.scss — the retired splash layout still references it. Restore the cycle
-       from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
+  {%- comment -%} ⚠ The studio tagline cycle is gone from this page, but the .studio-tagline
+         / .tagline-* CSS STAYS in _pjcc-04-flair.scss — the retired splash layout still
+         references it. {%- endcomment -%}
 
-  {% comment %} ── THE WORLD LINE — removed 2026-07-23 (Nate, hero-declutter) ────────────
-       This hero once carried two named links, "Checker Town → Chess City", with a quiet
-       arrow between them — the text that replaced the deleted flat CSS skyline (2026-07-21).
-       Nate cut the links and the arrow in the declutter pass. Both places stay reachable one
-       hop deeper, via the Locations world-door below (→ /locations/). Restore either the two
-       links or the older skyline from git: git show <prev>^ -- _layouts/home.html {% endcomment %}
 
-  {% comment %} (THE SIGIL BLOOM removed 2026-07-23, Nate, hero-declutter pass — the
-       ACCcccccc carving that bloomed over the poster every 26s at night is gone: markup
-       here, its CSS (.hero-sigil) and its JS below all removed. The .studio-drift-sigil /
-       .pjcc-sigil / .sg-* styles stay in _pjcc-02-studio.scss for the retired splash layout.
-       Restore the hero instance from git: git show <prev>^ -- _layouts/home.html {% endcomment %}
+  {% comment %} ⚠ The hero's sigil bloom is gone (markup, CSS and JS), but the
+         .studio-drift-sigil / .pjcc-sigil / .sg-* styles STAY in _pjcc-02-studio.scss for
+         the retired splash layout. {% endcomment %}
 </section>
 
-{% comment %} ── THE WORLD (2026-07-22) — the reason the P&JCC drawer link exists. P&JCC is
-     the fifth drawer link now, and its job is the WORLD, not the games (Play, Gauntlet and
-     Academy each have their own link). So the landing leads with three big doors into it —
-     Characters · Locations — right under the hero. (Fan Art was the third until 2026-08-19.) {% endcomment %}
+{% comment %} ── THE WORLD — the reason the P&JCC drawer link exists. Its job is the WORLD,
+     not the games (Play, Gauntlet and Academy each have their own link), so the landing
+     leads with big doors into it — Characters · Locations — right under the hero. {% endcomment %}
 <section class="home-world" aria-labelledby="h-world" data-reveal>
   <h2 id="h-world" class="sr-only">Explore the World</h2>
   <style>
-  /* TOKEN-ADOPTED 2026-07-23 (the adoption pass). The values that are RHYTHM, TYPE, RADIUS
-     and MOTION now read the design tokens (_pjcc-01-core.scss): spacing → --space-*, corner
-     → --r-lg, name/sub type → --step-0/--step--1, hover → --dur-fast/--ease-out. Only the
-     BRAND look stays literal — the purple gradient, the gold edge, the icon's gold glow, and
-     the tuned lift/hover shadows — because color and signature glow are identity, geometry is
-     not. The rhythm nudges are ≤2px (14→16, 22→24, 30→32) and snap the card onto the site's
-     one scale; the type steps make the name/sub fluid instead of frozen. */
+  /* ⚠ RHYTHM, TYPE, RADIUS and MOTION read the design tokens (_pjcc-01-core.scss):
+       spacing → --space-*, corner → --r-lg, name/sub type → --step-0/--step--1, hover →
+       --dur-fast/--ease-out. Only the BRAND look stays literal — the purple gradient, the
+       gold edge, the icon's gold glow, the tuned lift/hover shadows — because color and
+       signature glow are identity; geometry is not. */
   .home-world { max-width:820px; margin:var(--space-6) auto var(--space-2); padding:0 var(--space-4); }
   /* ⚑⚑ TWO DOORS, CENTERED, AT THE WIDTH THREE WOULD HAVE BEEN (2026-08-19). Fan Art came
      out, and two cards left in a three-column grid is a hole on the right rather than a
@@ -388,46 +316,20 @@ layout: default
       <span class="hw-name">Locations</span>
       <span class="hw-sub">Wander the world</span>
     </a>
-    {% comment %} ⚑⚑ THE FAN ART DOOR CAME OUT 2026-08-19. Nate: *"Let’s take out the fan art
-         page for now — we’ll unveil that when PJCC is actually a thing. Right now it’s more of
-         a concept."* Two doors now, and the grid below was re-columned WITH this cut rather
-         than left at three — two cards in a three-column grid is a hole, not a centered pair.
-         Restoring it is this block plus one number in the grid rule. {% endcomment %}
+    {% comment %} ⚠ TWO DOORS, AND THE GRID'S COLUMN COUNT IS TIED TO THAT. Fan Art was the
+             third until it came out; the grid was re-columned with the cut rather than left at
+             three, because two cards in a three-column grid is a hole, not a centered pair.
+             Adding a door back means this block plus one number in the grid rule. {% endcomment %}
   </div>
 </section>
 
-{% comment %} ── 1b. THE ONE CTA — the Gauntlet ─────────────────────────────────────
-     2026-07-21. This was two equal cards, Park Tables and the Gauntlet side by side
-     (2026-07-17: "the two ways to play"). Two equal doors is a menu, and a front door
-     that offers a stranger two choices has made none — through-line #7 asks for one
-     promise and ONE call.
-
-     The Gauntlet wins that slot on the merits. It is real chess against a ladder you
-     climb, it needs no account, it works offline, and it REMEMBERS you: the arch is
-     dressed from localStorage before you touch anything — your floor's boss color and
-     piece, the grandeur tier your climb has earned, ten pips showing exactly where you
-     stopped. That is the most alive thing on the site, and on a front door it is worth
-     more than a second box beside it.
-
-     Park Tables is not gone, it is DEMOTED to the line underneath, because it is
-     correspondence chess behind a Supabase sign-in — a fine second move and the wrong
-     thing to ask a stranger for first. Its canonical drawing stays as the band's art,
-     win-glint and all.
-
-     The anchor keeps id="gauntlet-door" and its inner ids or the hydration script
-     silently stops dressing it. It also FINALLY carries .gdoor-whisper: the script has
-     set that element since it was written, but the markup never had one, so "Floor N of
-     10" has never appeared on this page. Step 1 deferred adding it to a card that was
-     about to be replaced; this is the replacement. {% endcomment %}
-{%- comment -%} THE GAMES CTA, DEMOTED to a quiet line (2026-07-24, Nate "commit it to the
-     world"). This was the big Gauntlet door + Park Tables pair — the loudest thing on a page
-     whose job is the WORLD, and redundant with the four games links already in the drawer (Play
-     Now, Gauntlet, Puzzles, Games). Now one subtle nudge. The Gauntlet progress script
-     below still runs — it sets window.__gauntletProg for the ticker — and its door-dressing
-     half no-ops now that #gauntlet-door is gone (it guards on the missing element).
-     ⛑ 2026-08-19 that script is /assets/js/pjcc-gauntlet-door.js, shared with the front door
-     and the games hall; this page's own copy of it is deleted.
-     Restore the two doors from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
+{%- comment -%} The games CTA is one quiet nudge, not a door — this page's job is the
+     WORLD, and the drawer already carries four games links (Play Now, Gauntlet, Puzzles,
+     Games).
+     ⚠ The Gauntlet progress script below STILL RUNS — it sets window.__gauntletProg for the
+     ticker. Its door-dressing half no-ops here because #gauntlet-door is not on this page
+     (it guards on the missing element). That script is /assets/js/pjcc-gauntlet-door.js,
+     shared with the front door and the games hall. {%- endcomment -%}
 <section class="home-play-nudge" aria-labelledby="h-play" data-reveal>
   <h2 id="h-play" class="sr-only">Play Chess</h2>
   <a class="home-play-btn" href="{{ '/games/' | relative_url }}">
@@ -437,34 +339,21 @@ layout: default
   </a>
 </section>
 
-{% comment %} ── 1c. THE STUDIO IS AWAKE — MOVED TO THE STUDIO'S OWN PAGE, 2026-08-28 ──
-     Nate: "Can we take the PJCC desk lamp and move it to the McPuppy page somewhere near the
-     top? That's a great feature and also promotes the blog."
-
-     ⭐ IT IS A STUDIO SIGNAL AND IT WAS ON THE WRONG PAGE, which is the whole reason this is
-     a MOVE and not a copy. The band answers one question — is anybody still building this —
-     and it answered it here, on /pjcc/, a page that is itself HIDDEN behind the eggs
-     [[slow-roll-cast]]. A proof-of-life almost nobody can reach is not proof of anything.
-     /projects/ is the page about the studio, it is in the drawer, and it is where somebody
-     wondering whether this thing is alive actually lands.
-
-     WHAT WENT: the lamp, "Building in the open", the newest post with its date, and
-     "Read the blog →" — the whole band, for the reason the 2026-08-04 note on index.md
-     gives about the front door's copy: the lamp is the PROOF and the label is the CLAIM, and
-     a claim with its proof taken out is just a claim. This page keeps the world; the studio
-     keeps the desk.
-     ⚠ /pjcc/ HAS NO BLOG LINK OF ITS OWN NOW. That is not an oversight — the drawer carries
-     Blog on every page of the site, and this page's job is the world, not the build log.
-     Restore the band from git: git show <this commit>^ -- _layouts/home.html {% endcomment %}
+{% comment %} ── THE STUDIO IS AWAKE lives on /projects/, not here ─────────────────
+     ⭐ It is a STUDIO signal and this is the world's page. The band answers one question —
+     is anybody still building this — and /pjcc/ is itself hidden behind the eggs, so a
+     proof-of-life almost nobody can reach proves nothing. /projects/ is in the drawer and
+     is where somebody wondering actually lands. Its CSS went with it.
+     ⚠ /pjcc/ HAS NO BLOG LINK OF ITS OWN, AND THAT IS DELIBERATE — the drawer carries Blog
+     on every page; this page's job is the world, not the build log. {% endcomment %}
 <style>
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
-/* Poster-first (2026-07-17 Nate): more sky above, the title low and large over the
-   horizon. The two play-doors no longer live in here — they're .home-plays below — so
-   the hero is just sky · title · horizon now. */
+/* Poster-first: more sky above, the title low and large over the horizon. The
+   play-doors are .home-plays below, not in here, so the hero is sky · title · horizon. */
 .home-hero { position: relative; display:flex; flex-direction:column; justify-content:flex-end;
   min-height:296px; }
-/* top-CENTER now, quieter (Nate 2026-07-16: middle + 15% more transparent) — the top row
-   reads park table (left) · plate (center) · Gauntlet door (right) */
+/* top-CENTER and quiet — the top row reads park table (left) · plate (center) ·
+   Gauntlet door (right) */
 .hero-eyebrow { position:absolute; top:14px; left:50%; transform:translateX(-50%); margin:0;
   font-family:'Share Tech Mono',monospace;
   font-size:9px; letter-spacing:2px; color:#8a72c0; border:1px solid rgba(138,114,192,0.4);
@@ -476,31 +365,33 @@ layout: default
 /* the lede — the one plain sentence on the first screen. Sized between the title and
    the tagline so it reads as the title's answer rather than as another headline, and
    width-capped so it breaks into two short lines instead of one long one. */
-.hero-lede { margin:var(--space-3) auto 0; max-width:34ch; text-wrap:balance;  /* 12px = --space-3, exact (adoption pass, 2026-07-23) */
+.hero-lede { margin:var(--space-3) auto 0; max-width:34ch; text-wrap:balance;  /* 12px = --space-3, exact */
   font-size:15px; line-height:1.45; color:#f3ecff;
-  /* LIT-UP "brite-lite" glow (2026-07-24, Nate) — the lede reads like a warm lit marquee, so the
-     hidden "i" dropping out looks like a bulb flickering OFF, not just a gap. STATIC (no animated
-     shadow — the perf rule); the "i"'s own visibility flicker also hides this inherited glow on
-     that one letter. Warm incandescent stack: crisp white core → amber bloom → wide halo, then
-     the dark drop keeps it legible on the pale day sky. */
+  /* LIT-UP "brite-lite" glow — the lede reads like a warm lit marquee, so the hidden "i"
+       dropping out looks like a bulb flickering OFF, not just a gap. Warm incandescent stack:
+       crisp white core → amber bloom → wide halo, then the dark drop keeps it legible on the
+       pale day sky.
+       ⚠ STATIC — no animated shadow, per the perf rule. The "i"'s own flicker takes this
+       inherited glow down with it, because opacity fades the whole letter and its glow. */
   text-shadow:0 0 1px rgba(255,255,255,0.9), 0 0 6px rgba(255,224,150,0.5),
     0 0 15px rgba(255,198,108,0.32), 0 1px 6px rgba(8,4,24,0.8); }
 
-/* the flickering-"i" DAY door to /classified/, REHOMED here 2026-07-24 from the cut studio
-   tagline. Reuses the GLOBAL @keyframes tgx-radio (_pjcc-04-flair.scss). The lede is plain text
-   (not background-clip:text like the tagline was), so `visibility` simply drops the glyph out =
-   the same "signal dropout" read. Night settles it (the ✦ star takes the night shift); hover /
-   focus and reduced-motion steady it too. The <a> stays visible so it keeps its hit box; only
-   the inner <i> glyph flickers. An .sr-only "i" sits beside it (see the markup) so screen
-   readers still hear "making". */
-/* ══ THE FAULTY BULB — the i in Princess (2026-08-10) ═════════════════════════════
-   Two quick brown-outs, then eleven seconds of nothing. The gap is the whole effect: a
-   sign with a bad bulb is fine most of the time, which is exactly why you look up when it
-   isn't. `steps(1, end)` so it SNAPS between levels — a bulb does not crossfade.
-   Nothing here dips below 0.42; "ever-so-slightly" is his word and a letter that goes to
-   0 is the other i's job (see the markup note above).
-   ⚠ Opacity only, one 8px glyph, so it composites and never repaints. And it stops dead
-   under both quiet switches, like every other ambient thing on this site. */
+/* The flickering-"i" DAY door to /classified/. Reuses the GLOBAL @keyframes tgx-radio
+   (_pjcc-04-flair.scss).
+   ⚠⚠ IT ANIMATES `opacity`, NOT `visibility` — `visibility` cannot be composited and cost
+   36 ms/s of main-thread repaint here. This lede is plain text, NOT background-clip:text,
+   which is the only reason opacity reaches the glyph at all; inside a text clip it would
+   silently do nothing. See _pjcc-04-flair.scss.
+   Night settles it (the ✦ star takes the night shift); hover, focus and reduced-motion
+   steady it too. The <a> stays visible so it keeps its hit box; only the inner <i> flickers.
+   An .sr-only "i" sits beside it so screen readers still hear "making". */
+/* ══ THE FAULTY BULB — the i in Princess ═════════════════════════════════
+   Two quick brown-outs, then eleven seconds of nothing. The gap IS the effect: a sign with
+   a bad bulb is fine most of the time, which is exactly why you look up when it isn't.
+   `steps(1, end)` so it SNAPS between levels — a bulb does not crossfade.
+   ⚠ Nothing here dips below 0.42; a letter that goes to 0 is the other i's job.
+   ⚠ Opacity only, one 8px glyph, so it composites and never repaints. It stops dead under
+   both quiet switches, like every other ambient thing on this site. */
 .ht-bulb { font-style: inherit; display: inline-block;
   animation: ht-bulb 11s steps(1, end) infinite; }
 @keyframes ht-bulb {
@@ -522,13 +413,12 @@ html.sky-night .hero-lede .tg-x-glyph { animation:none; opacity:1; }
 @media (prefers-reduced-motion: reduce) { .hero-lede .tg-x-glyph { animation:none; opacity:1; } }
 html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; opacity:1; }
 
-/* THE PLAY NUDGE — the games CTA, demoted 2026-07-24 (was the big Gauntlet + Park Tables
-   doors). One quiet line on the world page; games already have four drawer links. */
-/* THE PLAY BUTTON — the games' one clear entry from the world page (2026-07-24, Nate: "the games
-   and gauntlet are kind of hard to find off the home page"). A single modest pill to the arcade
-   hub (/games/, where the Gauntlet + Park Tables + everything live) — findable, but not the two
-   big competing doors the compass pass removed. Styled like the .hw-door world doors above so the
-   page reads as one system: explore the world (three doors), then play (one button). */
+/* THE PLAY NUDGE — one quiet line on the world page; games already have four drawer
+   links. */
+/* THE PLAY BUTTON — the games' one clear entry from the world page: a single modest pill
+   to the arcade hub (/games/, where the Gauntlet, Park Tables and everything live).
+   Findable, but not a pair of big doors competing with the world. Styled like the .hw-door
+   world doors above so the page reads as one system — explore the world, then play. */
 .home-play-nudge { text-align:center; margin:var(--space-5) 0 var(--space-6); }
 .home-play-btn { display:inline-flex; align-items:center; gap:12px; text-decoration:none;
   padding:12px 20px; border-radius:var(--r-md);
@@ -544,41 +434,15 @@ html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; opacity:1; }
 .hpb-arrow { color:#F5C518; font-size:1.1rem; }
 @media (prefers-reduced-motion: reduce){ .home-play-btn { transition:none; } }
 
-/* (.hero-world — the "Checker Town → Chess City" links + the arrow between — REMOVED
-   2026-07-23, Nate, hero-declutter pass. Both places remain reachable via the Locations
-   world-door (→ /locations/). Restore from git: git show <prev>^ -- _layouts/home.html) */
 
-/* ── THE TAGLINE in the hero (2026-07-21) ──────────────────────────────────────────
-   The cycle's look is entirely _sass/_pjcc-04-flair.scss (.studio-tagline / .tagline-*),
-   shared with the splash. Only placement is set here: on the splash it is a top-of-page
-   banner, here it is the poster's subtitle and sits directly under the title.
-   The 110px height is the cycle's own — every word is absolutely positioned inside it,
-   so the block cannot collapse and the words cannot push each other around. */
-/* the tg-x link needs no pointer-events re-arm here: that rule exists on the splash only
-   because .studio-content turns pointers off for the whole stage. Nothing does that here. */
 
-/* (.hero-sigil — the SIGIL BLOOM's CSS — removed 2026-07-23 with its markup + JS, Nate,
-   hero-declutter pass. Restore from git: git show <prev>^ -- _layouts/home.html) */
 
-/* ── THE DOOR — the look lives in _sass/_pjcc-21-gauntlet-door.scss ────────────────
-   2026-07-21: the ~120-line inline copy of .gdoor that stood here is DELETED. It was
-   one of three (this, games.md, and the shared partial), kept in sync by hand and
-   annotated "keep in sync" in all three — which is a standing invitation to drift, and
-   they had: games.md is 72x92 while this and the partial were 78x100.
-
-   Verified byte-for-byte equivalent before removing: the door was rendered across all
-   six grandeur tiers with the inline block and with the partial alone, and every
-   computed property of .gdoor / -arch / -door / -glyph / -knob / -seam / -pips /
-   -whisper / arch::after matched exactly. The partial is now the ONLY source for this
-   page. games.md keeps a small block of its own, but only the SIZE overrides that make
-   its door match the Gambit altar standing next to it — not a second copy of the look.
-
-   One deliberate gain: the partial puts position:relative on .gdoor, which this copy
-   lacked. The pips whisper is absolute, so here it used to anchor to .play-card; now it
-   anchors to the door itself, which is what it was written for.
-
-   (The .hero-door absolute positioning went 2026-07-17 when the door moved out of the
-   hero corner into .home-plays below, where .play-art hosts it.) ── */
+/* ── THE DOOR — the look lives in _sass/_pjcc-21-gauntlet-door.scss ───────────────
+   ⚠⚠ THE PARTIAL IS THE ONLY SOURCE FOR THIS PAGE. There were once three hand-synced copies
+   (here, games.md, the partial), each annotated "keep in sync", and they HAD drifted —
+   72x92 against 78x100. Never re-inline the look.
+   games.md keeps a small block of its own, but only the SIZE overrides that make its door
+   match the Gambit altar beside it — not a second copy of the look. */
 
 /* ── Rain retired from the hero (2026-07-12 Nate: "all weathers on all screens").
    The rain, the mist, the intensity random-walk and the lightning flash are now
@@ -603,22 +467,14 @@ html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; opacity:1; }
 
 @media (prefers-reduced-motion: reduce) { .hero-skyflash { display:none; } }
 
-/* (#9 the black letterbox bands were removed 2026-07-17 — Nate: "drop the intro, the
-   black intro with the orange text." The page no longer opens behind black bars; the
-   title simply rises up once (see .hero-title animation below). Restore from git if
-   the cinematic open is ever wanted back.) */
 
-{% comment %} (#19 board-grid underlay removed 2026-07-10 — restore from git if missed.) {% endcomment %}
 
-/* ── #16 the sky keeps town time — played UP 2026-07-11. Four looks, all static
-   paint: the hero wears a different sky per phase, a sun rises and sets, the
-   moon takes the night watch. ── */
-/* ── SKY COLLAPSED 2026-07-18 (Nate: "collapse the two systems") — the hero paints NO
-   sky of its own now. It's transparent, and the ONE shared town sky (its gradient +
-   arcing sun/moon + stars + clouds, _pjcc-20-town-sky.scss) shows straight through it —
-   so there is exactly one sun, site-wide. The old .hero-sky / .hs-orb / .hs-star and the
-   per-phase .home-hero gradients + clouds are all deleted. A soft floor-scrim keeps the
-   gold title legible on any phase. ── */
+/* ── THE HERO PAINTS NO SKY ─────────────────────────────────────────
+   It is transparent, and the ONE shared town sky (gradient + arcing sun/moon + stars +
+   clouds, _pjcc-20-town-sky.scss) shows straight through — so there is exactly one sun,
+   site-wide. ⚠ Do not give the hero its own .hero-sky / orb / star / per-phase gradient
+   again; that is the two-sun bug. A soft floor-scrim keeps the gold title legible on
+   any phase. ── */
 .home-hero { background:transparent; }
 .home-hero::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
   border-radius:inherit; background:linear-gradient(180deg, transparent 46%, rgba(8,6,24,0.30) 100%); }
@@ -626,9 +482,8 @@ html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; opacity:1; }
 html.sky-night .home-hero { border-color:#2a1d5e; }
 
 
-/* #9 — the title simply RISES up once, calm and confident (2026-07-17 Nate: "drop the
-   intro… we can do without it"). The per-letter white-hot typing (its JS is gone below)
-   read as a 2000s intro gate; this is one quiet CSS animation, no gate, no JS. */
+/* #9 — the title simply RISES up once, calm and confident: one quiet CSS animation,
+   no gate, no JS. */
 .hero-title { animation:heroRise 0.9s cubic-bezier(.2,.8,.25,1) both; }
 @keyframes heroRise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 @media (prefers-reduced-motion: reduce) { .hero-title { animation:none; } }
@@ -636,28 +491,20 @@ html.reduce-flourish .hero-title { animation:none; }
 
 /* the board the title lands on — always there, quiet (non-animatic)
 
-   EIGHT FILES, BIGGER SQUARES (2026-07-22, Nate). It was a 64px conic tile on a 620px
-   board — 32px squares, NINETEEN of them across. That is not a chessboard, it is
-   graph paper: at that count the squares are smaller than the pieces standing on them
-   and the eye reads texture instead of a board.
+   ⚠⚠ EIGHT FILES AT EVERY WIDTH, AND IT TAKES TWO DECLARATIONS WORKING TOGETHER.
+   `background-size: 25% 100%` makes each conic tile a quarter of the width and the full
+   height, and one tile carries 2x2 squares — eight files exactly, at any screen size.
+   `aspect-ratio: 4/1` is what keeps them SQUARE: it ties height to width/4, the tile's own
+   width, from a 335px phone board to a 620px desktop one. A fixed pixel height can only be
+   right at ONE width. Fewer, bigger squares matter — at 32px the squares are smaller than
+   the pieces standing on them and the eye reads texture, not a board.
 
-   The count is now fixed at 8 no matter how wide the board gets, which takes two
-   changes working together. `background-size: 25% 100%` makes each conic tile a
-   quarter of the width and the full height, and one tile carries 2x2 squares — so
-   eight files, exactly, at every screen size. `aspect-ratio: 4/1` is what keeps them
-   SQUARE: it ties height to width/4, which is the tile's own width, so a tile is as
-   tall as it is wide and stays that way from a 335px phone board to a 620px desktop
-   one. A fixed pixel height could only be right at one width.
+   ⚠ transform-origin is the NEAR EDGE, so the board grows AWAY from you: the front rank —
+   the ground the pieces stand on — does not move when the board's height changes.
 
-   The board grew 96px -> 155px doing that, but it grows AWAY from you, not toward:
-   transform-origin is the near edge, so the front rank — the ground the pieces stand
-   on — has not moved a pixel. Two ranks show instead of three.
-
-   The fade is untouched and is doing more work than before (Nate: "use the fade
-   function to give it the same feel"). It is a MASK, written in percentages, so it
-   rescales with the board on its own: the squares dissolve before they reach any
-   edge, which is what keeps a hard-edged checker pattern from looking like a rug
-   dropped on the sky. Bigger squares would have shown that edge; they still don't. */
+   ⚠ The fade is a MASK written in PERCENTAGES, so it rescales with the board on its own.
+   The squares dissolve before they reach any edge, which is what keeps a hard-edged checker
+   pattern from looking like a rug dropped on the sky. */
 .hero-board { position:absolute; left:50%; bottom:40px; width:min(560px, 84%); aspect-ratio:4 / 1;
   transform:translateX(-50%) perspective(430px) rotateX(58deg); transform-origin:50% 100%;
   background:repeating-conic-gradient(rgba(200,170,255,0.10) 0% 25%, rgba(14,8,32,0.14) 0% 50%);
@@ -665,42 +512,30 @@ html.reduce-flourish .hero-title { animation:none; }
   -webkit-mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%);
   mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%); }
 
-/* (#10 "she brushes past and the title takes the bump" is gone — 2026-07-21. The class
-   that tilted it, .ht-nudge, was declared here but nothing has added it since its JS was
-   removed, so the bump has not happened in a long time. The transition that served it
-   went too; the title's entrance is the heroRise animation above. position:relative stays
-   — it is what the title's own stacking depends on.) */
-/* balance replaces the old hard <br> (2026-07-21): the browser picks even lines at
-   whatever size the clamp resolves to. max-width keeps the longest line from running the
-   full card width at desktop, which is what makes it read as a poster rather than a
-   headline. Browsers without text-wrap:balance simply wrap normally — no fallback needed. */
+/* ⚠ position:relative STAYS — the title's own stacking depends on it. */
+/* ⚠ text-wrap:balance, never a hard <br> — the browser picks even lines at whatever size
+   the clamp resolves to. max-width keeps the longest line off the full card width at
+   desktop, which is what makes it read as a poster rather than a headline. Browsers
+   without balance simply wrap normally; no fallback needed. */
 .hero-title { position:relative; text-wrap:balance; max-width:16ch; margin-left:auto; margin-right:auto; }
 
-/* ── THE TITLE CARD + ITS FUN FLAIR ─────────────────────────────────────────────────
-   (2026-07-22, Nate: "make the P&JCC title a fun text", then "give the hero title a fun
-   flair" → shimmer sweep + playful letters + twinkle sparkles.)
-
+/* ── THE TITLE CARD + ITS FUN FLAIR ───────────────────────────────────
    The film-logo treatment — Poppins gold, thick dark outline, a short extrude so it sits ON
-   the sky rather than in front of it — now lives on each WORD (.ht-w) instead of the whole
-   h1, because the flair needs per-word control: a gentle tilt (the per-word glint that used to
-   travel across the words was removed 2026-07-23). `paint-order: stroke fill` is still
-   load-bearing, exactly as in the chess canon:
-   without it the stroke paints ON TOP of the fill and eats inward, closing up the counters in
-   "e/o/ss". The stroke scales with the type (a fixed 5px is a hairline at 76px, a smear at
-   26px) and earns its keep on legibility too — the title sits over the shared town sky, gold
-   at dusk and pale at noon, and dark-outlined gold reads on both.
+   the sky rather than in front of it — lives on each WORD (.ht-w), not the whole h1, because
+   the flair needs per-word control.
 
-   TWO FLAIRS now, both built to stay cheap (the perf rule is transform/opacity):
-     · (SHIMMER SWEEP — a swept mask-band glint on a bright ::after copy of each word — was
-       REMOVED 2026-07-23, Nate, hero-declutter pass. The base word keeps its SOLID gold with a
-       text-shadow extrude, deliberately NOT background-clip:text, because text-shadow paints
-       OVER a clipped fill and would hide the gold. Restore the glint from git.)
-     · PLAYFUL LETTERS — each word carries a static ±0.9° tilt and a 1px up/down stagger.
-       (Straightened from ±1.5° by 40% on 2026-07-22, Nate: "too tilted.")
-       Static transforms, zero per-frame cost; reads as storybook hand-lettering.
+   ⚠⚠ `paint-order: stroke fill` IS LOAD-BEARING, exactly as in the chess canon — without it
+   the stroke paints ON TOP of the fill and eats inward, closing up the counters in "e/o/ss".
+   The stroke scales with the type: a fixed 5px is a hairline at 76px and a smear at 26px.
+   ⚠⚠ SOLID GOLD + text-shadow, deliberately NOT background-clip:text — text-shadow paints
+   OVER a clipped fill and would hide the gold entirely.
+
+   The flair, both built to stay cheap (transform/opacity only):
+     · PLAYFUL LETTERS — a static ±0.9° tilt and a 1px up/down stagger per word. Static
+       transforms, zero per-frame cost; reads as storybook hand-lettering.
      · TWINKLE SPARKLES — four ✦ around the lockup, fading and scaling on their own timers.
-   The h1 carries aria-label with the clean title, so a screen reader hears it once — not the
-   seven per-word spans or the decorative sparkles. ── */
+   The h1 carries aria-label with the clean title, so a screen reader hears it once, not the
+   seven per-word spans or the sparkles. ── */
 .hero-title { letter-spacing:0; }
 
 .ht-w {
@@ -716,12 +551,8 @@ html.reduce-flourish .hero-title { animation:none; }
 /* Safari/Chrome only ever needed the -webkit- form; Firefox 128+ ships unprefixed. */
 @supports (text-stroke: 1px black) { .ht-w { text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136; } }
 
-/* (the per-word GLINT — a bright ::after copy of each word revealed through a sweeping
-   diagonal mask band, plus its @keyframes htShine — was REMOVED 2026-07-23, Nate, in the
-   hero-declutter pass. The static per-word tilt/stagger below STAYS (it is not motion), and
-   the twinkle sparkles stay. Restore the glint from git: git show <prev>^ -- _layouts/home.html) */
-/* playful per-word tilt + stagger (the glint's travel order went with the glint, 2026-07-23).
-   nth-child 1..7 are the seven word spans; the four sparkles are children 8..11. */
+/* playful per-word tilt + stagger. ⚠ nth-child 1..7 are the seven word spans; the four
+   sparkles are children 8..11. */
 .ht-w:nth-child(1){ --rot:-0.9deg; --ty:1px;  }
 .ht-w:nth-child(2){ --rot:0.9deg;  --ty:-1px; }
 .ht-w:nth-child(3){ --rot:-0.9deg; --ty:1px;  }
@@ -741,28 +572,26 @@ html.reduce-flourish .hero-title { animation:none; }
 .ht-spark--4 { bottom:12%; right:22%; font-size:22px; animation-delay:2s;  }
 @keyframes htTwinkle { 0%,100% { opacity:.15; transform:scale(.6); } 50% { opacity:1; transform:scale(1); } }
 
-/* the quiet switches still the twinkle. The static per-word tilt stays — it is not motion.
-   (heroRise on the h1 is already gated by these two switches above. The glint's own
-   reduced-motion stops went with the glint itself, 2026-07-23.) */
+/* The quiet switches still the twinkle. The static per-word tilt stays — it is not motion.
+   heroRise on the h1 is already gated by these two switches above. */
 @media (prefers-reduced-motion: reduce) {
   .ht-spark { animation:none; opacity:.9; }
 }
 html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 
-/* ── THE TWO TOWNS' PIECES on the board (2026-07-22, Nate) ──────────────────────────
-   Why this is a SIBLING of .hero-board and not a child: the board is tipped away with
-   `perspective(430px) rotateX(58deg)`, and a transform applies to every descendant. Any
+/* ── THE TWO TOWNS' PIECES on the board ────────────────────────────────
+   ⚠⚠ THIS IS A SIBLING OF .hero-board, NOT A CHILD. The board is tipped away with
+   `perspective(430px) rotateX(58deg)`, and a transform applies to every descendant — any
    chess piece parented to it would be laid flat on its face along with the squares. The
    checkers WANT that foreshortening, so they fake it with a squashed ellipse instead of
-   inheriting it; the chess pieces must stand up, so they live outside the transform
-   entirely and are simply placed over the board's visible footprint.
+   inheriting it; the chess pieces must stand up, so they live outside the transform and are
+   placed over the board's visible footprint.
 
    That footprint is what this box is: the board declares 96px of height, but tipped 58°
-   through a 430px perspective it only covers about 52px on screen, measured from the same
-   40px baseline. Pieces are positioned by `bottom`, so each one stands on the surface
-   rather than hanging from the top of the box. --x is the position across the board, --b
-   how far back, --w the size, --o the transparency. Further back = smaller and fainter,
-   which is the only depth cue here — nothing moves. ── */
+   through a 430px perspective it covers about 52px on screen, from the same 40px baseline.
+   Pieces are positioned by `bottom`, so each stands on the surface rather than hanging from
+   the top. --x is position across the board, --b how far back, --w the size, --o the
+   transparency. Further back = smaller and fainter, the only depth cue here. ── */
 .hero-pieces { position:absolute; left:50%; bottom:40px; width:min(620px, 86%); height:52px;
   transform:translateX(-50%); pointer-events:none; z-index:0; }
 /* --w is the piece's size at desktop and --s the scale the viewport asks for (the phone
@@ -773,21 +602,17 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 .hp { --s:1; --d:calc(var(--w) * var(--s));
   position:absolute; left:var(--x); bottom:var(--b); opacity:var(--o); }
 
-/* CHECKER TOWN — draughts lying flat. 2026-07-22 (Nate): "less rounded on the edges …
-   more of a can-shape, with the height reduced." It was ONE squashed ellipse with a soft
-   shadow under it, which from any angle reads as a lozenge — a rounded pebble. A real
-   checker is a short cylinder: a flat top face, a straight wall, no roundover anywhere.
+/* CHECKER TOWN — draughts lying flat. A real checker is a short cylinder: a flat top face,
+   a straight wall, no roundover anywhere. One squashed ellipse with a soft shadow reads as
+   a lozenge — a rounded pebble — from any angle.
 
-   So the element is now only the TOP FACE (0.44 → 0.28 of the width: flatter, which is
-   also the "height reduced" — a can seen from above shows less of itself), and the wall
-   is built from stacked ZERO-BLUR box-shadows. Each step is the same ellipse offset a
-   fraction of a pixel further down, so their union has dead-straight sides and picks up
-   the ellipse's curve only where it must, at the bottom rim. A blurred shadow or a
-   border-radius here would put the roundover straight back.
-
-   Shadows paint in order, first on top, so the near-side steps come first: --ck-mid for
-   the lit upper wall, --ck-dk for the shaded lower wall, and only the last entry is
-   blurred — that one is the shadow the piece casts on the board. */
+   ⚠⚠ SO THE ELEMENT IS ONLY THE TOP FACE, and the wall is built from stacked ZERO-BLUR
+   box-shadows. Each step is the same ellipse offset a fraction of a pixel further down, so
+   their union has dead-straight sides and picks up the ellipse's curve only at the bottom
+   rim. A blurred shadow or a border-radius here puts the roundover straight back.
+   ⚠ Shadows paint in order, FIRST ON TOP, so the near-side steps come first: --ck-mid for
+   the lit upper wall, --ck-dk for the shaded lower wall. Only the LAST entry is blurred —
+   that one is the shadow the piece casts on the board. */
 .hp-ck { --t:calc(var(--d) * 0.17);                       /* the wall's height */
   width:var(--d); height:calc(var(--d) * 0.28); border-radius:50%;
   transform:translateX(-50%);
@@ -830,67 +655,48 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 /* the fills live in the canon (_pjcc-22-chess-canon.scss) with every other piece color
    on the site — all the hero owns is how big they are and what light they stand in. */
 .hp-cs .cpc { width:100%; height:100%; }
-/* BLACK on the banner, not canon purple (2026-07-22, Nate: "turn the purple pieces on the
-   banner to black"). This is a DELIBERATE, hero-only fork of --piece-b-fill and the only
-   one on the site: every real board still wears P&JCC purple for its dark side. It is a
-   banner, not a board — the piece here is scenery standing against a sky, and at 50px the
-   purple was already reading as black anyway. #12101a keeps a trace of the world's violet
-   in it so it sits in the picture instead of punching a hole in it; the pale --piece-b-line
-   contour is what keeps it a piece and not a smudge after dark.
-   LIFTED #12101a → #343140 (2026-07-22, Nate: "make the black king a little more gray"), then
-   PULLED BACK #343140 → #282531 (2026-07-22, Nate: "make the black king a little blacker, and
-   give it some white tracing to give it depth"). So the body is near-black again — violet
-   trace kept, B the highest channel — and it stops leaning on a gray body to separate from
-   the sky: the WHITE keyline below does that now, reading as a lit edge that gives the flat
-   silhouette some depth. Checked over night/dusk/day: the white trace pops it on the dark
-   skies, the dark body carries it on the pale day one. */
+/* ⚠⚠ BLACK ON THE BANNER, NOT CANON PURPLE — a DELIBERATE, hero-only fork of
+   --piece-b-fill and the ONLY one on the site. Every real board still wears P&JCC purple
+   for its dark side. This is a banner, not a board: the piece is scenery standing against
+   a sky, and at 50px the purple already read as black.
+   #282531 keeps a trace of the world's violet (B the highest channel) so it sits in the
+   picture instead of punching a hole in it. It does NOT lean on a gray body to separate
+   from the sky — the WHITE keyline below does that. Checked over night, dusk and day. */
 .hp-cs--b .cpc { fill:#282531; }
-/* the king's contour is a WHITE keyline (2026-07-22, Nate: "give it some white tracing to
-   give it depth"). This reverses the earlier dark-gray edge: once the body went blacker again
-   (#282531 above), a dark edge on a dark body closes up into a flat blob, so the trace goes
-   the other way — a crisp white line around the whole silhouette. On the night/dusk skies it
-   reads as a lit rim and lifts the piece off the background; on the pale day sky it fades, but
-   the dark body carries the separation there anyway. Two passes: a solid white keyline plus a
-   softer one to thicken it without a hard aliased step. The white pieces keep their own dark
-   --piece-w-line edge, so the two towns stay opposite — dark piece / white edge here, white
-   piece / dark edge there.
-   (2026-07-24, Nate: both white passes DIMMED a step — 0.8px#fff+0.75 → 0.7px@0.7+0.42 — so
-   the king's rim reads a little softer. Compounds with the pieces going to --o:0.55, so the
-   king is fainter overall now; hold the keyline here if it starts to vanish after dark.) */
+/* ⚠ The king's contour is a WHITE keyline, the opposite direction from the white pieces.
+   A dark edge on a dark body closes up into a flat blob; a crisp white line reads as a lit
+   rim on the night and dusk skies and lifts the piece off the background. On the pale day
+   sky it fades, but the dark body carries the separation there anyway. Two passes: a solid
+   keyline plus a softer one to thicken it without a hard aliased step.
+   The white pieces keep their own dark --piece-w-line edge, so the two towns stay opposite —
+   dark piece / white edge here, white piece / dark edge there.
+   ⚠ The rim compounds with --o:0.55, so the king is faint overall. Hold the keyline if it
+   starts to vanish after dark. */
 .hp-cs--b { filter:drop-shadow(0 0 0.7px rgba(255,255,255,0.7)) drop-shadow(0 0 0.7px rgba(255,255,255,0.42))
          drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
 
-{% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
-     extra compositing pass and Nate cut it in the lag sweep. The ♛-crowning finale
-     + #15 shop light went 2026-07-10. Restore any from git.) {% endcomment %}
-/* #20 — the veil (you were never meant to see this rule).
-   2026-07-14 (Nate): the rotating conic light that spun during the katakana flip
-   — his "light-up rotating squares" — is gone; too much animation for a whisper
-   of an egg. The flip keeps only this soft violet wash in and out. */
-/* 2026-07-25 (Nate: "fade it in, and fade it out … a little too stark"): the wash used to
-   only dim the CENTER at 34% with clear edges, so the instant English→kana swap underneath
-   was plainly visible = stark. It now covers the whole viewport enough to MASK the swap, and
-   fades slower (.7s), so the Japanese dissolves in and back out instead of snapping. The JS
-   swap fires at the fade's peak (its delays match this duration). */
+{% comment %} ⚠ No mix-blend-mode on the title — it forces an extra compositing pass and
+     was cut in the lag sweep. {% endcomment %}
+/* #20 — the veil (you were never meant to see this rule). The katakana flip keeps only a
+   soft violet wash in and out; a rotating conic light here is too much animation for a
+   whisper of an egg. */
+/* ⚠⚠ THE WASH EXISTS TO MASK THE SWAP. It covers the whole viewport, not just a dimmed
+   center — with clear edges the instant English→kana swap underneath is plainly visible and
+   reads as stark. It fades slowly (.7s) so the Japanese dissolves in and back out.
+   ⚠ THE JS SWAP FIRES AT THE FADE'S PEAK — its delays match this duration. Change one and
+   you must change the other. */
 .puri-veil { position:fixed; inset:0; z-index:12000; pointer-events:none; opacity:0; transition:opacity .7s ease;
   background:radial-gradient(circle at 50% 44%, rgba(46,28,86,0.92), rgba(12,8,22,0.82) 82%); }
 .puri-veil.is-on { opacity:1; }
 </style>
 
-{% comment %} (THE SIGIL BLOOM's JS removed 2026-07-23, Nate — the whole beat, markup + CSS
-     + this script, is gone. Restore from git: git show <prev>^ -- _layouts/home.html) {% endcomment %}
 
 {% comment %} Gauntlet progress (read-only): the ticker's BREAKING line and the desk's
-     local facts both read `window.__gauntletProg`, which this publishes.
+     local facts both read `window.__gauntletProg`, which this publishes. The ladder itself
+     lives in one file, /assets/js/pjcc-gauntlet-door.js.
 
-     ⛑ THE THIRD COPY OF THE LADDER LEFT ON 2026-08-19. This block carried its own NAMES /
-     ACCENTS / GLYPHS arrays and its own hydration, as did index.md and games.md — and two
-     thirds of it had been DEAD since 2026-07-24, when this page's Gauntlet door was demoted
-     to a text link: with no #gauntlet-door to find, everything after the guard no-opped and
-     only the __gauntletProg line still did anything. It all lives in one file now.
-
-     ⚠ NOT DEFERRED, AND THAT IS THE WHOLE REASON THE TAG SITS HERE rather than with the
-     other scripts. The ticker below reads __gauntletProg synchronously; a deferred script
+     ⚠⚠ NOT DEFERRED, AND THAT IS THE WHOLE REASON THE TAG SITS HERE rather than with the
+     other scripts. The ticker below reads __gauntletProg SYNCHRONOUSLY; a deferred script
      runs after every inline block on the page, so the line would just stop appearing and
      nothing would look broken. {% endcomment %}
 <script src="{{ '/assets/js/pjcc-gauntlet-door.js' | relative_url }}"></script>
@@ -899,8 +705,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 <section class="home-section home-section--cast" aria-labelledby="h-cast" data-reveal>
   <h2 id="h-cast" class="sr-only">Meet the Cast</h2>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
-       random four as CARDS (the town-square experiment was reverted 2026-07-10).
-       "Meet them all" + shuffle both live BELOW the grid. {% endcomment %}
+         random four as CARDS. "Meet them all" + shuffle both live BELOW the grid. {% endcomment %}
   <div class="char-row" id="home-char-row" data-show="4">
     {% for char in site.characters %}
     {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
@@ -919,21 +724,9 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   </div>
 </section>
 
-{% comment %} The Gambit moved to the Games page as a drawn altar-door (2026-07-15 Nate:
-     "make the Gambit a link like the gauntlet, on the Games Page… make it some sort of
-     drawing, and not text… remove it from the P&JCC page"). Its old quiet text link here
-     is gone; the entrance now lives beside the Gauntlet + Park Tables doors in games.md. {% endcomment %}
 
-{% comment %} The chess-glyph wire MOVED BACK INTO THE FOOTER 2026-07-15 (Nate: "move
-     the glyphs down into the black area below and cut the purple space"). Floating on
-     the town-sky gradient above the footer, those faint pieces read as "splotches";
-     inside the black footer band they're a subtle texture. Re-enabled there for the
-     home page only (see the .footer-ribbon-wrap rule in the style block below), and
-     this floating row is gone with its purple gap. {% endcomment %}
 <style>
-{% comment %} (#13 town square + #17 op-strip + #15 sea divider removed 2026-07-10 —
-     the cast is CARDS again; restore the square from git if ever missed.) {% endcomment %}
-.char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); margin-top: var(--space-2); }  /* adoption pass 2026-07-23: gap 14→16, margin 8=--space-2 exact */
+.char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); margin-top: var(--space-2); }  /* margin 8 = --space-2, exact */
 .home-shuffle { display: inline-flex; align-items: center; gap: 6px;
   background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
   border-radius: 999px; height: 26px; padding: 0 var(--space-3); cursor: pointer; font-size: 13px; line-height: 1;  /* 12px = --space-3 exact; 999px pill + 26px height stay literal */
@@ -944,63 +737,32 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 @keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 
 
-/* The footer chess-glyph band is GONE from the home page too now (2026-07-15 Nate: even
-   in the black footer the faint pieces read as "transparent jellybeans" — reset the
-   footer clean).
-   ⚠ 2026-07-22: the actual jellybeans turned out to be `.flair-weathering`, blurred
-   splats that pjcc-flair.js appended to the bottom of the footer — RIGHT ON TOP of this
-   glyph band, which is very likely why the band kept getting blamed. Those are deleted
-   now. If the glyph ribbon is wanted back on the home page, the restore line is below and
-   nothing is standing in its way any more.
-   It was re-shown here only; that re-enable is deleted, so the footer
-   ribbon is now hidden on EVERY normal page (Chess City still re-enables its own for the
-   awake-rook egg). Restore: `body:has(.home-flow) .footer-ribbon-wrap { display: flex; }` */
-/* ONE orb, PERIOD (2026-07-18 Nate: "collapse the two systems"). The hero no longer paints
-   its own sun — it's transparent onto the shared town sky — so the town orb is the ONE sun
-   and it SHOWS on the home now (the old hide that stood it down here is gone; there's no
-   second sun to collide with anymore). */
+/* ⚠ The footer chess-glyph band is hidden on EVERY normal page — floating on the sky it
+   read as splotches, and in the black footer as "transparent jellybeans".
+   ⚠ The actual jellybeans turned out to be `.flair-weathering`, blurred splats that
+   pjcc-flair.js appended to the bottom of the footer RIGHT ON TOP of this band, which is
+   very likely why the band kept getting blamed. Those are gone, so nothing stands in the
+   way of bringing the ribbon back if it is ever wanted.
+   Chess City still re-enables its own for the awake-rook egg.
+   Restore: `body:has(.home-flow) .footer-ribbon-wrap { display: flex; }` */
+/* ⚠ ONE orb, PERIOD. The hero paints no sun of its own — it is transparent onto the
+   shared town sky — so the town orb is the one sun and it SHOWS on the home page. There is
+   no second sun for it to collide with. */
 
-/* (── 1b. THE ONE CTA CSS — the .home-cta / .home-gdoor / .home-cta-park door + table styles
-   — was REMOVED 2026-07-24 when the games CTA was demoted to the quiet .home-play-nudge line
-   (Nate, "commit it to the world"). The nudge's own small styles live up in the hero style
-   block, beside the rehomed classified-"i" egg. Restore the doors + this CSS from git if they
-   ever return: git show <prev>^ -- _layouts/home.html) */
 
-/* (── 1c. THE STUDIO IS AWAKE — the lamp, the last post and the blog link — LEFT THIS PAGE
-   on 2026-08-28 with its markup. Nate: "Can we take the PJCC desk lamp and move it to the
-   McPuppy page somewhere near the top? That's a great feature and also promotes the blog."
-   The band now stands at the top of projects.md, and its placement + palette live there,
-   in the studio's own gold rather than in this page's purple. `.awake-lamp`, `.awake-copy`,
-   `.awake-label`, `.awake-post`, `.awake-date` and `.awake-more` moved with it; the two
-   SHARED rules that reach them by name — the coarse-pointer tap targets in
-   _sass/_pjcc-01-core.scss and the focus row in _sass/_pjcc-10-a11y.scss — are untouched
-   and still apply, which is exactly why the class names did not change.
-   Restore the band here from git: git show <this commit>^ -- _layouts/home.html)
-   (.home-cta / .home-gdoor / .home-cta-park phone rules were removed 2026-07-24 when the
-   CTA was demoted; that note lived in the media query that just left with the band.) */
 </style>
 
 
-{% comment %} (the basement / #20 street band removed 2026-07-10 — the page now ends
-     at the cast; restore from git if ever missed.) {% endcomment %}
 
-{% comment %} (REPLAY INTRO — REMOVED 2026-08-03, with the intro itself. Nate: "Remove the
-     intro completely." This was a faint link back to `/` that first cleared the once-per-
-     session `mcp.intro.seen` flag so the "McPuppy Studios Presents" card would actually
-     play again. `/` is a redirect to the front door now, so the link would have been a
-     button that reloads the page you are one click from anyway. Its CSS (.home-replay,
-     .home-replay-wrap) went with it. {% endcomment %}
 
 </div><!-- /.home-flow -->
 
-{% comment %} (2026-07-21) The second <script src> pair for pjcc-config.js and
-     pjcc-profile.js that stood here is DELETED. _layouts/default.html already loads both
-     at the foot of every page; this copy existed only so window.PJCC would be defined
-     early enough for the Record Watch ticker line below, which tested for it once and
-     gave up. pjcc-profile.js is an IIFE ending in `window.PJCC = PJCC`, so running it a
-     second time built a second object over the first and orphaned anything registered
-     against it. Record Watch now waits for DOMContentLoaded instead — see the comment on
-     that block. {% endcomment %}
+{% comment %} ⚠⚠ DO NOT ADD A SECOND <script src> FOR pjcc-config.js / pjcc-profile.js HERE.
+     _layouts/default.html already loads both at the foot of every page, and pjcc-profile.js
+     is an IIFE ending in `window.PJCC = PJCC` — running it twice builds a SECOND object over
+     the first and orphans anything registered against it. A copy stood here so window.PJCC
+     would exist early for the Record Watch ticker line; that line waits for DOMContentLoaded
+     instead. {% endcomment %}
 
 {% comment %} The games registry, purely as DATA: THE DESK COVERS YOU reads a personal
      best off it and needs the game's display name, its score key and its unit word to

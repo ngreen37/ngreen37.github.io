@@ -150,13 +150,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 <section class="mc-table" aria-labelledby="h-play">
 <h2 id="h-play" class="sr-only">Play Chess Now</h2>
 <section class="mc-hero">
-    {%- comment -%} THE TITLE LEFT THIS BLOCK (2026-08-04, Nate: "let's move the
-         chesswild.com title outside of the white box. it is taking up too much space").
-         It is printed by the layout now, above the card, on the sky — `title_outside: true`
-         in the front matter. It was 64px of the hero's left column, which meant the sheet
-         opened on the site announcing its own name to someone who had just typed it in;
-         what is left in the column is the sentence and the button, which is what a visitor
-         is actually there for. {%- endcomment -%}
+    {%- comment -%} ⚠ The title is NOT in this block — the layout prints it above the card,
+             on the sky, via `title_outside: true` in the front matter. It was 64px of the hero's
+             left column, which meant the sheet opened by announcing its own name to someone who
+             had just typed it in. What is left here is the sentence and the button. {%- endcomment -%}
     {%- comment -%} ══ BARE MINIMUMS (2026-07-28) ═══════════════════════════════════════
          Nate: "The descriptions on the home page are ALL too long… These are chess people.
          They are curious, intelligent, and they'll figure it out as they go. Redo the home
@@ -328,22 +325,14 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
         {%- endfor -%}
       </ul>
     </div>
-{%- comment -%} ── the locked branch that used to live here was removed 2026-08-18; see the note
-     above. It rendered a padlock cell for Princess and The CEO. Restore from git if the front
-     door ever wants an aspiration rung again — but read the note first, because the reason it
-     came off was not clutter, it was that the grid disagreed with the count beside it.
-{%- endcomment -%}
+{%- comment -%} ⚠ A locked/aspiration rung was removed from this grid. It came off NOT for
+     clutter but because THE GRID DISAGREED WITH THE COUNT BESIDE IT — read the note above
+     before adding one back. {%- endcomment -%}
 
     {%- comment -%} Puzzle rating + solved clean for someone who has played; hidden for a stranger.
          ⚠ BELOW the green door: filled in after load, so above it the button would jump. {%- endcomment -%}
     <p class="mc-resume" id="mc-resume" data-href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden></p>
 
-    {%- comment -%} ── THE REGULARS PARAGRAPH IS GONE (2026-08-11) ──────────────────────────
-         It shipped this morning as a headline plus a sentence of support, and the sentence was
-         the first thing he cut: "Get rid of the description after '6 regulars at the table right
-         now'". The headline moved into the green door's sub-label (above) and the paragraph did
-         not come with it — the two facts it carried, no account and a real clock, are already
-         one tap away and were explaining a claim nobody had disputed. {%- endcomment -%}
 
     {%- comment -%} ── THE HONEST STRIP, MOVED UP (his #2) ──────────────────────────────────
          These three lines used to close the page out, under the doors. They are PROOFS, and a
@@ -524,10 +513,9 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 </section>
 </section>
 
-{%- comment -%} "Four ways in" → "More ways in" (2026-08-04). Play Now was promoted OUT of this
-     grid and into the hero as `.mc-lead`, so the four boxes below are no longer the whole set —
-     they are the rest of it, and a heading that counts them would be counting wrong. Games Hall
-     takes the empty slot (Nate: "make a Games Hall box and put it in the play now box"), which
+{%- comment -%} ⚠ THE HEADING MUST NOT COUNT THE BOXES. Play Now is promoted OUT of this
+     grid into the hero as `.mc-lead`, so these four are the REST of the set, not the whole
+     of it — "More ways in", never "Four ways in". Games Hall takes the freed slot, which
      keeps the grid at four and gives the page its one link to every game on the site.
      {%- endcomment -%}
 <h2 class="mc-h2">More Ways In</h2>
@@ -627,13 +615,9 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        new column count. {%- endcomment -%}
 </div>
 
-{%- comment -%} THE HONEST STRIP MOVED INTO THE HERO (2026-08-11, his #2) — it is now in
-     `.mc-lead-col`, beside the green button, which is where a proof belongs. It is NOT
-     duplicated; this is where it used to be, and the note is left standing so nobody
-     re-adds a second copy at the foot. Same three lines, not reworded.
-     (FUTURE-IDEAS #9 asked for the offline line for months — "It works on a plane" is it,
-     and it has been shipping since 2026-08-04. The GAMES HALL still does not say it.)
-     {%- endcomment -%}
+{%- comment -%} ⚠ THE HONEST STRIP LIVES IN THE HERO (`.mc-lead-col`, beside the green
+     button), which is where a proof belongs. This note is left standing so nobody re-adds a
+     SECOND copy down here. {%- endcomment -%}
 
 {% comment %} ══ THE WORLD DOOR CAME OFF THE FRONT DOOR (2026-08-25) ══════════════════
      Nate: "P&JCC is moving too slow compared to the website. We are going to hide it — slow
@@ -747,11 +731,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    under either value. Only the short side moves. */
 .mc-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-6, 32px);
   align-items: start; margin: 0; }
-/* THE LOCKUP, OUTSIDE THE SHEET (2026-08-04) ─────────────────────────────────────
-   Title and tagline stand together on the town sky, above the card. `baseline` alignment,
-   not `center`: two lines of different size read as one line only when they sit on the same
-   floor. It WRAPS on a narrow screen (the tagline drops under the name) rather than shrinking
-   either one — three words on their own line is still the lockup; a squeezed title is not. */
+/* THE LOCKUP, OUTSIDE THE SHEET ────────────────────────────────────
+   Title and tagline stand together on the town sky, above the card.
+   ⚠ `baseline` alignment, NOT `center` — two lines of different size read as one line only
+   when they sit on the same floor.
+   ⚠ It WRAPS on a narrow screen (the tagline drops under the name) rather than shrinking
+   either one: three words on their own line is still the lockup; a squeezed title is not. */
 /* ⚑ THE TAGLINE MOVED TO THE FAR END (2026-08-08, Nate: "give a lot more space in between
    ChessWild.com and Play. Solve. Learn. In fact, move the tagline to the right side of the
    white box"). `space-between` rather than a hand-picked gap: the two ends of this row are
@@ -901,11 +886,10 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
      the wrapper's 26px and the card's 20px of padding — at 390px that asked for a 312px
      board inside a 298px column, and .mc-table's overflow:hidden quietly SLICED THE
      H-FILE OFF. It reported no page overflow precisely because it was being clipped. */
-  /* 348 → 400 (2026-08-04): the CARD got wider in the same pass ("make the white box
-     bigger"), which widened the hero's right column to about 490px and left a 348px board
-     floating in the middle of it with a gap down both sides. A board that does not grow
-     with its column is the change looking like a mistake. It is also the one thing on this
-     page a visitor is meant to READ, and it is a puzzle now rather than a fixed position. */
+  /* ⚠ THE BOARD MUST GROW WITH ITS COLUMN. The hero's right column is about 490px; a board
+       that stays narrow floats in the middle of it with a gap down both sides, and reads as a
+       mistake rather than a choice. It is also the one thing on this page a visitor is meant
+       to READ. */
   position: relative; width: min(400px, 100%); aspect-ratio: 1; margin: 0 auto;
   border: 3px solid var(--chess-frame); border-radius: 6px; overflow: hidden;
   /* the pieces size themselves off the BOARD, not off the viewport — see .mcb-p */
@@ -952,8 +936,8 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
   text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
 .mcb-p.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.085em var(--piece-b-line);
   text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
-/* EVERY WHITE PIECE IS TOUCHABLE NOW (2026-08-04) — it used to be the rook and only the
-   rook, because there was one position and one answer. A random position has no such piece. */
+/* ⚠ EVERY WHITE PIECE IS TOUCHABLE — the position is random, so there is no single
+   "answer piece" to special-case. */
 .mcb.live .mcb-p[data-mine] { cursor: pointer; pointer-events: auto; }
 .mcb.live .mcb-p[data-mine]:hover { filter: drop-shadow(0 0 8px #6bffb8); }
 .mcb-p.lift { transform: translateY(-5px) scale(1.08); filter: drop-shadow(0 0 10px #6bffb8); }
@@ -1089,15 +1073,14 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 .mcb-next--room { background: transparent; border-color: var(--fd-rule); }
 .mcb-next--room:hover { background: var(--fd-panel-hi); }
 
-/* ── INSIDE THE CARD (2026-08-08) ──────────────────────────────────────────────────
-   The rows go full width. Their old per-button entrance (`@keyframes mcbNextIn`) is DELETED,
-   not overridden — the CARD lands now, four things each doing their own entrance on top of
-   that is one motion idea too many, and every `.mcb-next` on this page is inside the card, so
-   the keyframe had no remaining caller. An `animation: none` override would have left a dead
-   keyframe that still reads as live to anything grepping for it.
-   `[hidden]` needs saying out loud because `.mcb-next` sets `display:inline-flex`, and a
-   display value beats the `hidden` attribute's UA `display:none` every time — Try Again
-   would have shown on a win, and it would have looked deliberate. */
+/* ── INSIDE THE CARD ────────────────────────────────────────────────
+   The rows go full width. The CARD lands as one motion; four things each doing their own
+   entrance on top of that is one idea too many.
+   ⚠ Their old per-button entrance was DELETED, not overridden — an `animation: none`
+   override leaves a dead keyframe that still reads as LIVE to anything grepping for it.
+   ⚠⚠ `[hidden]` HAS TO BE SAID OUT LOUD HERE, because `.mcb-next` sets
+   `display:inline-flex` and a display value beats the `hidden` attribute's UA `display:none`
+   every time — without it Try Again shows on a win, and it looks deliberate. */
 .mcb-card .mcb-next { display: flex; width: 100%; padding: 8px 12px; border-radius: 10px; gap: 8px; }
 .mcb-card .mcb-next[hidden] { display: none; }
 .mcb-card .mcb-next b { font-size: 0.88rem; }
@@ -1244,12 +1227,11 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 .mc-door:hover { transform: translateY(-3px); border-color: var(--fd-grain);
   background: var(--fd-panel-hi); text-decoration: none; }
 .mc-door:hover::before { opacity: 1; }
-/* THE ART BLOCK IS A FIXED HEIGHT ON ALL FOUR (2026-08-04) — because one of them is no
-   longer a 26px glyph. The Gauntlet's arch is 60px tall with a row of pips under it, and grid
-   stretches the cards to match, so without a shared height the other three titles sat 45px
-   HIGHER than the Gauntlet's and the row read as four unrelated boxes. Measured: titles at
-   y=726 / y=771 before, level after. The glyphs are centered in the band rather than pinned to
-   its top, so the extra room reads as breathing space instead of as a gap. */
+/* ⚠⚠ THE ART BLOCK IS A FIXED HEIGHT ON ALL FOUR, because one of them is not a 26px
+   glyph: the Gauntlet's arch is 60px tall with a row of pips under it, and grid stretches
+   the cards to match. Without a shared height the other three titles sit ~45px HIGHER than
+   the Gauntlet's and the row reads as four unrelated boxes. The glyphs are centered in the
+   band rather than pinned to its top, so the extra room reads as breathing space. */
 .mc-door-ico { display: flex; align-items: center; min-height: 71px;
   font-size: 30px; line-height: 1; color: var(--fd-wood); margin-bottom: 10px; }
 /* ⚠ `> b`, NOT ` b` — AND THAT ANGLE BRACKET IS THE WHOLE FIX FOR THE GAUNTLET GLYPH.
@@ -1261,9 +1243,9 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 .mc-door > b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
 .mc-door > small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
 
-/* THE DOORS LINE UP (2026-08-20). Two bands: the art is 71px on every card — the Gauntlet's
-   art is `.gdoor`, not `.mc-door-ico`, so it needs its own rule — and under 1080px a title
-   reserves two lines so a wrapping title can't push its subtitle out of the row. */
+/* THE DOORS LINE UP — two bands: the art is 71px on every card (⚠ the Gauntlet's art is
+   `.gdoor`, not `.mc-door-ico`, so it needs its own rule), and under 1080px a title reserves
+   two lines so a wrapping title cannot push its subtitle out of the row. */
 .mc-door--gauntlet .gdoor { min-height: 71px; justify-content: center; }
 @media (max-width: 1080px) {
   /* two lines of the title's own type, stated in its own em so it tracks the font-size */
@@ -1738,12 +1720,8 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
    purple into its whole subtree. Leaving it costs one selector and means a restored card
    cannot come back purple; see the note beside it.) */
 
-/* (THE STUDIO BAND'S CSS WENT WITH ITS MARKUP — 2026-08-04, "take the working lamp off the
-   main page and leave it on the P&JCC page." `.mc-studio`, `.mc-lamp`, their placement block,
-   `.mc-studio-copy` and `.mc-studio-label` all came out together, and so did the blog-line
-   rules the pass before them. The desk plank's tuned offsets did NOT die with them — they
-   were the one thing here worth keeping, and they moved to `.awake-lamp` in _layouts/home.html
-   so /pjcc/ gets the base he asked for. Restore the whole band from git if it returns.) */
+/* ⚠ The studio band is gone from this page, but its desk-plank offsets were worth keeping
+   and moved to `.awake-lamp` in _layouts/home.html. */
 
 @media (prefers-reduced-motion: reduce) {
   .mc-door { transition: none; }

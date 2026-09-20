@@ -1,20 +1,16 @@
-/* merged from assets/css/pjcc-nav.css (2026-07-12) */
 /* ============================================================
    PJCC nav enhancements (loaded site-wide via default.html):
      1. Sticky condense on scroll (header → watermark + ⌘K)
      2. ⌘K command palette
-     3. THE LEFT DRAWER (at the foot of this file)
-   (The old "World dropdown" + brand-hop rules were deleted 2026-07-22 with the horizontal
-   nav — the left drawer replaced them; git keeps them.)
+     3. The left drawer (at the foot of this file)
    ============================================================ */
 
 /* ---- 1. Sticky condense on scroll ------------------------------------ */
-/* 2026-07-22: the nav is now an off-canvas drawer (below), not an in-flow second row, so
-   the old "hide .site-nav on scroll" rules are gone — there is nothing in the header flow
-   to condense but the logo + ⌘K pill. */
+/* The nav is an off-canvas drawer (below), not an in-flow second row — there is nothing
+   in the header flow to condense but the logo and the ⌘K pill. */
 @media (min-width: 701px) {
-  /* the whole three-mark row shrinks together on scroll, not just the badge — otherwise
-     the two word marks stay put and the set stops reading as one lockup (2026-08-09) */
+  /* ⚠ The whole three-mark row shrinks together on scroll, not just the badge — otherwise
+       the two word marks stay put and the set stops reading as one lockup. */
   .site-header.is-condensed .logo-stacked { height: 38px; }
   .site-header.is-condensed .site-mark--word { font-size: 15px; }
   .site-header.is-condensed .header-top { padding-top: 6px; padding-bottom: 6px; }
@@ -53,14 +49,10 @@
   padding: 1px 6px;
   color: #cdbcf2;
 }
-/* .cmdk-mod deleted 2026-07-28. It sized the lone modifier glyph inside the shortcut
-   chip back when the markup was `<span class="cmdk-mod">⌘</span>K`. The chip is one
-   plain string now ("Ctrl K", swapped to "⌘K" on a Mac), so there is nothing to size. */
-/* A keyboard shortcut is only information if there's a keyboard. On touch this chip was
-   telling a phone user to press a key their device does not have — which is exactly the
-   kind of thing that makes a site feel like it was built for someone else (2026-07-28).
-   `hover: none` is the honest test for "no pointer that can hover", which tracks touch
-   far better than a width breakpoint does. */
+/* ⚠ A keyboard shortcut is only information if there IS a keyboard. On touch this chip
+   tells a phone user to press a key their device does not have, which is exactly what makes
+   a site feel built for someone else. `hover: none` is the honest test for "no pointer that
+   can hover" — it tracks touch far better than a width breakpoint. */
 @media (hover: none) { .cmdk-trigger-kbd { display: none; } }
 
 /* ---- 4b. ⌘K command palette ------------------------------------------ */
@@ -205,31 +197,26 @@
   margin-right: 2px;
 }
 
-/* ---- 5. (mobile icon nav removed from the DOM 2026-07-07; its leftover CSS —
-        including a persistent backdrop-filter — cleaned out 2026-07-11) ------ */
 
 @media (max-width: 700px) {
-  /* compact ⌘K trigger: icon only (the mobile "World dropdown" flatten rules were deleted
-     2026-07-22 with the horizontal nav — the drawer replaced them). */
+  /* compact ⌘K trigger: icon only */
   .cmdk-trigger-label,
   .cmdk-trigger-kbd { display: none; }
   .cmdk-trigger { padding: 6px 9px; margin-right: 4px; }
   .cmdk-trigger-ico { font-size: 1.15rem; }
 }
 
-/* 2026-07-13 touch sweep: the palette trigger measured 31x32 on a phone. */
+/* ⚠ 44px minimum — the palette trigger measured 31x32 on a phone. */
 @media (pointer: coarse) {
   .cmdk-trigger { padding: 10px 12px 10px 13px; }
 }
 
 /* ============================================================
-   THE LEFT DRAWER (2026-07-22) — the header nav became an off-canvas left
-   drawer, one six-link set site-wide (Nate: "the header nav idea is old-school
-   … move those buttons to the left"). #site-nav is the sliding panel; the
-   hamburger (#nav-toggle) opens it (pjcc-eggs.js toggles .is-open + closes on
-   outside-click / link-tap); .nav-backdrop is a DOM sibling, so the pure-CSS
-   `#site-nav.is-open ~ .nav-backdrop` dims the page with no extra JS. These
-   rules override the old horizontal .site-nav grid + brand pills.
+   THE LEFT DRAWER — one six-link set site-wide, off-canvas on the left.
+   #site-nav is the sliding panel; the hamburger (#nav-toggle) opens it
+   (pjcc-eggs.js toggles .is-open and closes on outside-click / link-tap).
+   ⚠ .nav-backdrop is a DOM SIBLING, which is what lets the pure-CSS
+   `#site-nav.is-open ~ .nav-backdrop` dim the page with no extra JS.
    ============================================================ */
 /* the hamburger now shows on every width (base was display:none; desktop-hidden) */
 .nav-toggle { display: flex; }
@@ -432,22 +419,21 @@ a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opac
 .dl-ico--play     { color: #7fd4ff; }   /* Park Tables — outdoors, open air */
 .dl-ico--gauntlet { color: #ffc94d; }   /* the tower — the crown you climb toward */
 .dl-ico--puzzles  { color: #ff8fd0; }   /* Fork in the Road (its own green is spoken for) */
-/* (THE WORLD ROW'S LILAC CAME OFF WITH ITS ROW — 2026-08-25. It was `#c9a7ff` on the ◆.
-   DELETED rather than left standing: tests/style.check.js gates the per-room icon classes
-   declared here against the ones used in _includes/site-header.html, and a rule whose row is
-   gone turns that gate red. Restoring the P&JCC row means restoring this line too.) */
+/* ⚠ The P&JCC row's lilac `#c9a7ff` on the ◆ was DELETED with its row, not left standing:
+   tests/style.check.js gates the per-room icon classes declared here against the ones used in
+   _includes/site-header.html, and a rule whose row is gone turns that gate RED. Restoring the
+   row means restoring this line too. */
 .dl-ico--arcade   { filter: brightness(1.45) saturate(1.15); }        /* 🎮 takes no ink */
 .dl-ico--studio   { filter: brightness(0) invert(1) sepia(1) saturate(0.55) hue-rotate(-8deg) brightness(1.06); }  /* 🐾 → bone */
 .dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
 .dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
 .dl-txt small { font-size: 0.72rem; color: #98a0ad; }
 
-/* THE CURRENT PAGE IS MARKED BY BRIGHTNESS, NOT BY HUE (2026-08-04). It used to be a gold and
-   purple gradient with a gold label — the loudest thing in the drawer, in two brand colors, to
-   say something as quiet as "you are here". A whiter panel and a white label say it without
-   introducing a color, which leaves green free to mean the one thing it means everywhere else
-   on the site. (Nate's original ask, "you can make PJCC stand out if you like", is still met —
-   it stands out; it just doesn't shout.) */
+/* ⚠⚠ THE CURRENT PAGE IS MARKED BY BRIGHTNESS, NOT BY HUE. A gold-and-purple gradient
+   with a gold label is the loudest thing in the drawer, in two brand colors, to say something
+   as quiet as "you are here". A whiter panel and a white label say it without introducing a
+   color — which leaves GREEN free to mean the one thing it means everywhere else on this
+   site. It stands out; it just does not shout. */
 .site-header .site-nav.drawer .page-link.drawer-link--home {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 255, 255, 0.28);
@@ -455,8 +441,8 @@ a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opac
 .drawer-link--home .dl-txt b { color: #ffffff; }
 
 .drawer-div { height: 1px; margin: 10px 4px; background: rgba(255, 255, 255, 0.10); }
-/* centered 2026-07-28 — with Leaderboards gone this is a deliberate pair, not a leftovers
-   row, and a left-hugged pair under a full-width link list reads as an accident */
+/* ⚠ Centered — this is a deliberate PAIR, not a leftovers row, and a left-hugged pair
+   under a full-width link list reads as an accident. */
 .drawer-mini { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; padding: 2px 8px 6px; }
 .drawer-mini a { font-size: 0.78rem; color: #98a0ad; text-decoration: none; }
 .drawer-mini a:hover { color: #e7eaee; }
@@ -507,22 +493,22 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
    answer is where those two links live, not a third rail state.
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 901px) {
-  /* ONE source of truth for the docked-rail width (2026-07-23). The rail itself, the
-     page + footer offset, AND the town-sky dock-clearance (_pjcc-20-town-sky.scss) all
-     read --rail-w — so retuning the rail is a one-line change and nothing drifts out of
-     sync (before this, 246/66 were hardcoded in both files: change one, get a sky seam).
-     Collapsing just REASSIGNS the variable, and every consumer follows in lockstep. */
+  /* ⚠⚠ ONE SOURCE OF TRUTH FOR THE DOCKED-RAIL WIDTH. The rail itself, the page + footer
+       offset AND the town-sky dock-clearance (_pjcc-20-town-sky.scss) all read --rail-w, so
+       retuning the rail is a one-line change and nothing drifts. With 246/66 hardcoded in both
+       files, changing one gives you a sky seam. Collapsing just REASSIGNS the variable and
+       every consumer follows in lockstep. */
   :root { --rail-w: 246px; }
   body.nav-collapsed { --rail-w: 66px; }
-  /* ── COLLAPSING MUST NOT MOVE A SINGLE ROW (2026-07-27, Nate: "make the collapsed height
-     the same as the expanded menu") ─────────────────────────────────────────────────────
-     Two things were moving them. First, rows were RAGGED: a link whose subtitle wrapped to
-     two lines stood 70px, one that didn't stood 58 — and collapsed, with no subtitle at
-     all, every row was 58. Second, hiding .drawer-head outright dropped 80px off the top,
-     so the whole column jumped UP as it narrowed.
-     Both are pinned here instead of patched: one row height for every row in both states,
-     and the head keeps its box when collapsed (invisible, fixed height so the brand can't
-     re-wrap at 66px and change it). Collapsing is now purely a width change. */
+  /* ── COLLAPSING MUST NOT MOVE A SINGLE ROW ──────────────────────────────
+       ⚠ Two things move them, and both are PINNED here rather than patched:
+         · RAGGED ROWS — a link whose subtitle wrapped to two lines stood 70px, one that did
+           not stood 58, and collapsed (no subtitle at all) every row was 58. One row height
+           for every row, in both states.
+         · THE HEAD — hiding .drawer-head outright drops 80px off the top and the whole column
+           jumps UP as it narrows. It keeps its box when collapsed: invisible, fixed height, so
+           the brand cannot re-wrap at 66px and change it.
+       Collapsing is purely a width change. */
   :root { --dl-h: 72px; --drawer-head-h: 66px; }   /* 72 = the tallest natural row (a two-line subtitle); below it that row still outgrew the rest */
   .site-header .site-nav.drawer .page-link.drawer-link { min-height: var(--dl-h); }
   /* ⚑ 2026-08-31 — the head gives its RIGHT padding to the wordmark (see the sweep at
@@ -536,12 +522,12 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
     width: var(--rail-w);
     padding-top: 78px;          /* clear the full-width sticky header (~66px) above it */
     transform: none;            /* docked — always visible, no slide */
-    /* The width SNAPS between collapsed/expanded (2026-07-23, Nate). Animating it widened the
-       rail through every intermediate size, and the labels reflowed at each one — at ~66px
-       "Sit at the Park Tables" wrapped to a stack of lines, so the row shot up to nearly the
-       full window height, then collapsed to its real height as the rail reached 246px. That
-       was the "items span the whole screen then shrink" flash. With no width transition they
-       lay out at the final width immediately, landing in their final spot at once. */
+    /* ⚠⚠ THE WIDTH SNAPS — DO NOT ANIMATE IT. Animating widens the rail through every
+           intermediate size and the labels reflow at each one: at ~66px "Sit at the Park Tables"
+           wraps to a stack of lines, so the row shoots up to nearly the full window height and
+           then collapses as the rail reaches 246px. That is the "items span the whole screen
+           then shrink" flash. With no width transition they lay out at the final width
+           immediately. */
     transition: none;
     box-shadow: none;           /* docked, not a modal */
     z-index: 90;                /* under the header (100), over the content */

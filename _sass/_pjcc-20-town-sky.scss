@@ -1,40 +1,35 @@
 /* =============================================================================
- * THE TOWN SKY — day / dusk / night / dawn, on every page (2026-07-12)
+ * THE TOWN SKY — day / dusk / night / dawn, on every page
  * -----------------------------------------------------------------------------
- * Nate: "The other pages, I thought we were going to give them day/dusk/night/dawn
- * themes, like the PJCC page? Let's really make that a thing. If that means making
- * hero banners, we could talk about that."
- *
- * It's two surfaces, and between them the hour is unmissable on every screen:
+ * Two surfaces, and between them the hour is unmissable on every screen:
  *
  *   1. .town-sky   — a fixed, full-viewport sky BEHIND the whole page. Markup in
  *                    _includes/town-sky.html, pulled into _layouts/default.html.
  *                    At z-index:-1 it paints over the flat body color and under
  *                    every card, header and footer, so it fills the gutters and the
- *                    space above and below the content: the page now sits INSIDE
- *                    the town rather than being tinted by it.
+ *                    space above and below the content: the page sits INSIDE the
+ *                    town rather than being tinted by it.
  *
- *   2. .page-title — the <h1> of every `layout: page` page becomes a SKY BANNER
- *                    (the "hero banner" Nate floated), carrying the same sky at the
- *                    top of the card. Zero new markup, and it's the half that reads
- *                    on a phone, where there are no gutters to show the backdrop.
+ *   2. .page-title — the <h1> of every `layout: page` page becomes a SKY BANNER,
+ *                    carrying the same sky at the top of the card. Zero new markup,
+ *                    and it is the half that reads on a phone, where there are no
+ *                    gutters to show the backdrop.
  *
  * Both read the same two classes, set on <html> before first paint by the head
  * include: `sky-<phase>` and `cloud-<0..3>`.
  *
  * PALETTE: the same four skies as the PJCC hero, pitched a stop or two deeper. The
- * hero can afford a bright noon blue — it's a contained band with big white type on
- * it. Full-viewport behind a dark-purple UI, that same blue would fight every card
- * on the site, so the town wears the dusk-ward version of each phase. Same sky, same
- * hour, quieter voice.
+ * hero can afford a bright noon blue — it is a contained band with big white type on
+ * it. Full-viewport behind a dark-purple UI, that same blue fights every card on the
+ * site, so the town wears the dusk-ward version of each phase.
  *
- * PERF — the 2026-07-11 lag rules, obeyed to the letter:
+ * ⚠⚠ PERF — THE THREE RULES THIS FILE OBEYS TO THE LETTER:
  *   · fixed + overflow:hidden + contain → the layer is capped at the VIEWPORT and
- *     never grows with the document (this is what broke the old full-screen rain).
+ *     never grows with the document. This is what broke the old full-screen rain.
  *   · every moving part animates transform/opacity ONLY. Nothing animates
  *     background-position. No filter on any wrapper of an animating child.
  *   · all motion off under reduce-flourish and prefers-reduced-motion; the static
- *     sky (gradient + orb + stars) stays, because that's paint, not motion.
+ *     sky (gradient + orb + stars) stays, because that is paint, not motion.
  * ========================================================================== */
 
 .town-sky {
@@ -48,14 +43,14 @@
   background: #0f0c1a;
 }
 
-/* ── DOCK CLEARANCE (2026-07-23, Nate: the sun "shouldn't be tucked away" behind the
-   open menu) — on desktop the nav is a docked rail on the left (see _pjcc-13-nav.scss).
-   Start the sky just to the RIGHT of that rail so the orb's arc (--orb-x maps across the
-   sky box) rises in the OPEN instead of behind the menu — the morning sun no longer
-   hides at the rail's edge. The rail is opaque, so the strip behind it is never seen.
-   The inset READS --rail-w (defined in _pjcc-13-nav.scss), so it tracks the rail's width
+/* ── DOCK CLEARANCE ───────────────────────────────────────────────
+   On desktop the nav is a docked rail on the left (_pjcc-13-nav.scss). The sky starts
+   just to the RIGHT of it so the orb's arc rises in the OPEN instead of behind the menu —
+   the morning sun must not hide at the rail's edge. The rail is opaque, so the strip
+   behind it is never seen.
+   ⚠ The inset READS --rail-w (defined in _pjcc-13-nav.scss) so it tracks the rail's width
    automatically — 246px open, 66px collapsed — with no duplicated magic number. Below
-   901px this rule doesn't apply, so the sky stays full-width (default inset:0). ── */
+   901px this rule does not apply and the sky stays full-width. ── */
 @media (min-width: 901px) {
   .town-sky { left: var(--rail-w, 246px); }
 }
@@ -64,33 +59,28 @@
    stars (1) → orb (2) → shooting stars (3) → clouds (4). Nate: "the stars should
    always fall BEHIND the moon. Unless it's a shooting star." Don't reorder these. */
 .ts-stars  { position: absolute; inset: 0; z-index: 1; display: none; }
-/* The orb rides the HOUR ARC (2026-07-14 Nate: "-180 to 180 degrees on all pages"):
-   town-weather.html computes --orb-x/--orb-y from the Eastern clock (PJCC_TIME.orb() —
-   sun 5:00→20:00, moon 20:00→5:00, rises left / apex mid-window / sets right) and
-   pjcc-weather.js re-plots it on a timer for long-open tabs. The per-phase rules
-   below only carry LOOKS + a no-JS fallback spot; translate centers it on the point. */
-/* 2026-07-21 (Nate: the orb "can shift dramatically across screen … disconcerting") —
-   THE ORB NO LONGER ANIMATES. It used to carry `transition: left 3s ease, top 3s ease`
-   so each re-plot glided instead of hopping. The trouble is that a transition animates
-   whatever it is given, including moves it was never sized for: a background tab's timer
-   is throttled or frozen, so returning to one after an hour handed the ease an hour of
-   travel — 11% of the viewport — and it slid the orb across the sky over three seconds.
-   The 5:00/20:00 hand-off between the sun's arc and the moon's was worse still at 88%
-   (the orb really does change horizons), and the moon's fast climb off the horizon put
-   one 2-minute step at 5.2%.
-   pjcc-weather.js now re-plots every 30 seconds instead of every 2 minutes, so the sun
-   moves 0.09% of the viewport per step and the moon settles under 0.5% within five
-   minutes of moonrise — far below noticing, against the 9% the 5-minute hop reached back
-   when it read "a little unnaturally" on 2026-07-16. With steps that small the
-   ease has nothing left to do, and dropping it means the sky animates no layout at all
-   (left/top were the two properties the perf law warns about). The reduced-motion and
-   reduce-flourish overrides that used to cancel this transition went with it — there is
-   no orb motion left for either switch to turn off. */
+/* The orb rides the HOUR ARC, -180° to 180°, on every page: town-weather.html computes
+   --orb-x/--orb-y from the Eastern clock (PJCC_TIME.orb() — sun 5:00→20:00, moon
+   20:00→5:00, rises left / apex mid-window / sets right) and pjcc-weather.js re-plots it
+   on a timer for long-open tabs. The per-phase rules below carry LOOKS and a no-JS
+   fallback spot only; translate centers it on the point. */
+/* ⚠⚠ THE ORB MUST NOT CARRY A TRANSITION — DO NOT ADD `transition: left/top` BACK.
+   A transition animates whatever it is handed, including moves it was never sized for. A
+   background tab's timer is throttled or frozen, so returning after an hour hands the ease
+   an hour of travel — 11% of the viewport — and slides the orb across the sky over three
+   seconds. The 5:00/20:00 hand-off between the sun's arc and the moon's was worse at 88%,
+   because the orb really does change horizons.
+   ⭐ The fix is SMALL STEPS, not easing: pjcc-weather.js re-plots every 30 seconds, so the
+   sun moves 0.09% of the viewport per step and the moon settles under 0.5% within five
+   minutes of moonrise — far below noticing. With steps that small the ease has nothing to
+   do, and dropping it means the sky animates no layout at all (left/top are the two
+   properties the perf law warns about). There is no orb motion left for either quiet
+   switch to turn off. */
 .ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%;
   transform: translate(-50%, -50%); }
-/* the streaks live in a group now (2026-07-21) so the sky veil has one thing to fade —
-   their own opacity is keyframe-driven, so it can't take the veil directly. The group
-   carries the z-index the streaks used to hold, so the stacking order is unchanged. */
+/* ⚠ The streaks live in a GROUP so the sky veil has one thing to fade — their own
+   opacity is keyframe-driven, so it cannot take the veil directly. The group carries the
+   z-index the streaks used to hold, so the stacking order is unchanged. */
 .ts-shoots { position: absolute; inset: 0; z-index: 3; }
 .ts-shoot  { position: absolute; display: none; }
 .ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
@@ -129,13 +119,12 @@ html.sky-day .ts-orb {
   left: var(--orb-x, 50%); top: var(--orb-y, 18%);
   width: 62px; height: 62px;
   background: radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
-  /* 2026-07-15 (Nate: "the sun is a bit too powerful") — the halo pulled back ~25%
-     so it stops washing up into the top-right corner controls on the splash. */
+  /* ⚠ The halo is held back so it does not wash up into the top-right corner controls
+       on the splash. */
   box-shadow: 0 0 44px 14px rgba(255, 216, 74, 0.30), 0 0 100px 32px rgba(255, 216, 74, 0.10);
 }
-/* rays, so the silhouette itself says "sun" and can never be read as the pale moon
-   (the hero learned this lesson on 2026-07-12; the town sky inherits it). Spokes are
-   a conic gradient masked to a ring, turning once every 90s — transform only. */
+/* Rays, so the silhouette itself says "sun" and can never be read as the pale moon.
+   Spokes are a conic gradient masked to a ring — transform only. */
 html.sky-day .ts-orb::before {
   content: '';
   position: absolute; inset: -26px;

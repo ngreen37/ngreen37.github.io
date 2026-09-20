@@ -12,28 +12,21 @@ permalink: /games/
 .ghub { animation:ghub-wake .5s ease both; }
 @keyframes ghub-wake { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 
-/* The ember twinkle was retired 2026-07-28. It was a 6s opacity pulse on a pseudo-element
-   covering the WHOLE panel — measured live at 1042x672, that is 6.0MB of GPU texture
-   (0.53 of a full screen) held forever so a field of embers could fade between 40% and
-   72%. Half a screen of compositor memory for a slow dimmer switch. The embers are still
-   there; they now sit at the midpoint of the pulse they used to ride, and the panel holds
-   no layer at all. Restore: put the animation back and know what it costs. */
+/* ⚠⚠ NO OPACITY PULSE ON A FULL-PANEL PSEUDO-ELEMENT. One 6s pulse here measured
+   6.0MB of GPU texture at 1042x672 — 0.53 of a full screen, held forever, so a field of
+   embers could fade between 40% and 72%. Half a screen of compositor memory for a slow
+   dimmer switch. The embers sit at the midpoint of that pulse now and the panel holds no
+   layer at all. */
 .ghub::before { opacity:.56; }
 
 
 /* The gold rule under the header, with a shimmer that sweeps along it.
-   ─────────────────────────────────────────────────────────────────────────────
-   REBUILT 2026-07-13 after `npm run perf` caught it. It used to be one pseudo-element
-   animating BACKGROUND-POSITION:
-       @keyframes ghub-sweep { 0%,100% { background-position:120% 0 } 50% { background-position:-20% 0 } }
-   background-position is a PAINT property — it repaints the element every single frame on
-   the main thread. It is the exact pattern the 2026-07-11 lag hunt banned site-wide, and
-   that pass fixed the text-shadow on the line ABOVE this one and the drop-shadow filters
-   BELOW it, and walked straight past this. It survived because a 190×2px bar is invisible
-   in a profile — until you ablate it and the frame time drops.
-
-   Now: a TRACK that clips (.ghub-rule) and a wider SHIMMER inside it (i) that translates.
-   transform only, so it rides the compositor and costs nothing. Identical on screen. */
+   ────────────────────────────────────────────────────────────────────────────
+   ⚠⚠ TWO ELEMENTS ON PURPOSE: a TRACK that clips (.ghub-rule) and a wider SHIMMER inside
+   it (i) that TRANSLATES. Never rebuild this as one element animating BACKGROUND-POSITION —
+   that is a PAINT property and repaints the element every frame on the main thread.
+   ⚠ It hid for months because a 190x2px bar is invisible in a profile. Only ablating it
+   showed the frame time drop. Small is not cheap. */
 .ghub-rule { position:relative; overflow:hidden; height:2px; width:190px; margin:16px auto 0;
   border-radius:2px; background:rgba(255,175,60,0.18); box-shadow:0 0 16px rgba(255,175,60,0.45); }
 .ghub-rule i { position:absolute; top:0; left:0; height:100%; width:60%; border-radius:2px;
@@ -51,26 +44,16 @@ permalink: /games/
 }
 @media (max-width:600px){ .ghub-rule { width:140px; } }
 
-/* ---- HEIGHT PASS (2026-07-12, Nate: "can we reduce its height?") ------------
-   The door above went from a ~175px column to a ~90px row. The rest of the page
-   was simply generous: a 52px title with 22px of air under it, a 30px gap above the
-   Sealed / Retired divider, and portals sized for a bigger screen than they need.
-   Nothing is removed here — every hall, the trophy, the door and the divider all
-   still stand. It's just tightened, and the whole hall now lands ~200px shorter. */
-.ghub { padding:18px var(--space-4) 14px; margin-bottom:0.7rem; }  /* adoption: horizontal 16px = --space-4 exact. Vertical trimmed 2026-07-24 (Nate: "make the games hall fit on one window on PC") — bottom padding 22→14, box margin 1.4rem→0.7rem. */
-/* ONE-WINDOW FIT (2026-07-24) — the global .page-content bottom padding is 60px, a big empty
-   gap between this box and the footer. This rule ONLY exists on /games/ (games.md's <style> is
-   page-local), so it trims that gap here and nowhere else. All reclaimed space is empty — no
-   content moved. Tunable: say the word for more or less. */
+.ghub { padding:18px var(--space-4) 14px; margin-bottom:0.7rem; }  /* horizontal 16px = --space-4, exact */
+/* ONE-WINDOW FIT — the global .page-content bottom padding is 60px, a big empty gap
+   between this box and the footer. ⚠ This rule exists ONLY on /games/ because games.md's
+   <style> is page-local, so it trims that gap here and nowhere else. All reclaimed space
+   is empty; no content moved. */
 .page-content { padding-bottom:28px; }
 .ghub-head { margin:2px 0 14px; }
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }
 .ghub-rule { margin:10px auto 0; }
-/* 2026-07-18 (Nate): "move the leaderboard and the altar around, and the park table" —
-   the four featured entrances (🏆 Leaderboards · the Gauntlet · Park Tables · the Gambit
-   altar) now share ONE centered, evenly-spaced, bottom-aligned row (.ghub-doorway) instead
-   of a lopsided top-left cluster. (.ghub-corner + .ghub-subrow were removed here.) */
 .ghub { position:relative; }
 .ghub-doorway .ghub-trophy { align-self:flex-end; }   /* baseline-align with the door/table */
 
@@ -90,19 +73,13 @@ permalink: /games/
    NOTE — the home hero has its OWN copy of .gdoor and it stays a COLUMN: it sits in
    a wide hero with room to spare, and the vertical door is the better shape there.
    The two copies are deliberately different now; don't "sync" this back. ---- */
-/* 2026-07-25 (Nate): spread the two featured entrances apart — Gauntlet door LEFT, trophy
-   RIGHT — rather than clustering them center. A centered max-width band + space-between sits
-   them over the inner columns (≈ the Pirc + Clearance boxes); nudge the width to taste. */
+/* The two featured entrances sit APART, not clustered center — Gauntlet door LEFT,
+   trophy RIGHT. A centered max-width band + space-between sits them over the inner
+   columns (roughly the Pirc and Clearance boxes). */
 .ghub-doorway { position:relative; z-index:2; display:flex; justify-content:space-between;
   align-items:flex-end; flex-wrap:wrap; gap:18px clamp(20px, 4vw, 48px);
   max-width:min(62%, 560px); margin:0 auto 14px; animation:ghub-wake .6s ease both; }
 
-/* ---- THE PARK TABLES entrance — since 2026-07-16 it's the ONE canonical park-table
-   unit (Nate: "they should always be uniform"): _includes/park-table.html +
-   _pjcc-22-chess-canon.scss draw it; this page only lays it out. (The old side-view
-   drawing with the plate/tag/♙♟ lives in git before this commit.) ---- */
-.ptdoor { display:flex; flex-direction:column; align-items:center; gap:6px;
-  text-decoration:none; }
 
 /* ---- THE GAMBIT entrance — same row grammar, but a wager altar: a glowing ♟ coin
    floating over a small stone altar. Amber accent = the wager (never real money). ---- */
@@ -177,8 +154,8 @@ permalink: /games/
   .ghub-doorway { animation:none; }
 }
 
-/* the master reset — one quiet switch at the foot of the hall (2026-07-16 Nate) */
-.ghub-reset-row { text-align:center; margin-top:14px; }  /* was 26px — one-window trim 2026-07-24 */
+/* the master reset — one quiet switch at the foot of the hall */
+.ghub-reset-row { text-align:center; margin-top:14px; }  
 .ghub-reset { background:none; border:1px solid rgba(154,127,212,0.35); border-radius:999px;
   color:#7d6bb0; font-family:'Share Tech Mono', monospace; font-size:10px;
   letter-spacing:0.12em; padding:6px 14px; cursor:pointer;
@@ -186,12 +163,12 @@ permalink: /games/
 .ghub-reset:hover { color:#ff8a8a; border-color:#ff8a8a; }
 .ghub-reset[disabled] { opacity:0.6; cursor:default; }
 
-/* ── THE COMBINED GAMES GRID (2026-07-18): one area, no taxonomy. Uses the shared
-   .cat-games / .gcard system (hall--default purple theme) + one new honest tag. ── */
+/* ── THE COMBINED GAMES GRID — one area, no taxonomy. Uses the shared .cat-games /
+   .gcard system (hall--default purple theme) plus one honest tag. ── */
 .ghub-all { margin: 6px 2px 0; position:relative; z-index:2; }
-/* 12 UNIFORM boxes (2026-07-18 Nate: "make them uniform"): grid-auto-rows:1fr equalises
-   every row to the tallest, and the cards stretch to fill — so all 12 are the same height
-   regardless of a score chip / IN DEV tag / 2-line name. Content stays top-aligned. */
+/* 12 UNIFORM boxes: grid-auto-rows:1fr equalizes every row to the tallest and the cards
+   stretch to fill, so all 12 are the same height regardless of a score chip, an IN DEV tag
+   or a 2-line name. Content stays top-aligned. */
 .ghub-all .cat-games { grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); grid-auto-rows: 1fr; }
 .ghub-all .gcard { height: 100%; }
 /* reserve the top-right corner so a title never runs UNDER the badge (the IN DEV /
@@ -259,14 +236,14 @@ permalink: /games/
 .wb-chip.is-shut { color: #a8c6dc; border-style: dashed; }
 @media (prefers-reduced-motion: reduce) { .wb-chip:hover, .wb-chip:focus-visible { transform: none; } }
 
-/* ═══ UNIQUE BOX DESIGNS — the five working games (2026-07-24, Nate: "give the working
-   games unique, fun box designs … different text, different feels, for each. Play around.
-   Have fun."). Each shipped tile becomes its own little world: a themed ground, a scrap of
-   ambient motion, its cryptic line (rendered by pjcc-hall.js as .gcard-tag) and a one-word
-   eyebrow. Since 2026-08-05 these five ARE the grid — the half-built games moved to the
-   workbench row above. ALL motion is transform/opacity only (the site perf rule) and folds flat under
-   reduced-motion at the very bottom of this block. Specificity `.ghub-all .gcard[data-slug]`
-   (0,3,x) clears the shared `.hall--default .gcard` (0,2,0) themes in _pjcc-15-games.scss. ══ */
+/* ══ UNIQUE BOX DESIGNS — the five working games ══════════════════════════════
+   Each shipped tile is its own little world: a themed ground, a scrap of ambient motion,
+   its cryptic line (rendered by pjcc-hall.js as .gcard-tag) and a one-word eyebrow. These
+   five ARE the grid — the half-built games live in the workbench row above.
+   ⚠ ALL motion is transform/opacity only, and folds flat under reduced-motion at the
+   bottom of this block.
+   ⚠ Specificity `.ghub-all .gcard[data-slug]` (0,3,x) is what clears the shared
+   `.hall--default .gcard` (0,2,0) themes in _pjcc-15-games.scss. ══ */
 .ghub-all .gcard[data-slug] { overflow:hidden; }
 /* the icon + copy ride ABOVE each card's ambient ::before decoration — but ONLY these two,
    so the corner badges (NEW / SOON / ★ best) keep their own positioning and still paint
@@ -302,8 +279,6 @@ permalink: /games/
     linear-gradient(160deg,#33172f,#1d1033);
   border:1px dashed #ff77a8; }
 .ghub-all .gcard[data-slug="clearance-delta"] .gcard-body h3::before { content:"Clearance check"; }
-/* the scanning bar — dimmed 25% on 2026-07-27 with the Sand Mine glint (Nate: "same with
-   the Clearance Delta red bar that slides the color down… more subtle") */
 .ghub-all .gcard[data-slug="clearance-delta"]::before {
   content:''; position:absolute; left:0; right:0; top:0; height:22%; z-index:0; pointer-events:none;
   background:linear-gradient(180deg, rgba(255,119,168,0.18), transparent);
@@ -330,8 +305,8 @@ permalink: /games/
 @keyframes sky-bob { 0%,100%{ transform:translateY(2px); } 50%{ transform:translateY(-3px); } }
 .ghub-all .gcard[data-slug="sky-run"]:hover .gcard-icon { animation-duration:0.9s; }
 
-/* ── 4 · SAND MINE DEPTHS — RETHEMED 2026-07-25 (Nate: give it a different box theme): a
-   seam of ORE cutting through the rock, a glint traveling down it, and the pick digging. ── */
+/* ── 4 · SAND MINE DEPTHS — a seam of ORE cutting through the rock, a glint traveling
+   down it, and the pick digging. ── */
 .ghub-all .gcard[data-slug="sand-mine-depths"] {
   background:linear-gradient(180deg,#43331a 0%,#281c0d 50%,#100b06 100%);
   border-color:#fcbc3c; }
@@ -341,8 +316,6 @@ permalink: /games/
   content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
   background:linear-gradient(62deg, transparent 44%, rgba(252,188,60,0.15) 47%, rgba(255,238,196,0.42) 50%,
     rgba(252,188,60,0.15) 53%, transparent 56%); }
-/* a glint that travels along the seam — dimmed 25% on 2026-07-27 (Nate: "the sand mine
-   depths box looks great, but dim 25% the gold bar that slides from left-to-right") */
 .ghub-all .gcard[data-slug="sand-mine-depths"]::after {
   content:''; position:absolute; top:-25%; bottom:-25%; left:0; width:26%; z-index:0; pointer-events:none;
   background:linear-gradient(62deg, transparent 45%, rgba(255,255,255,0.315) 50%, transparent 55%);
@@ -352,8 +325,8 @@ permalink: /games/
   transform-origin:60% 32%; animation:sm-dig 1.5s ease-in-out infinite; }
 @keyframes sm-dig { 0%,100%{ transform:translateY(-2px) rotate(-11deg); } 55%{ transform:translateY(2px) rotate(6deg); } }
 
-/* ── 5 · SIEGE ON CHESS CITY — RETHEMED 2026-07-25 (Nate: a different box theme): battle
-   SMOKE drifting over the walls, an ember rising off the siege, the keep bracing. ── */
+/* ── 5 · SIEGE ON CHESS CITY — battle SMOKE drifting over the walls, an ember rising
+   off the siege, the keep bracing. ── */
 .ghub-all .gcard[data-slug="tower-defense"] {
   background:linear-gradient(180deg,#3a1b2e,#211440);
   border-color:#ff77a8; }
@@ -387,14 +360,10 @@ permalink: /games/
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
 
-  <!-- ── THE FEATURED ROW (2026-07-18 Nate: "move the leaderboard and the altar around,
-       and the park table") — the four featured entrances stand in ONE balanced, evenly
-       spaced centered row now, not a lopsided top-left cluster:
-       🏆 Leaderboards · the Gauntlet · Park Tables · the Gambit altar. ── -->
   <div class="ghub-doorway">
-    {%- comment -%} 2026-07-25 (Nate): the Gauntlet door anchors the LEFT (over the Pirc box),
-         the trophy anchors the RIGHT (over Clearance) — the row spreads them apart now instead
-         of clustering them center. PLATE PARITY kept: no plate, no "Begin the climb" caption. {%- endcomment -%}
+    {%- comment -%} The Gauntlet door anchors the LEFT (over the Pirc box), the trophy anchors
+             the RIGHT (over Clearance) — spread apart, not clustered center.
+             ⚠ PLATE PARITY: no plate, no "Begin the climb" caption. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
        aria-label="The Gauntlet — real chess vs a ladder of ten P&JCC rivals">
       <span class="gdoor-arch" aria-hidden="true">
@@ -407,9 +376,8 @@ permalink: /games/
     <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
 
 
-    {%- comment -%} THE GAMBIT ALTAR is not in this row: out 2026-07-24 to the grid's last cell,
-         then out of the grid 2026-09-07 to .gm-shrine, its own centered row under the games.
-         The featured row is Leaderboards + the Gauntlet. {%- endcomment -%}
+    {%- comment -%} The Gambit altar is NOT in this row — it has its own centered row under
+             the games (.gm-shrine). The featured row is Leaderboards + the Gauntlet. {%- endcomment -%}
 
   </div>
 
@@ -432,11 +400,9 @@ permalink: /games/
     <div class="ghub-rule" aria-hidden="true"><i></i></div>
   </div>
 
-  <!-- ── ALL THE GAMES, ONE GRID (2026-07-18 Nate: "get rid of the taxonomy and combine
-       the games. Get rid of the terminated section"). The old Learn / Arcade / In-Dev /
-       Vault / Terminated category PORTALS are gone. pjcc-hall.js (data-hall="all") lists
-       every playable game here in one grid — in-development ones wear a plain IN DEV tag,
-       the vault game shows locked, and the terminated roster is dropped entirely. ── -->
+  <!-- ── ALL THE GAMES, ONE GRID — no taxonomy, no terminated section. pjcc-hall.js
+         (data-hall="all") lists every playable game here in one grid: in-development ones
+         wear a plain IN DEV tag and the vault game shows locked. ── -->
   <div id="games-hall" class="ghub-all hall--default" data-hall="all" data-base="{{ '/games/' | relative_url }}">
     <div class="cat-games"></div>
     <div class="gm-shrine">
