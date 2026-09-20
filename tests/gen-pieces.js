@@ -9,6 +9,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
@@ -17,6 +18,13 @@ const PIECE_DIR = process.env.PIECE_DIR
 
 const BOARD = process.env.CHESSWILD_BOARD || 'C:/Users/Nate/Documents/chesswild-board';
 const MIRROR = path.join(ROOT, 'private/docs/godot/tournament_board');
+
+// ⚠⚠ TWO GAMES EAT THESE PNGS, and the second one arrived four weeks after the first.
+// The Tournament Board fits each frame to a square; the Assembly (piece_art.gd) reads the
+// floor line out of the frame and stands the piece on it. Same bytes, same folder name, two
+// readings — which is only safe because the camera is a constant. [[accuracy-above-all]]
+const TOWN = process.env.CHECKER_TOWN || 'C:/Users/Nate/Documents/checker-town';
+const TOWN_MIRROR = path.join(ROOT, 'private/docs/godot/chess_town');
 
 // ⚠⚠ THE CAMERA NEVER MOVES; THIS COLUMN IS WHAT MAKES A PAWN SHORTER THAN A KING.
 // piece_node.gd fits the LONGEST side of each texture to the square, so art cropped to each
@@ -75,16 +83,80 @@ function newestSave(name) {
   return hits.length ? { file: path.join(PIECE_DIR, hits[0].f), v: hits[0].v.join('.') } : null;
 }
 
+// ⚠⚠ 512px OF PIECE INTO A 91px SQUARE, AND GODOT IMPORTS PNGS WITHOUT MIPMAPS. Plain
+// linear sampling reads four texels of a five-fold minification, so the crown crawls as the
+// camera walks — and the editor writes `mipmaps/generate=false` again for every new piece,
+// silently, so the knight would arrive worse-looking than the pawn with nothing said.
+// Godot names the cache file after the md5 of the RESOURCE path, and fills in a uid itself on
+// the next import, so the two lines it really needs are computable here.
+function importFile(dir, name) {
+  const res = `res://pieces/${name}.png`;
+  const ctex = `res://.godot/imported/${name}.png-`
+    + crypto.createHash('md5').update(res).digest('hex') + '.ctex';
+  return `[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+path="${ctex}"
+metadata={
+"vram_texture": false
+}
+
+[deps]
+
+source_file="${res}"
+dest_files=["${ctex}"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
+`;
+}
+
+// Writes the import file beside a freshly placed PNG, or turns mipmaps back on in the one
+// that is already there. ⚠ It reports rather than asserting: Godot still has to run before
+// the .ctex exists, and until it does piece_art.gd draws the piece instead. Returns a note
+// when it changed something.
+function mipmap(dir, name) {
+  const f = path.join(dir, 'pieces', name + '.png.import');
+  if (!fs.existsSync(f)) {
+    fs.writeFileSync(f, importFile(dir, name));
+    return 'new .import';
+  }
+  const was = fs.readFileSync(f, 'utf8');
+  if (!/^mipmaps\/generate=false$/m.test(was)) return '';
+  fs.writeFileSync(f, was.replace(/^mipmaps\/generate=false$/m, 'mipmaps/generate=true'));
+  return 'mipmaps on';
+}
+
 // the same bytes, in the place Godot loads from. A missing project is a note and not a
 // failure: this has to run on a machine with no Tournament Board checked out.
 function place(png, name) {
   const notes = [];
-  for (const [label, dir] of [['board', BOARD], ['mirror', MIRROR]]) {
+  for (const [label, dir] of [['board', BOARD], ['mirror', MIRROR],
+      ['town', TOWN], ['town mirror', TOWN_MIRROR]]) {
     if (!fs.existsSync(dir)) { notes.push(`(no ${label} at ${dir})`); continue; }
     const dest = path.join(dir, 'pieces', name + '.png');
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.copyFileSync(png, dest);
-    notes.push(`→ ${label}`);
+    const m = mipmap(dir, name);
+    notes.push(`→ ${label}${m ? ' (' + m + ')' : ''}`);
   }
   return notes.join('  ');
 }
@@ -127,6 +199,42 @@ for (const p of PIECES) {
     + `${ok.split(' ').slice(2).join(' ')}\n    ${place(png, p.out)}`);
   done++;
 }
+// ⚠⚠ piece_art.gd COPIES FOUR OF THESE NUMBERS AND GDSCRIPT CANNOT READ EITHER FILE. It
+// works out from them where the floor crosses the frame and how tall a canon unit is, so a
+// render at a different elevation against a stale copy floats every piece in the Assembly a
+// tenth of a square — on every square, with nothing printed. This is the one run that can
+// invalidate the copy, so it is the run that checks it. [[audit-numbers-can-be-wrong]]
+function checkPieceArt() {
+  if (!fs.existsSync(TOWN)) return 0;
+  const gd = path.join(TOWN, 'piece_art.gd');
+  if (!fs.existsSync(gd)) {
+    console.error(`✗ no piece_art.gd in ${TOWN} — the Assembly stands its pieces on these numbers`);
+    return 1;
+  }
+  const py = fs.readFileSync(path.join(__dirname, 'blender-piece.py'), 'utf8');
+  const num = (src, re) => { const m = src.match(re); return m ? parseFloat(m[1]) : NaN; };
+  const want = {
+    ORTHO: num(py, /^ORTHO\s*=\s*([\d.]+)/m),
+    AIM_Z: num(py, /^AIM_Z\s*=\s*([\d.]+)/m),
+    ELEV: parseFloat(ELEV),
+    KING: (PIECES.find((p) => p.out === 'wK') || {}).h,
+  };
+  const src = fs.readFileSync(gd, 'utf8');
+  let bad = 0;
+  for (const [k, v] of Object.entries(want)) {
+    const got = num(src, new RegExp(String.raw`^const ${k}\s*:=\s*([\d.]+)`, 'm'));
+    // ⚠ NaN LOSES EVERY COMPARISON, so `> 1e-9` on a constant this cannot find passes in
+    // silence — which is the one outcome that makes the whole check worthless.
+    if (!(Math.abs(got - v) <= 1e-9)) {
+      console.error(`✗ piece_art.gd ${k} = ${got}, this render used ${v}`);
+      bad++;
+    }
+  }
+  if (bad) console.error(`  Every piece in the Assembly stands on those — ${gd}`);
+  return bad;
+}
+failed += checkPieceArt();
+
 if (waiting.length) {
   console.log(`\n· not modeled yet, drawing lettered discs: ${waiting.join(' ')}`);
   console.log(`  name them ${waiting[0].toLowerCase()}_0.1.blend … in ${PIECE_DIR}`);
