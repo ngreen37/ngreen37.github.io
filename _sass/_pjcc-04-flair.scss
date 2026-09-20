@@ -100,11 +100,20 @@ body.theme-bw .page-body em {
       neighbors. (The old "solid #efd39b fill" workaround is what made the letter
       read as a different, non-shimmering one. Gone.)
 
-   2. The parent paints that glyph, not the link — so `opacity` and `filter` on
-      the <a> do NOTHING to it. The one property that reaches a text-clipped
-      glyph is `visibility`. That's the flicker: the letter drops OUT of the word
-      for a few frames at a time — a signal dropout, not a dimmer. Exactly the
-      radio-disruption read we want on the one letter that's a hidden door.
+   2. The letter drops OUT of the word for a few frames at a time — a signal
+      dropout, not a dimmer. Exactly the radio-disruption read we want on the one
+      letter that's a hidden door.
+      ⚠⚠ THIS USED `visibility` UNTIL 2026-09-20, AND THAT COST 24–36ms/s.
+      `visibility` cannot be composited, so Chrome repainted the lede on the main
+      thread EVERY FRAME — measured as ~99% of /pjcc/'s and ~85% of the front door's
+      whole idle cost, forever, for one blinking letter. `opacity` composites free.
+      The percentages below are UNTOUCHED and `steps(1, end)` keeps it a hard cut,
+      so the flicker renders pixel-identical (checked both ways, not reasoned).
+      ⚠ `opacity` only reaches it because BOTH live hosts (.page-note-out and
+      .hero-lede) are plain text — computed `background-clip: border-box`. Inside a
+      `background-clip: text` parent, like the CUT splash tagline this effect was
+      born in, opacity does NOTHING and `visibility` is the only property that
+      lands. If this ever moves into a clipped host, it moves back.
 
    The glyph therefore lives in an inner <i> that blinks, while the <a> around it
    stays visible and keeps its hit box — so the door is clickable even mid-dropout
@@ -114,26 +123,26 @@ body.theme-bw .page-body em {
    into the word and gives nothing away. Day: flickering 'i', no star. Night: flying
    star, steady 'i'. Subtle on purpose. */
 /* Bursts of interference, not a metronome: long clean stretches, then a stutter of
-   dropouts, then clean again. `visibility` only flips ON a keyframe (any interval
-   with a `visible` endpoint reads visible the whole way), so each dropout needs a
-   PAIR of hidden keyframes to actually hold — hence the tight duplicates. */
+   dropouts, then clean again. The tight duplicate keyframes are how the old
+   `visibility` build made a dropout hold; harmless under `opacity`, and kept so the
+   rhythm stays byte-for-byte the one he tuned. */
 /* (2026-07-14 Nate: "the flickering i is GREAT. make the flickers 25% subtler" —
    every dropout window below is 25% shorter than it was; the clean stretches and
    the burst rhythm are untouched.) */
 @keyframes tgx-radio {
-  0%,     26.0%  { visibility: visible; }
-  26.1%,  26.4%  { visibility: hidden; }
-  26.5%,  27.3%  { visibility: visible; }
-  27.4%,  27.55% { visibility: hidden; }
-  27.65%, 57.0%  { visibility: visible; }
-  57.1%,  57.25% { visibility: hidden; }
-  57.35%, 58.1%  { visibility: visible; }
-  58.2%,  58.72% { visibility: hidden; }
-  58.82%, 59.4%  { visibility: visible; }
-  59.5%,  59.65% { visibility: hidden; }
-  59.75%, 88.4%  { visibility: visible; }
-  88.5%,  88.72% { visibility: hidden; }
-  88.82%, 100%   { visibility: visible; }
+  0%,     26.0%  { opacity: 1; }
+  26.1%,  26.4%  { opacity: 0; }
+  26.5%,  27.3%  { opacity: 1; }
+  27.4%,  27.55% { opacity: 0; }
+  27.65%, 57.0%  { opacity: 1; }
+  57.1%,  57.25% { opacity: 0; }
+  57.35%, 58.1%  { opacity: 1; }
+  58.2%,  58.72% { opacity: 0; }
+  58.82%, 59.4%  { opacity: 1; }
+  59.5%,  59.65% { opacity: 0; }
+  59.75%, 88.4%  { opacity: 1; }
+  88.5%,  88.72% { opacity: 0; }
+  88.82%, 100%   { opacity: 1; }
 }
 /* hovering steadies the signal — you found it, it stops hiding */
 

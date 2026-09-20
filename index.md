@@ -851,7 +851,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    <a> to <b> on 2026-08-25 and opens nothing now, so keeping the night rule would leave the
    whole classified → archive → recovery → dispatch wing dark for twelve hours a day. One
    door cannot work a half shift. Restore the split the moment the star is armed again:
-   `html.sky-night .page-note-out .tg-x-glyph { animation: none; visibility: visible; }`
+   `html.sky-night .page-note-out .tg-x-glyph { animation: none; opacity: 1; }`
 
    ⚠⚠ THE THREE ESCAPE HATCHES ARE NOT OPTIONAL. Hover, `reduce-flourish` and
    `prefers-reduced-motion` all park the glyph VISIBLE. A door that is invisible to somebody
@@ -861,10 +861,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   -webkit-text-fill-color: inherit; font-style: inherit; }
 .page-note-out .tg-x-glyph { animation: tgx-radio 7.5s steps(1, end) infinite; }
 .page-note-out .tg-x:hover .tg-x-glyph,
-.page-note-out .tg-x:focus .tg-x-glyph { animation: none; visibility: visible; }
-html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; visibility: visible; }
+.page-note-out .tg-x:focus .tg-x-glyph { animation: none; opacity: 1; }
+html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .page-note-out .tg-x-glyph { animation: none; visibility: visible; }
+  .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 }
 
 
