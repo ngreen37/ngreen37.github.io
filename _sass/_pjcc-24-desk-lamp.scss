@@ -44,14 +44,12 @@
   background: linear-gradient(165deg, #6b6b74, #33333a);
   box-shadow: inset 0 -4px 5px rgba(0,0,0,0.4);
   transform: rotate(32deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
-/* the throw of light out of the head — dark until the studio ships.
-   2026-07-22 (Nate: "move the ray slightly SouthEast so it looks like it's coming from the
-   center of the desk-lamp head") — nudged right+down (right 41→37, top 10→14) so the beam's
-   narrow source sits under the middle of the head instead of off its upper-left corner. */
-/* 2026-07-27 (Nate: "rotate the light ray a few degrees, to line it up better with the
-   head of the lamp. It's just a touch off") — -6deg → -14deg. At -6 the beam's upper edge
-   sat proud of the head's mouth, so a sliver of light appeared to start outside the shade;
-   at -14 the cone's mouth meets the head's. Measured against a render of five candidates. */
+/* The throw of light out of the head — dark until the studio ships.
+   ⚠ The beam's narrow SOURCE must sit under the middle of the head, not off its
+   upper-left corner, or the light reads as coming from beside the lamp. */
+/* ⚠ The cone's mouth must MEET the head's mouth. A few degrees shallow and the beam's
+   upper edge sits proud of the shade, so a sliver of light appears to start outside it.
+   Measured against a render of five candidates. */
 .sl-cone { position: absolute; right: 37px; top: 14px; width: 48px; height: 48px;
   clip-path: polygon(82% 0, 100% 24%, 48% 100%, 0 64%);
   background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
@@ -60,16 +58,13 @@
 .studio-light.on .sl-cone { opacity: 0.6; animation: sl-warm 3.2s ease-in-out infinite; }
 @keyframes sl-warm { 0%,100% { opacity: 0.52; } 50% { opacity: 0.7; } }
 
-/* A SLIVER OF DESK (#4, 2026-07-16 splash check): a dark wood edge under the base, so the
-   lamp stands on the Creator's desk instead of floating. On the splash the slab runs off
-   the right edge of the window — the rest of the desk is out of frame — which is why the
-   left/right offsets are a caller's business and not set here. */
-/* 2026-07-22 (Nate: "reduce the length of the wooden base the lamp sits on") — the slab
-   ran -34/-40px past the lamp on each side; pulled in to -12/-16 so it reads as a desk edge
-   under the lamp, not a plank running the width of the band.
-   2026-07-27 (Nate: "make the base the lamp sits on a little smaller (length-wise)") —
-   -12/-16 → -4/-8. Still overhangs the lamp on both sides, so it reads as a desk it stands
-   on rather than a shelf it was placed on. */
+/* A SLIVER OF DESK — a dark wood edge under the base, so the lamp stands on the Creator's
+   desk instead of floating. ⚠ On the splash the slab runs off the right edge of the window
+   (the rest of the desk is out of frame), which is why the left/right offsets are a
+   CALLER'S business and not set here. */
+/* ⚠ The slab still OVERHANGS the lamp on both sides — that is what makes it read as a
+   desk it stands on rather than a shelf it was placed on. Too long and it is a plank
+   running the width of the band. */
 .sl-desk { position: absolute; bottom: -7px; height: 8px;
   left: -4px; right: -8px;
   border-radius: 4px 0 0 2px;
@@ -81,41 +76,32 @@
 /* when the lamp burns, its light catches the desk edge */
 .studio-light.on .sl-desk { box-shadow: 0 -1px 0 rgba(255,207,74,0.25), 0 4px 10px rgba(0,0,0,0.45); }
 
-/* AFTER DARK, THE BEACON (#6, 2026-07-16, Nate: "DOUBLE YES") — at night the lit lamp is
-   the page's only warm light. The head burns hotter. All state, no new animation; the
-   only thing that moves is the cone's candle-breath.
-   (The wide radial pool that used to settle around it at night was removed 2026-07-18 —
-   "an odd faint sphere … works better without.") */
+/* AFTER DARK, THE BEACON — at night the lit lamp is the page's only warm light and the
+   head burns hotter. ⚠ All STATE, no new animation; the only thing that moves is the
+   cone's candle-breath. */
 html.sky-night .studio-light.on .sl-cone { opacity: 0.85; animation-name: sl-warm-night; }
 @keyframes sl-warm-night { 0%,100% { opacity: 0.72; } 50% { opacity: 0.94; } }
 html.sky-night .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.75), 0 0 24px 5px rgba(255,207,74,0.5); }
 
-/* ── ASLEEP WHEN THE STUDIO IS DARK (2026-07-22, Nate: "when the working lamp is off,
-   let's fold it up and put the head down, as if it's asleep") ─────────────────────────
-   The default pose is the WORKING pose — neck up, head angled over the page ready to
-   burn. `.on` is added by the include's script when the site shipped inside twelve hours;
-   the hours it is dark, the lamp should look like it clocked out, not like it is poised
-   over an empty desk. So `:not(.on)` folds the anglepoise down over its own base: the
-   upper rod swings toward vertical, the elbow settles, and the head nods forward and down
-   the way a head does when someone dozes at the desk.
-
-   Everything transitions, so at the twelve-hour mark it doesn't teleport — it nods off.
-   The parts are separately-positioned siblings (not nested), so each is posed by hand and
-   the values are eyeballed against a render; treat them as a set. ── */
+/* ── ASLEEP WHEN THE STUDIO IS DARK ───────────────────────────────────
+   The default pose is the WORKING pose — neck up, head angled over the page. `.on` is added
+   by the include's script when the site shipped inside twelve hours. The hours it is dark
+   the lamp should look like it CLOCKED OUT, not like it is poised over an empty desk, so
+   `:not(.on)` folds the anglepoise down over its own base.
+   ⚠ Everything TRANSITIONS, so at the twelve-hour mark it does not teleport — it nods off.
+   ⚠ The parts are separately-positioned SIBLINGS, not nested, so each is posed by hand
+   against a render. Treat the values as a SET. ── */
 /* the wrapper carries the whole upper arm+head; inert until the fold is applied */
 .sl-upper { position: absolute; inset: 0; transform-origin: 63px 42px; /* the elbow */
   transition: transform .6s ease; }
-/* THE NOD-OFF — REDONE 2026-07-27 (Nate: "the lamp head rotated the wrong way; it, along
-   with the bar connected to the head, should fold INWARD instead").
-   It was rotating the head the LONG way round: 32deg → 94deg swung the shade's open mouth
-   from over-the-page all the way past straight-down to face LEFT, which read as the head
-   flipped over and staring at the wall. A real anglepoise folds the other way — the head
-   noses back IN toward its own arm and the upper rod comes up toward vertical, the way you
-   fold one to put it away.
-   So all three parts now travel INWARD: the head rotates NEGATIVE (mouth turns down and in
-   toward the stem), the upper rod swings from -35deg up to nearly plumb, and the whole
-   upper unit sags a touch at the elbow. Picked from a render of four candidates against
-   the live pose; treat the three values as a set. */
+/* ⚠⚠ THE NOD-OFF FOLDS INWARD — ALL THREE PARTS TRAVEL NEGATIVE. A real anglepoise noses
+   back IN toward its own arm, the way you fold one to put it away.
+   Rotating the head POSITIVE swings the shade's open mouth the long way round, past
+   straight-down to face LEFT, and it reads as the head flipped over staring at the wall.
+   So: the head rotates negative (mouth turns down and in toward the stem), the upper rod
+   swings up toward plumb, and the upper unit sags a touch at the elbow.
+   ⚠ Picked from a render of four candidates against the live pose. Treat the three values
+   as a SET. */
 .studio-light:not(.on) .sl-upper { transform: translateY(8px) rotate(6deg); }
 .studio-light .sl-head, .studio-light .sl-arm2 { transition: transform .6s ease; }
 .studio-light:not(.on) .sl-head { transform: rotate(-40deg); }

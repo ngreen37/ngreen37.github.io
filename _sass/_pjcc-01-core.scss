@@ -42,14 +42,12 @@
   --r-md: 12px;
   --r-lg: 16px;
 
-  /* --surface is TRANSLUCENT (2026-07-23, Nate: "make the boxes more transparent so we can
-     see the moon"). It backs .page-card — the content box on every layout:page page — so the
-     town sky (moon + stars at night) now glows faintly through every page's main panel, the
-     same treatment the games hall got. 0.66 is a little more see-through than the games hall's
-     first pass; the hall was matched to it. Only .page-card reads --surface, and the McPuppy
-     theme-bw/theme-studio pages override .page-card with an opaque black (their sky has no
-     moon), so this is scoped to the PJCC sky pages. Kept opaque enough that light body text
-     stays readable over both the dark night sky and the medium-blue day sky (verified). */
+  /* ⚠ --surface is TRANSLUCENT so the town sky (moon + stars at night) glows faintly
+       through every page's main panel. ONLY .page-card reads it, and the McPuppy
+       theme-bw / theme-studio pages override .page-card with an opaque black (their sky has
+       no moon), so this is scoped to the PJCC sky pages.
+       ⚠ Kept opaque ENOUGH that light body text stays readable over both the dark night sky
+       and the medium-blue day sky. Verified; do not push it further without re-checking. */
   --surface:    rgba(28, 21, 64, 0.66);
   --surface-2:  #160c33;
   --edge:       #3d2b8a;
@@ -58,16 +56,14 @@
   --lift:    0 12px 40px rgba(0, 0, 0, 0.5);
   --lift-sm: 0 6px 18px rgba(0, 0, 0, 0.35);
 
-  /* ═══ THE TYPE & RHYTHM SCALE (2026-07-19 — the modernization foundation) ═══
-     Same idea as the Surface Kit above: declare the scale ONCE, use it everywhere,
-     so the site stops picking font-sizes and margins by feel. These are the base the
-     bold-reinvention type pass builds on (docs/modernization-2026-07.md). Purely
-     additive — defining them changes nothing until a rule opts in.
-
-     TYPE — a fluid modular scale. Each --step clamps between a phone size and a
-     desktop size, so headings grow with the viewport with no media queries. Ratio
-     runs ~1.2 on a phone → ~1.33 on a wide screen (confident, not shouty).
-       --step--1 fine print · 0 body · 1 lead · 2 h4 · 3 h3 · 4 h2 · 5 h1 · 6 hero */
+  /* ═══ THE TYPE & RHYTHM SCALE ════════════════════════════════════════
+       Same idea as the Surface Kit above: declare the scale ONCE, use it everywhere, so
+       the site stops picking font-sizes and margins by feel.
+  
+       TYPE — a fluid modular scale. Each --step clamps between a phone size and a desktop
+       size, so headings grow with the viewport with NO media queries. The ratio runs ~1.2 on
+       a phone to ~1.33 on a wide screen (confident, not shouty).
+         --step--1 fine print · 0 body · 1 lead · 2 h4 · 3 h3 · 4 h2 · 5 h1 · 6 hero */
   --step--1: clamp(0.80rem, 0.76rem + 0.18vw, 0.90rem);
   --step-0:  clamp(1.00rem, 0.96rem + 0.20vw, 1.13rem);
   --step-1:  clamp(1.20rem, 1.10rem + 0.50vw, 1.50rem);
@@ -212,13 +208,13 @@ ul, ol {
 
 /* --- Site Header --- */
 .site-header {
-  /* 2026-07-27 (Nate: "make top bar transparent so you can see sun/moon"). The header was
-     a solid slab of #0a0714 across the top of a FIXED sky — which is exactly where the sun
-     and moon spend the middle of their arc, so the town's best hours were painted over. It
-     is a scrim now, not a wall: lighter at the top where the orb passes, settling to nearly
-     solid by the nav row so the logo, ⌘K and Contact keep their contrast. Deliberately NOT
-     backdrop-filter — that repaints the blur on every scroll frame, and this bar is sticky.
-     Clouds and the orb now drift THROUGH it, which is the whole point. */
+  /* ⚠ THE HEADER IS A SCRIM, NOT A WALL. A solid slab across the top of a FIXED sky paints
+       over exactly where the sun and moon spend the middle of their arc — the town's best
+       hours. It is lighter at the top where the orb passes and settles to nearly solid by the
+       nav row, so the logo, ⌘K and Contact keep their contrast. Clouds and the orb drift
+       THROUGH it, which is the point.
+       ⚠⚠ DELIBERATELY NOT backdrop-filter — that repaints the blur on every scroll frame,
+       and this bar is sticky. */
   background: linear-gradient(180deg,
     rgba(10, 7, 20, 0.42) 0%,
     rgba(10, 7, 20, 0.78) 62%,
@@ -240,10 +236,9 @@ ul, ol {
 }
 
 /* --- Header Top Bar --- */
-/* 2026-07-17 (Nate: "condense the area of the nav, the vertical one — it's way too
-   big"). The header stacks two rows — the logo row + the nav row — and the 80px logo
-   made the whole thing tower. Tightened: a 52px logo and slimmer row padding pull the
-   header's vertical footprint down ~40px on every page (McPuppy + PJCC alike). */
+/* The header stacks two rows — the logo row and the nav row — so an oversized logo makes
+   the whole thing tower. A 52px logo and slim row padding keep its vertical footprint
+   down on every page, McPuppy and PJCC alike. */
 /* 2026-07-23 (Nate: "move the McPuppy logo … to the very center of the header"). A
    3-column grid — hamburger left, badge dead-center, controls right — so the logo is
    centered in the header on every width and never overlaps either side group. The two
@@ -449,16 +444,14 @@ ul, ol {
 }
 /* …and it steps back a weight only where the type around it is heavy enough to carry it:
    the header marks, and any display heading. Below 700 there is nothing to step back from. */
-/* (`.site-mark--pjcc .mk-amp` led this list until 2026-08-25 — see the note above.) */
 h1 .mk-amp, h2 .mk-amp, h3 .mk-amp,
 .page-title .mk-amp, .big-title .mk-amp, .eyebrow .mk-amp {
   font-weight: 600;
 }
 
 .logo-stacked {
-  height: 44px;   /* 80 → 52 (condensed 2026-07-17) → 44, pulled down to sit level with
-                     the two word marks beside it. Picked from a rendered grid: at 38 the
-                     "McPuppy Studios" line under the paw is mush. */
+  height: 44px;   /* ⚠ 44px, level with the two word marks beside it. Picked from a rendered grid — at 38
+                     the "McPuppy Studios" line under the paw is mush. */
   width: auto;
   display: block;
   filter: invert(1);   /* full ink — the grayscale(.35) went with the watermark */
@@ -519,17 +512,17 @@ h1 .mk-amp, h2 .mk-amp, h3 .mk-amp,
   .about-contact-btn { display: none; }
 }
 
-/* --- Navigation — now an off-canvas left drawer (2026-07-22) ---
-   The context-aware brand bar (badge · links · hop) was retired; #site-nav is a fixed
-   left drawer, styled in _sass/_pjcc-13-nav.scss under "THE LEFT DRAWER". These base rules
-   only size the element — the drawer rules override display/position. ⌘K reaches the rest. */
+/* --- Navigation — an off-canvas left drawer ---
+   #site-nav is a fixed left drawer, styled in _sass/_pjcc-13-nav.scss under "THE LEFT
+   DRAWER". ⚠ These base rules only SIZE the element; the drawer rules override
+   display/position. ⌘K reaches the rest. */
 .site-nav {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
   width: 100%;
-  padding: 7px 18px;   /* was 12px — condensed 2026-07-17 with the header */
+  padding: 7px 18px;   
   border-top: 1px solid rgba(110, 95, 160, 0.28);
 }
 
@@ -560,8 +553,8 @@ h1 .mk-amp, h2 .mk-amp, h3 .mk-amp,
   }
 }
 
-/* --- Header top-left group (hamburger + logo) — 2026-07-23, the drawer's trigger sits by
-   the logo on the left, next to the drawer it opens. --- */
+/* --- Header top-left group (hamburger + logo) — the drawer's trigger sits by the logo,
+   next to the drawer it opens. --- */
 .header-top-left {
   display: flex;
   align-items: center;
@@ -643,9 +636,8 @@ body.theme-bw .nav-toggle-bar     { background: #cccccc; }
 }
 
 /* --- Footer ---
-   2026-07-11 (Nate): compact. The copy sits JUST under the gold rule, the
-   sliding chess glyphs run as a faint band BEHIND it (not a separate row above),
-   and the corner McPuppy watermark is gone. */
+   Compact: the copy sits JUST under the gold rule, and the sliding chess glyphs run as a
+   faint band BEHIND it, not a separate row above. */
 .site-footer {
   position: relative;
   overflow: hidden;
@@ -662,8 +654,8 @@ body.theme-bw .nav-toggle-bar     { background: #cccccc; }
 }
 
 .footer-copy {
-  /* 2026-07-13 a11y sweep: was #6b5a8e — 3.2:1 against the dark footer, under the 4.5:1
-     floor for 12px text. Same violet family, one step lighter → ~5:1. */
+  /* ⚠ AA FLOOR — #6b5a8e measured 3.2:1 against the dark footer, under the 4.5:1 floor for
+       12px text. Same violet family, one step lighter, ~5:1. Do not darken it back. */
   color: #9182b8;
   font-size: 12px;
 }
@@ -1229,16 +1221,16 @@ pre code {
 
 
 
-/* Section shell (52px → 44px 2026-07-13, Nate: shorten the home page a little) */
+/* Section shell */
 .home-section {
   margin-bottom: 44px;
 }
 
 
 
-/* 2026-07-27 compass check: on a phone the standalone "→" links measured 93×20 and 82×20 —
-   they read as buttons and were sized like body text. Padded on COARSE POINTERS ONLY, so
-   the desktop rhythm is untouched and only the thumb target grows. */
+/* ⚠ On a phone the standalone "→" links measured 93×20 and 82×20 — they read as buttons
+   and were sized like body text. Padded on COARSE POINTERS ONLY, so the desktop rhythm is
+   untouched and only the thumb target grows. */
 @media (pointer: coarse) {
   .home-section-link,
   .awake-more { display: inline-flex; align-items: center; min-height: 40px; padding: 0 4px; }
@@ -1272,9 +1264,8 @@ pre code {
 
 
 
-/* Character chip row — 4 columns. Cards trimmed smaller 2026-07-17 (Nate: "make the
-   character boxes smaller") so the cast reads as a light teaser under the new hero,
-   not four big tiles. */
+/* Character chip row — 4 columns, deliberately small so the cast reads as a light teaser
+   under the hero, not four big tiles. */
 .char-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1329,14 +1320,8 @@ pre code {
   border: 1px solid #2d1b69;
 }
 
-/* (The home counters, the "basement", and its street band were all removed
-   2026-07-10 — the home page now ends at the cast. Restore from git.) */
 
-/* (Paint drips removed 2026-07-12 — Nate: "we aren't using them." The whole
-   .home-drips / .drip* field + markup is gone; restore from git before this
-   commit if ever missed.) */
 
-/* (.stats-inner + .hstat tiles removed 2026-07-11 — the home counters left 2026-07-10; restore from git.) */
 
 /* --- Responsive --- */
 @media (max-width: 700px) {

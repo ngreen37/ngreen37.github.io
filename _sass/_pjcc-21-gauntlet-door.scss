@@ -1,22 +1,23 @@
 /* =============================================================================
- * THE GAUNTLET DOOR (.gdoor) — now a SHARED partial (2026-07-15).
+ * THE GAUNTLET DOOR (.gdoor) — the SHARED partial.
  * -----------------------------------------------------------------------------
- * The brass arch door — floor lamps, the boss's piece behind it, light under the
- * door, and the grandeur/floor-zero states — used to live as an INLINE <style> copy
- * in BOTH _layouts/home.html (the hero) and games.md ("two copies kept in sync").
- * The splash now wants the same door beside the Park Table (Nate 2026-07-15: "mirror
- * what we did on the PJCC page for the Gauntlet link"), so the canonical rules move
- * here where every page can reach them.
+ * The brass arch door: floor lamps, the boss's piece behind it, light under the
+ * door, and the grandeur / floor-zero states.
  *
- * The two inline copies are left in place for now (identical rules; an inline <style>
- * in <body> still wins over this file in <head>, so home/games are visually unchanged
- * and zero-risk). They can be deleted later to make this the single source.
+ * ⚠⚠ THIS FILE IS THE ONLY SOURCE FOR THE LOOK. It was once three hand-synced
+ * copies — here plus inline <style> blocks in _layouts/home.html and games.md —
+ * each annotated "keep in sync", and they HAD drifted (72x92 against 78x100).
+ * Both inline copies are gone. Never re-inline the look.
+ * games.md keeps four declarations of its own, but they are SIZE OVERRIDES ONLY,
+ * so its door matches the Gambit altar standing beside it.
  *
- * `.hero-door` positioning stays in home.html — that's where the door STANDS, not what
- * it looks like. The splash positions its own copy.
+ * ⚠ An inline <style> in <body> beats this file in <head>. That is exactly why a
+ * "temporary" inline copy is never temporary — it wins silently.
+ *
+ * Positioning is NOT here: `.hero-door` lives in home.html, because that is where
+ * the door STANDS, not what it looks like.
  * ========================================================================== */
-/* (the .gdoor-plate + .gdoor-sub rules are gone — 2026-07-16 evening plate parity:
-   no door anywhere carries the THE GAUNTLET plate or a caption any more) */
+/* ⚠ PLATE PARITY — no door anywhere carries a THE GAUNTLET plate or a caption. */
 
 /* ═══════════════════════════════════════════════════════════════════════════════════
    ⚑ WHAT "OPEN" MEANS — ONE DEFINITION, 2026-08-04
@@ -127,9 +128,9 @@
   border-radius:43.6cqw 43.6cqw 0 0; border:1px solid rgba(168,121,255,0.35);
   background:linear-gradient(180deg, #251747 0%, #150c33 100%);
   transform-origin:0 50%; transition:transform .35s ease;
-  /* pre-promote the panel (2026-07-16 splash audit): without this the slide's first
-     frame rasterizes the whole panel — 67ms hitch on a throttled phone for the
-     gradient-heavy floor doors. One tiny always-on texture instead. */
+  /* ⚠ Pre-promote the panel. Without this the slide's first frame rasterizes the whole
+       panel — measured at a 67ms hitch on a throttled phone for the gradient-heavy floor
+       doors. One tiny always-on texture instead. */
   will-change:transform; }
 .gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
   font-style:normal; font-weight:400; font-size:41cqw; line-height:1; color:var(--acc);
@@ -141,9 +142,9 @@
   background:var(--acc);
   box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
 @include gd-open-on('', '.gdoor-arch') { box-shadow:0 0 34px -5px var(--acc); }
-/* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15).
-   -60% → -100% on 2026-08-04: the panel now clears the arch completely and the doorway is
-   an actual doorway. `.gdoor-arch` is overflow:hidden, so it slides into nothing. */
+/* Opens like a shogi screen — the panel SLIDES LEFT instead of swinging, and travels the
+   full -100% so it clears the arch completely and the doorway is an actual doorway.
+   `.gdoor-arch` is overflow:hidden, so it slides into nothing. */
 @include gd-open { transform:translateX(-100%); }
 html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
@@ -161,22 +162,21 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    glyph-glow still wins on floors 3, 5 and 9. Floors 6/7/8 keep their newer treatments
    below — their stale first drafts were deleted in the move, not carried over. ══════ */
 
-/* ══════════════════════════════════════════════════════════════════════════
-   THE GAUNTLET DOOR — ONE LEAF PER FLOOR  (Nate 2026-07-14)
-   ──────────────────────────────────────────────────────────────────────────
-   The ARCH is the brand: same frame on every floor, growing richer with the
-   climb (`data-grand` 0..5, in the two page copies). The LEAF hanging in it
-   belongs to the PLACE you are about to enter (`data-floor`, 1-based, set by
-   the same hydration JS on the home hero and the games page).
+/* ═══════════════════════════════════════════════════════════════════════
+   THE GAUNTLET DOOR — ONE LEAF PER FLOOR
+   ───────────────────────────────────────────────────────────────────────
+   The ARCH is the brand: the same frame on every floor, growing richer with the
+   climb (`data-grand` 0..5). The LEAF hanging in it belongs to the PLACE you are
+   about to enter (`data-floor`, 1-based), set by the hydration JS.
 
      1  Checker Town      a tattered cloth        (lives with data-grand="0")
      2  The Sand Mines    timber + iron mine door
      3  The Sea           a barnacled tide-gate
 
-   These live HERE, in the one stylesheet, and not inline in the two page
-   copies — the twins have drifted before. Every layer is static paint; the
-   only motion is transform/opacity (see [[css-perf-lessons]]).
-   ══════════════════════════════════════════════════════════════════════════ */
+   ⚠ These live HERE, in the one stylesheet, and never inline in a page — the twins
+   have drifted before. Every layer is static paint; the only motion is
+   transform/opacity.
+   ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── FLOOR 2 · THE SAND-MINE FOREMAN — the pit door ───────────────────────
    Rough planks, two iron ledgers and a diagonal brace, four rivets, a ring
@@ -299,11 +299,11 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   .gdoor[data-floor="3"] .gdoor-door::after { animation: none; }
 }
 
-/* ── FLOOR 4 · THE SHOGI SENTINEL — the shoji screen  (Nate 2026-07-15) ───────
-   A tasteful Japanese door: warm washi paper glowing from behind, a kumiko
-   lattice of thin wood mullions, a dark timber surround, and a red torii lintel
-   across the head. It does not swing — a shoji screen SLIDES. On hover it slides
-   to the side into its pocket, the way you'd actually open one. ── */
+/* ── FLOOR 4 · THE SHOGI SENTINEL — the shoji screen ───────────────────────
+   Warm washi paper glowing from behind, a kumiko lattice of thin wood mullions, a
+   dark timber surround, and a red torii lintel across the head.
+   ⚠ It does not swing — a shoji screen SLIDES, into its pocket, the way you would
+   actually open one. ── */
 .gdoor[data-floor="4"] .gdoor-arch {                 /* warm paper-lantern light behind */
   background: radial-gradient(ellipse at 50% 82%,
     color-mix(in srgb, #ffdca8 40%, #1a0f0a), #140b07 78%);
@@ -319,9 +319,7 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
     repeating-linear-gradient(180deg, rgba(74,48,32,0.9) 0 1px, transparent 1px 15px),
     /* the washi paper itself, lit from within */
     linear-gradient(180deg, #f6e6c8 0%, #efdab4 100%);
-  transform-origin: 0% 50%;                          /* slides LEFT toward its pocket (Nate 2026-07-15) */
-  /* 2026-07-16 (Nate: "the Sentinel door is moving a bit slow" — he was right): .5s with a
-     slow-start ease read as sluggish. Now .38s, fast out of the gate, soft into the pocket. */
+  transform-origin: 0% 50%;                          /* slides LEFT toward its pocket */
   transition: transform .38s cubic-bezier(.22, .8, .32, 1);
 }
 .gdoor[data-floor="4"] .gdoor-glyph {                /* an ink-stamped kanji feel */
@@ -336,12 +334,12 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    now. The slight scaleX stays: a shoji panel narrows a touch as it stacks. */
 @include gd-open('[data-floor="4"]') { transform: translateX(-100%) scaleX(0.92); }
 
-/* ── FLOOR 5 · THE CITY GATEKEEPER — the GATES of Chess City ──────────────────
-   2026-07-16 (Nate: the straight vertical bars read as "an old-timey jail cell";
-   "connect Title-of-Opponent to the Door design more clearly"). A city gate now,
-   unmistakably: the arch wears the gatehouse's SANDSTONE block courses, the panel
-   is heavy TIMBER gates, and over them hangs a true brass PORTCULLIS — a lattice
-   in both directions with a spiked foot, not jail bars. It still LIFTS. ── */
+/* ── FLOOR 5 · THE CITY GATEKEEPER — the GATES of Chess City ────────────────
+   The arch wears the gatehouse's SANDSTONE block courses, the panel is heavy TIMBER
+   gates, and over them hangs a true brass PORTCULLIS — a lattice in both directions
+   with a spiked foot. It LIFTS.
+   ⚠ Straight vertical bars read as an old-timey jail cell, not a city gate. The
+   door has to name its opponent. ── */
 .gdoor[data-floor="5"] .gdoor-arch {
   border-color: #b09468;
   background:
@@ -485,8 +483,8 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    hanging BEHIND the pole rather than glued to the front of it.
    ⚠ `.gdoor-arch::before` was free; `::after` is the grandeur crown and must stay free. */
 .gdoor[data-grand="0"] .gdoor-arch::before {
-  /* cqw, like the cloth it holds up (2026-08-05) — these ARE the cloth's own numbers, and
-     they only stay the cloth's own numbers if both are a share of the same arch. */
+  /* ⚠ cqw, like the cloth it holds up — these ARE the cloth's own numbers, and they only
+       stay the cloth's own numbers if both are a share of the SAME arch. */
   content:''; position:absolute; left:8.97cqw; right:8.97cqw; top:15.4cqw; height:3.85cqw;
   z-index:2; border-radius:2.56cqw; pointer-events:none;
   background:linear-gradient(180deg, #8f6c42, #6b4f2e);

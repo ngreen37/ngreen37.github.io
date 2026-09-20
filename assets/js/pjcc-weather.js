@@ -174,25 +174,22 @@
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
-  /* ══ "REDUCE MOTION" HAS TO BE A SWITCH, NOT A ONE-WAY DOOR (2026-07-28) ═══════
-     Nate: "when the page STARTS in reduce motion, and then you try to go back to normal,
-     nothing happens. But when it starts normal, you can toggle the rain back and forth."
-
-     Exactly right, and the asymmetry is the tell. Every OTHER flourish on the site is
-     pure CSS hanging off `html.reduce-flourish`, so it comes back the instant the class
-     does. The weather is the one thing that has to be BUILT — hosts appended, a canvas
-     created, a frame loop started — and `boot()` did that once, at load, behind an early
-     `return` on `reduced()`. Start quiet and there is nothing for the class to reveal.
-
-     Start LOUD and it looked fine only because CSS was hiding a canvas that was still
-     there… and still drawing. `display:none` does NOT stop requestAnimationFrame (the
-     rule the ENGINE's own guard exists for), so "reduce motion" was quietly leaving the
-     frame loop running on the machines least able to afford it. Both halves are the same
-     bug: the class was treated as the state instead of a consequence of it.
-
-     So: the overlay is built once (it is static paint and belongs on every page), the
-     FALLING weather is built lazily and can be started and stopped any number of times,
-     and PJCCTownWeather.refresh() is the single entry point the toggle calls. ════════ */
+  /* ══ "REDUCE MOTION" IS A SWITCH, NOT A ONE-WAY DOOR ═══════════════════════
+       ⚠⚠ THE ASYMMETRY IS THE TELL. Every OTHER flourish on the site is pure CSS hanging
+       off `html.reduce-flourish`, so it returns the instant the class does. The weather is
+       the one thing that has to be BUILT — hosts appended, a canvas created, a frame loop
+       started. Build it once behind an early `return` on `reduced()` and starting quiet
+       leaves nothing for the class to reveal; it can never be turned back on.
+  
+       ⚠⚠ AND STARTING LOUD ONLY LOOKED FINE. `display:none` does NOT stop
+       requestAnimationFrame — CSS was hiding a canvas that was still drawing, so "reduce
+       motion" quietly left the frame loop running on the machines least able to afford it.
+       Both halves are the same bug: the CLASS was treated as the state instead of as a
+       consequence of it.
+  
+       So: the overlay is built once (static paint, belongs on every page), the FALLING
+       weather is built LAZILY and can be started and stopped any number of times, and
+       PJCCTownWeather.refresh() is the single entry point the toggle calls. ════════ */
   var overlayEl = null, fallEl = null, glassEl = null, stormed = false;
 
   function boot() {
