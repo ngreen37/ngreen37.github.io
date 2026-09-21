@@ -1179,7 +1179,7 @@ const server = http.createServer((req, res) => {
       ok(/func retime\(\) -> void:/.test(town2) && /n\.call\("retime"\)/.test(town2),
         '…and ONE function tells everything that cares',
         '⚠ three listeners on three timers is three chances to be in a different hour');
-      ok(/_light\.energy = 0\.5 if dark else 0\.0/.test(town2),
+      ok(/_light\.energy = 0\.5 if dark(?: and not _broken\(\))? else 0\.0/.test(town2),
         'a street lamp is a REAL light after dark and dark in the day');
       ok(/func _draw_lit\(/.test(door) && /if board_face or not TownClock\.is_dark\(\)/.test(door),
         '…and a building shows a light on — but never the Assembly',
@@ -1239,7 +1239,8 @@ const server = http.createServer((req, res) => {
 
       /* ══ 22 · THE ROAD WEST ═════════════════════════════════════════════════════════
          *"5 (but make it West instead of North)"* */
-      ok(/class CityGate extends TownDoor/.test(town2) && /url = "\/games\/chess-city\/"/.test(town2),
+      ok(/class CityGate extends TownDoor/.test(town2) && /url = GameState\.CHESS_CITY_URL/.test(town2)
+        && /const CHESS_CITY_URL := "\/games\/chess-city\/"/.test(gs),
         'the road west ends at a gate onto Chess City');
       ok(/if not GameState\.ceo_beaten:[\s\S]{0,120}Barred from the other side/.test(town2),
         '…barred until the far chair is taken, and it SAYS what would open it',
@@ -2760,6 +2761,47 @@ const server = http.createServer((req, res) => {
         ok(/add_to_group\("town_cover"\)/.test(lk) && /TownZone\.uncovered\(\)/.test(fnGd(lk, 'close'))
           && /class Vista extends CanvasLayer/.test(lk),
           '…and the view across the water holds the player still, and lets go cleanly');
+
+        /* #1 — Maxwell and your ore fix the town, and every repair is somewhere you can see it. */
+        const block = (src, head) => { const a = src.indexOf(head); return a < 0 ? '' : src.slice(a, src.indexOf('\n]', a)); };
+        const reps = [...block(gsG, 'const REPAIRS := [').matchAll(/\{ "id": "([a-z]+)",\s+"name": "[^"]+",\s+"ore": (\d+) \}/g)].map((m) => m[1]);
+        const maxw = townG.slice(townG.indexOf('class Maxwell extends TownChallenger:'), townG.indexOf('class Fix extends Node2D:'));
+        const placed = (id) => new RegExp('"' + id + '"\\]').test(townG) || new RegExp('fix_id = "' + id + '"').test(townG);
+        const unplaced = reps.filter((id) => !placed(id) || !new RegExp('"' + id + '": "').test(maxw));
+        ok(reps.length >= 5 && unplaced.length === 0,
+          '⭐ every repair Maxwell offers is drawn in the town and has his line',
+          unplaced.length ? 'MISSING: ' + unplaced.join(' ') : reps.join(' '));
+        const rep = fnGd(gsG, 'repair');
+        ok(/if repairs\.has\(id\) or ore < cost:\s*\n\s*return false/.test(rep) && /ore -= cost/.test(rep)
+          && /town_fixed\.emit\(id\)/.test(rep),
+          '…it costs the ore it says, refuses what you cannot afford, and tells the town');
+
+        /* #4 — the boat. Six humans who know you; it sails when it is finished, CEO or not. */
+        const parts = [...block(gsG, 'const BOAT := [').matchAll(/\{ "id": "([a-z]+)",\s+"who": "([A-Za-z ]+)",\s+"name": "([^"]+)"/g)]
+          .map((m) => ({ id: m[1], who: m[2], name: m[3] }));
+        const people = new Set([...townG.matchAll(/_add_challenger\("([^"]+)"|\.who = "([^"]+)"/g)].map((m) => m[1] || m[2]));
+        const pl = /const PART_LINES := \{([\s\S]*?)\n\}/.exec(townG);
+        const bad = parts.filter((p) => animals.includes(p.who) || !people.has(p.who)
+          || !pl || !new RegExp('"' + p.who + '": "').test(pl[1]));
+        ok(parts.length === 6 && bad.length === 0,
+          '⭐ six parts, each from a person standing in the town, each with their words',
+          bad.length ? 'BAD: ' + bad.map((p) => p.who).join(' ') : parts.map((p) => p.who + ':' + p.id).join(' '));
+        const robert = parts.find((p) => p.who === 'Robert');
+        ok(robert && !/plank|wood|timber|nail|tool|hammer|carpent|beam|saw/i.test(robert.id + ' ' + robert.name),
+          '⚠⚠ …and Robert’s part is nothing wooden and nothing a carpenter holds',
+          robert ? robert.name : 'no Robert');
+        ok(/if GameState\.hearts_for\(who\) >= GameState\.BOAT_HEARTS:/.test(npcG) && /const BOAT_HEARTS := 3/.test(gsG),
+          '…asked only of somebody who knows you, and the grayed row says how well');
+        ok(/if GameState\.boat_done\(\):\s*\n\s*rows\.append\(\{ "id": "sail"/.test(maxw) && !/ceo_beaten/.test(maxw)
+          && /open_url\(CHESS_CITY_URL\)/.test(fnGd(gsG, 'sail')) && /url = GameState\.CHESS_CITY_URL/.test(townG),
+          '⭐ his answer: it sails when it is FINISHED, not when the CEO falls — to the same city the gate opens on');
+        ok(/if m != null and GameState\.boat_done\(\):\s*\n\s*m\.stand_at\(MAXWELL_DOCK\)/.test(townG)
+          && /GameState\.boat_changed\.connect\(_seat_maxwell\)/.test(townG),
+          '…and when it is, Maxwell is waiting on the dock, every day');
+        const merge2 = fn(PROF, 'townMerge');
+        ok(/local\.repairs = union\(/.test(merge2) && /local\.boat = union\(/.test(merge2)
+          && /for k in \(d\.get\("repairs", \{\}\) as Dictionary\):/.test(gsG) && /for k in \(d\.get\("boat", \{\}\) as Dictionary\):/.test(gsG),
+          '⚠ a repair and a boat part are EARNED, so both sides union them');
       }
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
          ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
