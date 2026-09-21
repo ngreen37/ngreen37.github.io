@@ -2802,6 +2802,44 @@ const server = http.createServer((req, res) => {
         ok(/local\.repairs = union\(/.test(merge2) && /local\.boat = union\(/.test(merge2)
           && /for k in \(d\.get\("repairs", \{\}\) as Dictionary\):/.test(gsG) && /for k in \(d\.get\("boat", \{\}\) as Dictionary\):/.test(gsG),
           '⚠ a repair and a boat part are EARNED, so both sides union them');
+
+        /* #9 — Garrett writes from across the water, and his post needs no account. */
+        const mbx = code(rd('mailbox.gd'));
+        const gl = [...block(gsG, 'const GARRETT := [').matchAll(/"id": "([a-z0-9]+)"[^\n]*\n\s*"text": "([^"]+)"/g)];
+        const inter = fnGd(mbx, 'interact');
+        ok(gl.length >= 6 && gl.every((m) => /— G\.$/.test(m[2])),
+          '⭐ six letters from Garrett, each one signed', gl.map((m) => m[1]).join(' '));
+        ok(inter.indexOf('garrett_due()') >= 0 && inter.indexOf('garrett_due()') < inter.indexOf('GameState.post()')
+          && /or not GameState\.garrett_due\(\)\.is_empty\(\)/.test(mbx),
+          '…read BEFORE the account checks, so a signed-out player still gets them, and the flag goes up');
+        ok(!/\.who = "Garrett"/.test(townG) && /local\.garrett = union\(/.test(fn(PROF, 'townMerge'))
+          && /for k in \(d\.get\("garrett", \{\}\) as Dictionary\):/.test(gsG),
+          '…he is not in the town (he is where you are going), and a letter read stays read everywhere');
+
+        /* #10 — Murphy prices you off real numbers and invents none. */
+        const uw = townG.slice(townG.indexOf('class Underwriter extends TownNPC:'), townG.indexOf('class HomeBoard extends Interactable:'));
+        ok(/murphy\.who = "Murphy"/.test(townG) && /"who": "Murphy"/.test(gsG),
+          '⭐ Murphy’s nameplate is his square’s name, so talking to him is meeting that square');
+        ok(/Pavilion\.SEATS \+ Pavilion\.OFF/.test(uw) && !/2400|1800|1400/.test(uw) && /\/ 400\.0/.test(uw),
+          '…every rating he quotes is read off the Pavilion’s own table, through Elo’s 400',
+          '⚠ a second copy of the seat ratings is a bookmaker quoting last season’s odds');
+        ok(/if me <= 0:\s*\n\s*return "No history/.test(uw) && /P\.puzzleRating\(\)\.rating/.test(fnGd(gsG, 'site_rating')),
+          '…yours is the only number the site keeps, and with none he writes no policy');
+
+        /* #8 — the board by the bed. She is shown what you learned, and she says nothing. */
+        const hb = townG.slice(townG.indexOf('class HomeBoard extends Interactable:'), townG.indexOf('class Fix extends Node2D:'));
+        const bed = /bed\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(townG);
+        const hba = /const HOME_BOARD_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(townG);
+        ok(bed && hba && Math.hypot(+bed[1] - +hba[1], +bed[2] - +hba[2]) < 120,
+          '⭐ the board is by your bed', hba ? hba[1] + ',' + hba[2] : 'no HOME_BOARD_AT');
+        const shown = /const SHOWN := \[([\s\S]*?)\n\t\]/.exec(hb);
+        const sl = shown ? strs(shown[1]) : [];
+        ok(sl.length === 4 && sl.every((s) => /^(She|You)\b/.test(s) && !/"/.test(s)),
+          '⛑ …and every line is what she DOES or what you do — never a word from her');
+        ok(/site_scores\(\["academy-bootcamp", "notation-run", "trainer-pirc"\]\)/.test(fnGd(gsG, 'academy_stage'))
+          && /id === 'academy-bootcamp'/.test(PROF) && /pjcc\.academy\.bootcamp/.test(fn(PROF, 'townScore') || PROF)
+          && /not dog\.with_you\(\)/.test(hb),
+          '…she is shown the furthest lesson YOU reached, and only when she is with you');
       }
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
          ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */

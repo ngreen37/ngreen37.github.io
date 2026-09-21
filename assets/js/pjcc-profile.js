@@ -686,6 +686,7 @@
     /* ⭐ WHAT YOU FIXED WITH MAXWELL AND WHAT THE BOAT HAS IN IT (2026-09-21): earned, so unions. */
     local.repairs = union(local.repairs, remote.repairs);
     local.boat = union(local.boat, remote.boat);
+    local.garrett = union(local.garrett, remote.garrett);
     /* a study beaten is a thing earned, like a word learned */
     local.positions = union(local.positions, remote.positions);
     /* ⚠ WEARING A HAT AND ARRANGING A BOARD ARE PREFERENCES, NOT THINGS EARNED. Take the
@@ -1244,6 +1245,12 @@
         var bk = trainerBook(), n = 0, k;
         for (k in bk) if (bk.hasOwnProperty(k) && bk[k] && bk[k].held) n++;
         return n;
+      }
+      if (id === 'academy-bootcamp') {
+        /* Lesson 1's pieces learned, for the board by the bed in Checker Town: Princess is shown
+           what you were. Local-only, like the lesson. */
+        var bc = JSON.parse(localStorage.getItem('pjcc.academy.bootcamp') || '{}') || {};
+        return ['P', 'N', 'B', 'R', 'Q', 'K'].filter(function (p) { return bc[p]; }).length;
       }
       return PJCC.localBest(id) || 0;
     } catch (e) { return 0; }
