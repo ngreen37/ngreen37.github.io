@@ -959,8 +959,15 @@ const server = http.createServer((req, res) => {
       const pSeats = [...park.matchAll(
         /ChessArt\.draw_piece\(self, piece, Vector2\(0\.0, (-?[\d.]+)\), ([\d.]+),\s*tint/g)]
         .map((m) => +m[1] - +m[2] / 2);
-      ok(pRoom && pRung && pSeats.length >= 2,
-        'the pavilion\'s frame is readable from source', pSeats.length + ' pieces measured');
+      /* ⚠ AND THE SEATED MODEL. A person drawn from nate.glb is no draw_piece call, so the
+         regex above cannot see them; their crown is SEAT_FEET − TALL. */
+      const pFeet = /const SEAT_FEET := (-?[\d.]+)/.exec(park);
+      const pTall = /const TALL := ([\d.]+)/.exec(fs.readFileSync(path.join(GD, 'player_model.gd'), 'utf8'));
+      ok(pFeet && pTall && /_model\.draw_on\(self, Vector2\(0\.0, SEAT_FEET\)\)/.test(park),
+        'the seated player is measured too, off the model\'s own height');
+      if (pFeet && pTall) pSeats.push(+pFeet[1] - +pTall[1]);
+      ok(pRoom && pRung && pSeats.length >= 3,
+        'the pavilion\'s frame is readable from source', pSeats.length + ' heads measured');
       if (pRoom && pRung && pSeats.length) {
         const roomTop = +pRoom[2], roomBottom = +pRoom[2] + +pRoom[4];
         const camLowest = Math.max(roomTop, roomBottom - 648);   /* the base viewport is 1152x648 */
