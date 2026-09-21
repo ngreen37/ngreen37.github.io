@@ -71,7 +71,8 @@
     "test:gifts": "node tests/gifts.check.js",
     "test:follows": "node tests/follows.check.js",
     "test:systems": "node tests/systems.check.js",
-    "test:town": "node tests/town.check.js"
+    "test:town": "node tests/town.check.js",
+    "wc": "node tests/gen-broadcast.js"
   },
   "repository": {
     "type": "git",

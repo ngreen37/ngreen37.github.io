@@ -214,7 +214,15 @@
         return step();
       });
     }
-    return step().then(function () {
+    return step().then(function () { return grade(fens, moves, evals, bests); });
+  }
+
+  /* ⭐ THE VERDICT, APART FROM THE ENGINE (2026-09-21). The Tournament Board grades title-match
+     games in Node (tests/gen-godot-game.js) with deeper evals than a browser can afford — but by
+     THESE rules, so a move never reads one way here and another in a clip.
+     evals/bests are side-to-move POV, one per entry in fens (the position before each move). */
+  function grade(fens, moves, evals, bests) {
+      var N = moves.length;
       var plies = [], accSum = { w: 0, b: 0 }, accN = { w: 0, b: 0 }, evalW = [];
       for (var i = 0; i < fens.length; i++) {
         var stm = fens[i].split(' ')[1];               // side to move at position i
@@ -257,7 +265,6 @@
         accuracy: { w: accN.w ? Math.round(accSum.w / accN.w * 10) / 10 : null,
                     b: accN.b ? Math.round(accSum.b / accN.b * 10) / 10 : null }
       };
-    });
   }
 
   /* ─────────────────────────── the overlay UI ────────────────────────────────── */
@@ -648,5 +655,6 @@
     });
   }
 
-  root.PJCCReview = { enabled: enabled, available: available, open: open, analyzeGame: analyzeGame };
+  root.PJCCReview = { enabled: enabled, available: available, open: open, analyzeGame: analyzeGame,
+    grade: grade, cp: cp, winPct: winPct, classOf: classOf, MARK: MARK, LABEL: LABEL };
 })(typeof self !== 'undefined' ? self : this);

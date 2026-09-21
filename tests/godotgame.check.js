@@ -88,6 +88,95 @@ const messy = convert('[White "a"]\n1. e4 {a fine move} e5 $1 2. Nf3! (2. f4 exf
 eq(messy.moves.length, 4, 'comments, NAGs, the whole variation and !? are stripped; four real plies remain');
 eq(messy.moves[3].san, 'Nc6', 'and the annotation comes off the move');
 
-console.log('  ' + pass + ' passed, ' + fail + ' failed');
-if (fail) { console.log('RESULT: FAIL'); process.exit(1); }
-console.log('RESULT: PASS (' + pass + ' checks)');
+/* ══ THE WORLD CHAMPIONSHIP BROADCAST (2026-09-21) ═════════════════════════════════════
+   His ten Tournament Board picks, against the real 2024 match (tests/fixtures/wc2024.pgn, the
+   Lichess broadcast export: clocks and evals on every move). Offline, so it runs in npm test. */
+const fs = require('fs');
+const path = require('path');
+const G = require('./gen-godot-game.js');
+const W = require('./gen-broadcast.js');
+const WC = W.splitGames(fs.readFileSync(path.join(__dirname, 'fixtures', 'wc2024.pgn'), 'utf8'));
+const g1 = G.convert(WC[0]);
+eq(WC.length, 14, 'the 2024 fixture holds all fourteen games');
+eq(g1.moves[0].clock, 7196, '[%clk 1:59:56] after 1.e4 survives the converter as 7196 seconds');
+const qe2 = g1.moves.find((m) => m.move === 17 && m.side === 'w');
+ok(qe2 && qe2.spent > 33 * 60 && qe2.spent < 35 * 60, '…and 17.Qe2 took Gukesh 34 minutes — a true fact for the desk');
+eq(g1.moves[0].eval, 18, '[%eval 0.18] survives as 18 centipawns for White');
+eq(g1.graded_by, 'broadcast evals', 'a game with every eval is graded off the broadcast');
+eq(g1.marks, true, '…and may carry marks');
+eq([G.shortName('Ding, Liren'), G.shortName('Gukesh D'), G.shortName('Javokhir Sindarov'), G.shortName('Sindarov, Javokhir')].join(' '),
+  'Ding Gukesh Sindarov Sindarov', 'short names for a caption');
+
+/* ⭐⭐ THE GRADES ARE THE SITE'S OWN, AND THEY AGREE WITH LICHESS. Lichess writes its verdict into
+   the PGN ("Inaccuracy. Rfe1 was best."); on every fully-evaluated game ours must match it —
+   "Checkmate is now unavoidable" is Lichess's word for a blunder. */
+const verdict = (note) => {
+  if (/Checkmate is now unavoidable|Lost forced checkmate/.test(note)) return 'blunder';
+  const m = /(Inaccuracy|Mistake|Blunder)\./.exec(note || '');
+  return m ? m[1].toLowerCase() : null;
+};
+let agree = 0, flagged = 0;
+const off = [];
+WC.forEach((pgn, gi) => {
+  const g = G.convert(pgn);
+  if (g.graded_by !== 'broadcast evals') return;
+  const p = G.readPGN(pgn);
+  g.moves.forEach((m, i) => {
+    const theirs = verdict(p.notes[i]);
+    const ours = ['inaccuracy', 'mistake', 'blunder'].indexOf(m.cls) >= 0 ? m.cls : null;
+    if (!theirs && !ours) return;
+    flagged++;
+    if (theirs === ours) agree++; else off.push('g' + (gi + 1) + ' ' + m.move + '.' + m.san + ' ' + theirs + '/' + ours);
+  });
+});
+ok(flagged >= 25 && agree / flagged >= 0.95,
+  'our grade matches Lichess on ' + agree + ' of ' + flagged + ' flagged moves   (' + off.join(', ') + ')');
+const src = fs.readFileSync(path.join(__dirname, 'gen-godot-game.js'), 'utf8');
+ok(/review\(\)\.grade\(/.test(src) && /function grade\(fens, moves, evals, bests\)/.test(
+  fs.readFileSync(path.join(__dirname, '..', 'assets', 'js', 'pjcc-game-review.js'), 'utf8')),
+  'the grading IS the review\'s grade(), not a copy of it');
+ok(/game\.marks = by === 'broadcast evals'/.test(src),
+  '⚠⚠ a game graded only by our engine carries NO marks — measured: SF10 misgraded 2024 Game 1 at 3s a move');
+
+/* the score comes off the games themselves */
+const b3 = W.scoreBefore(WC, 3);
+eq(b3['Gukesh D'] + '-' + b3['Ding, Liren'], '0.5-1.5', 'the score before Game 3 is summed from Games 1 and 2');
+eq(W.tag(W.pick(WC, null), 'Round'), '14', 'with no game named, the latest finished one');
+const bsrc = fs.readFileSync(path.join(__dirname, 'gen-broadcast.js'), 'utf8');
+ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\n]*game\.event/.test(bsrc),
+  '⚠ the card never prints the PGN\'s Event, which carries the sponsor\'s name');
+
+/* the board side — read out of the mirror, which is what a rebuild restores */
+const TB = path.join(__dirname, '..', 'private', 'docs', 'godot', 'tournament_board');
+if (fs.existsSync(path.join(TB, 'booth.gd'))) {
+  const booth = fs.readFileSync(path.join(TB, 'booth.gd'), 'utf8');
+  const cast = fs.readFileSync(path.join(TB, 'broadcast.gd'), 'utf8');
+  const seat = fs.readFileSync(path.join(TB, 'seat_model.gd'), 'utf8');
+  const main = fs.readFileSync(path.join(TB, 'main.gd'), 'utf8');
+  const lines = /const LINES := \{([\s\S]*?)\n\}/.exec(booth);
+  const slots = lines ? [...lines[1].matchAll(/\{([a-z]+)\}/g)].map((m) => m[1]) : [];
+  const allowed = ['w', 'o', 'san', 'min', 'clock', 'n', 'moves', 'sq'];
+  ok(lines && slots.every((s) => allowed.indexOf(s) >= 0),
+    '⚠⚠ the desk\'s templates have slots for facts only — no slot a state of mind could go in',
+    slots.filter((s) => allowed.indexOf(s) < 0).join(' '));
+  ok(lines && !/nerv|rattl|panic|feel|confiden|upset|angry|tired|pressure|scared|shak|emotion|stress/i.test(lines[1]),
+    '⚠⚠ …and no line says how a real player FELT');
+  ok(/var graded := bool\(game\.get\("marks", false\)\)/.test(booth)
+    && /MARK\.has\(cls\) and bool\(game\.get\("marks", false\)\)/.test(cast),
+    'the desk and the board both stay quiet about grades the broadcast did not give');
+  ok(/ANIMATION_CALLBACK_MODE_PROCESS_MANUAL/.test(seat) && /func advance\(dt: float\)/.test(seat),
+    'a character animates on the recorder\'s clock, not the engine\'s');
+  ok(/--capture/.test(main) && /_thumbnail\(/.test(main) && /target_seconds/.test(main),
+    'the board records from the command line, saves the biggest swing, and fits the clip to a length');
+} else ok(false, 'the tournament board mirror is missing its new scripts');
+
+(async () => {
+  /* ⭐ A FEW HOLES ARE PATCHED: 2024 Game 7 is missing one eval. It keeps the broadcast's grades. */
+  const g7 = await G.gradeWithEngine(G.convert(WC[6]), 300);
+  eq(g7.graded_by, 'broadcast evals, 1 filled locally', 'Game 7 fills its one missing eval and keeps the rest');
+  ok(g7.marks === true && g7.moves.some((m) => m.cls === 'mistake'), '…and keeps its marks');
+  console.log('  ' + pass + ' passed, ' + fail + ' failed');
+  if (fail) { console.log('RESULT: FAIL'); process.exit(1); }
+  console.log('RESULT: PASS (' + pass + ' checks)');
+  process.exit(0);
+})();
