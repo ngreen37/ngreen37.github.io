@@ -83,10 +83,15 @@ const PAGE = `<!doctype html><meta charset="utf-8"><title>t</title>
 <script src="/assets/js/pjcc-systems.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script><body>`;
 
+/* /games/fork-in-the-road/ minus Jekyll: the room reads the Champ's query off its PARENT. */
+const FORK_WRAP = '<!doctype html><meta charset="utf-8"><iframe src="/assets/games/pjcc_fork.html" style="width:480px;height:556px"></iframe>';
+
 const TYPES = { '.js': 'text/javascript', '.html': 'text/html' };
 const server = http.createServer((req, res) => {
   const url = req.url.split('?')[0];
   if (url === '/t/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+  if (url === '/w/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(FORK_WRAP); }
+  if (url === '/games/checker-town/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<title>town</title>'); }
   const f = path.join(ROOT, url);
   if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' });
@@ -268,6 +273,72 @@ const server = http.createServer((req, res) => {
       '…and the profile hands it over as a STRING — a JS array does not cross the bridge');
     ok(/local\.island_open = !!\(local\.island_open \|\| remote\.island_open\)/.test(PROF),
       '…the oars merge by OR, like every other earned thing');
+
+    /* ══ THE CHAMP'S TAB CLOSES — 2026-09-21 ══
+       Nate: *"If there is a miss, the window closes. Currently, you can just keep doing puzzles
+       and you may not realize why."* Driven through the room's real settle and the real tap,
+       in a tab opened by window.open like the town's. Mutation: `nextPuzzle()` in place of the
+       close fails A, B, C and E. */
+    {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const now = () => page.evaluate(() => Date.now());
+      await page.evaluate(() => localStorage.removeItem('pjcc.puz.log.v1'));
+      const openRoom = async (q) => {
+        const u = '/w/' + q;
+        const tgt = browser.waitForTarget((t) => t.url().endsWith(u), { timeout: 10000 });
+        await page.evaluate((x) => { window.open(x, '_blank'); }, u);
+        const pop = await (await tgt).page();
+        pop.on('pageerror', (e) => errs.push('room: ' + e.message));
+        await pop.waitForFunction(() => { const f = document.querySelector('iframe');
+          return f && f.contentWindow && typeof f.contentWindow.oarsOver === 'function'; }, { timeout: 15000 });
+        const fr = pop.frames().find((f) => f.url().includes('pjcc_fork.html'));
+        await fr.evaluate(() => document.getElementById('journey-btn').click());
+        await fr.waitForFunction(() => typeof G !== 'undefined' && G && G.phase === 'await', { timeout: 10000 });
+        return { pop, fr };
+      };
+      const settle = (fr, clean) => fr.evaluate((c) => { G.clean = c; puzzleSolved(); return { town: explainCard.town, id: G.p.id }; }, clean);
+      const tap = (fr) => fr.evaluate(() => document.querySelector('canvas')
+        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 240, clientY: 300 })));
+      const shut = (pop) => Promise.race([new Promise((r) => pop.once('close', () => r(true))), sleep(2000).then(() => pop.isClosed())]);
+
+      let t0 = await now(), room = await openRoom('?oars=3&since=' + t0 + '&from=town');
+      const a1 = await settle(room.fr, true); await tap(room.fr); await sleep(250);
+      const a2 = await settle(room.fr, true); await tap(room.fr); await sleep(250);
+      const openAfterTwo = !room.pop.isClosed();
+      const a3 = await settle(room.fr, true); await tap(room.fr);
+      ok(!a1.town && !a2.town && openAfterTwo && a3.town && await shut(room.pop),
+        '⛑ the Champ\'s tab serves three clean, then its card says Town and the tap closes it',
+        JSON.stringify({ a1: a1.town, a2: a2.town, openAfterTwo, a3: a3.town }));
+
+      t0 = await now(); room = await openRoom('?oars=3&since=' + t0 + '&from=town');
+      const b1 = await settle(room.fr, false); await tap(room.fr);
+      ok(b1.town && await shut(room.pop), '…one miss closes it on the spot  (⚠ before, the room kept serving puzzles he stopped counting)');
+
+      await page.evaluate(() => { const a = JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]');
+        a.push({ c: 0, at: Date.now() - 5 }); localStorage.setItem('pjcc.puz.log.v1', JSON.stringify(a)); });
+      await sleep(20);
+      t0 = await now(); room = await openRoom('?oars=1&since=' + t0 + '&from=town');
+      const c0 = await room.fr.evaluate(() => oarsOver());
+      const c1 = await settle(room.fr, true); await tap(room.fr);
+      ok(!c0 && c1.town && await shut(room.pop),
+        '…"set me another" mid-run counts only what settled after `since`, and closes on the last one owed');
+
+      room = await openRoom('?from=town');
+      const d1 = await settle(room.fr, false); await tap(room.fr); await sleep(300);
+      const d2 = await room.fr.evaluate(() => G && G.p && G.p.id);
+      ok(!d1.town && !room.pop.isClosed() && d2 !== d1.id,
+        '…and a visit with no `oars` is the plain room: a miss serves the next puzzle');
+      await room.pop.close();
+
+      t0 = await now(); room = await openRoom('?oars=2&since=' + t0 + '&from=town');
+      await room.pop.evaluate(() => { window.close = () => {}; });
+      await settle(room.fr, false);
+      const nav = room.pop.waitForNavigation({ timeout: 3000 }).catch(() => null);
+      await tap(room.fr); await nav;
+      ok(/\/games\/checker-town\/$/.test(room.pop.url()),
+        '…a tab no script may close (popup blocked, the installed app) WALKS back to the town', room.pop.url());
+      await room.pop.close();
+    }
 
     ok(errs.length === 0, 'no page errors', errs.join(' | '));
 
@@ -520,6 +591,11 @@ const server = http.createServer((req, res) => {
         '…and one wrong answer ends it until tomorrow');
       ok(/func puzzle_more\(/.test(gs) && /NOT puzzle_begin/.test(gs),
         '…while "set me another" mid-run does NOT reset the count to zero');
+      const pMore = fnGd(gs, 'puzzle_more');
+      ok(/"%s\?oars=%d&since=%d" % \[PUZZLE_URL, PUZZLE_RUN - puzzle_streak\(\),\s*roundi\(/.test(pMore) &&
+         /open_url\(url\)/.test(pMore) && /puzzle_more\(\)/.test(fnGd(gs, 'puzzle_begin')),
+        '…and both doors tell the room what is still owed and since when, so it can close itself',
+        'roundi, not int: truncating a float stamp a hair low recounts the last solve');
       /* ⚠ IT NAMES THE REFUSAL, not the flag. `if not GameState.island_open:` appears twice in
          the Rowboat — once to refuse and once to decide whether to draw the oars — so a check
          on the flag alone passed a mutation that let anybody row out. */

@@ -1702,18 +1702,51 @@ const SCOUT_KEY = 'pjcc.gauntlet.scout.v1';
    bare /assets/games/pjcc_fork.html, so `?warmup=` lands on /games/fork-in-the-road/ and
    never reaches here. Caught on the LIVE site — a local harness that opens this file
    directly passes either way, which is exactly why it has to be tested through the wrapper. */
-function searchStr(){
-  if (/[?&]warmup=/.test(location.search)) return location.search;
-  try { if (window.parent && window.parent !== window && /[?&]warmup=/.test(window.parent.location.search)) return window.parent.location.search; } catch(e){}
+function searchStr(k){
+  const re = new RegExp('[?&]' + k + '=');
+  if (re.test(location.search)) return location.search;
+  try { if (window.parent && window.parent !== window && re.test(window.parent.location.search)) return window.parent.location.search; } catch(e){}
   return location.search;
 }
 function warmupArgs(){
   try {
-    const q = new URLSearchParams(searchStr()), cat = q.get('warmup');
+    const q = new URLSearchParams(searchStr('warmup')), cat = q.get('warmup');
     if (!cat || !GEN_FOR[cat]) return null;
     return { cat: cat, n: Math.max(1, Math.min(5, parseInt(q.get('n'), 10) || 3)),
              floor: parseInt(q.get('floor'), 10), name: (q.get('name') || 'the next floor').slice(0, 40) };
   } catch(e){ return null; }
+}
+/* ══ THE CHAMP'S THREE (2026-09-21) ══
+   Checker Town opens this room with `?oars=<clean solves still owed>&since=<ms>`. A miss or the
+   last clean solve ends his run, and tapping past that card closes the tab — before, the room
+   kept serving puzzles he had stopped counting.
+   ⚠ READ OFF THE LOG, the same rule GameState.puzzle_report() runs: a counter kept in this
+   page would reset on a reload and let the run go past its end. */
+function oarsArgs(){
+  try {
+    const q = new URLSearchParams(searchStr('oars'));
+    const left = parseInt(q.get('oars'), 10), since = parseInt(q.get('since'), 10);
+    return left > 0 && since >= 0 ? { left, since } : null;
+  } catch(e){ return null; }
+}
+function oarsOver(){
+  const o = oarsArgs();
+  if (!o) return false;
+  try {
+    const a = JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]');
+    let clean = 0;
+    for (const r of a) {
+      if (!r || !(r.at > o.since)) continue;
+      if (!r.c || ++clean >= o.left) return true;
+    }
+  } catch(e){}
+  return false;
+}
+/* ⚠ Closing fails on a tab no script opened (popup blocked, the installed app) — walk back. */
+function backToTown(){
+  const w = window.top || window;
+  try { w.close(); } catch(e){}
+  setTimeout(() => { try { w.location.href = '/games/checker-town/'; } catch(e){ location.href = '/games/checker-town/'; } }, 180);
 }
 let lastWarmup = null;
 function startWarmup(w){
@@ -1976,10 +2009,15 @@ function showExplain(){
     ? { text: (lastRatingMove.delta > 0 ? '+' : '') + lastRatingMove.delta + ' → ' + lastRatingMove.after,
         up: lastRatingMove.delta > 0 }
     : null;
-  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm, rating: rl };
+  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm, rating: rl, town: oarsOver() };
   clearTimeout(explainTimer);   // no auto-advance — the player taps OK when ready, so there's time to read it
 }
-function advanceFromExplain(){ clearTimeout(explainTimer); explainCard = null; nextPuzzle(); }
+function advanceFromExplain(){
+  clearTimeout(explainTimer);
+  const town = explainCard && explainCard.town;
+  explainCard = null;
+  if (town) backToTown(); else nextPuzzle();
+}
 function revealSolution(){
   clearRefutation();
   G.clean = false; G.revealed = true; G.selected = null; G.wrong = 0;
@@ -2409,7 +2447,7 @@ function drawExplain(){
   const okW = 70, okH = 24, okX = x + cardW - okW - 12, okY = y + cardH - okH - 9;
   ctx.fillStyle = explainCard.color; roundRect(okX, okY, okW, okH, 12); ctx.fill();
   ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
+  ctx.fillText(explainCard.town ? 'Town ▸' : 'OK ▸', okX + okW/2, okY + okH/2);
   /* The rating swing, bottom-left of the same card, opposite the OK. Green up, pink
      down — the room's own two colors, so it needs no legend. It sits INSIDE the card
      rather than floating: this is a fact about the puzzle you just did, not a
