@@ -966,6 +966,12 @@ const server = http.createServer((req, res) => {
       ok(pFeet && pTall && /_model\.draw_on\(self, Vector2\(0\.0, SEAT_FEET\)\)/.test(park),
         'the seated player is measured too, off the model\'s own height');
       if (pFeet && pTall) pSeats.push(+pFeet[1] - +pTall[1]);
+      /* …and a DOG at a table, drawn sitting, not a model: her crown is DOG_SEAT − SIT_TALL × scale. */
+      const pDog = /const DOG_SEAT := (-?[\d.]+)/.exec(park), pDogS = /const DOG_SCALE := ([\d.]+)/.exec(park);
+      const pSit = /const SIT_TALL := ([\d.]+)/.exec(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8'));
+      ok(pDog && pDogS && pSit && /TownDog\.paint_sitting\(self, who, Vector2\(0\.0, DOG_SEAT\), DOG_SCALE/.test(park),
+        'a dog at a Pavilion table is measured too');
+      if (pDog && pDogS && pSit) pSeats.push(+pDog[1] - +pSit[1] * +pDogS[1]);
       ok(pRoom && pRung && pSeats.length >= 3,
         'the pavilion\'s frame is readable from source', pSeats.length + ' heads measured');
       if (pRoom && pRung && pSeats.length) {
@@ -2686,6 +2692,75 @@ const server = http.createServer((req, res) => {
         ok(/GameState\.check_site_unlocks\(\)[\s\S]*site_scores/.test(fnGd(jr, 'open')), 'the Journal fills a met price before it draws');
       }
 
+      /* ══ 39 · THE STORY PICKS (2026-09-21) ═════════════════════════════════════════════
+         His: "#'s 1, 3, 4, 5, 6, 7, 8, 9, and 10." Every line is placeheld; these check the
+         shape, and the one universe rule the batch turned up. */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const npcG = code(rd('npc.gd')), dogG = code(rd('dog.gd')), townG = code(rd('town.gd'));
+        const zoneG = code(rd('zone.gd')), gsG = code(rd('game_state.gd')), parkG = code(rd('park.gd'));
+        const strs = (s) => [...s.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+
+        /* ⛑⛑ ONLY HUMANS TALK (his rule, 2026-07-15). Crockett and Argus are dogs in their own
+           files; in this town they said sentences from 09-02 and wore a person from 09-20. */
+        const coats = /const COATS := \{([\s\S]*?)\n\}/.exec(dogG);
+        const animals = coats ? [...coats[1].matchAll(/"([A-Za-z ]+)":/g)].map((m) => m[1]) : [];
+        ok(['Princess', 'Crockett', 'Argus'].every((a) => animals.includes(a)),
+          '⛑⛑ the three dogs are in ONE table, and it is the list of animals', animals.join(' '));
+        ok(/c\.animal = TownDog\.is_animal\(name_\)/.test(townG) && /_animal = TownDog\.is_animal\(who\)/.test(parkG)
+          && /func wears_model\(\) -> bool:\s*\n\s*return not animal/.test(npcG),
+          '…the town and the Pavilion both ask it, and an animal never wears a person');
+        const spoken = [];
+        for (const a of ['Crockett', 'Argus']) {
+          const at = townG.indexOf('_add_challenger("' + a + '"');
+          const call = at < 0 ? '' : townG.slice(at, townG.indexOf('\n\t_', at + 10) > 0 ? townG.indexOf('\n\t_', at + 10) : at + 2000);
+          strs(call).slice(1).filter((s) => !/^[a-z]+$/.test(s)).forEach((s) => { if (!s.startsWith(a)) spoken.push(a + ': ' + s); });
+          if (at < 0) spoken.push(a + ': NOT FOUND');
+        }
+        const pb = townG.slice(townG.indexOf('dog.lines = ['), townG.indexOf('dog.water ='));
+        strs(pb).forEach((s) => { if (!s.startsWith('Princess')) spoken.push('Princess: ' + s); });
+        for (const a of ['Princess', 'Crockett', 'Argus']) {
+          const row = new RegExp('"who": "' + a + '"[^\\n]*\\n[^\\n]*"say": "([^"]*)"').exec(gsG);
+          if (!row || !row[1].startsWith(a)) spoken.push(a + ' (Assembly): ' + (row ? row[1] : 'NOT FOUND'));
+        }
+        ok(spoken.length === 0,
+          '⛑⛑ …and every line a dog has is what the dog DOES, never a sentence it says',
+          spoken.slice(0, 3).join(' | ') || 'Crockett, Argus, Princess — town, camp and Assembly');
+        ok(/npc\.razz_line if npc\.animal else/.test(zoneG) && /if TownDog\.is_animal\(who\):/.test(zoneG),
+          '…and a dog’s razz goes out without quotes, even from another room');
+
+        /* #5 — the old city. A row only where somebody has a line, and never for an animal. */
+        const before = /const BEFORE := \{([\s\S]*?)\n\}/.exec(townG);
+        const bKeys = before ? [...before[1].matchAll(/^\s*"([^"]+)":/gm)].map((m) => m[1]) : [];
+        ok(/if before_line != "":\s*\n\s*rows\.append\(\{ "id": "before", "text": "What was it like before\?" \}\)/.test(npcG)
+          && bKeys.length >= 6 && bKeys.every((k) => !animals.includes(k)),
+          '⭐ "What was it like before?" — a row where somebody remembers, and no animal remembers aloud',
+          bKeys.join(', '));
+        /* #7 — Maxwell greets you off the board, not off the hearts. */
+        ok(/_board_line\(\) if not board_lines\.is_empty\(\) else _line_for\(hearts\)/.test(npcG)
+          && /maxwell\.board_lines = \[/.test(townG) && /GameState\.army_count\(\)/.test(fnGd(npcG, '_board_line')),
+          '⭐ Maxwell’s greeting reads how far your board has got');
+        /* #6 — the water. Salted by the evening, dark only, and NOTHING says why. */
+        ok(/posmod\(hash\("water\|%d" % d\), 100\)/.test(dogG) && /not TownClock\.is_dark\(\)/.test(fnGd(dogG, '_water_night'))
+          && /dog\.water = LOOKOUT_AT/.test(townG),
+          '⭐ some nights Princess goes to the water, and only after dark');
+        const told = strs(dogG).concat(strs(pb)).filter((s) => /tilt|planet|bill|queen|manifest|imagin|pray/i.test(s));
+        ok(told.length === 0 && /deg_to_rad\(-20\.0\) if tilt/.test(dogG),
+          '⚠⚠ …the tilt is DRAWN, twenty degrees, and not one string explains it',
+          told.join(' | ') || 'nobody knows what she is doing');
+        /* #3 — the lookout stands on the dock, and its view is a cover the player cannot walk under. */
+        const lk = code(rd('lookout.gd'));
+        const sea = /const SEA_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(townG);
+        const look = /const LOOKOUT_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(townG);
+        const deck = sea && [+sea[1] - 270, +sea[2] - 160, 540, 360];
+        ok(look && deck && +look[1] >= deck[0] && +look[1] <= deck[0] + deck[2]
+          && +look[2] >= deck[1] && +look[2] <= deck[1] + deck[3] && /TownLookout\.new\(\)/.test(townG),
+          '⭐ the lookout stands on the dock at the Sea', look ? look[1] + ',' + look[2] : 'no LOOKOUT_AT');
+        ok(/add_to_group\("town_cover"\)/.test(lk) && /TownZone\.uncovered\(\)/.test(fnGd(lk, 'close'))
+          && /class Vista extends CanvasLayer/.test(lk),
+          '…and the view across the water holds the player still, and lets go cleanly');
+      }
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
          ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
       {
