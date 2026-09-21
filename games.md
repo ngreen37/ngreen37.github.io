@@ -78,7 +78,15 @@ permalink: /games/
    columns (roughly the Pirc and Clearance boxes). */
 .ghub-doorway { position:relative; z-index:2; display:flex; justify-content:space-between;
   align-items:flex-end; flex-wrap:wrap; gap:18px clamp(20px, 4vw, 48px);
-  max-width:min(62%, 560px); margin:0 auto 14px; animation:ghub-wake .6s ease both; }
+  /* ⚠⚠ THE FLOOR IS NOT DECORATION — a PERCENTAGE BAND CAN BE NARROWER THAN ITS OWN
+     CONTENTS. The door and the trophy are 87 + 88 = 175px plus a 20px gap = 195px, and
+     62% of a 390px phone is 186px. It missed by NINE PIXELS on the most common phone
+     width in the world, so the pair wrapped and the arcade spent an extra 106px of the
+     first screen on two ornaments before a single game showed.
+     max() puts a floor under the band. Desktop is untouched — 62% wins there. Measured at
+     360/390/414/430; it stacked at 360 and 390 and was fine from 414 up, which is exactly
+     why eyeballing it on one phone would have missed it. */
+  max-width:max(200px, min(62%, 560px)); margin:0 auto 14px; animation:ghub-wake .6s ease both; }
 
 
 /* ---- THE GAMBIT entrance — same row grammar, but a wager altar: a glowing ♟ coin

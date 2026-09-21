@@ -212,7 +212,14 @@ section('6 · the page loads what it runs on');
      'it lives at /academy/opening-trainer/');
   ok(/body_class:\s*theme-academy/.test(src), 'it wears the Academy theme');
   ok(/var USER = 'b'/.test(src), 'the student is hard-wired to Black');
-  ok(/ot-devpill[^>]*>In Development</.test(src), 'it says IN DEVELOPMENT on its face');
+  /* ⚠ The pill must carry one of the THREE approved "not yet" words, never one of the six
+     banned phrasings. "In Development" shipped here once and this check enforced it. */
+  ok(/ot-devpill[^>]*>Building</.test(src), 'the pill says Building, the approved word');
+  var RENDERED = src
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '')
+    .replace(/<!--[\s\S]*?-->/g, '');
+  ok(!/In Development|Coming Soon|Not ready yet|months away|hold your breath/i.test(RENDERED),
+     'no banned "not yet" phrasing reaches the page');
   ok(src.indexOf('BOOK.CREED') > -1 && src.indexOf('ot-creed') > -1,
      'the creed reaches the page');
   ok(src.indexOf('v.why') > -1 && src.indexOf('ot-why-b') > -1,

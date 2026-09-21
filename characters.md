@@ -121,8 +121,10 @@ permalink: /characters/
 .char-ancillary-head { text-align: center; color: #6b5a8e; font-size: 13px; letter-spacing: 3px;
   text-transform: uppercase; margin: 44px 0 4px; }
 .char-ancillary-sub { margin-top: 0 !important; opacity: 0.85; }
-/* Word-length "piece" designations (e.g. the Commentators' "various") render as a
-   compact label instead of the oversized 48px glyph, so they don't overflow the card. */
+/* A word-length `piece:` value (one of the cast carries "various" rather than a glyph)
+   renders as a compact label instead of the oversized 48px glyph, so it cannot overflow
+   the card. ⚠ Do not name the character here — this comment ships to every visitor
+   inside the page's inline <style>. */
 .char-flip-piece--word { font-size: 15px; font-weight: 800; letter-spacing: 0.14em;
   text-transform: uppercase; color: rgba(190, 150, 255, 0.72); }
 </style>
