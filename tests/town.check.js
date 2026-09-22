@@ -3055,6 +3055,37 @@ const server = http.createServer((req, res) => {
         ok(/const ROOM := Rect2\(-576\.0, -330\.0, 1152\.0, 660\.0\)/.test(hm) && /world_bounds = FLOOR/.test(hm),
           '…a LITTLE room inside: a window-sized room, a small lit floor');
       }
+      /* ══ 37 · 2026-09-22 — THE DAY STARTS AND ENDS AT HOME, AND MAXWELL HAS ONE TOO ═══════ */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const tw = code(rd('town.gd')), pr = code(rd('prop_model.gd')), hm = code(rd('home.gd'));
+        /* the bed is the only way to turn the day over, and it is in the house (checked above);
+           what is left is where you START: the boot scene, and where the town drops you. */
+        ok(/player_start = HOME_AT \+ Vector2\(CheckerHome\.WIDE \* 0\.5 \+ 44\.0, 0\.0\)/.test(tw),
+          '⭐ the town\'s default arrival is your own front door, not the middle of the square',
+          'his: "each day start and end inside the checker home"');
+        ok(/var bed := TownBed\.new\(\)/.test(hm) && /GameState\.sleep\(\)/.test(rd('bed.gd')),
+          '…and the only bed in the game is in that house, so a day can only end there');
+        /* ⚠ HIS PROJECT, WHICH A CLEAN CHECKOUT DOES NOT HAVE — the mirror keeps no project.godot,
+           so this one is skipped off this machine and says so rather than passing quietly. */
+        const proj = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
+        const pg = path.join(proj, 'project.godot');
+        const boot = fs.existsSync(pg) ? /run\/main_scene="([^"]+)"/.exec(fs.readFileSync(pg, 'utf8')) : null;
+        ok(!fs.existsSync(pg) || (boot && boot[1] === 'res://home.tscn'),
+          '…and the game BOOTS in the house',
+          fs.existsSync(pg) ? 'main_scene ' + (boot ? boot[1] : '?') : 'skipped: no project.godot here');
+        /* Maxwell's, in black */
+        ok(/class CheckerHut extends Node2D:/.test(tw) && /hut\.position = CAMP_AT \+/.test(tw)
+           && /TownProp\.make\("res:\/\/checker\.glb", CheckerHome\.TILT,\s*int\(CheckerHome\.WIDE \* 2\.0\), BLACK\)/.test(tw),
+          '⭐ Maxwell\'s house is a checker too, at his camp');
+        ok(/const BLACK := Color\("1b1a20"\)/.test(tw) && /m\.albedo_color = c/.test(fnGd(pr, '_tint'))
+           && /src\.duplicate\(\)/.test(fnGd(pr, '_tint')),
+          '…and BLACK is the scene dressing it: albedo on a DUPLICATED material',
+          '⚠⚠ his dark material never left Blender — glTF writes only the materials faces use');
+        ok((tw.match(/_prop\.draw_size\(/g) || []).length >= 2 && /float\(size\.y\) \/ float\(size\.x\)/.test(pr),
+          '…both checkers are drawn at the texture\'s own proportions  (the viewport carries 4% padding)');
+      }
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
          ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
       {
