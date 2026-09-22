@@ -3040,9 +3040,17 @@ const server = http.createServer((req, res) => {
         ok(northY <= -300 - 600 && northY >= -300 - 800 && /Rect2\(TRAIL_X - 22\.0, NORTH_Y \+ 44\.0/.test(tw),
           '…one window screen above the square\'s roofline, up a trail',
           'plaza road at ' + northY + '; the square\'s roofs reach -300 and the window is 648');
-        ok(camp && camp[0] > 1000 && /Rect2\(GATE_AT\.x - 90\.0, -20\.0, CAMP_AT\.x \+ 20\.0/.test(tw)
+        const gr = /const GROUND_RECT := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(tw);
+        const wr = /const WATER_RECT := Rect2\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(tw);
+        ok(camp && camp[0] >= 1700 && /Rect2\(GATE_AT\.x - 90\.0, -20\.0, CAMP_AT\.x \+ 20\.0/.test(tw)
            && /_add_challenger\("Kedar", "dad", 1400, "k", CAMP_AT \+/.test(tw),
-          '⭐ the Sand Mines are to the RIGHT, the road runs there, and Kedar works there', String(camp));
+          '⭐ the Sand Mines are RIGHT and a walk away, and Kedar works there',
+          'camp ' + camp + ' — most of a screen of road past Murphy at 700');
+        /* ⚠ THE MAP AND THE SEA HAVE TO FOLLOW IT OUT: sand past the edge, or water stopping in grass. */
+        ok(gr && wr && camp && +gr[1] + +gr[3] >= camp[0] + 360 + 100
+           && +wr[1] + +wr[3] >= +gr[1] + +gr[3] - 1,
+          '…and the ground reaches past the sand while the sea runs to the same edge',
+          gr ? 'edge ' + (+gr[1] + +gr[3]) + ', sand ends ' + (camp[0] + 360) + ', water ends ' + (+wr[1] + +wr[3]) : '?');
 
         /* his checker is his home */
         const ch = tw.slice(tw.indexOf('class CheckerHome extends TownDoor:'));
@@ -3052,8 +3060,10 @@ const server = http.createServer((req, res) => {
           '⭐ Nate\'s home is HIS checker, nothing added outside, and you walk onto it to go in');
         ok(/\{ name: 'Checker', out: 'assets\/models\/checker\.glb', godot: 'checker\.glb' \}/.test(GM),
           '…and gen:models carries the checker into the game, the way it carries him');
-        ok(/const ROOM := Rect2\(-576\.0, -330\.0, 1152\.0, 660\.0\)/.test(hm) && /world_bounds = FLOOR/.test(hm),
-          '…a LITTLE room inside: a window-sized room, a small lit floor');
+        const cr = code(rd('checker_room.gd'));
+        ok(/const ROOM := Rect2\(-576\.0, -330\.0, 1152\.0, 660\.0\)/.test(cr) && /world_bounds = FLOOR/.test(cr)
+           && /extends CheckerRoom/.test(hm),
+          '…a LITTLE room inside: a window-sized room, a small lit floor  (one shell, both houses)');
       }
       /* ══ 37 · 2026-09-22 — THE DAY STARTS AND ENDS AT HOME, AND MAXWELL HAS ONE TOO ═══════ */
       {
@@ -3067,24 +3077,39 @@ const server = http.createServer((req, res) => {
           'his: "each day start and end inside the checker home"');
         ok(/var bed := TownBed\.new\(\)/.test(hm) && /GameState\.sleep\(\)/.test(rd('bed.gd')),
           '…and the only bed in the game is in that house, so a day can only end there');
-        /* ⚠ HIS PROJECT, WHICH A CLEAN CHECKOUT DOES NOT HAVE — the mirror keeps no project.godot,
-           so this one is skipped off this machine and says so rather than passing quietly. */
-        const proj = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
-        const pg = path.join(proj, 'project.godot');
-        const boot = fs.existsSync(pg) ? /run\/main_scene="([^"]+)"/.exec(fs.readFileSync(pg, 'utf8')) : null;
-        ok(!fs.existsSync(pg) || (boot && boot[1] === 'res://home.tscn'),
-          '…and the game BOOTS in the house',
-          fs.existsSync(pg) ? 'main_scene ' + (boot ? boot[1] : '?') : 'skipped: no project.godot here');
+        /* ⭐ THE MIRROR CARRIES project.godot SINCE 2026-09-22 (his: *"add the boot check to private"*),
+           so this asks a file the repo really has instead of skipping off his machine. */
+        const mirror = /run\/main_scene="([^"]+)"/.exec(rd('project.godot'));
+        ok(mirror && mirror[1] === 'res://home.tscn',
+          '…and the game BOOTS in the house', mirror ? mirror[1] : 'no main_scene in the mirror');
+        /* ⚠⚠ AND THE TWO COPIES MUST AGREE — a mirror that drifts is a gate reading last week. */
+        const pg = path.join(process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town',
+          'project.godot');
+        const his = fs.existsSync(pg) ? /run\/main_scene="([^"]+)"/.exec(fs.readFileSync(pg, 'utf8')) : null;
+        ok(!his || (mirror && his[1] === mirror[1]),
+          '…and his project boots the same scene the mirror claims',
+          his ? 'his ' + his[1] + ' · mirror ' + (mirror ? mirror[1] : '?') : 'his project is not on this machine');
         /* Maxwell's, in black */
-        ok(/class CheckerHut extends Node2D:/.test(tw) && /hut\.position = CAMP_AT \+/.test(tw)
-           && /TownProp\.make\("res:\/\/checker\.glb", CheckerHome\.TILT,\s*int\(CheckerHome\.WIDE \* 2\.0\), BLACK\)/.test(tw),
-          '⭐ Maxwell\'s house is a checker too, at his camp');
+        const mh = code(rd('maxwell_home.gd'));
+        const at = (n) => { const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
+        const red = at('HOME_AT'), black = at('MAX_HOME_AT');
+        ok(red && black && Math.hypot(red[0] - black[0], red[1] - black[1]) < 400
+           && /his\.position = MAX_HOME_AT/.test(tw) && /class CheckerHut extends CheckerHome:/.test(tw)
+           && /Rect2\(MAX_HOME_AT\.x, HOME_AT\.y - 20\.0/.test(tw),
+          '⭐ Maxwell\'s checker is next door to yours, on the same lane',
+          red + ' · ' + black);
+        ok(/his\.scene_path = "res:\/\/maxwell\.tscn"/.test(tw) && fs.existsSync(path.join(GD, 'maxwell.tscn'))
+           && /extends CheckerRoom/.test(mh) && /_furnish_room/.test(mh),
+          '…and it OPENS: a room like Nate\'s, out of the same shell');
+        ok(!/TownBed/.test(mh) && /class Bunk extends Node2D:/.test(mh),
+          '⚠⚠ …with his bunk as SCENERY — one bed in the game, or a day could end in his house');
         ok(/const BLACK := Color\("1b1a20"\)/.test(tw) && /m\.albedo_color = c/.test(fnGd(pr, '_tint'))
            && /src\.duplicate\(\)/.test(fnGd(pr, '_tint')),
           '…and BLACK is the scene dressing it: albedo on a DUPLICATED material',
           '⚠⚠ his dark material never left Blender — glTF writes only the materials faces use');
-        ok((tw.match(/_prop\.draw_size\(/g) || []).length >= 2 && /float\(size\.y\) \/ float\(size\.x\)/.test(pr),
-          '…both checkers are drawn at the texture\'s own proportions  (the viewport carries 4% padding)');
+        ok(/size = _prop\.draw_size\(WIDE\)/.test(tw) && /float\(size\.y\) \/ float\(size\.x\)/.test(pr),
+          '…and both are drawn at the texture\'s own proportions  (the viewport carries 4% padding)',
+          'one CheckerHome draws both houses — Maxwell\'s changes only the paint and the room');
       }
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
          ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
