@@ -943,11 +943,19 @@ const server = http.createServer((req, res) => {
       /* ⭐⭐ THE SAME TRICK THE ARCADE PLAYS ON THE GAMES REGISTRY, aimed at the bench: the ten
          tables are derived from `_data/regulars.yml` and checked from BOTH SIDES. A table for a
          seat that does not exist, or a seat with no table, is red here. */
-      const benchKeys = [...yml.matchAll(/^- key:\s*(\S+)/gm)].map((m) => m[1]).sort();
+      /* ⚑ MINUS THE CEO (2026-09-21, Nate: *"The CEO should be removed"*): his chair is the Hall's,
+         and sit_down() on his key is the finale — a park table was a second door to it. */
+      const benchKeys = [...yml.matchAll(/^- key:\s*(\S+)/gm)].map((m) => m[1]).filter((k) => k !== 'ceo').sort();
       const tableKeys = [...park.matchAll(/\{ "key": "([a-z]+)"/g)].map((m) => m[1]).sort();
       ok(JSON.stringify(tableKeys) === JSON.stringify(benchKeys),
-        '…and the ten tables ARE the bench, both ways',
+        '…and the tables ARE the bench minus the CEO, both ways',
         'tables: ' + tableKeys.join(' ') + '  |  bench: ' + benchKeys.join(' '));
+      const ceoYml = /^- key:\s*ceo\s*\n\s*name:[^\n]*\n\s*icon:[^\n]*\n\s*elo:\s*(\d+)/m.exec(yml);   /* ⚠ `.` stops at a CRLF's \r */
+      const ceoGd = /const CEO_ELO := (\d+)/.exec(gs);
+      ok(!/"key": "ceo"/.test(park) && ceoYml && ceoGd && +ceoYml[1] === +ceoGd[1]
+         && /_ceo\.elo = GameState\.CEO_ELO/.test(fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8')),
+        '⛑ the CEO has no park table, and his ONE rating is GameState.CEO_ELO, the bench\'s own',
+        (ceoGd ? ceoGd[1] : '?') + ' vs bench ' + (ceoYml ? ceoYml[1] : '?'));
       /* every row, field for field, against the YAML the site prints from */
       const ymlRows = {};
       for (const m of yml.matchAll(
@@ -1057,6 +1065,44 @@ const server = http.createServer((req, res) => {
         ok(pieceTop - camLowest >= 56,
           '…and the seated pieces clear the HUD from the camera\'s lowest position',
           'screen y ' + Math.round(pieceTop - camLowest) + ', the stat row ends at 50');
+      }
+      /* ══ YOU CAN WALK BEHIND THE TABLES — 2026-09-21 ══
+         Nate: *"let's be able to walk behind the tables."* Tables are SOLID (y-sort alone walks you
+         through them), and how far back you go is the HUD's call. Walked in a probe: front stop
+         −225, back stop −335, back limit −369, lane clear end to end. */
+      {
+        const PL = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
+        const num = (re, src) => { const m = re.exec(src); return m ? +m[1] : NaN; };
+        const backY = num(/const BACK_Y := (-?[\d.]+)/, park), camOff = num(/camera_offset = Vector2\(0\.0, (-?[\d.]+)\)/, park);
+        const rad = num(/var radius: float = ([\d.]+)/, PL), feet = num(/const FEET := ([\d.]+)/, PL);
+        const foot = /const FOOT := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(park);
+        const nook = /const NOOK := Vector2\(([\d.]+), ([\d.]+)\)/.exec(park);
+        const dial = /_dial\.position = Vector2\(w - ([\d.]+) \* k, ([\d.]+) \* k\)/.exec(fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8'));
+        const dialH = num(/const DIAL := ([\d.]+)/, fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8'));
+        const nums = [backY, camOff, rad, feet, dialH, pTall && +pTall[1], pRoom && +pRoom[2]];
+        ok(nums.every((n) => Number.isFinite(n)) && foot && nook && dial && pRung,
+          'the lane behind the tables is readable from source', nums.join(' '));
+        if (nums.every((n) => Number.isFinite(n)) && foot && nook && dial && pRung) {
+          const roomTop = +pRoom[2], roomRight = +pRoom[1] + +pRoom[3], roomBottom = roomTop + +pRoom[4], wallT = 28;
+          const tall = +pTall[1];
+          const back = backY + rad + 2;                                        /* player.gd's clamp */
+          const camTop = (y) => Math.min(Math.max(y + camOff - 324, roomTop), roomBottom - 648);
+          const behind = +pRung[1] + +foot[2] - rad;                           /* touching a table's back */
+          ok(behind - back >= 20 && /box\.size = FOOT\.size/.test(park) && /StaticBody2D\.new\(\)/.test(park),
+            '⭐ the tables are solid and there is a LANE behind them', Math.round(behind - back) + ' units');
+          ok(back + feet - tall - camTop(back) >= 56,
+            '…whose back edge keeps your head clear of the stat row',
+            'screen y ' + Math.round(back + feet - tall - camTop(back)));
+          /* ⚠ the clock hangs lower, top right; at the room's end the camera stops and the corner
+             is under it. HALF_W 20 is his sprite, off a render. */
+          const clockL = roomRight - +dial[1], clockBottom = +dial[2] + dialH;
+          const besideNook = roomRight - wallT - +nook[1] - rad;
+          const belowNook = roomTop + wallT + +nook[2] + rad;
+          ok(besideNook + 20 <= clockL && belowNook + feet - tall - camTop(belowNook) >= clockBottom + 2
+             && /for r in nooks\(\):/.test(park) && /for r in Pavilion\.nooks\(\):/.test(park),
+            '…and a solid, DRAWN hedge fills the back corners, so you cannot stand under the clock',
+            'beside ' + besideNook + ' vs clock ' + clockL + ' · head ' + Math.round(belowNook + feet - tall - camTop(belowNook)) + ' vs ' + clockBottom);
+        }
       }
 
       /* ══ 15 · THE DEPTHS IS THE CAMP ABOVE THE SHAFT ════════════════════════════════ */
@@ -2896,7 +2942,7 @@ const server = http.createServer((req, res) => {
         const uw = townG.slice(townG.indexOf('class Underwriter extends TownNPC:'), townG.indexOf('class HomeBoard extends Interactable:'));
         ok(/murphy\.who = "Murphy"/.test(townG) && /"who": "Murphy"/.test(gsG),
           '⭐ Murphy’s nameplate is his square’s name, so talking to him is meeting that square');
-        ok(/Pavilion\.SEATS \+ Pavilion\.OFF/.test(uw) && !/2400|1800|1400/.test(uw) && /\/ 400\.0/.test(uw),
+        ok(/Pavilion\.SEATS \+ Pavilion\.OFF/.test(uw) && /GameState\.CEO_ELO/.test(uw) && !/2400|1800|1400/.test(uw) && /\/ 400\.0/.test(uw),
           '…every rating he quotes is read off the Pavilion’s own table, through Elo’s 400',
           '⚠ a second copy of the seat ratings is a bookmaker quoting last season’s odds');
         ok(/if me <= 0:\s*\n\s*return "No history/.test(uw) && /P\.puzzleRating\(\)\.rating/.test(fnGd(gsG, 'site_rating')),
