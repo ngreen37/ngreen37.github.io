@@ -18,7 +18,7 @@ const BLEND_DIR = process.env.BLEND_DIR || path.join(os.homedir(), 'Desktop', 'B
 // Documents/ is a model the next rebuild loses.
 const MODELS = [
   { name: 'Altar', out: 'assets/models/gambit-altar.glb' },
-  { name: 'Checker', out: 'assets/models/checker.glb' },
+  { name: 'Checker', out: 'assets/models/checker.glb', godot: 'checker.glb' },
   { name: 'Nate', out: 'assets/models/nate.glb', godot: 'nate.glb' },
 ];
 

@@ -431,8 +431,9 @@ const server = http.createServer((req, res) => {
          the rule this check exists for is unchanged: she is placed OUTSIDE the Assembly she
          gates, and she still owns the c-bishop. Both halves, or the spelling change would have
          quietly taken her off the map. */
-      ok(/dog\.key = "princess"/.test(town) && /dog\.position = HALL_AT \+/.test(town),
-        '…and Princess stands outside the Assembly she gates');
+      ok(/var dog := TownDog\.princess\(\)/.test(town) && /dog\.position = HALL_AT \+/.test(town)
+         && /dog\.key = "princess"/.test(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8')),
+        '…and Princess stands outside the Assembly she gates  (built once, in dog.gd — the house has her too)');
       /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once */
       const yml = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
       const keys = [...roster.matchAll(/"key": "([a-z]+)"/g)].map((m) => m[1]);
@@ -610,8 +611,10 @@ const server = http.createServer((req, res) => {
          Kaede's sibling on the map too and let's do both japanese game (reading room and
          shogi) - let's do what we can to teach the user japanese if they wish."* */
       const town2 = town;
-      ok(/url = "\/games\/reading-room\/"/.test(town2),
-        'the Reading Room is a building in Checker Town');
+      /* ⚑ MOVED 2026-09-21, his: *"move the Reading Room to the island"*. Kaede stays in town —
+         her file has her there on the exchange, at school; see the check below. */
+      ok(/url = "\/games\/reading-room\/"/.test(isl) && !/url = "\/games\/reading-room\/"/.test(town2),
+        'the Reading Room is a building on Shogi Island, and no longer in town');
       /* ⚠⚠ EVERY SITE URL THE TOWN OPENS, PULLED OUT OF THE TOWN. Naming the two Japanese
          ones here would be the same defect the Academy's lesson check already had: a gate that
          only knows the answers it was given cannot see a THIRD door added later pointing at
@@ -1318,7 +1321,7 @@ const server = http.createServer((req, res) => {
       const FTD = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_space_run.html'), 'utf8');
       const pmd = fs.readFileSync(path.join(ROOT, '_characters/princess.md'), 'utf8');
       ok(/function updatePrincess\(/.test(FTD) && /a dog who can learn/.test(pmd)
-        && /dog\.who = "Princess"/.test(town2),
+        && /dog\.who = "Princess"/.test(dog),
         '…and she is PRINCESS, because Follow the Dog is her game',
         '⚑ Crockett is the other dog and his file says "always around" — one word moves it');
       /* ⚠⚠ ANCHORED TO THE END OF THE LINE. `0.0` is a PREFIX of `0.09`, so the first draft
@@ -1326,7 +1329,7 @@ const server = http.createServer((req, res) => {
          `-33`, which this file has now had twice. ⚠ AND `$` IS NOT THE ANCHOR TO REACH FOR:
          the line carries a trailing comment, so end-of-line failed on the truth. A lookahead
          for a digit is the one that asks the real question. [[green-must-name-what-ran]] */
-      ok(/dog\.elo = 2100/.test(town2) && /dog\.away_chance = 0\.0(?!\d)/.test(town2),
+      ok(/dog\.elo = 2100/.test(dog) && /dog\.away_chance = 0\.0(?!\d)/.test(dog),
         '…keeping her seat, and never randomly missing  (a companion who vanishes reads as a bug)');
       ok(/_follow = GameState\.hearts_for\(who\) > 0/.test(dog),
         '…and she does not follow a stranger');
@@ -1863,7 +1866,8 @@ const server = http.createServer((req, res) => {
            the Arcade. Two bespoke buildings is the rule now; a third is a decision. */
         const subs = [...town2.matchAll(/class (\w+) extends TownDoor:/g)]
           .map((m) => m[1]).sort();
-        const want = ['ArcadeFront', 'CityGate', 'Rowboat', 'TheaterFront'];
+        /* ⭐ CheckerHome JOINED 2026-09-21, his: *"make Nate's home a checker"* — his GLB, not a cottage. */
+        const want = ['ArcadeFront', 'CheckerHome', 'CityGate', 'Rowboat', 'TheaterFront'];
         ok(subs.join(' ') === want.join(' '),
           '…and the bespoke buildings are exactly the ones we chose',
           subs.join(' ') || 'none');
@@ -2949,19 +2953,107 @@ const server = http.createServer((req, res) => {
           '…yours is the only number the site keeps, and with none he writes no policy');
 
         /* #8 — the board by the bed. She is shown what you learned, and she says nothing. */
-        const hb = townG.slice(townG.indexOf('class HomeBoard extends Interactable:'), townG.indexOf('class Fix extends Node2D:'));
-        const bed = /bed\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(townG);
-        const hba = /const HOME_BOARD_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(townG);
-        ok(bed && hba && Math.hypot(+bed[1] - +hba[1], +bed[2] - +hba[2]) < 120,
-          '⭐ the board is by your bed', hba ? hba[1] + ',' + hba[2] : 'no HOME_BOARD_AT');
+        /* ⚑ 2026-09-21, his: *"give me a little inside room with the bed and the dog bed and the chess
+           board princess and I play on"*. All three are inside his checker now, and none in the square. */
+        const homeG = rd('home.gd');
+        const hb = homeG.slice(homeG.indexOf('class HomeBoard extends Interactable:'));
+        ok(/var bed := TownBed\.new\(\)/.test(homeG) && /HomeBoard\.new\(\)/.test(homeG)
+           && /DogBed\.new\(\)/.test(homeG) && /dog\.at_home = true/.test(homeG)
+           && !/TownBed\.new\(\)|HomeBoard/.test(townG),
+          '⭐ the bed, her bed and the board are in the house, and out of the square');
         const shown = /const SHOWN := \[([\s\S]*?)\n\t\]/.exec(hb);
         const sl = shown ? strs(shown[1]) : [];
         ok(sl.length === 4 && sl.every((s) => /^(She|You)\b/.test(s) && !/"/.test(s)),
           '⛑ …and every line is what she DOES or what you do — never a word from her');
         ok(/site_scores\(\["academy-bootcamp", "notation-run", "trainer-pirc"\]\)/.test(fnGd(gsG, 'academy_stage'))
           && /id === 'academy-bootcamp'/.test(PROF) && /pjcc\.academy\.bootcamp/.test(fn(PROF, 'townScore') || PROF)
-          && /not dog\.with_you\(\)/.test(hb),
+          && /not \(dog\.with_you\(\) or dog\.at_home\)/.test(hb),
           '…she is shown the furthest lesson YOU reached, and only when she is with you');
+      }
+      /* ══ 36 · 2026-09-21 — HIS BATCH: WALK2, WALK-IN DOORS, SOLID TOWN, HOME, THE MOVE ═══════
+         Each check below names the rule it guards and was mutated red once. The walking itself
+         was PROBED in the running game (a wall at -100, Murphy at 259, the Park Tables door, the
+         checker, the rows hiding on a pick) — a static gate cannot walk. */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const pm = code(rd('player_model.gd')), dr = code(rd('door.gd')), ex = code(rd('exit_door.gd'));
+        const np = code(rd('npc.gd')), dg = code(rd('dog.gd')), pl = code(rd('player.gd'));
+        const ui = code(rd('town_ui.gd')), tw = code(rd('town.gd')), hm = code(rd('home.gd'));
+        const GM = fs.readFileSync(path.join(ROOT, 'tests/gen-models.js'), 'utf8');
+
+        /* his walk is "walk2", and 1.3 still carries Walk (Idle's copy) and a 1-frame Walk.001 */
+        const mc = fnGd(pm, '_match_clip');
+        ok(/_match_clip\(\["walk2", "walk"/.test(pm) && mc.indexOf('for w in words') >= 0
+           && mc.indexOf('for w in words') < mc.indexOf('for a in _anim.get_animation_list()'),
+          '⭐ "walk2" wins the walk slot — the word list is a PREFERENCE, so it loops outside the clips',
+          'clips-outside, the first clip matching ANY word won and "Walk" beat "walk2"');
+
+        /* doors: a step in, and only where a step is safe */
+        const pp = fnGd(dr, '_physics_process');
+        ok(/scene_path == ""/.test(pp) && /url != ""/.test(pp) && /energy_cost > 0/.test(pp)
+           && /interact\(_you\)/.test(pp),
+          '⭐ you WALK into a door — a scene door only',
+          '⚠⚠ a url door from a footstep is a blocked popup, and open_url then navigates the town away');
+        ok(/_armed = true/.test(pp) && /if not _armed/.test(pp) && /\.dot\(way\.normalized\(\)\) < aim/.test(pp),
+          '…armed by stepping OFF the mat, and only when you are heading in',
+          'you come back out standing on it; and sliding along a front must not pull you in');
+        ok(/StaticBody2D\.new\(\)/.test(fnGd(dr, '_ready')) && /footprint\(\)/.test(fnGd(dr, '_ready'))
+           && /_shape\.position = /.test(fnGd(dr, '_ready')),
+          '⭐ a building is SOLID, and its reach moves to its door  (nobody can stand in its middle)');
+        ok(/_body\.set_deferred\("disabled", not live\)/.test(pp),
+          '…and a hidden door is not a wall  (the Assembly\'s secret one stands invisible)');
+        ok(/return Rect2\(\)/.test(fnGd(ex, 'footprint')) && /Vector2\(0\.0, 80\.0\)/.test(fnGd(ex, 'door_into')),
+          '…a room\'s way out is a hole you walk DOWN into');
+        for (const [file, cls] of [['arcade.gd', 'class Cabinet extends TownDoor:'], ['depths.gd', 'class Cage extends TownDoor:'],
+                                   ['stairwell.gd', 'class FloorDoor extends TownDoor:']]) {
+          const src = rd(file), body = src.slice(src.indexOf(cls), src.indexOf('func _ready_extra', src.indexOf(cls)));
+          ok(/solid = false/.test(body), '…and ' + cls.split(' ')[1] + ' stays a thing you stand at, not a wall');
+        }
+
+        /* people are solid; the dog at your heel is not, and she steps back */
+        ok(/StaticBody2D\.new\(\)/.test(fnGd(np, '_ready_extra')) && /_body\.set_deferred\("disabled", _away\)/.test(np),
+          '⭐ people are SOLID, and not on a day they are out');
+        ok(/solid = false/.test(fnGd(dg, '_init')) && /return _follow/.test(fnGd(dg, 'yields'))
+           && /dog\.radius = 40\.0/.test(dg),
+          '…Princess is not (solid, at heel, she would pin you) — her reach is 40, and she YIELDS');
+        ok(/\(best_y and not y\)/.test(fnGd(pl, '_refresh_target')),
+          '…so what you walked up to beats the dog behind you  (his: "she gets in the way")');
+
+        /* the options go when you pick one */
+        const pk = fnGd(ui, '_pick');
+        ok(/b\.visible = false/.test(pk) && /_hold = _read_secs\(said\)/.test(pk)
+           && /_rows_back\(\)/.test(fnGd(ui, '_process')),
+          '⭐ the rows VANISH on a pick and come back once the answer has had its time');
+        ok(/if _hold > 0\.0:/.test(fnGd(ui, '_unhandled_input')) && /_rows_back\(\)/.test(fnGd(ui, '_input')),
+          '…a hidden row cannot be picked, and a tap brings them back early');
+        ok(/not \(holding and _bubbled\)/.test(fnGd(ui, '_layout')),
+          '…and while they are gone there is no empty band over half the screen');
+
+        /* the map moved */
+        const v = (name) => { const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
+        const northY = +(/const NORTH_Y := (-?[\d.]+)/.exec(tw) || [0, NaN])[1];
+        const hall = v('HALL_AT'), gaunt = v('GAUNTLET_AT'), camp = v('CAMP_AT');
+        ok(hall && gaunt && hall[1] < -900 && gaunt[1] < -900 && /d\.position = GAUNTLET_AT/.test(tw)
+           && /hall\.position = HALL_AT/.test(tw),
+          '⭐ the Assembly and the Gauntlet are NORTH', hall + ' · ' + gaunt);
+        ok(northY <= -300 - 600 && northY >= -300 - 800 && /Rect2\(TRAIL_X - 22\.0, NORTH_Y \+ 44\.0/.test(tw),
+          '…one window screen above the square\'s roofline, up a trail',
+          'plaza road at ' + northY + '; the square\'s roofs reach -300 and the window is 648');
+        ok(camp && camp[0] > 1000 && /Rect2\(GATE_AT\.x - 90\.0, -20\.0, CAMP_AT\.x \+ 20\.0/.test(tw)
+           && /_add_challenger\("Kedar", "dad", 1400, "k", CAMP_AT \+/.test(tw),
+          '⭐ the Sand Mines are to the RIGHT, the road runs there, and Kedar works there', String(camp));
+
+        /* his checker is his home */
+        const ch = tw.slice(tw.indexOf('class CheckerHome extends TownDoor:'));
+        ok(/TownProp\.make\("res:\/\/checker\.glb"/.test(ch) && /sign_text = " "/.test(ch)
+           && /solid = false/.test(ch) && /aim = -1\.0/.test(ch) && /scene_path = "res:\/\/home\.tscn"/.test(tw)
+           && fs.existsSync(path.join(GD, 'home.tscn')) && fs.existsSync(path.join(GD, 'checker.glb')),
+          '⭐ Nate\'s home is HIS checker, nothing added outside, and you walk onto it to go in');
+        ok(/\{ name: 'Checker', out: 'assets\/models\/checker\.glb', godot: 'checker\.glb' \}/.test(GM),
+          '…and gen:models carries the checker into the game, the way it carries him');
+        ok(/const ROOM := Rect2\(-576\.0, -330\.0, 1152\.0, 660\.0\)/.test(hm) && /world_bounds = FLOOR/.test(hm),
+          '…a LITTLE room inside: a window-sized room, a small lit floor');
       }
       /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
          ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
