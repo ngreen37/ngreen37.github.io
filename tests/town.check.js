@@ -1141,12 +1141,75 @@ const server = http.createServer((req, res) => {
         '…and reads it, with the old export still the fallback',
         '⚠ an @export is read from the SCENE FILE — the caller cannot set it');
 
-      /* ══ 16 · THE GAUNTLET IS A STAIRWELL ═══════════════════════════════════════════
-         *"make the Gauntlet a Stairwell."* */
-      ok(/scene_path = "res:\/\/stairwell\.tscn"/.test(town2)
-        && !/url = "\/games\/the-gauntlet\/"/.test(town2),
-        'the Gauntlet is a STAIRWELL');
-      ok(fs.existsSync(path.join(GD, 'stairwell.tscn')), '…and the scene exists');
+      /* ══ 16 · THE GAUNTLET IS OUT OF THE TOWN, AND PARKED ═══════════════════════════
+         2026-09-22, Nate: *"let's make the Gauntlet in Checker Town a skyscraper in Chess City
+         — so… eliminate it from the game for now."*
+         ⚠⚠ BOTH DIRECTIONS, AND THAT IS THE POINT. Nothing may open the room — and the room has
+         to still be here and still agree with the site's ten floors, because it IS the inside of
+         a skyscraper and the next person to open it needs to find it parked, not rotting.
+         [[read-before-you-delete]] */
+      ok(!/stairwell\.tscn/.test(town2) && !/url = "\/games\/the-gauntlet\/"/.test(town2)
+        && !/GAUNTLET_AT/.test(town2),
+        'no door in the town opens the Gauntlet, and its lot went with it');
+      ok(fs.existsSync(path.join(GD, 'stairwell.tscn')) && /PARKED, NOT DELETED/.test(stair),
+        '…and the room is PARKED, not deleted — and its own first line says so',
+        'a stairwell is the inside of a skyscraper; writing it twice is writing it twice');
+      /* ⚠⚠ AND THE MAP MUST NOT KEEP A ROAD TO IT. The plaza up there had an east arm and a
+         step up to each of two doors; with one door gone that arm runs to an empty lot, which
+         is the exact symptom _roads() and GROUND_RECT exist to prevent. */
+      ok(!/NORTH_Y/.test(town2) && /Rect2\(TRAIL_X - 26\.0, YARD\.end\.y/.test(town2),
+        '…and the road north is ONE haul road now, ending in the yard  (no fork, no stub)');
+      /* ⚠ WES IS NOT COLLATERAL. §17 proves the h-rook still pays out; this is the sentence
+         that says taking a BUILDING out must not take a SQUARE off the board. */
+      ok(/"un": \["the-gauntlet", \d+\]/.test(gs),
+        '…and the h-rook still costs four floors of it — a SITE game, like Murphy\'s Law',
+        'Siege and Murphy have never had a building here either');
+
+      /* ══ 16b · THE ASSEMBLY IS A SHACK, AND ONE CRANE PUT IT UP ═════════════════════
+         *"[it] should be more of a shack than a house — something that members of checker town,
+         which is mostly sand … could conceivably build with basic construction tools, maybe ONE
+         crane."* */
+      ok(/class AssemblyShack extends TownDoor/.test(town2)
+        && /var hall := AssemblyShack\.new\(\)/.test(town2),
+        'the Assembly is a shack — its own subclass, like the Arcade and the Theater',
+        '⚠ a wider TownDoor would have repainted every cottage on the map');
+      /* ⚠⚠ THE ONE THING THE REPAINT MUST NOT TOUCH. The face is the board: sixteen windows in
+         GameState.board_cell's order, and that order lives in ONE place. A subclass that draws
+         its own grid is the bug that put the face two columns and a row out for a day. */
+      const shack = town2.slice(town2.indexOf('class AssemblyShack'),
+        town2.indexOf('class BuildCrane'));
+      ok(/_draw_windows\(half\)/.test(shack) && !/board_cell|ROSTER/.test(shack),
+        '…and it asks TownDoor for the sixteen windows rather than numbering its own',
+        '⚠⚠ the window a square lights is decided in one place and this is not it');
+      ok(/hall\.board_face = true/.test(town2) && /hall\.lit_windows = GameState\.army/.test(town2),
+        '…so the board is still readable from the road');
+      /* ⚠ THE ROOF IS TALLER THAN THE GABLE TownDoor ALLOWS FOR, and a corner you can walk
+         through is a wall with a hole in it. */
+      /* ⚠ SLICED TO THE FUNCTION. Grepping the whole class for RISE and EAVE went green on
+         speech_top(), which names them too — the mutation put a bare 52.0 back in the footprint
+         and this check did not blink. [[green-must-name-what-ran]] */
+      const foot = shack.slice(shack.indexOf('func footprint'), shack.indexOf('func speech_top'));
+      ok(/-half\.y - RISE - EAVE,/.test(foot) && /size\.y \+ RISE \+ EAVE/.test(foot),
+        '…and the lean-to is solid to its high corner, not to the flat 52 of a gable');
+      /* ⭐ ONE crane. Two would be a town that owns plant; one is a town that borrowed it. */
+      ok((town2.match(/BuildCrane\.new\(\)/g) || []).length === 1
+        && /const CRANE_AT :=/.test(town2),
+        'ONE crane, and it is still standing on the pad', 'his word, and the count is the point');
+      /* ⚠ SALTED, NEVER randf(). The ground redraws every time a place name fades, so a random
+         board color or a random bit of yard is a board that crawls and sand that boils. */
+      const yardSrc = town2.slice(town2.indexOf('func _draw_yard'),
+        town2.indexOf('func _draw_board'));
+      /* ⚠ COMMENTS OUT FIRST. Both of these say "never randf()" in prose, and a grep that
+         cannot tell a rule from a call fails on the file that obeys it. */
+      const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+      for (const [name, src] of [['the shack', shack], ['the yard', yardSrc]]) {
+        ok(!/randf|randi|RandomNumberGenerator/.test(bare(src)),
+          '…nothing in ' + name + ' is random  (it redraws whenever a place name fades)');
+      }
+      /* ⚠⚠ THE YARD IS AN AREA, NOT A ROAD. The journal paints areas off the list town.gd hands
+         TownMap.capture — leave it out and the minimap shows a road ending in nothing. */
+      ok(/{ "rect": YARD, "color": SAND }/.test(town2),
+        '…and the yard is on the minimap, so the haul road does not end in grass');
       /* ⚠ TEN FLOORS, ONE PAGE. A landing per floor with a door on each would be ten doors
          onto one URL — dead-game-links-trap in a new shape. */
       ok([...stair.matchAll(/"\/games\/[^"]+"/g)].length === 1,
@@ -1867,7 +1930,10 @@ const server = http.createServer((req, res) => {
         const subs = [...town2.matchAll(/class (\w+) extends TownDoor:/g)]
           .map((m) => m[1]).sort();
         /* ⭐ CheckerHome JOINED 2026-09-21, his: *"make Nate's home a checker"* — his GLB, not a cottage. */
-        const want = ['ArcadeFront', 'CheckerHome', 'CityGate', 'Rowboat', 'TheaterFront'];
+        /* ⭐ AssemblyShack JOINED 2026-09-22, his: *"more of a shack than a house"* — salvaged
+           board and one slope of tin, on the day the Gauntlet came off the map. */
+        const want = ['ArcadeFront', 'AssemblyShack', 'CheckerHome', 'CityGate', 'Rowboat',
+                      'TheaterFront'];
         ok(subs.join(' ') === want.join(' '),
           '…and the bespoke buildings are exactly the ones we chose',
           subs.join(' ') || 'none');
@@ -1895,8 +1961,10 @@ const server = http.createServer((req, res) => {
       ok(/sign_text = ""/.test(town2.slice(town2.indexOf('class ArcadeFront'))),
         '\u26a0 the marquee IS the sign, so the name is not also floating over the roof');
       {
-        const front = town2.slice(town2.indexOf('class ArcadeFront'),
-                                  town2.indexOf('# ══ THE STALL AND THE BOARD'));
+        /* ⛑ TO THE NEXT BANNER, WHICHEVER IT IS (2026-09-22). This named the one that
+           happened to follow, so inserting a class between them silently handed ArcadeFront's
+           checks the new class's polygons — and the awning check failed on somebody else's. */
+        const front = town2.slice(town2.indexOf('class ArcadeFront')).split(/\n# ══/)[0];
         ok(/var cabs: Array = Arcade\.CABS/.test(front),
           '\u2b50\u2b50 what you see through the glass is read off the ROOM\u2019S OWN cabinet list',
           'a fifth machine puts itself in the window; nothing here can advertise a machine that is not in there');
@@ -3032,14 +3100,26 @@ const server = http.createServer((req, res) => {
 
         /* the map moved */
         const v = (name) => { const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
-        const northY = +(/const NORTH_Y := (-?[\d.]+)/.exec(tw) || [0, NaN])[1];
-        const hall = v('HALL_AT'), gaunt = v('GAUNTLET_AT'), camp = v('CAMP_AT');
-        ok(hall && gaunt && hall[1] < -900 && gaunt[1] < -900 && /d\.position = GAUNTLET_AT/.test(tw)
-           && /hall\.position = HALL_AT/.test(tw),
-          '⭐ the Assembly and the Gauntlet are NORTH', hall + ' · ' + gaunt);
-        ok(northY <= -300 - 600 && northY >= -300 - 800 && /Rect2\(TRAIL_X - 22\.0, NORTH_Y \+ 44\.0/.test(tw),
-          '…one window screen above the square\'s roofline, up a trail',
-          'plaza road at ' + northY + '; the square\'s roofs reach -300 and the window is 648');
+        /* ⛑ ONE BUILDING UP THERE SINCE 2026-09-22. This measured the plaza BETWEEN two
+           lots; with the Gauntlet gone the thing to measure is the walk to the only door. */
+        const hall = v('HALL_AT'), camp = v('CAMP_AT');
+        ok(hall && hall[1] < -900 && /hall\.position = HALL_AT/.test(tw) && !/GAUNTLET_AT/.test(tw),
+          '⭐ the Assembly is NORTH, and it is the only thing up there', hall + '');
+        ok(hall && hall[1] <= -300 - 648 && hall[1] >= -300 - 1000
+           && /Rect2\(TRAIL_X - 26\.0, YARD\.end\.y, 52\.0, -20\.0 - YARD\.end\.y\)/.test(tw),
+          '…a whole window screen above the square\'s roofline, up ONE haul road',
+          'the Assembly at ' + (hall && hall[1]) + '; the square\'s roofs reach -300 and the window is 648');
+        /* ⚠ THE PAD HAS TO MEET THE SHACK'S FRONT AND HOLD THE CRANE'S FEET. Start it lower and
+           you step off sand into grass to go in; run it short and the crane is parked in a field.
+           The crane's outriggers reach 48 either side of it — that is BuildCrane's own number. */
+        const yd = /const YARD := Rect2\(HALL_AT\.x - ([\d.]+), HALL_AT\.y \+ ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(tw);
+        const cr8 = /const CRANE_AT := Vector2\(HALL_AT\.x \+ ([\d.]+), HALL_AT\.y \+ ([\d.]+)\)/.exec(tw);
+        const shackH = /hall\.size = Vector2\([\d.]+, ([\d.]+)\)/.exec(tw);
+        ok(yd && cr8 && shackH && +yd[2] <= +shackH[1] / 2
+           && +cr8[2] > +yd[2] && +cr8[2] < +yd[2] + +yd[4]
+           && +cr8[1] + 48 <= +yd[3] - +yd[1],
+          '…and the yard meets the shack\'s front and the crane is standing ON it',
+          yd ? 'pad ' + yd[3] + '×' + yd[4] + ', crane at +' + cr8[1] + ',+' + cr8[2] : '?');
         const gr = /const GROUND_RECT := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(tw);
         const wr = /const WATER_RECT := Rect2\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(tw);
         ok(camp && camp[0] >= 1700 && /Rect2\(GATE_AT\.x - 90\.0, -20\.0, CAMP_AT\.x \+ 20\.0/.test(tw)
