@@ -561,6 +561,156 @@ const server = http.createServer((req, res) => {
       ok(/\burl\s*=\s*"\/games\/shogi-island\/"/.test(isl),
         'the island OPENS the shogi room now  (⛑ the 09-03 reversal, his call)');
       ok(/world_bounds = Rect2/.test(isl), '…and it has an edge');
+
+      /* ══ 6c · THE CROSSING - YOU ROW THERE ════════════════════════════════════=======
+         2026-09-23, Nate: *"when you get the oars to go to shogi island - can you make a dock
+         on each side? so we don't teleport there, we row there."*
+         ⛑⛑ THE ROWBOAT USED TO BE A DOOR STRAIGHT INTO island.tscn, and the sea the island
+         sits in was never on screen at all. sea.gd is that water; the two docks are its ends.
+         ⚠⚠ IT READS CODE, NOT PROSE - the same trap section 6 fell into. town.gd still SAYS
+         `res://island.tscn`, in the comment recording the change, and must. */
+      const seaAt = path.join(GD, 'sea.gd');
+      ok(fs.existsSync(seaAt) && fs.existsSync(path.join(GD, 'sea.tscn')),
+        'the crossing is a room of its own');
+      const sea = fs.existsSync(seaAt) ? fs.readFileSync(seaAt, 'utf8') : '';
+      ok(/class_name SeaCrossing\s*\nextends TownZone/.test(sea),
+        '\u2026a TownZone like every other room, so the HUD, the journal and the pad come free');
+      /* ⛑⛑ THE ONE THAT MATTERS. Put island.tscn back on the rowboat and the whole thing is
+         a teleport with two docks drawn either side of it. */
+      ok(/boat\.scene_path = "res:\/\/sea\.tscn"/.test(town)
+         && !/scene_path = "res:\/\/island\.tscn"/.test(town),
+        'the town rowboat opens the WATER, and nothing in town opens the island directly');
+      ok(/back\.scene_path = "res:\/\/sea\.tscn"/.test(isl)
+         && !/scene_path = "res:\/\/town\.tscn"/.test(isl),
+        '\u2026and the island rows back into the same water, not straight home');
+      ok(/scene_path = "res:\/\/town\.tscn"/.test(sea)
+         && /scene_path = "res:\/\/island\.tscn"/.test(sea),
+        '\u2026which leaves the crossing as the only room that opens either end');
+
+      /* ══ THE FOUR LANDING POINTS, EACH DERIVED AGAINST THE OTHER FILE ═════════=======
+         ⛑⛑ ONE OF THESE WAS ALREADY WRONG. The rowboat's old `return_at` was 940,820, which
+         the 09-23 water blockers turned into the inside of a wall - so coming home from the
+         island put you in one. Nothing could see it: the number lived in town.gd and so did
+         the wall, in a different constant, and neither read the other. */
+      const v2 = (src, name) => {
+        const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
+        return m ? { x: +m[1], y: +m[2] } : null;
+      };
+      const rc = (src, name) => {
+        const m = new RegExp('const ' + name + ' := Rect2\\('
+          + '(-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
+        return m ? { x: +m[1], y: +m[2], w: +m[3], h: +m[4] } : null;
+      };
+      const num = (src, name) => {
+        const m = new RegExp('const ' + name + ' := (-?[\\d.]+)').exec(src);
+        return m ? +m[1] : null;
+      };
+      const inR = (r, q) => !!r && !!q && q.x >= r.x && q.x <= r.x + r.w
+        && q.y >= r.y && q.y <= r.y + r.h;
+      const tieT = v2(sea, 'TOWN_TIE'), tieI = v2(sea, 'ISLE_TIE');
+      const landT = v2(sea, 'TOWN_LANDING'), landI = v2(sea, 'ISLE_LANDING');
+      ok(inR(rc(sea, 'TOWN_DOCK'), tieT) && inR(rc(sea, 'ISLE_DOCK'), tieI),
+        'out on the water you are put down ON the dock at each end, not beside it');
+      /* the town's planks, read the way section 16g reads them */
+      const jm = /const JETTY := Rect2\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(town);
+      const km = /func _deck\(\) -> Rect2:\s*\n\s*return Rect2\(SEA_AT\.x - ([\d.]+), SEA_AT\.y - ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(town);
+      const sm = /const SEA_AT := Vector2\(([\d.]+), ([\d.]+)\)/.exec(town);
+      const jetty2 = jm ? { x: +jm[1], y: +jm[2], w: +jm[3], h: +jm[4] } : null;
+      const deck2 = km && sm
+        ? { x: +sm[1] - +km[1], y: +sm[2] - +km[2], w: +km[3], h: +km[4] } : null;
+      const onPlank = (q) => inR(jetty2, q) || inR(deck2, q);
+      const rbRet = /boat\.return_at = Vector2\(([\d.]+), ([\d.]+)\)/.exec(town);
+      ok(!!jetty2 && !!deck2 && onPlank(landT),
+        '\u2026and the town end of the trip lands you on a plank, never in the sea');
+      ok(!!rbRet && onPlank({ x: +rbRet[1], y: +rbRet[2] }),
+        '\u2026and so does the rowboat own note  (⛑ 940,820 was open water for two days)');
+
+      /* the island's dock, and the clamp that decides where a body may stand on it.
+         ⚠⚠ RE-DERIVED RATHER THAN TRUSTED: MOORING, DOCK, SPIT_TOP and the ellipse are four
+         numbers that move on their own, and between them they decide whether the way home is
+         somewhere you can actually stand. */
+      const dm2 = /const DOCK := Rect2\(-SPIT_HALF, ([\d.]+), SPIT_HALF \* 2\.0, ([\d.]+)\)/.exec(isl);
+      const spitHalf = num(isl, 'SPIT_HALF'), spitTop = num(isl, 'SPIT_TOP');
+      const mid = v2(isl, 'MID'), RX = num(isl, 'RX'), RY = num(isl, 'RY');
+      const moor = v2(isl, 'MOORING');
+      const iDock = dm2 && spitHalf
+        ? { x: -spitHalf, y: +dm2[1], w: spitHalf * 2, h: +dm2[2] } : null;
+      ok(!!iDock && inR(iDock, landI) && inR(iDock, moor),
+        '\u2026and the island end lands you on its dock, where the boat is tied');
+      const sandHalf = (y) => {
+        const t = (y - mid.y) / RY;
+        return RX * Math.sqrt(Math.max(0, 1 - t * t));
+      };
+      const halfAt = (y) => Math.max(sandHalf(y), y >= spitTop ? spitHalf : 0);
+      const BODY = 17;                                   // TownPlayer.radius + 2
+      let offIsland = 0;
+      if (iDock && mid && RX && RY && spitTop !== null) {
+        for (let y = iDock.y; y <= iDock.y + iDock.h; y += 2) {
+          if (halfAt(y) + 0.001 < spitHalf) offIsland++;
+        }
+      }
+      ok(offIsland === 0 && !!moor && Math.abs(moor.x) < halfAt(moor.y) - BODY
+         && moor.y <= iDock.y + iDock.h - BODY,
+        '\u2026and every plank of that dock is inside what the clamp lets you stand on',
+        offIsland + ' rows of dock the island does not reach  (⚠⚠ raise SPIT_TOP past the '
+        + 'dock and the boat is somewhere you cannot walk to)');
+
+      /* ══ WHAT YOU ARE, OUT THERE ═════════════════════════════════════════════======= */
+      ok(/func _make_player\(\) -> TownPlayer:\s*\n\s*return Rowing\.new\(\)/.test(sea)
+         && /class Rowing extends TownPlayer/.test(sea),
+        'the thing you steer across is a boat, not a man standing on the sea');
+      ok(/velocity = velocity\.lerp\(want, 1\.0 - exp\(-k \* delta\)\)/.test(sea),
+        '\u2026with drag, so a hull comes up to speed and coasts down from it',
+        'exp(), NEVER a flat lerp by delta - that one is faster on a 144Hz monitor');
+      ok(!/\.step\(\)/.test(sea), '\u2026and it does not go clop across open water');
+      /* ⚠⚠ THE SHORES ARE OUT OF REACH BY GEOMETRY, NOT BY A WALL. world_bounds is the open
+         water; camera_bounds is the water plus both beaches. Widen the first and you row up a
+         beach, with nothing to stop you, because there is nothing there to stop you. */
+      const wb = /world_bounds = Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(sea);
+      const SW = num(sea, 'W'), SHORE = num(sea, 'SHORE');
+      ok(!!wb && !!SW && !!SHORE && +wb[1] >= -SW + SHORE && +wb[1] + +wb[3] <= SW - SHORE,
+        'the sailable water stops before either beach does',
+        wb ? wb[1] + ' to ' + (+wb[1] + +wb[3]) + ', inside +/-' + (SW - SHORE) : 'no bounds');
+      ok(/camera_bounds = Rect2\(-W, -H, W \* 2\.0, H \* 2\.0\)/.test(sea),
+        '\u2026while the camera still shows them, or you set out toward nothing');
+      ok(!!wb && inR({ x: +wb[1], y: +wb[2], w: +wb[3], h: +wb[4] }, tieT)
+         && inR({ x: +wb[1], y: +wb[2], w: +wb[3], h: +wb[4] }, tieI),
+        '\u2026and both tie-ups are inside it, or you arrive where the clamp will move you');
+
+      /* ⭐ ONE BOAT AND ONE DOCK. His ask was that the two ends MATCH; three hand-copied
+         hulls is how they stop matching a month from now, quietly. */
+      ok(/static func hull\(\) -> PackedVector2Array/.test(sea)
+         && /SeaCrossing\.moored\(self, GameState\.island_open\)/.test(town)
+         && /SeaCrossing\.moored\(self, true\)/.test(isl),
+        'every boat in the town is drawn from one set of points');
+      ok(/SeaCrossing\.plank_dock\(self, JETTY\)/.test(town)
+         && /SeaCrossing\.plank_dock\(self, DOCK\)/.test(isl)
+         && (sea.match(/plank_dock\(self, (?:TOWN|ISLE)_DOCK\)/g) || []).length === 2,
+        '\u2026and every dock from one drawing, at all four places there is one');
+
+      /* ══ AND THE ISLAND'S OWN SHORE ═════════════════════════════════════════════====
+         ⛑⛑ IT WAS A FLOOR UNTIL 2026-09-23 - you could walk off the beach and stand on open
+         ocean out to the map's edge, two days after the town's sea stopped letting you.
+         ⛑⛑ A CLAMP, NOT BLOCKERS, AND THAT WAS MEASURED. The first cut was town.gd's answer:
+         32 bands walling the water beyond the widest sand in each. A physics probe over the
+         whole island found 166 units of walkable ocean off the north and south tips, where the
+         shore turns fastest; bands only close that as sqrt(band height). ⚠⚠ THE TOWN KEEPS
+         ITS BLOCKERS - its sea is a rectangle minus two rectangles, which rects express
+         exactly. This is not a fix to carry over there. */
+      /* ⚠⚠ THE CLAMP, NOT ITS INPUT. The first draft asked only that half_at() was READ,
+         and a mutation that deleted the line doing the clamping stayed green: the width was
+         still being worked out, and then thrown away. Both axes are named here. */
+      ok(/class Beachcomber extends TownPlayer/.test(isl)
+         && /func _keep_inside\(\) -> void/.test(isl)
+         && /position\.y = clampf\(position\.y, top \+ 1\.0, ShogiIsland\.DOCK\.end\.y - r\)/.test(isl)
+         && /var half: float = maxf\(ShogiIsland\.half_at\(position\.y\), r \+ 1\.0\)/.test(isl)
+         && /position\.x = clampf\(position\.x, -half \+ r, half - r\)/.test(isl),
+        'the island shore is a clamp on the player, not a ring of boxes');
+      ok(!/StaticBody2D/.test(isl),
+        '\u2026and nothing on the island pretends to be a wall standing in the water');
+      ok(/var w: float = sand_half\(y\)/.test(isl)
+         && (isl.match(/static func sand_half/g) || []).length === 1,
+        '\u2026and the beach it draws and the edge it clamps to are ONE function');
       /* ⚠ THE SQUARE FOLLOWS THE GAME THAT WINS IT. It is unlocked by solving five on Shogi
          Island, and shogi is Matsu's — he is the one who never left. It briefly said "Kaede"
          and before that "Shogi Island", which was a PLACE on a board full of people. */
@@ -597,9 +747,10 @@ const server = http.createServer((req, res) => {
          /open_url\(url\)/.test(pMore) && /puzzle_more\(\)/.test(fnGd(gs, 'puzzle_begin')),
         '…and both doors tell the room what is still owed and since when, so it can close itself',
         'roundi, not int: truncating a float stamp a hair low recounts the last solve');
-      /* ⚠ IT NAMES THE REFUSAL, not the flag. `if not GameState.island_open:` appears twice in
-         the Rowboat — once to refuse and once to decide whether to draw the oars — so a check
-         on the flag alone passed a mutation that let anybody row out. */
+      /* ⚠ IT NAMES THE REFUSAL, not the flag. A check on `island_open` alone passed a mutation
+         that let anybody row out: the flag is read to refuse AND to decide whether the hull is
+         drawn with oars, and only one of those two keeps the island shut.
+         ⚑ The oars half moved to SeaCrossing.moored() on 09-23; §6c checks that end. */
       ok(/class Rowboat extends TownDoor/.test(town) &&
          /if not GameState\.island_open:\s*\n\s*say\("No oars/.test(town),
         'the boat refuses until the oars are won');
@@ -2479,12 +2630,12 @@ const server = http.createServer((req, res) => {
           '   …except on a phone, which has no Spacebar to name',
           'naming four keys to somebody holding a piece of glass is the one thing this '
           + 'function has always refused to do');
-        const suffix = ['academy', 'arcade', 'depths', 'island', 'park', 'stairwell', 'town']
+        const suffix = ['academy', 'arcade', 'depths', 'island', 'park', 'sea', 'stairwell', 'town']
           .filter((z) => /default_hint\(\) \+/.test(fs.readFileSync(path.join(GD, z + '.gd'), 'utf8')));
         ok(suffix.length === 0,
           '   and no zone appends a wayfinding aside to it any more',
           suffix.length ? suffix.join(', ') + ' still do'
-            : 'seven zones clean — a room that needs to say where the exit is wants a sign, '
+            : 'eight zones clean — a room that needs to say where the exit is wants a sign, '
               + 'not the control legend');
         /* ⚠ THE CONDITION, NOT THE NAME. `if false: _hint_left -= delta` still mentions
            _hint_left, and the first draft of this line went green on exactly that. */
