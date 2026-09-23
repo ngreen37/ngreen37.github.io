@@ -1165,6 +1165,75 @@ const server = http.createServer((req, res) => {
         '…and the h-rook still costs four floors of it — a SITE game, like Murphy\'s Law',
         'Siege and Murphy have never had a building here either');
 
+      /* ══ 16c · THE LANDSCAPE IS SAND, AND GREEN MEANS SOMETHING ════════════════════
+         *"make the entire landscape mostly sand, then add some green by the park tables, and then
+         put the river/sea past THAT, where the boat to shogi island is."*
+         ⚠⚠ THE POINT OF THE REPAINT IS SCARCITY. Green used to be the whole map; it is now the
+         Pavilion's lawn and the strip the river waters, and a third patch of it costs the other
+         two. This section is what makes adding one a decision rather than an edit. */
+      /* ⚠ COMMENTS OUT FIRST, everywhere below. Several of these files say "never randf()" in
+         prose, and a grep that cannot tell a rule from a call fails on the file that obeys it. */
+      const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+      const grd = /const GROUND := Color\("([0-9a-f]{6})"\)/.exec(town2);
+      ok(grd && grd[1] !== '22301f',
+        'the ground is sand, not the green it was', grd && ('#' + grd[1]));
+      /* ⚠ AND IT IS STILL DARK ENOUGH TO STAND ON. Every person in this town is drawn dark on
+         the ground; a bleached desert is a map you cannot find anybody on. Measured as relative
+         luminance, the same sum the site's contrast gate uses. */
+      const lum = (hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
+        .reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0);
+      ok(grd && lum(grd[1]) < 0.22,
+        '…and dark enough that a person still reads on it', grd && lum(grd[1]).toFixed(3));
+      /* ⚠⚠ SAND IS THE WORKED GROUND NOW, NOT THE GROUND. The mine camp and the Assembly's pad
+         are both painted in SAND; if it matches GROUND neither of them is a place any more. */
+      const snd = /const SAND := Color\("([0-9a-f]{6})"\)/.exec(town2);
+      ok(snd && grd && Math.abs(lum(snd[1]) - lum(grd[1])) > 0.04,
+        '…and the worked sand still reads apart from the desert it sits on',
+        snd && grd && (lum(grd[1]).toFixed(3) + ' vs ' + lum(snd[1]).toFixed(3)));
+      /* ⭐ TWO GREENS, AND THEY ARE THE PAVILION'S OWN. "the park tables are green with trees" —
+         so a retint in park.gd carries out to the town and there is no second copy of it. */
+      ok((town2.match(/_draw_green\(/g) || []).length === 3
+        && /Pavilion\.GRASS_A/.test(town2) && /Pavilion\.GRASS_B/.test(town2)
+        && !/Color\("2[0-9a-f]3[0-9a-f]1f"\)/.test(town2),
+        'exactly TWO green places, both painted from the Pavilion\'s own grass',
+        '⚠ a third patch of green costs the other two');
+      /* ⚠⚠ THE BELT FOLLOWS THE WATER. The first pass ran it 600 units west of the last drop of
+         river and it arrived under the checker houses; deriving it off WATER_RECT is what stops
+         the two drifting apart when either moves. */
+      ok(/const SHORE := Rect2\([\d.]+, [\d.]+, WATER_RECT\.end\.x - [\d.]+,\s*\n\s*WATER_RECT\.position\.y - [\d.]+ \+ 4\.0\)/.test(town2),
+        '…and the river\'s green strip is DERIVED from the water, not typed beside it');
+      /* ⭐ ONE RAGGED EDGE FOR ALL FOUR PATCHES. Three copies of it had accumulated.
+         ⚠ THE CALLERS BY NAME, NOT A COUNT — a count of five was wrong by one the first time it
+         was written, and would have gone green on any five uses at all. */
+      ok(/func _draw_fringe\(area: Rect2, col: Color, seed_: int, skip_x: float = -1\.0\)/.test(town2)
+        && /_draw_fringe\(SAND_RECT, SAND, \d+\)/.test(town2)
+        && /_draw_fringe\(YARD, SAND, \d+, TRAIL_X\)/.test(town2)
+        && /_draw_fringe\(area, Pavilion\.GRASS_A, seed_\)/.test(town2),
+        '…and every patch that is not the ground ends in the same ragged edge',
+        'the camp, the Assembly\'s pad and both green places, from one function');
+      /* ⚠ NOTHING ON THIS GROUND IS RANDOM: it redraws whenever a place name fades. */
+      const ground = town2.slice(town2.indexOf('func _draw() -> void:'),
+        town2.indexOf('func _draw_board'));
+      ok(!/randf|randi|RandomNumberGenerator/.test(bare(ground)),
+        '…and not one grain of it is random  (the ground redraws when a place name fades)');
+
+      /* ══ 16d · THE DOGS LIVE BY THE CHECKERS ═══════════════════════════════════════
+         *"Move Crockett and Argus to be around the checker houses."* */
+      ok(/func _furnish_dogs\(\) -> void:/.test(town2)
+        && !/_add_challenger\("(Crockett|Argus)", "[a-z]+", \d+, "[a-z]", CAMP_AT/.test(town2),
+        'Crockett and Argus are off the Sand Mine camp');
+      const dogs = town2.slice(town2.indexOf('func _furnish_dogs'),
+        town2.indexOf('func _furnish_arcade'));
+      ok(/MAX_HOME_AT \+/.test(dogs) && /HOME_AT \+/.test(dogs),
+        '…and both are placed off the two checkers, so moving a house moves its dog');
+      /* ⚠ A DOG STANDING ON THE LANE IS A DOG IN THE ONLY ROAD TO TWO FRONT DOORS. NPCs are
+         solid; the lane is HOME_AT.y ± 20 and 40 wide, so neither may sit inside that band. */
+      const lane = [...dogs.matchAll(/HOME_AT \+ Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+        .map((m) => +m[2]).filter((dy) => Math.abs(dy) < 34.0);
+      ok(lane.length === 0, '…and neither of them is standing in it',
+        lane.length ? lane.join(', ') + ' is inside ±34 of the lane' : 'both clear');
+
       /* ══ 16b · THE ASSEMBLY IS A SHACK, AND ONE CRANE PUT IT UP ═════════════════════
          *"[it] should be more of a shack than a house — something that members of checker town,
          which is mostly sand … could conceivably build with basic construction tools, maybe ONE
@@ -1199,9 +1268,6 @@ const server = http.createServer((req, res) => {
          board color or a random bit of yard is a board that crawls and sand that boils. */
       const yardSrc = town2.slice(town2.indexOf('func _draw_yard'),
         town2.indexOf('func _draw_board'));
-      /* ⚠ COMMENTS OUT FIRST. Both of these say "never randf()" in prose, and a grep that
-         cannot tell a rule from a call fails on the file that obeys it. */
-      const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
       for (const [name, src] of [['the shack', shack], ['the yard', yardSrc]]) {
         ok(!/randf|randi|RandomNumberGenerator/.test(bare(src)),
           '…nothing in ' + name + ' is random  (it redraws whenever a place name fades)');
@@ -2826,10 +2892,34 @@ const server = http.createServer((req, res) => {
         const cap = fnGd(mapg, 'capture');
         ok(/not n2\.visible/.test(cap) && /not \(n is TownNPC\)/.test(cap),
           '⚠⚠ the map shows only places the town is showing — no people, and nothing hidden');
+        /* ⛑⛑ fnGd() TAKES THE FIRST `func _draw(` IN THE FILE, and town.gd has fourteen inner
+           classes with one each. Adding a class ABOVE the zone's own silently re-pointed six
+           checks in this file at a tree — they still passed, at something else. The zone's own
+           `_draw` must come first; new scenery classes go DOWN with TownLamp.
+           ⚠ THE ORDER IS THE CHECK. Counting classes, or naming TownTree, would both go green
+           on the next one added in the wrong place. [[green-must-name-what-ran]] */
+        ok(twn.indexOf('func _draw(') < twn.indexOf('class '),
+          '⛑⛑ town.gd\'s OWN _draw() comes before its first inner class',
+          'six checks reach the ground through fnGd(twn, \'_draw\') and it takes the first match');
         ok(/for r in _roads\(\):/.test(fnGd(twn, '_draw_roads')) && !/Rect2\(/.test(fnGd(twn, '_draw_roads'))
-          && /TownMap\.capture\(self, GROUND_RECT, \[/.test(twn) && /_roads\(\)\)/.test(fnGd(twn, '_after_ready'))
+          && /TownMap\.capture\(self, GROUND_RECT, \[/.test(twn)
+          && /_roads\(\), GROUND\)/.test(fnGd(twn, '_after_ready'))
           && /SAND_RECT/.test(fnGd(twn, '_draw')) && /SAND_RECT/.test(fnGd(twn, '_region')),
           '…drawn from the same rects the ground is painted from');
+        /* ⛑⛑ AND IN THE SAME COLORS. journal.gd had "22301f" typed into it; the day the town
+           went to sand the minimap kept drawing a green one — a map of a place that no longer
+           exists, and nothing but opening it could have caught that. The town hands its ground
+           color over with the rects now. [[one-fix-every-instance]] */
+        /* ⚠ THE GROUND FILL, NOT "no hex anywhere in _paint_map": the minimap LIGHTENS the
+           roads on purpose (5a5140 against the town's 463f2f) so they read at map size. */
+        ok(/_body\.draw_rect\(to\.call\(g\), TownMap\.ground_tint\)/.test(jr9)
+          && /ground_tint = tint/.test(cap),
+          '⛑⛑ the minimap asks the town what color its ground is instead of remembering it');
+        /* ⚠⚠ EVERY PATCH THAT IS NOT THE GROUND HAS TO BE IN THE AREA LIST. It has been missed
+           twice now — the Assembly's yard, then both green places. */
+        for (const a of ['LAWN', 'SHORE', 'SAND_RECT', 'YARD', 'WATER_RECT'])
+          ok(new RegExp('\\{ "rect": ' + a + ', "color": ').test(fnGd(twn, '_after_ready')),
+            '   …and ' + a + ' is on it');
         ok(/if t\.intersects\(box\):/.test(fnGd(jr9, '_paint_map')),
           '…and on a phone a name that would land on another name is left off');
       }
