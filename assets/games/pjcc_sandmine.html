@@ -102,6 +102,7 @@
       <button class="btn btn-gold" id="retry-btn">DESCEND AGAIN</button>
       <button class="btn btn-ghost" id="over-camp">⛺ CAMP</button>
       <button class="btn btn-ghost" id="over-menu">MENU</button>
+      <button class="btn btn-ghost hidden" id="town-btn">⌂ TOWN</button>
     </div>
   </div>
 
@@ -954,7 +955,37 @@ function buyPerk(id){
 
 document.getElementById('start-btn').addEventListener('click', () => begin());
 document.getElementById('camp-btn').addEventListener('click', showCamp);
+/* ══ BACK TO CHECKER TOWN — 2026-09-23 ══════════════════════════════════════
+   The Arcade's cabinet opens this page with `?town=1` and the end card grows a door home. The
+   same shape the puzzle room got on 09-21.
+   ⚠⚠ THE FLAG ARRIVES ON THE WRAPPER, NOT HERE. /games/sky-run/ and /games/sand-mine-depths/
+   are pages that FRAME this file, so `?town=1` lands on the parent's search string and
+   location.search here is empty. Reading only our own is the bug that shipped once already in
+   the puzzle room — and it passes every local harness that opens this file directly.
+   ⚠ CLOSING FAILS on a tab no script opened (popup blocked, the installed app), so the
+   fallback walks back rather than leaving a button that does nothing. [[down-never-stuck]] */
+function fromTown(){
+  var hit = function(q){ return /[?&]town=1/.test(q || ''); };
+  if (hit(location.search)) return true;
+  try { if (window.parent && window.parent !== window && hit(window.parent.location.search)) return true; } catch(e){}
+  return false;
+}
+function backToTown(){
+  var w = window.top || window;
+  try { w.close(); } catch(e){}
+  setTimeout(function(){
+    try { w.location.href = '/games/checker-town/'; } catch(e){ location.href = '/games/checker-town/'; }
+  }, 180);
+}
+function wireTownButton(id){
+  var b = document.getElementById(id);
+  if (!b) return;
+  if (!fromTown()) return;                    // ⚠ hidden by default: this page has its own life
+  b.classList.remove('hidden');
+  b.addEventListener('click', backToTown);
+}
 document.getElementById('retry-btn').addEventListener('click', () => begin());
+wireTownButton('town-btn');
 document.getElementById('over-camp').addEventListener('click', showCamp);
 document.getElementById('over-menu').addEventListener('click', showMenu);
 document.getElementById('menu-btn').addEventListener('click', showMenu);

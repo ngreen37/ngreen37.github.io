@@ -1769,13 +1769,47 @@ function coachTrade(){
 /* ⚑ THEY RESIGN (item 8). A champion who is hopelessly lost puts their hand out instead of
    making a beginner find mate from a queen up. ⚠ THE FLOOR DECIDES WHEN: a 350 plays on to
    the end the way a beginner does, a club player folds a rook down. Never in the opening,
-   and never while they still have a check to try — being mated-in-one is not resigning. */
+   and never while they still have a check to try — being mated-in-one is not resigning.
+
+   ⛑⛑ IT RESIGNED A QUEEN IT WAS STILL ABLE TO TAKE BACK — 2026-09-22, Nate: *"the 7th or 8th
+   floor boss just resigned because I took his queen, but we were still in the opening, he
+   should've just taken back with the pawn."* Three things were wrong, and the paragraph above
+   claimed two of them were already right:
+   · "NEVER IN THE OPENING" WAS `G.log.length < 16` — move EIGHT, which is the opening by
+     anybody's reckoning. It is OPENING_PLIES now, and named: a bare 16 sitting under a comment
+     that says "never in the opening" is how a number nobody believes survives a year.
+   · `matPOV` IS A COUNT OF THE POSITION, NOT OF THE GAME. For the one ply between a capture
+     and its recapture the captured side is down the whole piece — with the pawn that takes it
+     back standing on the board. grabBack() asks what they can still take before we call it.
+   · ONE FRAME DECIDED A MATCH. The deficit now has to have been there the previous time we
+     looked as well, so no single move can end a game on its own.
+   ⚠ grabBack IS DELIBERATELY CRUDE: the biggest thing they could take if it were their move,
+   defended or not. It is a BRAKE on resigning, so every mistake it makes lands on the side of
+   playing the position out — which is the side to be wrong on. */
+var OPENING_PLIES = 30;                                   // move 15
 function resignAt(elo){ return elo < 800 ? 900 : elo < 1400 ? 550 : 480; }
+function grabBack(S, c){
+  var best = 0;
+  try {
+    var f = C.toFEN(S).split(' ');
+    f[1] = c; f[3] = '-';                                 // their move, and no en passant to inherit
+    C.legalMoves(C.parseFEN(f.join(' '))).forEach(function(m){
+      var p = S.b[m.to];
+      if (!p || C.colorOf(p) === c) return;
+      var v = PVAL[p.toLowerCase()] || 0;                 // ⚠ PVAL.k is 0, so a flipped-turn
+      if (v > best) best = v;                             //   position that offers the king is free
+    });
+  } catch(e){}
+  return best;
+}
 function oppResign(){
   if (!G || G.over || G.S.turn !== G.pc) return;          // only after their move lands
-  if (G.log.length < 16) return;                          // give the game a game
   var oppC = G.pc === 'w' ? 'b' : 'w';
-  if (-matPOV(G.S, oppC) < resignAt(G.rung.elo)) return;
+  var was = (G.behind == null) ? 0 : G.behind;
+  G.behind = -matPOV(G.S, oppC) - grabBack(G.S, oppC);    // what they are down AFTER taking back
+  if (G.log.length < OPENING_PLIES) return;               // give the game a game
+  var line = resignAt(G.rung.elo);
+  if (G.behind < line || was < line) return;              // ⚠ and it has to have been true last look
   if (C.inCheck(G.S, G.pc)) return;                       // they are still attacking; that is not lost
   endGame('opp-resign');
 }

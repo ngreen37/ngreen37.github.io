@@ -1165,6 +1165,154 @@ const server = http.createServer((req, res) => {
         '…and the h-rook still costs four floors of it — a SITE game, like Murphy\'s Law',
         'Siege and Murphy have never had a building here either');
 
+      /* ══ 16e · THE SQUARE OPENED UP, AND THE TABLES ARE TABLES ═════════════════════
+         *"For Park tables in checker town game, remove the house and replace it with a similar
+         park table visual to when you Enter into it. Then move the academy a little further away
+         from the Tables, same with the arcade."* */
+      ok(/class TableGrove extends TownDoor/.test(town2) && /var d := TableGrove\.new\(\)/.test(town2)
+        && !/wall_color = Color\("2f5d3a"\)/.test(town2),
+        'the Park Tables are TABLES, not a cottage with a green roof');
+      /* ⚠ THE ROOM'S OWN GEOMETRY, SCALED — not a second guess at what a table looks like.
+         Every number in _table() is Pavilion.Table._draw()'s, so a retint in there carries out. */
+      const grove = town2.slice(town2.indexOf('class TableGrove'), town2.indexOf('class CheckerShell'));
+      for (const n of ['-58.0, -30.0, 116.0, 16.0', '-62.0, -104.0, 124.0, 78.0', '-17.0, -18.0, 34.0, 12.0'])
+        ok(grove.includes(n) && park.includes(n),
+          '   …and its ' + n.split(',')[2].trim() + '-wide piece is the one the room draws');
+      /* ⚠⚠ THE ARCADE CANNOT STAND ON THE HAUL ROAD. It is 228 across and the trail is 52 wide;
+         they clear each other only because the trail moved to 360 in the same batch. */
+      const ax = /const ARCADE_AT := Vector2\((-?[\d.]+),/.exec(town2);
+      const cx = /const ACADEMY_AT := Vector2\((-?[\d.]+),/.exec(town2);
+      const tx = /const TRAIL_X := ([\d.]+)/.exec(town2);
+      const gw = /d\.size = Vector2\(([\d.]+), [\d.]+\)\s*\n\s*d\.position = TABLES_AT/.exec(town2);
+      ok(ax && cx && gw && +ax[1] - +gw[1] / 2 >= 380 && -(+cx[1]) - +gw[1] / 2 >= 380,
+        '…and both buildings stand clear of the grove on either side',
+        ax && cx && gw ? 'academy ' + cx[1] + ', grove ' + gw[1] + ' wide, arcade ' + ax[1] : '?');
+      ok(ax && tx && Math.abs(+ax[1] - +tx[1]) > 114 + 26 + 30,
+        '…and the Arcade is not standing on the haul road',
+        ax && tx ? 'arcade at ' + ax[1] + ', trail at ' + tx[1] : '?');
+      /* ⚠ EVERYTHING IN THE ACADEMY'S YARD IS OFF ACADEMY_AT. Six typed numbers would have been
+         six things left behind when the building moved 290 west. */
+      ok((town2.match(/ACADEMY_AT \+ Vector2\(/g) || []).length >= 4
+        && /Rect2\(ACADEMY_AT\.x - 140\.0, -130\.0/.test(town2),
+        '…and its yard, its board, its lamp and the two people in it moved with it');
+
+      /* ══ 16f · NINE HOUSES YOU CANNOT GO INTO ══════════════════════════════════════
+         *"add some more checkers scattered around that you can't get inside of, representing
+         other homes."* */
+      ok(/class CheckerShell extends Node2D/.test(town2)
+        && !/class CheckerShell extends (TownDoor|Interactable)/.test(town2),
+        'the other homes are scenery, not doors that refuse',
+        '⚠ a TownDoor with no scene says "Locked for now", which is a promise nobody kept');
+      const homes = [...town2.matchAll(/\[Vector2\((-?[\d.]+), (-?[\d.]+)\), "[0-9a-f]{6}"\]/g)]
+        .map((m) => [+m[1], +m[2]]);
+      ok(homes.length >= 6, 'there are ' + homes.length + ' of them');
+      /* ⚠⚠ A CHECKER IS 230 ACROSS. Two of them 200 apart is one house with a dent in it, and
+         nothing in the engine would say so — they are not solid. */
+      let tooClose = [];
+      for (let i = 0; i < homes.length; i++)
+        for (let j = i + 1; j < homes.length; j++)
+          if (Math.hypot(homes[i][0] - homes[j][0], homes[i][1] - homes[j][1]) < 260)
+            tooClose.push(homes[i] + ' / ' + homes[j]);
+      ok(tooClose.length === 0, '…and no two of them overlap', tooClose[0] || 'all clear');
+      /* ⛑ AND THEY ARE ON THE MINIMAP. A town map with two houses on it and nine houses off it
+         is a map of somewhere else. ⚠ FOUND BY GROUP, not by class: map.gd cannot name town.gd's
+         inner classes, and inventing a class_name for one drawing would be a file. */
+      const mapSrc = fs.readFileSync(path.join(GD, 'map.gd'), 'utf8');
+      const jrnSrc = fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8');
+      ok(/add_to_group\("town_home"\)/.test(town2) && /is_in_group\("town_home"\)/.test(mapSrc)
+        && /for h in TownMap\.homes:/.test(jrnSrc),
+        '…and every one of them is drawn on the map, unnamed');
+      /* ⚠⚠ FURNITURE BELONGS TO ITS BUILDING. Four flower beds were typed at absolute x; the
+         Academy moved 290 west on 09-23 and two of them stayed behind in open sand. Nothing in
+         the engine says so — a planter in a desert is a planter. */
+      const fixes = /for spot in \[([\s\S]*?)\]:/.exec(town2);
+      ok(fixes && !/Vector2\(-400\.0, -100\.0\), "flowers"/.test(fixes[1])
+        && (fixes[1].match(/(TABLES_AT|ACADEMY_AT) \+ Vector2\([^)]*\), "flowers"/g) || []).length === 4,
+        '…and all four flower beds are placed off the building they belong to',
+        'they flank the Academy\'s path and the grove, and they move when either does');
+
+      /* ══ 16g · YOU CANNOT WALK ON WATER, AND THE CORNERS ARE FENCED ════════════════
+         *"make it so user can not walk on water"* · *"shrink the whole world down a little bit
+         (take out a lot of the empty space if you can, or restrict ability to walk with fencing"*
+         ⚠⚠ THE UNION IS RE-DERIVED HERE, NOT TRUSTED. WATER_BLOCK is five rects cut by hand to
+         be WATER_RECT minus the dock minus the jetty; every one of those four things can move on
+         its own, and the failure is either a sea you can stroll across or an island you cannot
+         reach. Sampling the whole rect is the only check that cannot be fooled by a typo. */
+      const r4 = (name) => {
+        const m = new RegExp('const ' + name + ' := Rect2\\(' +
+          '(-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+)\\)').exec(town2);
+        return m ? { x: +m[1], y: +m[2], w: +m[3], h: +m[4] } : null;
+      };
+      const inR = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+      const water = r4('WATER_RECT'), jetty = r4('JETTY');
+      const dm = /func _deck\(\) -> Rect2:\s*\n\s*return Rect2\(SEA_AT\.x - ([\d.]+), SEA_AT\.y - ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(town2);
+      const sea = /const SEA_AT := Vector2\(([\d.]+), ([\d.]+)\)/.exec(town2);
+      const deck = dm && sea
+        ? { x: +sea[1] - +dm[1], y: +sea[2] - +dm[2], w: +dm[3], h: +dm[4] } : null;
+      const blocks = [...(/const WATER_BLOCK := \[([\s\S]*?)\n\]/.exec(town2) || [0, ''])[1]
+        .matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)]
+        .map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
+      ok(water && jetty && deck && blocks.length >= 4,
+        'the sea, the dock, the jetty and the blockers all read off the file',
+        blocks.length + ' blockers');
+      let wet = 0, dry = 0;
+      if (water && deck && jetty && blocks.length) {
+        for (let x = water.x + 10; x < water.x + water.w; x += 20)
+          for (let y = water.y + 10; y < water.y + water.h; y += 20) {
+            const walkable = inR(deck, x, y) || inR(jetty, x, y);
+            const blocked = blocks.some((b) => inR(b, x, y));
+            if (!walkable && !blocked) wet++;          // open sea you could walk onto
+            if (walkable && blocked) dry++;            // dock or jetty walled off
+          }
+      }
+      ok(wet === 0, '…and not one square of open water is walkable', wet + ' unblocked samples');
+      ok(dry === 0, '…while every plank of the dock and the jetty still is',
+        dry + ' blocked samples on the dock  (⚠ block the jetty and Shogi Island is unreachable)');
+      /* ⚠ AND THE ROWBOAT HAS TO BE ON A PLANK. It is the one door in the game that stands off
+         the land, and the jetty exists only for it. */
+      const rb = /boat\.position = Vector2\(([\d.]+), ([\d.]+)\)/.exec(town2);
+      ok(rb && (inR(jetty, +rb[1], +rb[2]) || inR(deck, +rb[1], +rb[2])),
+        '…and the rowboat is standing on one of them', rb ? rb[1] + ',' + rb[2] : '?');
+      /* ⚠⚠ A FENCE OVER A DOOR IS A DOOR NOBODY CAN REACH, and nothing else would notice: the
+         corners are the only walls on this map that were drawn before anybody stood in them. */
+      const fenced = [...(/const FENCED := \[([\s\S]*?)\n\]/.exec(town2) || [0, ''])[1]
+        .matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)]
+        .map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
+      ok(fenced.length === 3, 'three corners are fenced off', fenced.length + ' rects');
+      const named = {};
+      for (const m of town2.matchAll(/const ([A-Z_]+_AT) := Vector2\((-?[\d.]+), (-?[\d.]+)\)/g))
+        named[m[1]] = [+m[2], +m[3]];
+      const walled = Object.keys(named).filter((k) => fenced.some((f) => inR(f, named[k][0], named[k][1])));
+      ok(walled.length === 0, '…and not one of them is standing on a place',
+        walled.join(', ') || Object.keys(named).length + ' places checked, all outside');
+      ok(/func _draw_fences\(\) -> void:/.test(town2) && /_draw_fences\(\)/.test(fnGd(town2, '_draw')),
+        '…and the fence is DRAWN, because an invisible wall is a bug you cannot report');
+
+      /* ══ 16h · THERE IS A WAY BACK FROM THE ARCADE'S MACHINES ══════════════════════
+         *"Make it so sky run and mine depths, you have the option to return to Game like we did
+         with the puzzles."* */
+      ok(/cab\.url = str\(d\["url"\]\) \+ \("&" if "\?" in str\(d\["url"\]\) else "\?"\) \+ "town=1"/.test(arc),
+        'every cabinet tells the page where you came from');
+      /* ⚠⚠ RESOLVED THROUGH THE WRAPPER. /games/sky-run/ is a page that FRAMES the real file, so
+         the flag lands on the parent's search string — which is exactly the bug that shipped in
+         the puzzle room and passes every harness that opens the inner file directly. */
+      for (const [slug, file] of [['sky-run', 'pjcc_sky_run.html'],
+                                  ['sand-mine-depths', 'pjcc_sandmine.html']]) {
+        const wrap = fs.readFileSync(path.join(ROOT, 'games', slug, 'index.html'), 'utf8');
+        ok(new RegExp('src="[^"]*' + file).test(wrap),
+          '   /games/' + slug + '/ frames ' + file);
+        const page = fs.readFileSync(path.join(ROOT, 'assets/games', file), 'utf8');
+        ok(/function fromTown\(\)/.test(page) && /window\.parent\.location\.search/.test(page),
+          '   …and it reads the flag off the WRAPPER as well as off itself');
+        ok(/id="town-btn"/.test(page) && /wireTownButton\('town-btn'\)/.test(page)
+          && /class="[^"]*\bhidden\b[^"]*" id="town-btn"/.test(page),
+          '   …and the end card grows a TOWN button, hidden unless you came from there');
+        ok(/w\.location\.href = '\/games\/checker-town\/'/.test(page),
+          '   …which walks back when no script is allowed to close the tab');
+        ok(/const CABS := \[[\s\S]*?"slug": "' + slug + '"/.test(arc) || arc.includes('"slug": "' + slug + '"'),
+          '   …and a cabinet in the Arcade opens it');
+      }
+
       /* ══ 16c · THE LANDSCAPE IS SAND, AND GREEN MEANS SOMETHING ════════════════════
          *"make the entire landscape mostly sand, then add some green by the park tables, and then
          put the river/sea past THAT, where the boat to shogi island is."*
@@ -1559,11 +1707,15 @@ const server = http.createServer((req, res) => {
         '⭐ the stall draws its stock with the function that draws it on your head');
       ok(/func _row\(\) -> Dictionary:/.test(town2) && /"id": "next", "text": "Show me another\."/.test(town2),
         '…one hat on the counter at a time, because the box has room for four rows');
-      ok(/class PostBoard extends Interactable/.test(town2)
-        && /const URL := "\/games\/park-tables\/"/.test(town2),
-        'there is a board you leave a move on, and it opens the LOBBY');
-      ok(!/\?table=/.test(town2.slice(town2.indexOf('class PostBoard'))),
-        '…not a bot seat  (⚠ every table in the Pavilion is a bot; this one is a person)');
+      /* ⛑ THE BOARD BY THE ROAD CAME OFF 2026-09-23 (his: *"Remove the Board by the Road,
+         since we have actual park tables now"*). It was a second door onto /games/park-tables/
+         standing thirty units from the road that leads to the real ones, which is what
+         [[dead-game-links-trap]] is about from the other end: not a link to nothing, two links
+         to the same thing. ⚠ THE CLASS WENT WITH THE PLACEMENT — a furniture class nobody
+         builds is the kind of dead code that reads as deliberate. */
+      ok(!/PostBoard/.test(town2),
+        'the board by the road is gone, class and all',
+        'the Park Tables are on the map now; it was a second door onto the same page');
 
       /* ══ 25 · THE JOURNAL ═════════════════════════════════════════════════════════════
          2026-09-04, next-steps #2: *"sixteen squares, sixteen different prices, and no
@@ -1998,8 +2150,9 @@ const server = http.createServer((req, res) => {
         /* ⭐ CheckerHome JOINED 2026-09-21, his: *"make Nate's home a checker"* — his GLB, not a cottage. */
         /* ⭐ AssemblyShack JOINED 2026-09-22, his: *"more of a shack than a house"* — salvaged
            board and one slope of tin, on the day the Gauntlet came off the map. */
+        /* ⛑ TheaterFront LEFT and TableGrove ARRIVED, both 2026-09-23 and both his. */
         const want = ['ArcadeFront', 'AssemblyShack', 'CheckerHome', 'CityGate', 'Rowboat',
-                      'TheaterFront'];
+                      'TableGrove'];
         ok(subs.join(' ') === want.join(' '),
           '…and the bespoke buildings are exactly the ones we chose',
           subs.join(' ') || 'none');
@@ -2010,20 +2163,17 @@ const server = http.createServer((req, res) => {
          arcade, and call it replay theater."* The room is the door's whole reason to
          exist: the site can replay a game, but it cannot say "this is the game that won
          you Crockett's square". */
-      ok(/class TheaterFront extends TownDoor:/.test(town2)
-        && /var t := TheaterFront\.new\(\)/.test(town2),
-        'the Replay Theater has a front of its own');
-      /* ⚠⚠ NOTHING ELSE IN THIS FILE RESOLVES A scene_path. The Academy's check is a
-         literal for the Academy, and the walker below it resolves SITE permalinks, not
-         scenes — so a door pointing at a room that does not exist would ship silently. */
-      ok(/scene_path = "res:\/\/theater\.tscn"/.test(town2)
-        && fs.existsSync(path.join(ROOT, 'private/docs/godot/chess_town', 'theater.tscn')),
-        '…and its door opens onto a scene that is really there');
-      ok(/const THEATER_AT := Vector2\(250\.0, 420\.0\)/.test(town2),
-        '…standing across the road from the Assembly it answers to',
-        'HALL_AT is (-250, 420); the road is x -44..44');
-      ok(/THEATER_AT\.y \+ 110\.0/.test(town2),
-        '…with its own spur, or it is a building in a field beside a road');
+      /* ⛑⛑ IT CAME OFF THE MAP 2026-09-23 (Nate: *"Let's remove the Replay theater"*).
+         The door, the lot, the road to it and its front are gone; the ROOM is parked, the same
+         way the Gauntlet's stairwell is, because he said take it off the street and not burn
+         it. ⚠⚠ BOTH DIRECTIONS, like §16: nothing may open it, and it must still be here and
+         say so, or it rots where nobody is looking. [[read-before-you-delete]] */
+      const theater = fs.readFileSync(path.join(GD, 'theater.gd'), 'utf8');
+      ok(!/TheaterFront/.test(town2) && !/theater\.tscn/.test(town2)
+        && !/THEATER_AT/.test(town2),
+        'nothing on the map opens the Replay Theater, and its lot went with it');
+      ok(fs.existsSync(path.join(GD, 'theater.tscn')) && /PARKED, NOT DELETED/.test(theater),
+        '…and the room is PARKED, not deleted — and its own first line says so');
       ok(/sign_text = ""/.test(town2.slice(town2.indexOf('class ArcadeFront'))),
         '\u26a0 the marquee IS the sign, so the name is not also floating over the roof');
       {

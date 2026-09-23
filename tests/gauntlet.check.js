@@ -22,7 +22,17 @@ const HOOK = `window.__t = { G:function(){return G;}, LADDER:LADDER, VISIBLE:VIS
     if (win) G.S.turn = 'b';
     endGame('checkmate');
     return document.getElementById('over-eye').textContent; },
-  geo:function(){ return { W:W, H:H, TILE:TILE, BOARD:BOARD, BX:BX, BY:BY }; } };`;
+  geo:function(){ return { W:W, H:H, TILE:TILE, BOARD:BOARD, BX:BX, BY:BY }; },
+  /* ⛑ 2026-09-22: stage a position with the move in the PLAYER'S hands — the only moment
+     oppResign() ever runs — and look at it three times. Two looks is the earliest a
+     resignation can land, so the array says WHEN as well as whether. */
+  resigns:function(idx, fen, plies){ startRung(idx, 'w', null);
+    G.S = C.parseFEN(fen); G.legal = C.legalMoves(G.S);
+    G.log = new Array(plies).fill('Nf3'); G.uci = new Array(plies).fill('g1f3');
+    G.behind = null;
+    var out = [];
+    for (var i = 0; i < 3; i++){ if (!G.over) oppResign(); out.push(!!G.over); }
+    return out; } };`;
 
 const PKEY = 'pjcc.gauntlet.v2';
 
@@ -405,6 +415,30 @@ const PKEY = 'pjcc.gauntlet.v2';
        'the wrapper reserves exactly the budgets this test measured against  [page ' +
        (dM ? dM[1] : '?') + '/' + (pM ? pM[1] : '?') + ' vs test ' +
        FRAME_DESKTOP + '/' + FRAME_PHONE + ']');
+
+    /* == THEY DO NOT RESIGN A PIECE THEY CAN TAKE BACK - 2026-09-22 ==
+       Nate: *"the 7th or 8th floor boss just resigned because I took his queen, but we were
+       still in the opening, he should've just taken back with the pawn."*
+       ⚠⚠ EVERY POSITION HERE HAS WHITE TO MOVE, because that is the only moment oppResign()
+       runs — it fires off the back of the RIVAL'S move, when the board is handed over. A test
+       staged with black to move proves nothing, and passes. */
+    const resign = (fen, plies) => page.evaluate((f, n) => window.__t.resigns(6, f, n), fen, plies);
+    /* black is down a queen on the board — and the c7 pawn takes it straight back on d6.
+       ⚠ A BLACK PAWN CAPTURES DOWN THE BOARD. The first draft of this put the queen on d8,
+       where no pawn on c7 can ever reach it, and the check failed on its own position. */
+    const takesBack = await resign('8/2p5/3Q4/8/8/8/8/k6K w - - 0 20', 40);
+    ok(takesBack.join(',') === 'false,false,false',
+       '⛑⛑ the rival does NOT resign a queen its pawn can take back  [' + takesBack.join(',') + ']');
+    /* the same deficit with nothing to take it back with IS a resignation — on the SECOND look */
+    const lost = await resign('8/8/1k6/8/8/8/8/3Q3K w - - 0 40', 40);
+    ok(lost.join(',') === 'false,true,true',
+       '…and a queen down with no recapture still folds, one look later  [' + lost.join(',') + ']',
+       'one frame of one move must never end a match on its own');
+    /* and never in the opening, which is what he was actually playing */
+    const early = await resign('8/8/1k6/8/8/8/8/3Q3K w - - 0 40', 20);
+    ok(early.join(',') === 'false,false,false',
+       '…and never at move ten, whatever the count says  [' + early.join(',') + ']',
+       'the old guard was 16 plies, under a comment that said "never in the opening"');
 
     /* ══ THE RIVAL, THE CRESTS AND THE FILE (2026-09-16) ════════════════════════════════
        The rival is the one feature in this room that can corrupt a climb it never played:
