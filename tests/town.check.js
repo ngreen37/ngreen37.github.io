@@ -1085,8 +1085,9 @@ const server = http.createServer((req, res) => {
         '…and there is only ONE of that texture, not one per room that wanted one');
       ok(/if not inner\.encloses\(Rect2\(at, Vector2\(cell, cell\)\)\):/.test(arc),
         '…and the carpet stops at the wall  (⚠ ceil() overruns and there is no clip rect)');
-      ok(/@export var speed: float = 700\.0/.test(player),
-        'the feet are back down to 700  (⛑ 1180 was mine and it was a misread percentage)');
+      ok(/const SPEED := 525\.0/.test(player) && /@export var speed: float = SPEED/.test(player),
+        'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',
+        '⚠ a const, not just an export default — TownDog.TROT reads it, see §36b');
 
       /* ══ 14 · THE PARK TABLES ARE A ROOM ════════════════════════════════════════════
          *"yes do Park Tables and The Depths."* */
@@ -3352,6 +3353,46 @@ const server = http.createServer((req, res) => {
           && /class Vista extends CanvasLayer/.test(lk),
           '…and the view across the water holds the player still, and lets go cleanly');
 
+        /* ══ THE TELESCOPE KNOWS WHAT TIME IT IS ════════════════════════════════════===
+           2026-09-23, his: *"Can we make it read the user's local time? This is an interesting
+           touch I can take advantage of. Let's put a morning and daytime and nighttime sky on
+           the telescope."*
+           ⛑ THE CLOCK ALREADY READ LOCAL TIME - section 22 has checked the `false` on
+           get_datetime_dict_from_system since 09-04, and sunrise/sunset have come off the real
+           date since 09-14. What was missing was this room USING it: MORNING and AFTERNOON both
+           fell through to one default, so the entire daylight half of his day looked like one
+           hour through the eyepiece. */
+        const skyFrom = lk.indexOf('var top := Color(');
+        const sky = skyFrom < 0 ? '' : lk.slice(skyFrom, lk.indexOf('_grad(Rect2(0.0, 0.0, w, hz)'));
+        const dflt = [...sky.matchAll(/var (?:top|low) := Color\("([0-9a-f]{6})"\)/g)].map((m) => m[1]);
+        const named = [...sky.matchAll(
+          /TownClock\.(\w+):\s*\n\s*top = Color\("([0-9a-f]{6})"\)[^\n]*\n\s*low = Color\("([0-9a-f]{6})"\)/g)];
+        const phases = named.map((m) => m[1]).concat(['AFTERNOON (the default)']);
+        const looks = named.map((m) => m[2] + m[3]).concat([dflt.join('')]);
+        ok(dflt.length === 2 && named.length === 4,
+          '⭐ the telescope has a sky for every phase of the clock', phases.join(' \u00b7 '));
+        /* ⚠⚠ DISTINCT, NOT MERELY PRESENT. The defect was two phases sharing one look, which
+           a check that only counted the branches would have passed on the day it shipped. */
+        ok(looks.length === 5 && new Set(looks).size === 5,
+          '\u2026and no two of them are the same picture',
+          new Set(looks).size + ' distinct of ' + looks.length);
+        ok(named.some((m) => m[1] === 'MORNING'),
+          '\u2026morning among them, which is the one that was missing');
+        /* ⭐ AND THE SUN IS WHERE IT REALLY IS - the payoff he asked for by name. */
+        const body = fnGd(lk, '_sky_body');
+        ok(/TownClock\.sun\(\)/.test(body) && /TownClock\.minute_of_day\(\)/.test(body),
+          '⭐ the sun sits on the arc between the real sunrise and the real sunset');
+        /* \u26a0\u26a0 `> 0 &&` IS NOT DECORATION. indexOf returns -1 when the call is GONE, and -1 is
+           less than everything \u2014 so the first draft of this passed a build with no sun in the
+           sky at all. Found by mutating it, never by reading it. [[green-must-name-what-ran]] */
+        const sunAt = lk.indexOf('_sky_body(w, hz, ph)');
+        ok(sunAt > 0 && sunAt < lk.indexOf('_tower(x, hz, tw, th'),
+          '\u2026drawn, and drawn BEFORE the skyline so the city stands in front of it',
+          'after, and a setting sun is a coin pasted over the towers');
+        ok(/PackedColorArray\(\[mid, rim, rim\]\)/.test(lk) && !/draw_circle\(at, r \* 2\.6/.test(lk),
+          '\u2026and its glow is a real gradient, not a stack of flat discs',
+          'one low-alpha circle has a hard edge; six of them have six \u2014 both were rendered');
+
         /* #1 — Maxwell and your ore fix the town, and every repair is somewhere you can see it. */
         const block = (src, head) => { const a = src.indexOf(head); return a < 0 ? '' : src.slice(a, src.indexOf('\n]', a)); };
         const reps = [...block(gsG, 'const REPAIRS := [').matchAll(/\{ "id": "([a-z]+)",\s+"name": "[^"]+",\s+"ore": (\d+) \}/g)].map((m) => m[1]);
@@ -3507,9 +3548,49 @@ const server = http.createServer((req, res) => {
           '\u2026and the table one is BESIDE the table, not standing inside it',
           inBox + ' haunts inside the board\u2019s solid box');
 
+
+        /* ══ SHE RANGES AHEAD OF HIM NOW ═════════════════════════════════════════════===
+           2026-09-23, his: *"can you slow me down 25%? And have Princess drift ahead of me and
+           kind of move on her own using a randomizer function."* Two asks, and the first one
+           nearly broke the second.
+           ⛑⛑ HER TROT IS DERIVED FROM HIS SPEED AND HAS TO STAY THAT WAY. It was a typed 520
+           against a 700 player. He slowed himself to 525 in the same message, which would have
+           left her at 99% of his pace - the exact "sprite stapled to your shoulder" her own
+           header forbids, with nothing in either file pointing at the number that moved. */
+        const plyG = rd('player.gd');
+        const SPD = +(/const SPEED := ([\d.]+)/.exec(plyG) || [0, 0])[1];
+        const tf = +(/const TROT := TownPlayer\.SPEED \* ([\d.]+)/.exec(dogG) || [0, 0])[1];
+        ok(SPD > 0 && tf > 0 && tf < 0.9,
+          '⭐ her trot is a FRACTION OF HIS SPEED, read off TownPlayer.SPEED',
+          SPD + ' x ' + tf + ' = ' + Math.round(SPD * tf) + ' u/s');
+        ok(tf * 1.6 > 1.05,
+          '\u2026and her run is faster than he walks, or she can never get in front at all',
+          'measured 09-23: at a trot alone she settled 35 units BEHIND him, every time');
+        /* ⚠⚠ THE ONE THE MEASUREMENT FOUND. She lags her own spot by the width of the
+           run/trot band, so the NEAREST place she will choose has to be further ahead than that
+           band is wide. The first cut rolled +/-90 around a single lead and put her level with
+           him on a third of her casts - 18% of frames behind him over 580 samples. */
+        const leadM = /const LEAD := Vector2\(([\d.]+), ([\d.]+)\)/.exec(dogG);
+        const settle = +(/const SETTLE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
+        ok(!!leadM && settle > 0 && +leadM[1] > settle,
+          '\u2026and the nearest spot she picks is further ahead than she can ever lag',
+          leadM ? 'nearest ' + leadM[1] + ' against a ' + settle + '-unit band' : 'no LEAD');
+        ok(/var pace: float = TROT \* 1\.6 if global_position\.distance_to\(spot\) > SETTLE else TROT/.test(dogG),
+          '\u2026she runs until she REACHES her spot, not until she is near RUN_AT of it',
+          'RUN_AT is 260 wide and a trot loses ground every frame inside it');
+        ok(/var aim := _cast\.rotated\(head\.angle\(\)\)/.test(dogG)
+           && /p\.facing if p\.facing\.length_squared\(\)/.test(dogG),
+          '\u2026and her spot is in HIS frame, so "ahead and a little left" survives a corner');
+        ok(/if randf\(\) < 0\.34:\s*\n\s*_side = -_side/.test(dogG),
+          '\u2026she keeps to one side and crosses now and then, rather than zig-zagging through him');
+
         /* ══ SLOWLY, WHICH IS A DIFFERENT NUMBER FROM HER FOLLOW SPEED ═════════===== */
         const amble = +(/const AMBLE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
-        const trot = +(/const TROT := ([\d.]+)/.exec(dogG) || [0, 0])[1];
+        /* ⚑ DERIVED, NOT READ, SINCE 09-23. `const TROT := TownPlayer.SPEED * 0.74` is no longer
+           a literal, and a regex for one quietly returned 0 — which made this check "96 is less
+           than 0 x 0.3" and went red. A check that reads a number must follow it when it stops
+           being typed. [[audit-numbers-can-be-wrong]] */
+        const trot = SPD * tf;
         ok(amble > 0 && trot > 0 && amble < trot * 0.3,
           '⭐ she AMBLES indoors \u2014 a fraction of the speed she catches you up at',
           amble + ' u/s against a trot of ' + trot);
