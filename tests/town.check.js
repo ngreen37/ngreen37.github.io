@@ -1,15 +1,9 @@
 #!/usr/bin/env node
-/* ══════════════════════════════════════════════════════════════════════════════════════
-   town.check.js  —  npm run test:town
-
-   The seam Checker Town talks through. The town is a Godot build in an iframe that plays no
-   chess: it opens a Park Tables board and asks the site who won. Two functions answer, and
-   this file is the only thing standing between them and a loop that silently pays twice.
-
-   ⚠⚠ THE ONE THAT COSTS REAL PROGRESS IS `beaten`. It is a DAY STAMP PER OPPONENT, not a
-   set — union it the way `army` is unioned and the second device hands out a second piece
-   from the same person on the same day, which is the rule the whole loop rests on.
-   ══════════════════════════════════════════════════════════════════════════════════════ */
+/* town.check.js — npm run test:town.  The seam Checker Town talks through: the town is a
+   Godot build in an iframe that plays no chess, so it opens a Park Tables board and asks
+   the site who won.  ⚠⚠ `beaten` is a DAY STAMP PER OPPONENT, not a set — union it the way
+   `army` is unioned and a second device pays out a second piece from the same person on
+   the same day. */
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -24,7 +18,7 @@ const results = [];
 /* report() prints only .msg, so a detail is folded in rather than silently dropped. */
 const ok = (cond, msg, detail) => results.push({ pass: !!cond, msg: msg + (detail ? '   [' + detail + ']' : '') });
 
-/* ── 1 · the writer: Park Tables has to stamp the result at all ────────────────── */
+/* ══ 1 · the writer: Park Tables has to stamp the result at all ══ */
 const PT = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
 const PROF = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
 
@@ -60,24 +54,22 @@ ok(/\bat:\s*Date\.now\(\)/.test(markLast),
   '…stamped with Date.now(), or "did that just happen" has no answer');
 ok(/won:\s*studyOK\(st\)/.test(markLast),
   '…and records who won  (⚠ botWon() means YOU won — the name reads backwards)');
-/* ⚠⚠ A DRAW CAN BE THE WIN. Philidor is "you are a pawn down and still holding", so the
-   study's goal decides — botWon() alone would report a held draw as a failure. */
+/* ⚠⚠ A DRAW CAN BE THE WIN. */
 ok(/function studyOK/.test(PT) && /goal === 'draw'/.test(fn(PT, 'studyOK'))
   && /'1\/2-1\/2'/.test(fn(PT, 'studyOK')),
   '…and a study whose goal is a DRAW counts a draw as done');
 ok(/clean:\s*tierEarned\(st\)\s*===\s*'full'/.test(markLast),
   '…and whether it was CLEAN, off the same full-star test the bench already uses');
-/* ⚠ SLICED FROM THE FUNCTION, never grepped from the file: a call in a comment would
-   satisfy a whole-file grep, which is how a check in this repo once passed on prose. */
+/* ⚠ SLICED FROM THE FUNCTION, never grepped from the file. */
 ok(/markLast\(st\)/.test(finishAs),
   'botFinishAs calls it — the one funnel all four endings come through');
 ok(finishAs.indexOf('markLast(st)') < finishAs.indexOf('logFinished('),
   '…before logFinished, so nothing that throws in the log can eat the stamp');
-/* the loss half: a loss does not spend the day, but it does end the errand */
+/* the loss half: a loss does not spend the day, but it does end the errand. */
 ok(!/if\s*\(\s*botWon\(st\)\s*\)\s*\{[^}]*markLast/.test(finishAs),
   'and it is NOT inside the win branch — a loss has to clear the pending challenge too');
 
-/* ── 2 · the readers, in a real browser against the real file ──────────────────── */
+/* ══ 2 · the readers, in a real browser against the real file ══ */
 const PAGE = `<!doctype html><meta charset="utf-8"><title>t</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-systems.js"></script>
@@ -114,7 +106,7 @@ const server = http.createServer((req, res) => {
     ok(await page.evaluate(() => typeof PJCC.townResult === 'function'), 'PJCC.townResult is a function');
     ok(await page.evaluate(() => typeof PJCC.mergeTown === 'function'), 'PJCC.mergeTown is a function');
 
-    /* ── townResult ─────────────────────────────────────────────────────────────── */
+    /* ══ townResult ══ */
     const R = await page.evaluate(() => {
       const set = (o) => localStorage.setItem('pjcc.pt.last.v1', JSON.stringify(o));
       const out = {};
@@ -145,19 +137,16 @@ const server = http.createServer((req, res) => {
     ok(R.wrongKey === null, 'townResult: null for a different opponent');
     ok(R.noKey === null, 'townResult: null for an empty key');
     ok(R.garbage === null, 'townResult: null rather than throwing on a corrupt record');
-    /* ⚠⚠ THE UNIT TRAP. Godot sends SECONDS, Park Tables stamps MILLISECONDS. Reverse the
-       comparison and every past win reads as current — a piece per visit, forever. */
     ok(R.olderThanSince === null,
       'townResult: null when the result predates the challenge  (seconds vs ms)');
     ok(R.newerThanSince === true, '…and answers when the result came after it');
     ok(R.cleanWin === true, 'townClean: true on an unhelped win — that is what buys a square');
     ok(R.helped === false, 'townClean: false after a takeback or the analysis board');
     ok(R.cleanOnLoss === null, 'townClean: null on a loss — there is no win to be clean');
-    /* ⚠ A row banked before the rule existed has no flag, and refusing a square for it would
-       take a piece off somebody for a takeback they never took. */
+    /* ⚠ A row banked before the rule existed has no flag. */
     ok(R.legacy === true, 'townClean: a record with no `clean` field reads as clean');
 
-    /* ── mergeTown ──────────────────────────────────────────────────────────────── */
+    /* ══ mergeTown ══ */
     const M = await page.evaluate(() => {
       localStorage.removeItem('pjcc.town.v1');
       PJCC.mergeTown({ day: 4, ore: 10, hearts: { Auston: 4, Crockett: 1 },
@@ -176,13 +165,7 @@ const server = http.createServer((req, res) => {
       'mergeTown: army is a UNION of slot indices, deduped and sorted', JSON.stringify(M.m.army));
     ok(M.m.day === 4, 'mergeTown: day takes the MAX — a stale row cannot rewind the calendar');
     ok(M.m.ore === 40, 'mergeTown: ore takes the MAX');
-    /* ⛑⛑ THIS CHECK USED TO ASSERT THE BUG, AND IT PASSED FOR THREE BATCHES. `hearts` is a
-       DICTIONARY of person → count; the old merge was `Math.max(+local.hearts || 0, …)`, which
-       on `{"Auston": 4}` is `Math.max(0, 0)` — so it wrote the integer 0 over the account's
-       hearts and this line, fed a number by a fixture that was also a number, agreed with it.
-       ⚠ THE FIXTURE WAS THE OTHER HALF OF THE MISTAKE. A test that hands the code a shape the
-       real caller never sends is a test of something nobody runs. It sends a dictionary now.
-       [[green-must-name-what-ran]] */
+    /* ⛑⛑ THIS CHECK USED TO ASSERT THE BUG, AND IT PASSED FOR THREE BATCHES. */
     ok(M.m.hearts && M.m.hearts.Auston === 4 && M.m.hearts.Crockett === 2,
       'mergeTown: hearts are a DICTIONARY and take the max PER PERSON',
       JSON.stringify(M.m.hearts));
@@ -192,18 +175,12 @@ const server = http.createServer((req, res) => {
       'crockett=' + M.m.beaten.crockett);
     ok(M.m.beaten.kedar === 6, '…and a key only the other device knows is kept');
     ok(M.stored && M.stored.beaten.crockett === 4, '…and the merge is what gets stored');
-    /* what a loss BOUGHT you. Dropped from this merge it lives only in the town's own save
-       and dies on the first device that pulls the account copy down over it. */
     ok(M.m.scouted && M.m.scouted.crockett === 3,
       'mergeTown: scouted is MAX PER KEY too — a tendency you learned stays learned',
       'crockett=' + ((M.m.scouted || {}).crockett));
     ok(M.m.scouted && M.m.scouted.argus === 2, '…and a key only the other device knows is kept');
 
-    /* ── 2b · the way BACK into the game ─────────────────────────────────────────────
-       ⚠⚠ THE TWO STORES ARE NOT ONE STORE. The account's copy is localStorage; the town's
-       own save is Godot's `user://`, which on web is IndexedDB. mergeTown alone shipped a
-       one-way sync: a signed-in player on a new device had their state pulled down and then
-       watched the town boot Day 1 straight over the top of it. */
+    /* ══ 2b · the way BACK into the game ══ */
     const S = await page.evaluate(() => {
       localStorage.removeItem('pjcc.town.v1');
       const empty = PJCC.townState();
@@ -215,10 +192,7 @@ const server = http.createServer((req, res) => {
       'townState: hands back the merged copy for the town to read at boot',
       'day ' + (S.after || {}).day);
 
-    /* ── 2c · the scouting facts, and whether they can be TRUE ───────────────────────
-       A loss reveals what an opponent plays. That is advice acted on at a real board, so an
-       id in regulars.yml that pjcc-systems.js cannot name produces a BLANK fact — the reveal
-       fires, the row is spent, and the player is told nothing. [[accuracy-above-all]] */
+    /* ══ 2c · the scouting facts, and whether they can be TRUE ══ */
     const PAGE_SRC = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
     ok(/id="ct-facts-data"/.test(PAGE_SRC) && /site\.data\.regulars/.test(PAGE_SRC),
       'the facts island is READ from _data/regulars.yml, never typed');
@@ -239,7 +213,7 @@ const server = http.createServer((req, res) => {
       '…and pjcc-systems.js can name every one of them — a blank fact spends the reveal',
       named.join(' · '));
 
-    /* ── 3 · the pull rides the existing request ─────────────────────────────────── */
+    /* ══ 3 · the pull rides the existing request ══ */
     const PROF = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
     const pull = PROF.slice(PROF.indexOf('PJCC.ready.then('), PROF.indexOf("['catch']"));
     ok(/r\.game === 'checker-town'/.test(pull),
@@ -247,10 +221,8 @@ const server = http.createServer((req, res) => {
     ok(/townMerge\(/.test(pull), '…and merges what comes back rather than overwriting');
 
 
-    /* ⛑ THE TWO JAPANESE ROOMS CAME OFF THE SLOW-ROLL, 2026-09-03 (*"it's time - let's just
-       do it"*). They were commented out of the registry on 07-04, which left the `isle` hall
-       at /games/isle/ rendering an EMPTY grid for two months — those two lines were its only
-       cards. ⚠ Re-commenting them empties that hall again. [[removed-not-forgotten]] */
+    /* ⛑ THE TWO JAPANESE ROOMS CAME OFF THE SLOW-ROLL, 2026-09-03. */
+    /* his: "it's time - let's just do it" */
     const GD_DATA = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
     const listed = (slug) => new RegExp("^\\s*\\{ slug:'" + slug + "'", 'm').test(GD_DATA);
     ok(listed('shogi-island'), 'Shogi Island is listed in the games registry, not commented out');
@@ -262,7 +234,7 @@ const server = http.createServer((req, res) => {
         '…and /games/' + g + '/ no longer hides from search  (no live game carries noindex)');
     }
 
-    /* the head-to-head, before you sit down (2026-09-03) */
+    /* the head-to-head, before you sit down (2026-09-03). */
     ok(/function h2hWords\(/.test(PT) && /h2hWords\(id\)/.test(PT),
       'the bench card shows your record against a seat — ONE reader, two shapes');
     ok(/var rec = resume \? '' : h2hWords\(id\);/.test(PT),
@@ -274,11 +246,8 @@ const server = http.createServer((req, res) => {
     ok(/local\.island_open = !!\(local\.island_open \|\| remote\.island_open\)/.test(PROF),
       '…the oars merge by OR, like every other earned thing');
 
-    /* ══ THE CHAMP'S TAB CLOSES — 2026-09-21 ══
-       Nate: *"If there is a miss, the window closes. Currently, you can just keep doing puzzles
-       and you may not realize why."* Driven through the room's real settle and the real tap,
-       in a tab opened by window.open like the town's. Mutation: `nextPuzzle()` in place of the
-       close fails A, B, C and E. */
+    /* ══ THE CHAMP'S TAB CLOSES — 2026-09-21 ══ */
+    /* his: "If there is a miss, the window closes. Currently, you can just keep doing puzzles and you may not realize why." */
     {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       const now = () => page.evaluate(() => Date.now());
@@ -342,7 +311,7 @@ const server = http.createServer((req, res) => {
 
     ok(errs.length === 0, 'no page errors', errs.join(' | '));
 
-    /* ── 4 · the Godot half asks, and the stand-in is off on web ─────────────────── */
+    /* ══ 4 · the Godot half asks, and the stand-in is off on web ══ */
     const GD = path.join(ROOT, 'private/docs/godot/chess_town');
     if (fs.existsSync(GD)) {
       const gs = fs.readFileSync(path.join(GD, 'game_state.gd'), 'utf8');
@@ -357,12 +326,8 @@ const server = http.createServer((req, res) => {
         'a NAMED SQUARE COSTS A CLEAN WIN — difficulty replaced the daily rhythm');
       ok(/if not clean:[\s\S]{0,200}return -2/.test(gs),
         '…and a helped win does NOT retire them: sloppy means go again, like a loss');
-      /* ⭐ BOTH CASTLES SINCE 2026-09-12 (his call). The kingside half was already here.
-         ⚠ EVERY CHECK BELOW PINS AN ARGUMENT, NOT A NAME — one that only asserted
-         castle_ready_long() exists would stay green with the rook left standing on a. */
-      /* ⚠ includes(), NOT a regex. Every one of these is a LITERAL, and a literal full of
-         parentheses is one escaping mistake away from an empty capture group that matches
-         nothing and passes for the wrong reason. */
+      /* ⭐ BOTH CASTLES SINCE 2026-09-12 (his call). */
+      /* ⚠ includes(), NOT a regex. */
       ok(gs.includes('func castle_ready_long() -> bool:'),
         'the Assembly offers the long castle too');
       ok(gs.includes('open_at(4, HOME_RANK) and open_at(5, HOME_RANK) and open_at(6, HOME_RANK)'),
@@ -377,48 +342,43 @@ const server = http.createServer((req, res) => {
         '…on a timer: the new tab means the town never reloads, so nothing else asks');
       ok(/if not OS\.has_feature\("web"\):\s*\n\s*add_child\(DevReferee/.test(zone),
         'the DevReferee stand-in is DESKTOP ONLY — on web it would hide a broken seam');
-      /* ⚠ the half that was missing until 2026-09-03: the town has to READ the account */
+      /* ⚠ the half that was missing until 2026-09-03: the town has to READ the account. */
       ok(/func pull_from_site\(/.test(gs) && /townState/.test(gs),
         'GameState.pull_from_site asks the site for the account copy');
       ok(/func merge_in\(/.test(gs) && /int\(beaten\.get\(k, -1\)\)/.test(gs),
         '…and merges it by the same rules  (⚠ beaten vs -1: day 0 is a real day)');
       ok(/_pulls_left/.test(gs) && /_poll\.timeout\.connect\(_tick\)/.test(gs),
         '…for the first ticks, so an async myStats() landing late still gets in');
-      /* ⭐ the nine squares nobody in the town can give you */
+      /* ⭐ the nine squares nobody in the town can give you. */
       ok(/func check_site_unlocks\(/.test(gs) && /townScore/.test(gs),
         'the dead squares are won from the REST OF THE SITE — the board can fill at all now');
       ok(/for \(i = 0; i < gs\.length; i\+\+\)/.test(gs),
         '…in ONE bridge crossing, not one per square on a 2s tick');
       ok(/str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)/.test(gs),
         '…and claimable() counts them, or army_full() locks the CEO behind them');
-      /* ── the three from 2026-09-03 ─────────────────────────────────────────────── */
+      /* ══ the three from 2026-09-03 ══ */
       const player = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
       const door = fs.readFileSync(path.join(GD, 'door.gd'), 'utf8');
       const town = fs.readFileSync(path.join(GD, 'town.gd'), 'utf8');
-      /* ⚠ TWO BUGS, ONE FIX. `aspect="expand"` shows MORE WORLD on a taller window, and with
-         no bounds you could walk clean off the map into gray nothing. */
       ok(/world_bounds/.test(zone) && /world_bounds = GROUND_RECT/.test(town),
         'the map has an edge, and it is the same rect the ground is drawn from');
       ok(/limit_smoothed = true/.test(player) && /func _keep_inside\(/.test(player),
         '…the camera stops at it and so do the feet  (⚠ smoothing overshoots without it)');
       ok(/const GROUND_RECT/.test(town) && !/Rect2\(-1120\.0, -560\.0, 2240\.0, 1780\.0\), GROUND\)/.test(town),
         '…from ONE constant — two copies of the map size drift into a camera stopping in a field');
-      /* the compounding thing, visible without going indoors */
+      /* the compounding thing, visible without going indoors. */
       ok(/func _draw_windows\(/.test(door) && /lit_windows/.test(door),
         'the Assembly wears the board on its face — 16 windows in slot order');
       ok(/GameState\.army_changed\.connect\(_light_the_hall\)/.test(town),
         '…and relights them, because a square can fill from another tab');
-      /* sound */
       const audio = fs.readFileSync(path.join(GD, 'town_audio.gd'), 'utf8');
       ok(/AudioStreamWAV/.test(audio) && /FORMAT_16_BITS/.test(audio),
         'there is sound now, synthesized in code — no binary to ship or license');
       ok(/a\.step\(\)/.test(player) && /_walked/.test(player),
         '…footsteps paced by DISTANCE, so they stop when you walk into a wall');
 
-      /* ── the cast, and the four squares that had no way in ─────────────────────── */
-      /* ⚠ SLICED TO `\n]`, NOT THE FIRST `]`. Rows carry `"un": ["shogi-island", 5]` now, so
-         the first bracket is four rows in — the first draft of this check read a third of the
-         roster and reported Robert missing from it. */
+      /* ══ the cast, and the four squares that had no way in ══ */
+      /* ⚠ SLICED TO `\n]`, NOT THE FIRST `]`. */
       const rStart = gs.indexOf('const ROSTER');
       const roster = gs.slice(rStart, gs.indexOf('\n]', rStart));
       ok(!/"key": ""\s*\}/.test(roster.replace(/"un":[^}]*/g, '')) || /"un"/.test(roster),
@@ -427,14 +387,11 @@ const server = http.createServer((req, res) => {
         '⛑ Robert has a square — he stood in the town owning nothing you could win');
       ok(/_add_challenger\("Vince", "brother"/.test(town),
         '⛑ Vince is ON THE MAP — he owned the a-rook and was nowhere');
-      /* ⛑ SHE IS A TownDog SINCE 2026-09-04 and no longer goes through _add_challenger, but
-         the rule this check exists for is unchanged: she is placed OUTSIDE the Assembly she
-         gates, and she still owns the c-bishop. Both halves, or the spelling change would have
-         quietly taken her off the map. */
+      /* ⛑ A TownDog since 2026-09-04, not _add_challenger. Outside the Assembly, and still the c-bishop. */
       ok(/var dog := TownDog\.princess\(\)/.test(town) && /dog\.position = HALL_AT \+/.test(town)
          && /"Princess": \{ "key": "princess"/.test(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8')),
         '…and Princess stands outside the Assembly she gates  (built once, in dog.gd — the house has her too)');
-      /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once */
+      /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once. */
       const yml = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
       const keys = [...roster.matchAll(/"key": "([a-z]+)"/g)].map((m) => m[1]);
       const real = [...yml.matchAll(/^- key:\s*(\S+)/gm)].map((m) => m[1]);
@@ -442,7 +399,7 @@ const server = http.createServer((req, res) => {
         '…and every key is a REAL bench seat — a made-up key is a dead door',
         keys.filter((k) => !real.includes(k)).join(' ') || keys.length + ' checked');
 
-      /* six hearts, and a card that works without a mouse */
+      /* six hearts, and a card that works without a mouse. */
       ok(/const HEART_CAP := 6/.test(gs), 'hearts cap at six, not ten');
       ok(/clampi\(int\(hearts\[k\]\), 0, HEART_CAP\)/.test(gs),
         '…and a save from before today is clamped, or six pips sit beside a nine');
@@ -450,14 +407,10 @@ const server = http.createServer((req, res) => {
       ok(/get_mouse_position/.test(card) && /active_npc\(\)/.test(card),
         'the relationship card has TWO ways in — hover, and standing there  (he is on iOS)');
 
-      /* the Academy is a place */
       const acad = fs.readFileSync(path.join(GD, 'academy.gd'), 'utf8');
       ok(/scene_path = "res:\/\/academy.tscn"/.test(town),
         'the Academy is a building you enter, not a link');
-      /* ⚠⚠ A ROOM THAT OPENS ONTO A 404 IS THE WHOLE POINT OF THIS CHECK, so it resolves the
-         URL the way Jekyll does — a page lives at its `permalink:`, NOT at a folder matching
-         its path. /academy/bootcamp/ is `academy-bootcamp.md`. Checking for a directory
-         reported two real pages missing. [[dead-game-links-trap]] */
+      /* ⚠⚠ A ROOM THAT OPENS ONTO A 404 IS THE WHOLE POINT OF THIS CHECK. */
       const permalinks = new Set();
       const walk = (dir) => {
         for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -474,10 +427,7 @@ const server = http.createServer((req, res) => {
         }
       };
       walk(ROOT);
-      /* ⚠⚠ THE ROOMS ARE READ OUT OF THE FILE, NOT LISTED HERE. The first draft checked three
-         hard-coded URLs, which cannot see a FOURTH room added later pointing at nothing — it
-         passed a mutation that repointed a room at /academy/lesson-four/. A gate that only
-         knows the answers it was given is not a gate. */
+      /* ⚠⚠ THE ROOMS ARE READ OUT OF THE FILE, NOT LISTED HERE. */
       const rooms = [...acad.matchAll(/_lesson\("[^"]*",\s*"([^"]+)"/g)].map((m) => m[1]);
       ok(rooms.length >= 3, 'the Academy has its lesson rooms', rooms.length + ' found');
       for (const u of rooms) {
@@ -487,19 +437,12 @@ const server = http.createServer((req, res) => {
         '…and the room has walls, or you walk out into black');
 
       const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
-      /* ⛑⛑ SUPERSEDED 2026-09-04. This guarded the lectern reading out a to-do list of
-         names, split into "here" and "elsewhere". Nate: *"the message to the left of the
-         assembly board NOT read the names of those who are not there yet (it should be a
-         mystery) but instead a cryptic line."* The replacement is in section 9 and it is
-         the OPPOSITE assertion: that the Lectern block mentions no holder at all. */
+      /* ⛑⛑ SUPERSEDED 2026-09-04. */
+      /* his: "the message to the left of the assembly board NOT read the names of those who are not there yet (it should be a mystery) but instead a cryptic line." */
       ok(/func _owed\(\)/.test(hall),
         'the lectern still reads the BOARD  (⚠ cryptic is not random — a riddle still points somewhere)');
 
-      /* ══ 5 · MONKEY ISLAND: THE LINE LEFT THE BOX (2026-09-03) ══════════════════════
-         ⛑⛑ THE WORDS LEFT THE WORLD ON 09-02 BECAUSE THREE LABELS SHARED ONE PATCH OF MAP.
-         Putting one of them back is only safe while the other two stay gone, so these check
-         the CONDITIONS rather than the feature: the box is still the fallback, the nameplate
-         still yields, and the card still gets out of the way. */
+      /* ══ 5 · MONKEY ISLAND: THE LINE LEFT THE BOX (2026-09-03) ══ */
       const speech = fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8');
       const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
       const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
@@ -515,68 +458,49 @@ const server = http.createServer((req, res) => {
         '…and anything taller than its radius raises the line clear of its own picture');
       ok(/var look: int = IDLE if \(_mode == SAY and _bubbled\) else _mode/.test(ui),
         '…a bubbled one-liner leaves the box LOOKING idle, so the prompt does not blink out');
-      /* ⛑ REWORDED 2026-09-04, not weakened. speaker() answered "who is talking", which
-         only made sense while exactly one person could be. There are two mouths now, so the
-         nameplate asks about ITSELF and the card asks about anybody — two questions, and
-         one answer for both would hide every nameplate in the zone. Section 8 has them. */
+      /* ⛑ REWORDED 2026-09-04, not weakened. speaker() answered "who is talking". */
       ok(/func speaking\(who: Node2D\) -> bool:/.test(
         fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8')),
         '…a speaker can be asked about, one at a time');
-      /* ⚠⚠ THE BOX IS NOT DEAD CODE. The zone speaks for results that landed in another tab
-         and those have no mouth on screen; a "bubble everything" refactor would silence them. */
+      /* ⚠⚠ THE BOX IS NOT DEAD CODE. */
       ok(/_ui\.say\("Word travels/.test(zone) && /func _bubble\(from: Node2D/.test(ui),
         '…and the BOX still answers when nobody on screen is speaking');
 
-      /* the big fight — the only line in the town that knows the board's total */
+      /* the big fight — the only line in the town that knows the board's total. */
       ok(/"id": "big"/.test(chal) && /GameState\.has_slot\(GameState\.slot_for_key\(key\)\)/.test(chal),
         'a regular whose square you hold offers the big fight');
       ok(/func _big_fight_line\(/.test(chal) && /GameState\.claimable\(\)/.test(chal),
         '…and reads the answer OFF THE BOARD, so it changes as the board fills');
 
-      /* ⛑ the names came off the Assembly, 2026-09-03 */
+      /* ⛑ the names came off the Assembly, 2026-09-03. */
       ok(/func _draw_plate\(/.test(hall) && !/NAME_OFF/.test(hall),
         'the Assembly wears blank NAMEPLATES — the name is the prize, not the label');
       ok(/if not won or f == null or who == "":\s*\n\s*return/.test(hall),
         '…and an unwon square is written on by nothing');
 
-      /* the testing speed, and the two things that had to move with it.
-         ⛑ 1180 → 700 on 09-04. His correction: *"we were in the 500s and you sent me into
-         the 1000s but your second-guess was correct."* The number is checked in section 13;
-         what stays here is the pair of things that are DERIVED from it, which is the part
-         that silently rots when the number moves. */
+      /* the testing speed, and the two things that had to move with it. */
+      /* his: "we were in the 500s and you sent me into the 1000s but your second-guess was correct." */
       ok(/position_smoothing_speed = maxf\(7\.0, speed \/ /.test(player),
         '…the camera is DERIVED from it, or you outrun your own view');
       ok(/_walked >= speed \* /.test(player),
         '…and so is the footstep, or the cadence is 15 a second');
 
-      /* ══ 6 · SHOGI ISLAND, BY BOAT ══════════════════════════════════════════════════ */
+      /* ══ 6 · SHOGI ISLAND, BY BOAT ══ */
       const isl = fs.readFileSync(path.join(GD, 'island.gd'), 'utf8');
-      /* ⛑⛑ THIS CHECK USED TO ASSERT THE OPPOSITE, and the reversal is his: *"let's open up
-         the japanese games on Shogi island - it's time - let's just do it."* For one day the
-         island deliberately refused to open the shogi room and this gate enforced the refusal.
-         ⚠ DO NOT "RESTORE" IT. [[removed-not-forgotten]]
-         ⚠ IT READS CODE, NOT PROSE — the first version grepped the whole file for the path and
-         went red on the header comment describing the rule, a gate that could not tell a rule
-         from a violation of it. */
+      /* ⛑⛑ 2026-09-03: this check asserted the OPPOSITE for one day. Do not restore it. */
+      /* his: "let's open up the japanese games on Shogi island - it's time - let's just do it." */
       ok(/\burl\s*=\s*"\/games\/shogi-island\/"/.test(isl),
         'the island OPENS the shogi room now  (⛑ the 09-03 reversal, his call)');
       ok(/world_bounds = Rect2/.test(isl), '…and it has an edge');
 
-      /* ══ 6c · THE CROSSING - YOU ROW THERE ════════════════════════════════════=======
-         2026-09-23, Nate: *"when you get the oars to go to shogi island - can you make a dock
-         on each side? so we don't teleport there, we row there."*
-         ⛑⛑ THE ROWBOAT USED TO BE A DOOR STRAIGHT INTO island.tscn, and the sea the island
-         sits in was never on screen at all. sea.gd is that water; the two docks are its ends.
-         ⚠⚠ IT READS CODE, NOT PROSE - the same trap section 6 fell into. town.gd still SAYS
-         `res://island.tscn`, in the comment recording the change, and must. */
+      /* ══ 6c · THE CROSSING - YOU ROW THERE ══ */
+      /* his: "when you get the oars to go to shogi island - can you make a dock on each side? so we don't teleport there, we row there." */
       const seaAt = path.join(GD, 'sea.gd');
       ok(fs.existsSync(seaAt) && fs.existsSync(path.join(GD, 'sea.tscn')),
         'the crossing is a room of its own');
       const sea = fs.existsSync(seaAt) ? fs.readFileSync(seaAt, 'utf8') : '';
       ok(/class_name SeaCrossing\s*\nextends TownZone/.test(sea),
         '\u2026a TownZone like every other room, so the HUD, the journal and the pad come free');
-      /* ⛑⛑ THE ONE THAT MATTERS. Put island.tscn back on the rowboat and the whole thing is
-         a teleport with two docks drawn either side of it. */
       ok(/boat\.scene_path = "res:\/\/sea\.tscn"/.test(town)
          && !/scene_path = "res:\/\/island\.tscn"/.test(town),
         'the town rowboat opens the WATER, and nothing in town opens the island directly');
@@ -587,11 +511,7 @@ const server = http.createServer((req, res) => {
          && /scene_path = "res:\/\/island\.tscn"/.test(sea),
         '\u2026which leaves the crossing as the only room that opens either end');
 
-      /* ══ THE FOUR LANDING POINTS, EACH DERIVED AGAINST THE OTHER FILE ═════════=======
-         ⛑⛑ ONE OF THESE WAS ALREADY WRONG. The rowboat's old `return_at` was 940,820, which
-         the 09-23 water blockers turned into the inside of a wall - so coming home from the
-         island put you in one. Nothing could see it: the number lived in town.gd and so did
-         the wall, in a different constant, and neither read the other. */
+      /* ══ THE FOUR LANDING POINTS, EACH DERIVED AGAINST THE OTHER FILE ══ */
       const v2 = (src, name) => {
         const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
         return m ? { x: +m[1], y: +m[2] } : null;
@@ -611,7 +531,7 @@ const server = http.createServer((req, res) => {
       const landT = v2(sea, 'TOWN_LANDING'), landI = v2(sea, 'ISLE_LANDING');
       ok(inR(rc(sea, 'TOWN_DOCK'), tieT) && inR(rc(sea, 'ISLE_DOCK'), tieI),
         'out on the water you are put down ON the dock at each end, not beside it');
-      /* the town's planks, read the way section 16g reads them */
+      /* the town's planks, read the way section 16g reads them. */
       const jm = /const JETTY := Rect2\(([\d.]+), ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(town);
       const km = /func _deck\(\) -> Rect2:\s*\n\s*return Rect2\(SEA_AT\.x - ([\d.]+), SEA_AT\.y - ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(town);
       const sm = /const SEA_AT := Vector2\(([\d.]+), ([\d.]+)\)/.exec(town);
@@ -625,10 +545,7 @@ const server = http.createServer((req, res) => {
       ok(!!rbRet && onPlank({ x: +rbRet[1], y: +rbRet[2] }),
         '\u2026and so does the rowboat own note  (⛑ 940,820 was open water for two days)');
 
-      /* the island's dock, and the clamp that decides where a body may stand on it.
-         ⚠⚠ RE-DERIVED RATHER THAN TRUSTED: MOORING, DOCK, SPIT_TOP and the ellipse are four
-         numbers that move on their own, and between them they decide whether the way home is
-         somewhere you can actually stand. */
+      /* the island's dock, and the clamp that decides where a body may stand on it. */
       const dm2 = /const DOCK := Rect2\(-SPIT_HALF, ([\d.]+), SPIT_HALF \* 2\.0, ([\d.]+)\)/.exec(isl);
       const spitHalf = num(isl, 'SPIT_HALF'), spitTop = num(isl, 'SPIT_TOP');
       const mid = v2(isl, 'MID'), RX = num(isl, 'RX'), RY = num(isl, 'RY');
@@ -655,7 +572,7 @@ const server = http.createServer((req, res) => {
         offIsland + ' rows of dock the island does not reach  (⚠⚠ raise SPIT_TOP past the '
         + 'dock and the boat is somewhere you cannot walk to)');
 
-      /* ══ WHAT YOU ARE, OUT THERE ═════════════════════════════════════════════======= */
+      /* ══ WHAT YOU ARE, OUT THERE ══ */
       ok(/func _make_player\(\) -> TownPlayer:\s*\n\s*return Rowing\.new\(\)/.test(sea)
          && /class Rowing extends TownPlayer/.test(sea),
         'the thing you steer across is a boat, not a man standing on the sea');
@@ -663,9 +580,7 @@ const server = http.createServer((req, res) => {
         '\u2026with drag, so a hull comes up to speed and coasts down from it',
         'exp(), NEVER a flat lerp by delta - that one is faster on a 144Hz monitor');
       ok(!/\.step\(\)/.test(sea), '\u2026and it does not go clop across open water');
-      /* ⚠⚠ THE SHORES ARE OUT OF REACH BY GEOMETRY, NOT BY A WALL. world_bounds is the open
-         water; camera_bounds is the water plus both beaches. Widen the first and you row up a
-         beach, with nothing to stop you, because there is nothing there to stop you. */
+      /* ⚠⚠ THE SHORES ARE OUT OF REACH BY GEOMETRY, NOT BY A WALL. world_bounds is the open water. */
       const wb = /world_bounds = Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(sea);
       const SW = num(sea, 'W'), SHORE = num(sea, 'SHORE');
       ok(!!wb && !!SW && !!SHORE && +wb[1] >= -SW + SHORE && +wb[1] + +wb[3] <= SW - SHORE,
@@ -677,8 +592,6 @@ const server = http.createServer((req, res) => {
          && inR({ x: +wb[1], y: +wb[2], w: +wb[3], h: +wb[4] }, tieI),
         '\u2026and both tie-ups are inside it, or you arrive where the clamp will move you');
 
-      /* ⭐ ONE BOAT AND ONE DOCK. His ask was that the two ends MATCH; three hand-copied
-         hulls is how they stop matching a month from now, quietly. */
       ok(/static func hull\(\) -> PackedVector2Array/.test(sea)
          && /SeaCrossing\.moored\(self, GameState\.island_open\)/.test(town)
          && /SeaCrossing\.moored\(self, true\)/.test(isl),
@@ -688,18 +601,7 @@ const server = http.createServer((req, res) => {
          && (sea.match(/plank_dock\(self, (?:TOWN|ISLE)_DOCK\)/g) || []).length === 2,
         '\u2026and every dock from one drawing, at all four places there is one');
 
-      /* ══ AND THE ISLAND'S OWN SHORE ═════════════════════════════════════════════====
-         ⛑⛑ IT WAS A FLOOR UNTIL 2026-09-23 - you could walk off the beach and stand on open
-         ocean out to the map's edge, two days after the town's sea stopped letting you.
-         ⛑⛑ A CLAMP, NOT BLOCKERS, AND THAT WAS MEASURED. The first cut was town.gd's answer:
-         32 bands walling the water beyond the widest sand in each. A physics probe over the
-         whole island found 166 units of walkable ocean off the north and south tips, where the
-         shore turns fastest; bands only close that as sqrt(band height). ⚠⚠ THE TOWN KEEPS
-         ITS BLOCKERS - its sea is a rectangle minus two rectangles, which rects express
-         exactly. This is not a fix to carry over there. */
-      /* ⚠⚠ THE CLAMP, NOT ITS INPUT. The first draft asked only that half_at() was READ,
-         and a mutation that deleted the line doing the clamping stayed green: the width was
-         still being worked out, and then thrown away. Both axes are named here. */
+      /* ══ AND THE ISLAND'S OWN SHORE ══ */
       ok(/class Beachcomber extends TownPlayer/.test(isl)
          && /func _keep_inside\(\) -> void/.test(isl)
          && /position\.y = clampf\(position\.y, top \+ 1\.0, ShogiIsland\.DOCK\.end\.y - r\)/.test(isl)
@@ -711,13 +613,10 @@ const server = http.createServer((req, res) => {
       ok(/var w: float = sand_half\(y\)/.test(isl)
          && (isl.match(/static func sand_half/g) || []).length === 1,
         '\u2026and the beach it draws and the edge it clamps to are ONE function');
-      /* ⚠ THE SQUARE FOLLOWS THE GAME THAT WINS IT. It is unlocked by solving five on Shogi
-         Island, and shogi is Matsu's — he is the one who never left. It briefly said "Kaede"
-         and before that "Shogi Island", which was a PLACE on a board full of people. */
+      /* ⚠ THE SQUARE FOLLOWS THE GAME THAT WINS IT. */
       ok(/"who": "Matsu"/.test(roster) && !/Shogi Island",\s*"key"/.test(roster),
         '…and the d-pawn belongs to whoever\'s game wins it');
-      /* ⚠⚠ MEASURED, NOT ASSUMED: Godot's built-in font has no kana. Without the subset every
-         line he speaks renders as nothing at all — silently, with no error anywhere. */
+      /* ⚠⚠ MEASURED, NOT ASSUMED: Godot's built-in font has no kana. */
       const fontAt = path.join(GD, 'kaede_jp.ttf');
       ok(fs.existsSync(fontAt), 'a font that can draw kana ships with the town');
       if (fs.existsSync(fontAt)) {
@@ -731,7 +630,6 @@ const server = http.createServer((req, res) => {
       ok(/no_seat_say/.test(chal) && /no_seat_say = /.test(isl),
         'his chess row is grayed and SAYS WHY — no bench seat was invented for him');
 
-      /* the three-in-a-row gate */
       ok(/const PUZZLE_RUN := 3/.test(gs) && /func poll_puzzle\(/.test(gs),
         'the Puzzle Champ keeps the oars until three clean in a row');
       ok(/poll_challenge\(\)\s*\n\s*poll_puzzle\(\)/.test(gs),
@@ -747,41 +645,26 @@ const server = http.createServer((req, res) => {
          /open_url\(url\)/.test(pMore) && /puzzle_more\(\)/.test(fnGd(gs, 'puzzle_begin')),
         '…and both doors tell the room what is still owed and since when, so it can close itself',
         'roundi, not int: truncating a float stamp a hair low recounts the last solve');
-      /* ⚠ IT NAMES THE REFUSAL, not the flag. A check on `island_open` alone passed a mutation
-         that let anybody row out: the flag is read to refuse AND to decide whether the hull is
-         drawn with oars, and only one of those two keeps the island shut.
-         ⚑ The oars half moved to SeaCrossing.moored() on 09-23; §6c checks that end. */
+      /* ⚠ IT NAMES THE REFUSAL, not the flag. */
       ok(/class Rowboat extends TownDoor/.test(town) &&
          /if not GameState\.island_open:\s*\n\s*say\("No oars/.test(town),
         'the boat refuses until the oars are won');
       ok(/class PuzzleChamp extends TownNPC/.test(town) && !/class PuzzleChamp extends TownChallenger/.test(town),
         '…and the Champ is NOT a challenger — he has no bench key and must never be given one');
 
-      /* ══ 6b · THE JAPANESE LANE, OPENED 2026-09-03 ═════════════════════════════════
-         *"let's open up the japanese games on Shogi island - it's time - let's just do it. Get
-         Kaede's sibling on the map too and let's do both japanese game (reading room and
-         shogi) - let's do what we can to teach the user japanese if they wish."* */
+      /* ══ 6b · THE JAPANESE LANE, OPENED 2026-09-03 ══ */
+      /* his: "let's open up the japanese games on Shogi island - it's time - let's just do it. Get Kaede's sibling on the map too and let's do both japanese game (reading room and shogi) - let's do what we can to teach the user japanese if they wish." */
       const town2 = town;
-      /* ⚑ MOVED 2026-09-21, his: *"move the Reading Room to the island"*. Kaede stays in town —
-         her file has her there on the exchange, at school; see the check below. */
+      /* ⚑ MOVED 2026-09-21. */
+      /* his: "move the Reading Room to the island" */
       ok(/url = "\/games\/reading-room\/"/.test(isl) && !/url = "\/games\/reading-room\/"/.test(town2),
         'the Reading Room is a building on Shogi Island, and no longer in town');
-      /* ⚠⚠ EVERY SITE URL THE TOWN OPENS, PULLED OUT OF THE TOWN. Naming the two Japanese
-         ones here would be the same defect the Academy's lesson check already had: a gate that
-         only knows the answers it was given cannot see a THIRD door added later pointing at
-         nothing. Both spellings are matched — the literal `url = "…"` and `_add_door(name, "…")`.
-         [[dead-game-links-trap]] */
+      /* ⚠⚠ EVERY SITE URL THE TOWN OPENS, PULLED OUT OF THE TOWN. */
       const arc = fs.readFileSync(path.join(GD, 'arcade.gd'), 'utf8');
       const park = fs.readFileSync(path.join(GD, 'park.gd'), 'utf8');
       const pit = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
       const stair = fs.readFileSync(path.join(GD, 'stairwell.gd'), 'utf8');
-      /* ⛑⛑ AND THE SPELLINGS CHANGED UNDER IT, 2026-09-04. Three rooms shipped that day and
-         two of them name their page a new way — `const URL :=` in the stairwell, `const
-         TABLE_URL :=` in GameState — so a derivation that knew only `url = "…"` and
-         `_add_door(…)` would have gone green while three doors it had never read pointed
-         wherever they liked. `_add_door` no longer exists; every spelling that does is here.
-         ⚠ THE QUERY IS CUT: /games/park-tables/?table=maxwell is that page, and a permalink
-         set has never heard of a query string. */
+      /* ⛑⛑ AND THE SPELLINGS CHANGED UNDER IT, 2026-09-04. */
       const doors = [...(isl + town2 + arc + park + pit + stair + gs)
         .matchAll(/(?:\burl = |"url": |\b[A-Z_]*URL :?= )"(\/[^"]+)"/g)]
         .map((m) => m[1].split('?')[0]);
@@ -789,10 +672,7 @@ const server = http.createServer((req, res) => {
       for (const u of [...new Set(doors)]) {
         ok(permalinks.has(u), 'the door to ' + u + ' is a real page, not a 404');
       }
-      /* ⚠⚠ CANON PUTS THEM IN DIFFERENT PLACES AND THE ASK DID NOT. `_characters/kaede.md` is
-         `last_seen: CHECKER TOWN` and she runs the library; `_characters/matsu.md` is
-         `last_seen: SHOGI ISLAND` and "never left". A check on the FILES, so a later tidy that
-         swaps them has to argue with his own character sheets. */
+      /* ⚠⚠ CANON PUTS THEM IN DIFFERENT PLACES AND THE ASK DID NOT. */
       const kmd = fs.readFileSync(path.join(ROOT, '_characters/kaede.md'), 'utf8');
       const mmd = fs.readFileSync(path.join(ROOT, '_characters/matsu.md'), 'utf8');
       ok(/last_seen:\s*CHECKER TOWN/.test(kmd) && /kaede\.who = "Kaede"/.test(town2),
@@ -801,37 +681,27 @@ const server = http.createServer((req, res) => {
         '…and Matsu is on the island, where his does');
       ok(/matsu\.no_english = true/.test(isl),
         '…he speaks no English, and the card says so rather than leaving you to guess');
-      /* ⛑⛑ THE SIXTEEN WORDS CAME OUT 2026-09-07 (*"let's remove the 'learn sixteen words'
-         from the japanese characters in checker town"*), and four checks came out with them.
-         What is asserted now is the part he kept and called a nice touch — which is a
-         CONTRAST, so it has to be checked from both sides or half of it can rot. */
+      /* ⛑⛑ THE SIXTEEN WORDS CAME OUT 2026-09-07. */
+      /* his: "let's remove the 'learn sixteen words' from the japanese characters in checker town" */
       ok(!/@export var teaches_words/.test(npc) && !/"id": "word"/.test(npc)
         && !/const WORDS :=/.test(gs) && !/func learn_word\(/.test(gs),
         'nobody in the town runs a vocabulary drill any more',
         '⚠ SHAPES, NOT THE WORD "teaches_words" — the comment recording the removal says it');
       const kline = /kaede\.lines = \[([\s\S]*?)\]/.exec(town2);
       const mline = /matsu\.lines = \[([\s\S]*?)\]/.exec(isl);
-      /* ⚠ EVERY LINE, NOT FOUR OF THEM. A floor let a mutation that stripped the English off
-         one line stay green — and one silent line in a greeting ladder is exactly how the
-         contrast rots. A count is not a set. [[green-must-name-what-ran]] */
+      /* ⚠ EVERY LINE, NOT FOUR OF THEM. */
       const kEntries = kline ? (kline[1].match(/"/g) || []).length / 2 : 0;
       const kBoth = kline ? (kline[1].match(/ — /g) || []).length : 0;
       ok(kEntries >= 4 && kBoth === kEntries,
         'Kaede says it in Japanese and then in English, on every line she has',
         kBoth + ' of ' + kEntries);
-      /* ⭐⭐ EXACTLY ONE, AND THE COUNT IS THE POINT (his: *"a TINY bit of English"*). Two is
-         a different character, and `_line_for` puts this one on the top rung of HEART_CAP —
-         so it arrives as a payoff for the relationship rather than as a translation. */
+      /* ⭐⭐ EXACTLY ONE, AND THE COUNT IS THE POINT. */
+      /* his: "a TINY bit of English" */
       ok(!!mline && (mline[1].match(/ — /g) || []).length === 1,
         '…and Matsu cracks by exactly one English word, at the top of the hearts ladder',
         mline ? (mline[1].match(/ — /g) || []).length + ' of his lines carry any' : 'no lines');
 
-      /* ⭐⭐ THE FONT COVERS WHAT THE SCRIPTS SAY. This is the check that makes the whole
-         Japanese lane safe to edit: Godot's built-in font has no kana and no kanji, and a
-         character missing from the subset draws as NOTHING — no tofu, no warning, no error.
-         So the gate reads every CJK character out of the .gd files and looks each one up in
-         the font's own cmap. Add a kanji and forget to rerun make_font.py, and this goes red
-         with the character in the message. */
+      /* ⭐⭐ THE FONT COVERS WHAT THE SCRIPTS SAY. */
       const cover = (() => {
         const b = fs.readFileSync(fontAt);
         const num = b.readUInt16BE(4);
@@ -873,7 +743,7 @@ const server = http.createServer((req, res) => {
           missing.length ? 'MISSING: ' + missing.join('') : said.size + ' checked');
       }
 
-      /* ══ 7 · REWARD AND DEFEAT ══════════════════════════════════════════════════════ */
+      /* ══ 7 · REWARD AND DEFEAT ══ */
       ok(/func cost\(\) -> int:/.test(chal) && !/GameState\.spend\(energy_cost\)/.test(chal),
         'a rematch with somebody whose square you hold is FREE — and sit-down reads the same price');
       ok(/not razzed\.has\(key\)/.test(gs) && /razzed\[key\] = 1/.test(gs),
@@ -883,20 +753,10 @@ const server = http.createServer((req, res) => {
       ok(/for k in \(d\.get\("razzed", \{\}\) as Dictionary\)/.test(gs),
         '…and it is a UNION across devices, or the phone says it again');
 
-      /* ⚠ ITS OWN SCOPE. Everything below re-reads files this suite already read
-         hundreds of lines up, under the same obvious names — `hall`, `door`, `arc`.
-         One brace pair is the whole fix; renaming them all would make every check
-         read `hall2`, which is how a gate stops being readable. */
       {
 
-      /* ══ 8 · TWO MOUTHS AT ONCE ═════════════════════════════════════════════════════
-         2026-09-04, Nate: *"find a way to have the user's character dialogue in white, above
-         the character, without overlapping dialogue. the goodbye quote can end the
-         conversation, but the user can move as well with the response of the character
-         remaining visible for the proper amount of time."*
-         ⚠⚠ THE WHOLE FEATURE RESTS ON ONE INVARIANT: nothing else may be drawn above a head.
-         Two of the three labels that collided on 09-02 are gone for good and the third, the
-         nameplate, yields — so these checks are on the CONDITIONS, not on the bubble. */
+      /* ══ 8 · TWO MOUTHS AT ONCE ══ */
+      /* his: "find a way to have the user's character dialogue in white, above the character, without overlapping dialogue. the goodbye quote can end the conversation, but the user can move as well with the response of the character remaining visible for the proper amount of time." */
       const sp = fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8');
       const tui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
       const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
@@ -934,10 +794,8 @@ const server = http.createServer((req, res) => {
         'the player has a mouth of their own, and it is NOT the Forge aura',
         'a signed-in player can pick a color you cannot read');
 
-      /* ══ 9 · A ROOM WITH EDGES, WALLS AND A WAY OUT ═════════════════════════════════
-         *"limit the space on the inside of the assembly so you can't endlessly walk"*,
-         *"there should be walls on the insides of the buildings"*,
-         *"the exit door should be a different symbol rather than a house"*. */
+      /* ══ 9 · A ROOM WITH EDGES, WALLS AND A WAY OUT ══ */
+      /* his: "limit the space on the inside of the assembly so you can't endlessly walk" */
       const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
       const xit = fs.readFileSync(path.join(GD, 'exit_door.gd'), 'utf8');
       ok(/world_bounds = ROOM\.grow\(-WALL_T\)/.test(hall),
@@ -948,8 +806,6 @@ const server = http.createServer((req, res) => {
         && /TownZone\.draw_walls\(self, Rect2\(-W/.test(acad)
         && /TownZone\.draw_walls\(self, ROOM/.test(arc),
         '…the Assembly, the Academy and the Arcade');
-      /* ⚠ ANCHORED. Unanchored, this passed a build whose class was renamed TownExitX —
-         a prefix match is not an identity test. */
       ok(/^class_name TownExit$/m.test(xit) && /func _arch\(/.test(xit),
         'the way out is a DOORWAY, not a cottage with a pitched roof');
       ok(/var out := TownExit\.new\(\)/.test(hall) && /var out := TownExit\.new\(\)/.test(acad),
@@ -968,14 +824,11 @@ const server = http.createServer((req, res) => {
       ok(/GameState\.square_name\(slot\)/.test(lect) && /GameState\.key_at\(slot\)/.test(lect),
         '…but are still read off the board, so a riddle still points somewhere');
 
-      /* ══ 10 · THE LIGHT OUTSIDE LINES UP WITH THE PIECE INSIDE ══════════════════════
-         *"let's line up the light on the outside to the piece you unlocked."* It did not:
-         two mappings, disagreeing on BOTH axes. */
+      /* ══ 10 · THE LIGHT OUTSIDE LINES UP WITH THE PIECE INSIDE ══ */
+      /* his: "let's line up the light on the outside to the piece you unlocked." */
       ok(/static func board_cell\(slot: int\) -> Vector2i:/.test(gs),
         'ONE function turns a slot into a cell on the board');
-      /* ⚠ THE HALL REACHES IT ONE HOP FURTHER AWAY SINCE 09-05. A piece can be stood
-         anywhere now, so the room asks cell_of() — which falls back to home_cell(), which is
-         the only thing left that calls board_cell(). Still ONE mapping and still two callers. */
+      /* ⚠ THE HALL REACHES IT ONE HOP FURTHER AWAY SINCE 09-05. */
       ok(/var c := board_cell\(slot\)/.test(gs) && /GameState\.board_cell\(slot\)/.test(door)
         && /GameState\.home_cell\(slot\)/.test(hall),
         '…and the Assembly AND the building\'s face both read it');
@@ -988,7 +841,7 @@ const server = http.createServer((req, res) => {
       ok(/@export var camera_offset: Vector2/.test(zone) && /cam\.position = cam_offset/.test(player),
         '…and a room whose subject is on the back wall can aim the camera up at it');
 
-      /* ══ 11 · THREE PUZZLES, AND A KEY TO TEST THEM WITH ════════════════════════════ */
+      /* ══ 11 · THREE PUZZLES, AND A KEY TO TEST THEM WITH ══ */
       const dev = fs.readFileSync(path.join(GD, 'dev_referee.gd'), 'utf8');
       ok(/func puzzle_report\(clean: bool/.test(gs),
         'ONE path settles a puzzle, won or lost');
@@ -1005,10 +858,9 @@ const server = http.createServer((req, res) => {
       ok(/GameState\.puzzle_run\.connect\([\s\S]{0,90}queue_redraw\(\)\)/.test(town2),
         '…and redraws on it, or the count updates when you happen to walk past');
 
-      /* ══ 12 · THE PLACE NAME IS AN ARRIVAL ══════════════════════════════════════════
-         *"the text saying Sand Mines gets in the way of the dialogue — that text shouldn't
-         be permanently visible."* Crockett stands 14px from where it was nailed down. */
-      /* ⚠ THE `:=` IS THE ANCHOR. Without it, renaming the constant kept this green. */
+      /* ══ 12 · THE PLACE NAME IS AN ARRIVAL ══ */
+      /* his: "the text saying Sand Mines gets in the way of the dialogue — that text shouldn't be permanently visible." */
+      /* ⚠ THE `:=` IS THE ANCHOR. */
       ok(/const NAME_SECONDS :=/.test(town2) && /_place_left -= delta/.test(town2),
         'the place name arrives and goes');
       ok(/if sp != null and sp\.anyone\(\):[\s\S]{0,60}_place_left = 0\.0/.test(town2),
@@ -1017,21 +869,13 @@ const server = http.createServer((req, res) => {
       ok(/if f == null or _place < 0 or _place_left <= 0\.0:/.test(town2),
         '…and draws nothing at all the rest of the time');
 
-      /* ══ 13 · THE ARCADE ════════════════════════════════════════════════════════════
-         *"take a different building and really go big on it."* */
+      /* ══ 13 · THE ARCADE ══ */
+      /* his: "take a different building and really go big on it." */
       ok(/scene_path = "res:\/\/arcade\.tscn"/.test(town2) && !/_add_door\("Arcade"/.test(town2),
         'the Arcade is a ROOM, not a link that opens a hall page in a new tab');
       ok(fs.existsSync(path.join(GD, 'arcade.tscn')), '…and the scene exists');
-      /* ⭐⭐ THE STRONGEST CHECK IN THIS FILE: the cabinets are derived from the site's own
-         registry, from the other side.
-         ⛑ IT WAS ONE STRICT EQUALITY UNTIL 2026-09-07, when Campaign moved to the site's
-         WORKBENCH (Nate: *"put the campaign on the workbench"*) and kept the cabinet he asked
-         for three days before that. A room is allowed to hold a machine for a game that files
-         elsewhere on the site — so the equality is three rules now: every arcade game has a
-         machine, every machine is a game the site still has, and any machine that is NEITHER
-         is named in OFF_HALL, one line each. ⚠ THAT LAST LIST IS WHAT KEEPS THIS AS STRONG AS
-         THE EQUALITY WAS. An accidental extra cabinet is still red; it just has to be argued
-         for in writing first. */
+      /* ⭐⭐ THE STRONGEST CHECK IN THIS FILE. */
+      /* his: "put the campaign on the workbench" */
       const REG = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
       const inArcade = [...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'[^\n]*cat:'arcade'/gm)]
         .map((m) => m[1]).sort();
@@ -1065,18 +909,13 @@ const server = http.createServer((req, res) => {
       ok(/draw_set_transform\(Vector2\.ZERO, 0\.0, Vector2\.ONE\)\s*\n\s*_attract_over\(r\)/.test(arc),
         '…and anything with a STROKE is drawn after the reset',
         '⚠⚠ a 3px outline under a scale of 80 arrives 240px thick — it covered a whole cabinet');
-      /* ⚠ THE SKY CLOUDS WENT (2026-09-14, the Daily demo); the siege walkers still scroll, and the
-         Daily's round enemies cannot be clipped, so they are skipped at the screen's edge. */
+      /* ⚠ THE SKY CLOUDS WENT (2026-09-14, the Daily demo); the siege walkers still scroll. */
       ok(/func _box\(aspect: float, r: Rect2\) -> Rect2:/.test(arc)
         && /_box\(aspect, Rect2\(x, y - 0\.17/.test(arc)
         && /if y < 0\.05 or y > 0\.95:\s*\n\s*continue/.test(fnGd(arc, '_sky_live')),
         '…and a sprite that scrolls off a screen is clipped, not painted on the next cabinet');
-      /* ⚠⚠ `.new()`, NOT THE BARE CLASS NAME. Both of these are named in this file's own
-         header, so the first draft went green on PROSE: swapping the CanvasModulate for a
-         ColorRect left the room unlit and the check happy. Ask what the gate does when the
-         subject is ABSENT. [[green-must-name-what-ran]] */
-      /* ⛑ THE TEXTURE MOVED TO TownZone ON 2026-09-04, when the third room wanted it. The
-         check follows the code: `_glow` is the zone's now and the Arcade asks for it. */
+      /* ⚠⚠ `.new()`, NOT THE BARE CLASS NAME. */
+      /* ⛑ THE TEXTURE MOVED TO TownZone ON 2026-09-04, when the third room wanted it. */
       ok(/static var _glow: Texture2D/.test(zone) && /GradientTexture2D\.new\(\)/.test(zone)
         && /TownZone\.glow\(\)/.test(arc)
         && /PointLight2D\.new\(\)/.test(arc) && /CanvasModulate\.new\(\)/.test(arc),
@@ -1089,17 +928,15 @@ const server = http.createServer((req, res) => {
         'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',
         '⚠ a const, not just an export default — TownDog.TROT reads it, see §36b');
 
-      /* ══ 14 · THE PARK TABLES ARE A ROOM ════════════════════════════════════════════
-         *"yes do Park Tables and The Depths."* */
+      /* ══ 14 · THE PARK TABLES ARE A ROOM ══ */
+      /* his: "yes do Park Tables and The Depths." */
       ok(/scene_path = "res:\/\/park\.tscn"/.test(town2)
         && !/url = "\/games\/park-tables\/"/.test(town2),
         'the Park Tables is a ROOM, not a link that opens the lobby in a new tab');
       ok(fs.existsSync(path.join(GD, 'park.tscn')), '…and the scene exists');
-      /* ⭐⭐ THE SAME TRICK THE ARCADE PLAYS ON THE GAMES REGISTRY, aimed at the bench: the ten
-         tables are derived from `_data/regulars.yml` and checked from BOTH SIDES. A table for a
-         seat that does not exist, or a seat with no table, is red here. */
-      /* ⚑ MINUS THE CEO (2026-09-21, Nate: *"The CEO should be removed"*): his chair is the Hall's,
-         and sit_down() on his key is the finale — a park table was a second door to it. */
+      /* ⭐⭐ THE SAME TRICK THE ARCADE PLAYS ON THE GAMES REGISTRY, aimed at the bench. */
+      /* ⚑ MINUS THE CEO (2026-09-21. */
+      /* his: "The CEO should be removed" */
       const benchKeys = [...yml.matchAll(/^- key:\s*(\S+)/gm)].map((m) => m[1]).filter((k) => k !== 'ceo').sort();
       const tableKeys = [...park.matchAll(/\{ "key": "([a-z]+)"/g)].map((m) => m[1]).sort();
       ok(JSON.stringify(tableKeys) === JSON.stringify(benchKeys),
@@ -1111,14 +948,12 @@ const server = http.createServer((req, res) => {
          && /_ceo\.elo = GameState\.CEO_ELO/.test(fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8')),
         '⛑ the CEO has no park table, and his ONE rating is GameState.CEO_ELO, the bench\'s own',
         (ceoGd ? ceoGd[1] : '?') + ' vs bench ' + (ceoYml ? ceoYml[1] : '?'));
-      /* every row, field for field, against the YAML the site prints from */
+      /* every row, field for field, against the YAML the site prints from. */
       const ymlRows = {};
       for (const m of yml.matchAll(
         /^- key:\s*(\S+)\s*\n\s*name:\s*(.+?)\s*\n\s*icon:\s*"(.)"\s*\n\s*elo:\s*(\d+)/gm)) {
         ymlRows[m[1]] = { name: m[2], icon: m[3], elo: +m[4] };
       }
-      /* ⚠ THE GLYPH IS THE PIECE. The bench wears ♖/♜ and ChessArt speaks "r"; without this
-         map the `piece` field is the one column in that table nobody is checking. */
       const GLYPH = { '♖': 'r', '♜': 'r', '♘': 'n', '♞': 'n', '♗': 'b', '♝': 'b',
                       '♕': 'q', '♛': 'q', '♔': 'k', '♚': 'k', '♙': 'p', '♟': 'p' };
       const rows = [...park.matchAll(
@@ -1127,8 +962,7 @@ const server = http.createServer((req, res) => {
         '…and every row was readable', rows.length + ' of ' + benchKeys.length);
       const wrong = rows.filter(([, k, who, elo, pc]) => {
         const r = ymlRows[k];
-        /* ⚠ AUSTON'S 1200 IS THE DIAL'S INVISIBLE SEED, not a rating, so the room prints
-           "Adapts" and carries 0. That is the one row allowed to disagree on elo. */
+        /* ⚠ AUSTON'S 1200 IS THE DIAL'S INVISIBLE SEED, not a rating. */
         if (!r) return true;
         if (r.name !== who) return true;
         if (GLYPH[r.icon] !== pc) return true;
@@ -1140,7 +974,7 @@ const server = http.createServer((req, res) => {
         && /"key": "brother"/.test(park.slice(park.indexOf('const OFF')))
         && /adaptive: true/.test(PT) && /offLadder: true/.test(PT),
         '…and the two seats drawn OFF the ladder here are the two the bench draws off it');
-      /* ⭐ y-sort, and the trap that comes with it */
+      /* ⭐ y-sort, and the trap that comes with it. */
       ok(/y_sort_enabled = true/.test(park),
         '⭐ the pavilion is Y-SORTED — you walk behind the far tables');
       ok(/ground\.z_index = -1/.test(park) && /class Ground extends Node2D/.test(park),
@@ -1148,7 +982,6 @@ const server = http.createServer((req, res) => {
         '⚠⚠ a y-sorted node draws its OWN art at its own Y — the zone\'s _draw() would cover the room');
       ok(/out\.z_index = -1/.test(park) && /_board\.z_index = -1/.test(park),
         '…and anything hung on a wall drops out of the sort too');
-      /* ⭐⭐ ONE PLACE SITS YOU DOWN */
       ok(/func sit_down\(who: String, key: String, cost: int\) -> String:/.test(gs)
         && /if beaten_today\(key\):/.test(gs),
         '⭐ ONE function sits you down, and it owns the once-a-day stamp');
@@ -1156,17 +989,13 @@ const server = http.createServer((req, res) => {
         && /GameState\.sit_down\(who, key, _cost\(\)\)/.test(park),
         '…and BOTH ways of taking a seat come down it',
         '⚠⚠ two copies of the daily rule is two pieces off Maxwell in one evening');
-      /* ⚠ READING THE RULE IS NOT COPYING IT. Both files ask `beaten_today` to gray a row and
-         to write a prompt, which is what a sign does. What neither may do is ENFORCE it: the
-         three calls that make a seat happen — the day stamp, the energy and the errand — belong
-         to sit_down and nowhere else. */
+      /* ⚠ READING THE RULE IS NOT COPYING IT. */
       ok(!/begin_challenge/.test(chal) && !/GameState\.spend\(/.test(chal)
         && !/retire_for_today/.test(chal),
         '…neither ENFORCES it  (⛑ the challenger had all three inline until today)');
       ok(!/begin_challenge/.test(park) && !/GameState\.spend\(/.test(park)
         && !/retire_for_today/.test(park),
         '…and the table never had them');
-      /* ⚠ the lock is a SIGN. The first cut said so in a comment and returned early anyway. */
       ok(/func _locked\(\) -> bool:/.test(park)
         && /the tables want a clean win over %s first/.test(park),
         'a locked seat says the price on the sign');
@@ -1174,7 +1003,7 @@ const server = http.createServer((req, res) => {
       ok(!/_locked\(\)/.test(sitBody.slice(0, sitBody.indexOf('func _lock_who'))),
         '…and still opens, because the STAR TABLE that really gates it is the site\'s',
         '⚠⚠ a door refusing on a copy of somebody else\'s rule is confidently wrong');
-      /* ⭐ the room empties as you win */
+      /* ⭐ the room empties as you win. */
       ok(/_mine = _slot >= 0 and GameState\.has_slot\(_slot\)/.test(park)
         && /theirs, pushed in/.test(park),
         '⭐ a seat whose square is yours has an empty chair and their piece on the table');
@@ -1184,22 +1013,12 @@ const server = http.createServer((req, res) => {
         && /GameState\.site_slot_won\.connect/.test(park)
         && /GameState\.challenge_resolved\.connect/.test(park),
         '…and every table notices, because you played in another tab');
-      /* ⛑⛑ THE ARITHMETIC, NOT A COMMENT. Five times now something in this game has been drawn
-         under the HUD's stat row. The camera's LOWEST position is ROOM.end.y - 324, so the
-         highest thing in the room has a computable screen y from there, and it must clear the
-         stat row. [[audit-numbers-can-be-wrong]] [[mobile-window-slide]] */
       const pRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(park);
       const pRung = /const RUNG_Y := (-?[\d.]+)/.exec(park);
-      /* ⛑ ALL OF THEM, NOT .exec()'s FIRST. A table draws a piece twice — seated when they
-         still owe you the square, lying on the board once they do not — and the first draft
-         measured whichever came first in the file. It happened to be the low one, so moving
-         the SEATED piece a hundred units up the wall changed nothing and the check stayed
-         green. Take the highest thing a table draws, whichever call it came from. */
+      /* ⛑ ALL OF THEM, NOT .exec()'s FIRST. */
       const pSeats = [...park.matchAll(
         /ChessArt\.draw_piece\(self, piece, Vector2\(0\.0, (-?[\d.]+)\), ([\d.]+),\s*tint/g)]
         .map((m) => +m[1] - +m[2] / 2);
-      /* ⚠ AND THE SEATED MODEL. A person drawn from nate.glb is no draw_piece call, so the
-         regex above cannot see them; their crown is SEAT_FEET − TALL. */
       const pFeet = /const SEAT_FEET := (-?[\d.]+)/.exec(park);
       const pTall = /const TALL := ([\d.]+)/.exec(fs.readFileSync(path.join(GD, 'player_model.gd'), 'utf8'));
       ok(pFeet && pTall && /_model\.draw_on\(self, Vector2\(0\.0, SEAT_FEET\)\)/.test(park),
@@ -1221,10 +1040,8 @@ const server = http.createServer((req, res) => {
           '…and the seated pieces clear the HUD from the camera\'s lowest position',
           'screen y ' + Math.round(pieceTop - camLowest) + ', the stat row ends at 50');
       }
-      /* ══ YOU CAN WALK BEHIND THE TABLES — 2026-09-21 ══
-         Nate: *"let's be able to walk behind the tables."* Tables are SOLID (y-sort alone walks you
-         through them), and how far back you go is the HUD's call. Walked in a probe: front stop
-         −225, back stop −335, back limit −369, lane clear end to end. */
+      /* ══ YOU CAN WALK BEHIND THE TABLES — 2026-09-21 ══ */
+      /* his: "let's be able to walk behind the tables." */
       {
         const PL = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
         const num = (re, src) => { const m = re.exec(src); return m ? +m[1] : NaN; };
@@ -1248,8 +1065,7 @@ const server = http.createServer((req, res) => {
           ok(back + feet - tall - camTop(back) >= 56,
             '…whose back edge keeps your head clear of the stat row',
             'screen y ' + Math.round(back + feet - tall - camTop(back)));
-          /* ⚠ the clock hangs lower, top right; at the room's end the camera stops and the corner
-             is under it. HALF_W 20 is his sprite, off a render. */
+          /* ⚠ the clock hangs lower, top right. */
           const clockL = roomRight - +dial[1], clockBottom = +dial[2] + dialH;
           const besideNook = roomRight - wallT - +nook[1] - rad;
           const belowNook = roomTop + wallT + +nook[2] + rad;
@@ -1260,14 +1076,14 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      /* ══ 15 · THE DEPTHS IS THE CAMP ABOVE THE SHAFT ════════════════════════════════ */
+      /* ══ 15 · THE DEPTHS IS THE CAMP ABOVE THE SHAFT ══ */
       ok(/scene_path = "res:\/\/depths\.tscn"/.test(town2)
         && !/shaft\.energy_cost = 20/.test(town2),
         'the shaft is a ROOM, and the energy moved inside with the cage');
       ok(fs.existsSync(path.join(GD, 'depths.tscn')), '…and the scene exists');
       ok(/energy_cost = 20/.test(pit),
         '…charged ONCE, by the cage  (⚠ leaving it on the door too would charge you twice)');
-      /* ⭐⭐ REAL SHADOWS — the technique this room exists to show */
+      /* ⭐⭐ REAL SHADOWS — the technique this room exists to show. */
       ok(/shadow_enabled = true/.test(pit) && /LightOccluder2D\.new\(\)/.test(pit)
         && /OccluderPolygon2D\.new\(\)/.test(pit),
         '⭐ the pit head has REAL cast shadows — a light with shadows and an occluder per post');
@@ -1279,12 +1095,12 @@ const server = http.createServer((req, res) => {
         '…and the timber stops you  (⛑ scenery you walk through says the room is a picture)');
       ok(/CanvasModulate\.new\(\)/.test(pit) && /dim\.color = Color\(0\.5/.test(pit),
         '…and the room is still legible with the lights off  [[down-never-stuck]]');
-      /* ⭐ the sentence neither the mine nor the site can say */
+      /* ⭐ the sentence neither the mine nor the site can say. */
       ok(/GameState\.slot_for_game\("sand-mine-depths"\)/.test(pit)
         && /GameState\.unlock_need\(_slot\)/.test(pit) && !/\b300\b/.test(pit),
         '⭐ the Martyr\'s stone says his square is bought in the ARCADE, and asks the roster how much',
         '⚠ two mines share a name: the shaft pays ore, the machine pays the g-pawn');
-      /* the run has to come back where you came in */
+      /* the run has to come back where you came in. */
       ok(/var mine_return: String/.test(gs)
         && /GameState\.mine_return = "res:\/\/depths\.tscn"/.test(pit),
         'the shaft run knows which door it came through');
@@ -1293,45 +1109,32 @@ const server = http.createServer((req, res) => {
         '…and reads it, with the old export still the fallback',
         '⚠ an @export is read from the SCENE FILE — the caller cannot set it');
 
-      /* ══ 16 · THE GAUNTLET IS OUT OF THE TOWN, AND PARKED ═══════════════════════════
-         2026-09-22, Nate: *"let's make the Gauntlet in Checker Town a skyscraper in Chess City
-         — so… eliminate it from the game for now."*
-         ⚠⚠ BOTH DIRECTIONS, AND THAT IS THE POINT. Nothing may open the room — and the room has
-         to still be here and still agree with the site's ten floors, because it IS the inside of
-         a skyscraper and the next person to open it needs to find it parked, not rotting.
-         [[read-before-you-delete]] */
+      /* ══ 16 · THE GAUNTLET IS OUT OF THE TOWN, AND PARKED ══ */
+      /* his: "let's make the Gauntlet in Checker Town a skyscraper in Chess City — so… eliminate it from the game for now." */
       ok(!/stairwell\.tscn/.test(town2) && !/url = "\/games\/the-gauntlet\/"/.test(town2)
         && !/GAUNTLET_AT/.test(town2),
         'no door in the town opens the Gauntlet, and its lot went with it');
       ok(fs.existsSync(path.join(GD, 'stairwell.tscn')) && /PARKED, NOT DELETED/.test(stair),
         '…and the room is PARKED, not deleted — and its own first line says so',
         'a stairwell is the inside of a skyscraper; writing it twice is writing it twice');
-      /* ⚠⚠ AND THE MAP MUST NOT KEEP A ROAD TO IT. The plaza up there had an east arm and a
-         step up to each of two doors; with one door gone that arm runs to an empty lot, which
-         is the exact symptom _roads() and GROUND_RECT exist to prevent. */
+      /* ⚠⚠ AND THE MAP MUST NOT KEEP A ROAD TO IT. */
       ok(!/NORTH_Y/.test(town2) && /Rect2\(TRAIL_X - 26\.0, YARD\.end\.y/.test(town2),
         '…and the road north is ONE haul road now, ending in the yard  (no fork, no stub)');
-      /* ⚠ WES IS NOT COLLATERAL. §17 proves the h-rook still pays out; this is the sentence
-         that says taking a BUILDING out must not take a SQUARE off the board. */
       ok(/"un": \["the-gauntlet", \d+\]/.test(gs),
         '…and the h-rook still costs four floors of it — a SITE game, like Murphy\'s Law',
         'Siege and Murphy have never had a building here either');
 
-      /* ══ 16e · THE SQUARE OPENED UP, AND THE TABLES ARE TABLES ═════════════════════
-         *"For Park tables in checker town game, remove the house and replace it with a similar
-         park table visual to when you Enter into it. Then move the academy a little further away
-         from the Tables, same with the arcade."* */
+      /* ══ 16e · THE SQUARE OPENED UP, AND THE TABLES ARE TABLES ══ */
+      /* his: "For Park tables in checker town game, remove the house and replace it with a similar park table visual to when you Enter into it. Then move the academy a little further away from the Tables, same with the arcade." */
       ok(/class TableGrove extends TownDoor/.test(town2) && /var d := TableGrove\.new\(\)/.test(town2)
         && !/wall_color = Color\("2f5d3a"\)/.test(town2),
         'the Park Tables are TABLES, not a cottage with a green roof');
-      /* ⚠ THE ROOM'S OWN GEOMETRY, SCALED — not a second guess at what a table looks like.
-         Every number in _table() is Pavilion.Table._draw()'s, so a retint in there carries out. */
+      /* ⚠ THE ROOM'S OWN GEOMETRY, SCALED — not a second guess at what a table looks like. */
       const grove = town2.slice(town2.indexOf('class TableGrove'), town2.indexOf('class CheckerShell'));
       for (const n of ['-58.0, -30.0, 116.0, 16.0', '-62.0, -104.0, 124.0, 78.0', '-17.0, -18.0, 34.0, 12.0'])
         ok(grove.includes(n) && park.includes(n),
           '   …and its ' + n.split(',')[2].trim() + '-wide piece is the one the room draws');
-      /* ⚠⚠ THE ARCADE CANNOT STAND ON THE HAUL ROAD. It is 228 across and the trail is 52 wide;
-         they clear each other only because the trail moved to 360 in the same batch. */
+      /* ⚠⚠ THE ARCADE CANNOT STAND ON THE HAUL ROAD. */
       const ax = /const ARCADE_AT := Vector2\((-?[\d.]+),/.exec(town2);
       const cx = /const ACADEMY_AT := Vector2\((-?[\d.]+),/.exec(town2);
       const tx = /const TRAIL_X := ([\d.]+)/.exec(town2);
@@ -1342,15 +1145,13 @@ const server = http.createServer((req, res) => {
       ok(ax && tx && Math.abs(+ax[1] - +tx[1]) > 114 + 26 + 30,
         '…and the Arcade is not standing on the haul road',
         ax && tx ? 'arcade at ' + ax[1] + ', trail at ' + tx[1] : '?');
-      /* ⚠ EVERYTHING IN THE ACADEMY'S YARD IS OFF ACADEMY_AT. Six typed numbers would have been
-         six things left behind when the building moved 290 west. */
+      /* ⚠ EVERYTHING IN THE ACADEMY'S YARD IS OFF ACADEMY_AT. */
       ok((town2.match(/ACADEMY_AT \+ Vector2\(/g) || []).length >= 4
         && /Rect2\(ACADEMY_AT\.x - 140\.0, -130\.0/.test(town2),
         '…and its yard, its board, its lamp and the two people in it moved with it');
 
-      /* ══ 16f · NINE HOUSES YOU CANNOT GO INTO ══════════════════════════════════════
-         *"add some more checkers scattered around that you can't get inside of, representing
-         other homes."* */
+      /* ══ 16f · NINE HOUSES YOU CANNOT GO INTO ══ */
+      /* his: "add some more checkers scattered around that you can't get inside of, representing other homes." */
       ok(/class CheckerShell extends Node2D/.test(town2)
         && !/class CheckerShell extends (TownDoor|Interactable)/.test(town2),
         'the other homes are scenery, not doors that refuse',
@@ -1358,38 +1159,26 @@ const server = http.createServer((req, res) => {
       const homes = [...town2.matchAll(/\[Vector2\((-?[\d.]+), (-?[\d.]+)\), "[0-9a-f]{6}"\]/g)]
         .map((m) => [+m[1], +m[2]]);
       ok(homes.length >= 6, 'there are ' + homes.length + ' of them');
-      /* ⚠⚠ A CHECKER IS 230 ACROSS. Two of them 200 apart is one house with a dent in it, and
-         nothing in the engine would say so — they are not solid. */
       let tooClose = [];
       for (let i = 0; i < homes.length; i++)
         for (let j = i + 1; j < homes.length; j++)
           if (Math.hypot(homes[i][0] - homes[j][0], homes[i][1] - homes[j][1]) < 260)
             tooClose.push(homes[i] + ' / ' + homes[j]);
       ok(tooClose.length === 0, '…and no two of them overlap', tooClose[0] || 'all clear');
-      /* ⛑ AND THEY ARE ON THE MINIMAP. A town map with two houses on it and nine houses off it
-         is a map of somewhere else. ⚠ FOUND BY GROUP, not by class: map.gd cannot name town.gd's
-         inner classes, and inventing a class_name for one drawing would be a file. */
+      /* ⛑ AND THEY ARE ON THE MINIMAP. */
       const mapSrc = fs.readFileSync(path.join(GD, 'map.gd'), 'utf8');
       const jrnSrc = fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8');
       ok(/add_to_group\("town_home"\)/.test(town2) && /is_in_group\("town_home"\)/.test(mapSrc)
         && /for h in TownMap\.homes:/.test(jrnSrc),
         '…and every one of them is drawn on the map, unnamed');
-      /* ⚠⚠ FURNITURE BELONGS TO ITS BUILDING. Four flower beds were typed at absolute x; the
-         Academy moved 290 west on 09-23 and two of them stayed behind in open sand. Nothing in
-         the engine says so — a planter in a desert is a planter. */
       const fixes = /for spot in \[([\s\S]*?)\]:/.exec(town2);
       ok(fixes && !/Vector2\(-400\.0, -100\.0\), "flowers"/.test(fixes[1])
         && (fixes[1].match(/(TABLES_AT|ACADEMY_AT) \+ Vector2\([^)]*\), "flowers"/g) || []).length === 4,
         '…and all four flower beds are placed off the building they belong to',
         'they flank the Academy\'s path and the grove, and they move when either does');
 
-      /* ══ 16g · YOU CANNOT WALK ON WATER, AND THE CORNERS ARE FENCED ════════════════
-         *"make it so user can not walk on water"* · *"shrink the whole world down a little bit
-         (take out a lot of the empty space if you can, or restrict ability to walk with fencing"*
-         ⚠⚠ THE UNION IS RE-DERIVED HERE, NOT TRUSTED. WATER_BLOCK is five rects cut by hand to
-         be WATER_RECT minus the dock minus the jetty; every one of those four things can move on
-         its own, and the failure is either a sea you can stroll across or an island you cannot
-         reach. Sampling the whole rect is the only check that cannot be fooled by a typo. */
+      /* ══ 16g · YOU CANNOT WALK ON WATER, AND THE CORNERS ARE FENCED ══ */
+      /* his: "make it so user can not walk on water" */
       const r4 = (name) => {
         const m = new RegExp('const ' + name + ' := Rect2\\(' +
           '(-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+)\\)').exec(town2);
@@ -1420,13 +1209,11 @@ const server = http.createServer((req, res) => {
       ok(wet === 0, '…and not one square of open water is walkable', wet + ' unblocked samples');
       ok(dry === 0, '…while every plank of the dock and the jetty still is',
         dry + ' blocked samples on the dock  (⚠ block the jetty and Shogi Island is unreachable)');
-      /* ⚠ AND THE ROWBOAT HAS TO BE ON A PLANK. It is the one door in the game that stands off
-         the land, and the jetty exists only for it. */
+      /* ⚠ AND THE ROWBOAT HAS TO BE ON A PLANK. */
       const rb = /boat\.position = Vector2\(([\d.]+), ([\d.]+)\)/.exec(town2);
       ok(rb && (inR(jetty, +rb[1], +rb[2]) || inR(deck, +rb[1], +rb[2])),
         '…and the rowboat is standing on one of them', rb ? rb[1] + ',' + rb[2] : '?');
-      /* ⚠⚠ A FENCE OVER A DOOR IS A DOOR NOBODY CAN REACH, and nothing else would notice: the
-         corners are the only walls on this map that were drawn before anybody stood in them. */
+      /* ⚠⚠ A FENCE OVER A DOOR IS A DOOR NOBODY CAN REACH, and nothing else would notice. */
       const fenced = [...(/const FENCED := \[([\s\S]*?)\n\]/.exec(town2) || [0, ''])[1]
         .matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)]
         .map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
@@ -1440,14 +1227,10 @@ const server = http.createServer((req, res) => {
       ok(/func _draw_fences\(\) -> void:/.test(town2) && /_draw_fences\(\)/.test(fnGd(town2, '_draw')),
         '…and the fence is DRAWN, because an invisible wall is a bug you cannot report');
 
-      /* ══ 16h · THERE IS A WAY BACK FROM THE ARCADE'S MACHINES ══════════════════════
-         *"Make it so sky run and mine depths, you have the option to return to Game like we did
-         with the puzzles."* */
+      /* ══ 16h · THERE IS A WAY BACK FROM THE ARCADE'S MACHINES ══ */
+      /* his: "Make it so sky run and mine depths, you have the option to return to Game like we did with the puzzles." */
       ok(/cab\.url = str\(d\["url"\]\) \+ \("&" if "\?" in str\(d\["url"\]\) else "\?"\) \+ "town=1"/.test(arc),
         'every cabinet tells the page where you came from');
-      /* ⚠⚠ RESOLVED THROUGH THE WRAPPER. /games/sky-run/ is a page that FRAMES the real file, so
-         the flag lands on the parent's search string — which is exactly the bug that shipped in
-         the puzzle room and passes every harness that opens the inner file directly. */
       for (const [slug, file] of [['sky-run', 'pjcc_sky_run.html'],
                                   ['sand-mine-depths', 'pjcc_sandmine.html']]) {
         const wrap = fs.readFileSync(path.join(ROOT, 'games', slug, 'index.html'), 'utf8');
@@ -1465,47 +1248,32 @@ const server = http.createServer((req, res) => {
           '   …and a cabinet in the Arcade opens it');
       }
 
-      /* ══ 16c · THE LANDSCAPE IS SAND, AND GREEN MEANS SOMETHING ════════════════════
-         *"make the entire landscape mostly sand, then add some green by the park tables, and then
-         put the river/sea past THAT, where the boat to shogi island is."*
-         ⚠⚠ THE POINT OF THE REPAINT IS SCARCITY. Green used to be the whole map; it is now the
-         Pavilion's lawn and the strip the river waters, and a third patch of it costs the other
-         two. This section is what makes adding one a decision rather than an edit. */
-      /* ⚠ COMMENTS OUT FIRST, everywhere below. Several of these files say "never randf()" in
-         prose, and a grep that cannot tell a rule from a call fails on the file that obeys it. */
+      /* ══ 16c · THE LANDSCAPE IS SAND, AND GREEN MEANS SOMETHING ══ */
+      /* his: "make the entire landscape mostly sand, then add some green by the park tables, and then put the river/sea past THAT, where the boat to shogi island is." */
       const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
       const grd = /const GROUND := Color\("([0-9a-f]{6})"\)/.exec(town2);
       ok(grd && grd[1] !== '22301f',
         'the ground is sand, not the green it was', grd && ('#' + grd[1]));
-      /* ⚠ AND IT IS STILL DARK ENOUGH TO STAND ON. Every person in this town is drawn dark on
-         the ground; a bleached desert is a map you cannot find anybody on. Measured as relative
-         luminance, the same sum the site's contrast gate uses. */
+      /* ⚠ AND IT IS STILL DARK ENOUGH TO STAND ON. */
       const lum = (hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
         .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
         .reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0);
       ok(grd && lum(grd[1]) < 0.22,
         '…and dark enough that a person still reads on it', grd && lum(grd[1]).toFixed(3));
-      /* ⚠⚠ SAND IS THE WORKED GROUND NOW, NOT THE GROUND. The mine camp and the Assembly's pad
-         are both painted in SAND; if it matches GROUND neither of them is a place any more. */
+      /* ⚠⚠ SAND IS THE WORKED GROUND NOW, NOT THE GROUND. */
       const snd = /const SAND := Color\("([0-9a-f]{6})"\)/.exec(town2);
       ok(snd && grd && Math.abs(lum(snd[1]) - lum(grd[1])) > 0.04,
         '…and the worked sand still reads apart from the desert it sits on',
         snd && grd && (lum(grd[1]).toFixed(3) + ' vs ' + lum(snd[1]).toFixed(3)));
-      /* ⭐ TWO GREENS, AND THEY ARE THE PAVILION'S OWN. "the park tables are green with trees" —
-         so a retint in park.gd carries out to the town and there is no second copy of it. */
+      /* ⭐ TWO GREENS, AND THEY ARE THE PAVILION'S OWN. */
       ok((town2.match(/_draw_green\(/g) || []).length === 3
         && /Pavilion\.GRASS_A/.test(town2) && /Pavilion\.GRASS_B/.test(town2)
         && !/Color\("2[0-9a-f]3[0-9a-f]1f"\)/.test(town2),
         'exactly TWO green places, both painted from the Pavilion\'s own grass',
         '⚠ a third patch of green costs the other two');
-      /* ⚠⚠ THE BELT FOLLOWS THE WATER. The first pass ran it 600 units west of the last drop of
-         river and it arrived under the checker houses; deriving it off WATER_RECT is what stops
-         the two drifting apart when either moves. */
       ok(/const SHORE := Rect2\([\d.]+, [\d.]+, WATER_RECT\.end\.x - [\d.]+,\s*\n\s*WATER_RECT\.position\.y - [\d.]+ \+ 4\.0\)/.test(town2),
         '…and the river\'s green strip is DERIVED from the water, not typed beside it');
-      /* ⭐ ONE RAGGED EDGE FOR ALL FOUR PATCHES. Three copies of it had accumulated.
-         ⚠ THE CALLERS BY NAME, NOT A COUNT — a count of five was wrong by one the first time it
-         was written, and would have gone green on any five uses at all. */
+      /* ⭐ ONE RAGGED EDGE FOR ALL FOUR PATCHES. */
       ok(/func _draw_fringe\(area: Rect2, col: Color, seed_: int, skip_x: float = -1\.0\)/.test(town2)
         && /_draw_fringe\(SAND_RECT, SAND, \d+\)/.test(town2)
         && /_draw_fringe\(YARD, SAND, \d+, TRAIL_X\)/.test(town2)
@@ -1518,8 +1286,8 @@ const server = http.createServer((req, res) => {
       ok(!/randf|randi|RandomNumberGenerator/.test(bare(ground)),
         '…and not one grain of it is random  (the ground redraws when a place name fades)');
 
-      /* ══ 16d · THE DOGS LIVE BY THE CHECKERS ═══════════════════════════════════════
-         *"Move Crockett and Argus to be around the checker houses."* */
+      /* ══ 16d · THE DOGS LIVE BY THE CHECKERS ══ */
+      /* his: "Move Crockett and Argus to be around the checker houses." */
       ok(/func _furnish_dogs\(\) -> void:/.test(town2)
         && !/_add_challenger\("(Crockett|Argus)", "[a-z]+", \d+, "[a-z]", CAMP_AT/.test(town2),
         'Crockett and Argus are off the Sand Mine camp');
@@ -1527,24 +1295,19 @@ const server = http.createServer((req, res) => {
         town2.indexOf('func _furnish_arcade'));
       ok(/MAX_HOME_AT \+/.test(dogs) && /HOME_AT \+/.test(dogs),
         '…and both are placed off the two checkers, so moving a house moves its dog');
-      /* ⚠ A DOG STANDING ON THE LANE IS A DOG IN THE ONLY ROAD TO TWO FRONT DOORS. NPCs are
-         solid; the lane is HOME_AT.y ± 20 and 40 wide, so neither may sit inside that band. */
+      /* ⚠ A DOG STANDING ON THE LANE IS A DOG IN THE ONLY ROAD TO TWO FRONT DOORS. */
       const lane = [...dogs.matchAll(/HOME_AT \+ Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
         .map((m) => +m[2]).filter((dy) => Math.abs(dy) < 34.0);
       ok(lane.length === 0, '…and neither of them is standing in it',
         lane.length ? lane.join(', ') + ' is inside ±34 of the lane' : 'both clear');
 
-      /* ══ 16b · THE ASSEMBLY IS A SHACK, AND ONE CRANE PUT IT UP ═════════════════════
-         *"[it] should be more of a shack than a house — something that members of checker town,
-         which is mostly sand … could conceivably build with basic construction tools, maybe ONE
-         crane."* */
+      /* ══ 16b · THE ASSEMBLY IS A SHACK, AND ONE CRANE PUT IT UP ══ */
+      /* his: "[it] should be more of a shack than a house — something that members of checker town, which is mostly sand … could conceivably build with basic construction tools, maybe ONE crane." */
       ok(/class AssemblyShack extends TownDoor/.test(town2)
         && /var hall := AssemblyShack\.new\(\)/.test(town2),
         'the Assembly is a shack — its own subclass, like the Arcade and the Theater',
         '⚠ a wider TownDoor would have repainted every cottage on the map');
-      /* ⚠⚠ THE ONE THING THE REPAINT MUST NOT TOUCH. The face is the board: sixteen windows in
-         GameState.board_cell's order, and that order lives in ONE place. A subclass that draws
-         its own grid is the bug that put the face two columns and a row out for a day. */
+      /* ⚠⚠ THE ONE THING THE REPAINT MUST NOT TOUCH. */
       const shack = town2.slice(town2.indexOf('class AssemblyShack'),
         town2.indexOf('class BuildCrane'));
       ok(/_draw_windows\(half\)/.test(shack) && !/board_cell|ROSTER/.test(shack),
@@ -1552,32 +1315,23 @@ const server = http.createServer((req, res) => {
         '⚠⚠ the window a square lights is decided in one place and this is not it');
       ok(/hall\.board_face = true/.test(town2) && /hall\.lit_windows = GameState\.army/.test(town2),
         '…so the board is still readable from the road');
-      /* ⚠ THE ROOF IS TALLER THAN THE GABLE TownDoor ALLOWS FOR, and a corner you can walk
-         through is a wall with a hole in it. */
-      /* ⚠ SLICED TO THE FUNCTION. Grepping the whole class for RISE and EAVE went green on
-         speech_top(), which names them too — the mutation put a bare 52.0 back in the footprint
-         and this check did not blink. [[green-must-name-what-ran]] */
+      /* ⚠ THE ROOF IS TALLER THAN THE GABLE TownDoor ALLOWS FOR. */
       const foot = shack.slice(shack.indexOf('func footprint'), shack.indexOf('func speech_top'));
       ok(/-half\.y - RISE - EAVE,/.test(foot) && /size\.y \+ RISE \+ EAVE/.test(foot),
         '…and the lean-to is solid to its high corner, not to the flat 52 of a gable');
-      /* ⭐ ONE crane. Two would be a town that owns plant; one is a town that borrowed it. */
       ok((town2.match(/BuildCrane\.new\(\)/g) || []).length === 1
         && /const CRANE_AT :=/.test(town2),
         'ONE crane, and it is still standing on the pad', 'his word, and the count is the point');
-      /* ⚠ SALTED, NEVER randf(). The ground redraws every time a place name fades, so a random
-         board color or a random bit of yard is a board that crawls and sand that boils. */
+      /* ⚠ SALTED, NEVER randf(). */
       const yardSrc = town2.slice(town2.indexOf('func _draw_yard'),
         town2.indexOf('func _draw_board'));
       for (const [name, src] of [['the shack', shack], ['the yard', yardSrc]]) {
         ok(!/randf|randi|RandomNumberGenerator/.test(bare(src)),
           '…nothing in ' + name + ' is random  (it redraws whenever a place name fades)');
       }
-      /* ⚠⚠ THE YARD IS AN AREA, NOT A ROAD. The journal paints areas off the list town.gd hands
-         TownMap.capture — leave it out and the minimap shows a road ending in nothing. */
+      /* ⚠⚠ THE YARD IS AN AREA, NOT A ROAD. */
       ok(/{ "rect": YARD, "color": SAND }/.test(town2),
         '…and the yard is on the minimap, so the haul road does not end in grass');
-      /* ⚠ TEN FLOORS, ONE PAGE. A landing per floor with a door on each would be ten doors
-         onto one URL — dead-game-links-trap in a new shape. */
       ok([...stair.matchAll(/"\/games\/[^"]+"/g)].length === 1,
         '…with exactly ONE door in it, because the Gauntlet is one URL');
       /* ⭐⭐ THE TEN ARE THE GAUNTLET'S TEN, derived from the game itself, both ways. */
@@ -1593,13 +1347,11 @@ const server = http.createServer((req, res) => {
       ok(JSON.stringify(drawn) === JSON.stringify(publicFloors.map((f) => ({ who: f.who, elo: f.elo }))),
         '…and the stairwell draws exactly those ten, in order, with their real ratings',
         drawn.length + ' landings');
-      /* ⚠⚠ the secret floors must NOT be in here: a stairwell with thirteen landings has
-         already told you there are thirteen */
+      /* ⚠⚠ the secret floors must NOT be in here. */
       const secretNames = realFloors.filter((f) => f.secret).map((f) => f.who);
       ok(secretNames.length > 0 && !secretNames.some((n) => stair.includes(n)),
         '…and NONE of the secret ones  [[gauntlet-secret-floors]]',
         secretNames.join(' · '));
-      /* ⭐⭐ the light you carry */
       ok(/player\.add_child\(lamp\)/.test(stair) && /CanvasModulate\.new\(\)/.test(stair),
         '⭐ you carry the light up a dark stairwell — the lighting IS the fog of war');
       ok(/energy = 0\.85 if i < _cleared else 0\.0/.test(stair),
@@ -1614,7 +1366,7 @@ const server = http.createServer((req, res) => {
       const gameId = /const GAME := "([a-z-]+)"/.exec(stair);
       ok(gameId && gs.includes('"un": ["' + gameId[1] + '"'),
         '…and the id it asks with is the one the ROSTER pays on', gameId && gameId[1]);
-      /* ⭐ narrow floor, wide room — the two rects, the other way round */
+      /* ⭐ narrow floor, wide room — the two rects, the other way round. */
       ok(/world_bounds = WELL/.test(stair) && /camera_bounds = ROOM/.test(stair),
         '⭐ the well you walk in is narrow and the room the camera sees is wide');
       const sRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(stair);
@@ -1624,20 +1376,8 @@ const server = http.createServer((req, res) => {
       ok(/_poll\.wait_time = 2\.5/.test(stair) && /func _recheck\(\)/.test(stair),
         'this room polls, because the floor count MOVES THE DOOR');
 
-      /* ══ 17 · THE CLIMB IS A NUMBER THE TOWN CAN READ ══════════════════════════════
-         The ROSTER pays the h-rook for ['the-gauntlet', 4] and the Stairwell draws its brass
-         off the same number, so both of them rest on the Gauntlet banking its climb somewhere
-         PJCC.townScore can find it.
-         ⛑⛑ I SPENT AN HOUR FIXING THIS BECAUSE IT WAS NOT BROKEN. `games/the-gauntlet/` is a
-         nine-line wrapper around an iframe; the game is assets/games/pjcc_gauntlet.html, and
-         grepping the wrapper for "saveScore" found nothing, which I read as "nothing banks it"
-         instead of "I grepped the wrong file". The patch I wrote read the game's private save
-         directly and would have LOST the account copy that localBest picks up from myStats on a
-         second device — a real regression, shipped to fix an imaginary bug. The checks below
-         are what should have been written first: prove the path exists, do not assume it does
-         not. [[accuracy-above-all]] */
-      /* ⚠ SLICED TO THE FUNCTION, never grepped from the whole file: pjcc-profile.js is 1500
-         lines and "gauntlet" appears in prose in it. */
+      /* ══ 17 · THE CLIMB IS A NUMBER THE TOWN CAN READ ══ */
+      /* ⚠ SLICED TO THE FUNCTION, never grepped from the whole file. */
       const scoreFn = PROF.slice(PROF.indexOf('PJCC.townScore ='),
         PROF.indexOf('PJCC.townPlayer ='));
       ok(/PJCC\.saveScore\('the-gauntlet',/.test(GAUNT),
@@ -1657,12 +1397,10 @@ const server = http.createServer((req, res) => {
         '…so the h-rook is reachable: the roster asks for a floor inside the public ten',
         need && ('floor ' + need[1] + ' of ' + publicFloors.length));
 
-      /* ══ 18 · THE CAMPAIGN CABINET ══════════════════════════════════════════════════
-         *"move Campaign into Arcade, but locked until half the assembly is lit up."* */
-      /* ⛑ 2026-09-07: *"put the campaign on the workbench"*. The site side of this moved
-         — Campaign is `cat:'dev'` there and shut behind a mark Notation Blitz banks — and the
-         cabinet stayed, which is the whole reason §13's OFF_HALL list exists. The town's lock
-         and the site's lock are different locks on purpose: this one is the Assembly. */
+      /* ══ 18 · THE CAMPAIGN CABINET ══ */
+      /* his: "move Campaign into Arcade, but locked until half the assembly is lit up." */
+      /* ⛑ 2026-09-07:. */
+      /* his: "put the campaign on the workbench" */
       ok(/slug:'marchland'[^\n]*cat:'dev'[^\n]*gate:'nrun'/.test(REG),
         'Campaign files under the WORKBENCH on the site now, behind its own earned gate',
         '⚠ §13 is what keeps its cabinet in here from becoming a link to nothing');
@@ -1683,8 +1421,7 @@ const server = http.createServer((req, res) => {
         '⚠ "Locked" alone is a door refusing to say what it wants');
       ok(/Color\("8a82b4"\) if _dark else/.test(arc),
         '…and you can still read its NAME  (⛑ the first render had a nameless black cabinet)');
-      /* ⛑ THE ARITHMETIC AGAIN: a fifth cabinet standing inside the west wall is red here
-         rather than on a render. */
+      /* ⛑ THE ARITHMETIC AGAIN: a fifth cabinet standing inside the west wall is red here rather than on a render. */
       const aRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(arc);
       const aSpread = /const SPREAD := ([\d.]+)/.exec(arc);
       const aWall = /const WALL_T := ([\d.]+)/.exec(arc);
@@ -1699,29 +1436,20 @@ const server = http.createServer((req, res) => {
           n + ' machines reach ' + reach + ', the wall is at ' + half);
       }
 
-      /* ══ 19 · NIGHT ═════════════════════════════════════════════════════════════════
-         *"the town after dark is a different town."* */
+      /* ══ 19 · NIGHT ══ */
+      /* his: "the town after dark is a different town." */
       const clk = fs.readFileSync(path.join(GD, 'clock.gd'), 'utf8');
-      /* ⚠ ANCHORED. Unanchored this passed a build whose class was renamed TownClockX;
-         a prefix match is not an identity test, and this is the third one. */
       ok(/^class_name TownClock$/m.test(clk), 'there is a clock');
-      /* ⚠⚠ THE WALL CLOCK AND THE GAME'S DAY COUNTER ARE DIFFERENT THINGS. `day` counts
-         VISITS and is what the bed advances; this is what time it is where the player is
-         sitting, and the whole value of night is that it changes while you are NOT looking. */
-      /* ⛑ COMMENTS STRIPPED FIRST. The header of clock.gd explains at length that it must NOT
-         read GameState.day, which means the word is in the file and a whole-file grep is
-         asking about prose. Seventh time in this repo; the first time it went RED rather than
-         green, because the claim happened to be a negative. [[green-must-name-what-ran]] */
+      /* ⚠⚠ THE WALL CLOCK AND THE GAME'S DAY COUNTER ARE DIFFERENT THINGS. */
       const clkCode = clk.split('\n').filter((l) => !l.trim().startsWith('#')).join('\n');
       ok(!/GameState/.test(clkCode),
         '…and it is the WALL clock — no line of it can see GameState.day',
         '⚠⚠ sleeping in a bed must not make it morning');
-      /* ⚠ THE ABSENCE IS THE CHECK. hour() and weekday() both call this, so asking whether
-         `(false)` appears anywhere still passed with one of them flipped to UTC. */
+      /* ⚠ THE ABSENCE IS THE CHECK. hour() and weekday() both call this. */
       ok(/get_datetime_dict_from_system\(false\)/.test(clk)
         && !/get_datetime_dict_from_system\(true\)/.test(clk),
         '…in LOCAL time, in BOTH readers  (⚠ `true` is UTC: midnight here at four in the afternoon)');
-      /* the darkest tint still has to be a town you can cross */
+      /* the darkest tint still has to be a town you can cross. */
       const nightTint = /const NIGHT_TINT := Color\(([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(clk);
       ok(nightTint && Math.max(+nightTint[1], +nightTint[2], +nightTint[3]) >= 0.35,
         '…and the darkest tint still leaves a walkable map  [[down-never-stuck]]',
@@ -1739,41 +1467,28 @@ const server = http.createServer((req, res) => {
         '…and a building shows a light on — but never the Assembly',
         '⚠ that face already wears sixteen windows that MEAN something');
 
-      /* ══ 20 · THE DOG ═══════════════════════════════════════════════════════════════
-         *"the dog is in the town — she follows you, and she finds things."* */
+      /* ══ 20 · THE DOG ══ */
+      /* his: "the dog is in the town — she follows you, and she finds things." */
       const dog = fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8');
       ok(/^class_name TownDog$/m.test(dog) && /extends TownChallenger/.test(dog),
         'the dog is a CHALLENGER with legs, not a new kind of thing');
-      /* ⚠⚠ NO CHARACTER WAS INVENTED, and this is the check that says so. Follow the Dog runs
-         on updatePrincess() and her own file calls her a dog; if either of those stops being
-         true, the reason she is the one following you has gone. [[slow-roll-cast]] */
+      /* ⚠⚠ NO CHARACTER WAS INVENTED, and this is the check that says so. */
       const FTD = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_space_run.html'), 'utf8');
       const pmd = fs.readFileSync(path.join(ROOT, '_characters/princess.md'), 'utf8');
       ok(/function updatePrincess\(/.test(FTD) && /a dog who can learn/.test(pmd)
         && /static func princess\(\) -> TownDog:\s*\n\s*return TownDog\.of\("Princess"\)/.test(dog),
         '…and she is PRINCESS, because Follow the Dog is her game',
         '⚑ Crockett is the other dog and his file says "always around" — one word moves it');
-      /* ⚠⚠ ANCHORED TO THE END OF THE LINE. `0.0` is a PREFIX of `0.09`, so the first draft
-         of this passed with her away one day in eleven — the same defect as `-3` matching
-         `-33`, which this file has now had twice. ⚠ AND `$` IS NOT THE ANCHOR TO REACH FOR:
-         the line carries a trailing comment, so end-of-line failed on the truth. A lookahead
-         for a digit is the one that asks the real question. [[green-must-name-what-ran]] */
+      /* ⚠⚠ ANCHORED TO THE END OF THE LINE. */
       ok(/"Princess": \{ "key": "princess", "elo": 2100/.test(dog) && /dog\.away_chance = 0\.0(?!\d)/.test(dog),
         '…keeping her seat, and never randomly missing  (a companion who vanishes reads as a bug)');
       ok(/_follow = GameState\.hearts_for\(who\) > 0/.test(dog),
         '…and she does not follow a stranger');
-      /* ⛑⛑ AND SHE IS THE ONLY ONE WHO FOLLOWS (2026-09-24). Crockett and Argus became TownDogs
-         the day the house grew beds for them, and everything that is HERS — the nose, the dig,
-         the water nights, the half-nine curfew — had to stop being theirs in the same breath. */
+      /* ⛑⛑ AND SHE IS THE ONLY ONE WHO FOLLOWS (2026-09-24). */
       ok(/_follow = GameState\.hearts_for\(who\) > 0 and not at_home and companion/.test(dog)
          && /if not companion:\s*\n\s*return super\(\)/.test(fnGd(dog, 'menu'))
          && /"companion": true/.test(dog) && (dog.match(/"companion": false/g) || []).length === 2,
         '…and she is the ONLY one who does  (the other two are dogs with her legs and none of her job)');
-      /* ⭐ she says only true things, and every one is read off state that already exists
-         ⚠⚠ THE BAN IS ON WHAT SHE SAYS, NOT ON WHAT SHE DOES. This was a file-wide `!/randf/`
-         and it was a PROXY: it went red on 2026-09-23 for the indoor amble rolling which bed to
-         lie down on, which is a dog rather than a claim. The three functions that build a
-         sentence are the ones that were ever in danger of inventing something. */
       ok(/npc\.away\(\)/.test(dog) && /GameState\.claimable\(\)/.test(dog)
         && /GameState\.island_open/.test(dog)
         && !['_find', '_who_is_out', '_first_owed'].some((f) => /rand/.test(fnGd(dog, f))),
@@ -1784,15 +1499,14 @@ const server = http.createServer((req, res) => {
       ok(!/ChessArt/.test(dog),
         '…and she is DRAWN as a dog, not as her bench glyph over a nameplate');
 
-      /* ══ 21 · THE PIECES TALK ═══════════════════════════════════════════════════════ */
+      /* ══ 21 · THE PIECES TALK ══ */
       const says = [...roster.matchAll(/"say": "/g)].length;
       const whos = [...roster.matchAll(/"who": "/g)].length;
       ok(says === whos && whos === 16,
         'all sixteen squares carry the line their piece says', says + ' of ' + whos);
       ok(/func square_says\(slot: int\) -> String:/.test(gs) && /not has_slot\(slot\)/.test(gs),
         '…and an UNWON square says nothing  (nobody has lost it yet)');
-      /* ⚠ IT IS A CELL AND NOT A SQUARE SINCE 09-05 (off-the-wall #3): the object belongs to
-         the board position, not to the slot, so a piece you have moved takes its line with it. */
+      /* ⚠ IT IS A CELL AND NOT A SQUARE SINCE 09-05 (off-the-wall #3). */
       ok(/class Cell extends Interactable/.test(hall) && /sq\.f = f/.test(hall),
         'one mouth per square, standing where the piece stands');
       ok(/monitoring = slot >= 0 or legal/.test(hall),
@@ -1803,15 +1517,15 @@ const server = http.createServer((req, res) => {
                                            hall.indexOf('class Lectern'))),
         '…and it draws NOTHING — the room paints the board in one pass over the roster');
 
-      /* ══ 22 · THE ROAD WEST ═════════════════════════════════════════════════════════
-         *"5 (but make it West instead of North)"* */
+      /* ══ 22 · THE ROAD WEST ══ */
+      /* his: "5 (but make it West instead of North)" */
       ok(/class CityGate extends TownDoor/.test(town2) && /url = GameState\.CHESS_CITY_URL/.test(town2)
         && /const CHESS_CITY_URL := "\/games\/chess-city\/"/.test(gs),
         'the road west ends at a gate onto Chess City');
       ok(/if not GameState\.ceo_beaten:[\s\S]{0,120}Barred from the other side/.test(town2),
         '…barred until the far chair is taken, and it SAYS what would open it',
         '⚠ "Locked for now" is a door refusing to name its own price');
-      /* ⛑ the map grew and one loop had the old corners typed into it */
+      /* ⛑ the map grew and one loop had the old corners typed into it. */
       const gRect = /const GROUND_RECT := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/
         .exec(town2);
       const gateX = /const GATE_AT := Vector2\((-?[\d.]+),/.exec(town2);
@@ -1822,8 +1536,8 @@ const server = http.createServer((req, res) => {
         '…and the grid is drawn off the RECT, not off four typed corners',
         '⛑ it had -1120 in it and would have stopped 280 units short of the new edge');
 
-      /* ══ 23 · THE VISITOR ON A REAL DAY ═════════════════════════════════════════════
-         *"6 (make it Auston)"* */
+      /* ══ 23 · THE VISITOR ON A REAL DAY ══ */
+      /* his: "6 (make it Auston)" */
       ok(/@export var away_days: Array\[int\] = \[\]/.test(npc)
         && /if not away_days\.is_empty\(\):[\s\S]{0,80}TownClock\.weekday\(\)/.test(npc),
         'somebody can be out on a REAL weekday');
@@ -1832,7 +1546,7 @@ const server = http.createServer((req, res) => {
         '⚠ two rules deciding whether she is here is a bug you cannot tell from a feature');
       ok(/auston\.gift_day = 0/.test(town2) && /It's %s\. Anything for me\?/.test(npc),
         '…and on her day the row says WHOSE day it is');
-      /* ⚠⚠ A REAL DATE, NOT `day` — the whole point is that it is actually Sunday */
+      /* ⚠⚠ A REAL DATE, NOT `day` — the whole point is that it is actually Sunday. */
       ok(/func take_gift\(\) -> String:/.test(gs) && /last_gift = today\(\)/.test(gs)
         && /Time\.get_date_string_from_system\(false\)/.test(gs),
         '…stamped with the real DATE, so it is once a week and not once a sleep');
@@ -1842,17 +1556,11 @@ const server = http.createServer((req, res) => {
         && /n\.call\("recheck_attendance"\)/.test(town2),
         '…and midnight arriving with the tab open moves her');
 
-      /* ══ 24 · THE STALL, AND THE BOARD YOU LEAVE A MOVE ON ══════════════════════════
-         *"7 (just use ore as currency for now)"* and *"8"*. */
+      /* ══ 24 · THE STALL, AND THE BOARD YOU LEAVE A MOVE ON ══ */
+      /* his: "7 (just use ore as currency for now)" */
       ok(/const HATS := \[/.test(gs) && /"ore":/.test(gs),
         'ore buys something now  (it had exactly one use and the mine paid into a number)');
-      /* ⚠⚠ COSMETIC IS A HOUSE RULE. Nothing may READ the worn hat except the two places that
-         draw it — the day something else does, this stall is a different kind of shop.
-         [[game-monetization-ethics]] */
-      /* ⚠ THE JOURNAL IS NOT ON THIS LIST AND MUST NOT BE ADDED TO IT. It prints what you
-         are wearing, and it does that through GameState.hat_name() — a getter that can only
-         ever produce a label. The raw variable stays readable by the two things that DRAW a
-         hat, so nothing can branch on it, which is the whole rule. */
+      /* ⚠ THE JOURNAL IS NOT ON THIS LIST AND MUST NOT BE ADDED TO IT. */
       const wearers = ['player.gd', 'town.gd'];
       const readsHat = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
         .filter((f) => !wearers.includes(f) && f !== 'game_state.gd')
@@ -1871,19 +1579,14 @@ const server = http.createServer((req, res) => {
         '⭐ the stall draws its stock with the function that draws it on your head');
       ok(/func _row\(\) -> Dictionary:/.test(town2) && /"id": "next", "text": "Show me another\."/.test(town2),
         '…one hat on the counter at a time, because the box has room for four rows');
-      /* ⛑ THE BOARD BY THE ROAD CAME OFF 2026-09-23 (his: *"Remove the Board by the Road,
-         since we have actual park tables now"*). It was a second door onto /games/park-tables/
-         standing thirty units from the road that leads to the real ones, which is what
-         [[dead-game-links-trap]] is about from the other end: not a link to nothing, two links
-         to the same thing. ⚠ THE CLASS WENT WITH THE PLACEMENT — a furniture class nobody
-         builds is the kind of dead code that reads as deliberate. */
+      /* ⛑ THE BOARD BY THE ROAD CAME OFF 2026-09-23. */
+      /* his: "Remove the Board by the Road, since we have actual park tables now" */
       ok(!/PostBoard/.test(town2),
         'the board by the road is gone, class and all',
         'the Park Tables are on the map now; it was a second door onto the same page');
 
-      /* ══ 25 · THE JOURNAL ═════════════════════════════════════════════════════════════
-         2026-09-04, next-steps #2: *"sixteen squares, sixteen different prices, and no
-         single place that lists them."* */
+      /* ══ 25 · THE JOURNAL ══ */
+      /* his: "sixteen squares, sixteen different prices, and no single place that lists them." */
       const jrn = fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8');
       const pad = fs.readFileSync(path.join(GD, 'touch_pad.gd'), 'utf8');
       ok(/^class_name TownJournal$/m.test(jrn), 'there is a journal');
@@ -1912,10 +1615,6 @@ const server = http.createServer((req, res) => {
       ok(/func is_open\(t: SceneTree\) -> bool:/.test(jrn),
         '…and they ask ONE function, not two copies of the flag');
       {
-        /* ⚠⚠ THE MYSTERY SURVIVES. He took the names off the nameplates and off the Lectern
-           on 09-03 — "it should be a mystery" — so a panel that listed all sixteen would put
-           the checklist straight back one room away. holder_at() appears in the board tab
-           exactly once and only inside the branch that already knows you won it. */
         const rows = jrn.slice(jrn.indexOf('func _board_rows'), jrn.indexOf('func _progress'));
         const hits = (rows.match(/holder_at/g) || []).length;
         ok(hits === 1 && /if won:\s*\n\s*row\["b"\] = GameState\.holder_at\(i\)/.test(rows),
@@ -1935,7 +1634,6 @@ const server = http.createServer((req, res) => {
       ok(/_journal\.shown\.connect/.test(zone) && /_hud\.visible = not on/.test(zone),
         '…and the HUD stands down, or "Day 1 · Energy" prints through the title');
 
-      /* One crossing, one door. */
       ok(/func site_scores\(ids: Array\) -> Dictionary:/.test(gs),
         'the site is asked for many scores in ONE crossing');
       ok((gs.match(/P\.townScore\(/g) || []).length === 1,
@@ -1949,10 +1647,7 @@ const server = http.createServer((req, res) => {
         && /return str\(\(r\["un"\] as Array\)\[0\]\) if r\.has\("un"\) else ""/.test(gs),
         '…the journal and slot_for_game read the SAME field, in opposite directions');
 
-      /* ══ 26 · THE GAME THAT WON THE SQUARE ════════════════════════════════════════════
-         next-steps #3. ⚠⚠ THE BACKLOG SAID THE SITE ALREADY STORED THE PGN OF EVERY PARK
-         TABLE GAME. IT DID NOT — pjcc.pt.last.v1 is a result and a timestamp, and the board
-         carrying the moves is deleted when you get up. That is what these checks are for. */
+      /* ══ 26 · THE GAME THAT WON THE SQUARE ══ */
       ok(/var GAMES_KEY = 'pjcc\.pt\.games\.v1'/.test(PT), 'Park Tables banks a finished game');
       {
         const bank = fn(PT, 'bankGame');
@@ -1971,8 +1666,7 @@ const server = http.createServer((req, res) => {
       ok(/const REPLAY_URL := "\/games\/park-tables\/\?replay="/.test(gs),
         '…and opens the room that can draw it');
       {
-        /* ⛑ THE DOOR MOVED 2026-09-09 — these two used to read the CELL's menu, which no
-           longer exists: one press picks the piece up now. The lectern took the row. */
+        /* ⛑ THE DOOR MOVED 2026-09-09. */
         const sq = hall.slice(hall.indexOf('class Lectern extends Interactable'));
         ok(/if key != "" and GameState\.has_replay\(key\):/.test(sq),
           '…a square won off the rest of the site offers no game back',
@@ -1992,9 +1686,7 @@ const server = http.createServer((req, res) => {
           '…on the review board, falling back to the analysis board');
       }
 
-      /* ══ 27 · SIX HEARTS BUYS A POSITION ══════════════════════════════════════════════
-         next-steps #4, and the feature he asked for in August. Hearts were tracked, capped,
-         drawn on the card and gated absolutely nothing. */
+      /* ══ 27 · SIX HEARTS BUYS A POSITION ══ */
       const STUD = require(path.join(ROOT, 'assets/js/pjcc-studies.js'));
       {
         const ids = STUD.all().map((r) => r.id).sort();
@@ -2006,8 +1698,6 @@ const server = http.createServer((req, res) => {
         ok(ids.length === 7 && gdIds.join(',') === ids.join(','),
           '⭐⭐ the town names the same seven studies the site sets up',
           gdIds.join(',') + '  vs  ' + ids.join(','));
-        /* ⚠⚠ NEITHER HALF CARRIES THE OTHER'S. Godot plays no chess, so no FEN may exist in
-           it; the site does not know who offers what, so no character may exist in there. */
         const gdFiles = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
           .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n');
         ok(!STUD.all().some((r) => gdFiles.includes(r.fen)),
@@ -2017,10 +1707,7 @@ const server = http.createServer((req, res) => {
           '…and the site half names nobody: the ids are the joint');
       }
       {
-        /* ⚠⚠ EVERY POSITION IS PROVED WITH THE PERFT-VERIFIED REFEREE. A study captioned
-           "beat me from here" that is illegal, already over, or the wrong side to move is the
-           exact defect next-steps #1 exists to hunt. What no test can prove is that a win is
-           a win — those seven are textbook margins. [[accuracy-above-all]] */
+        /* ⚠⚠ EVERY POSITION IS PROVED WITH THE PERFT-VERIFIED REFEREE. */
         const CH = require(path.join(ROOT, 'assets/js/pjcc-chess.js'));
         const WANT = { lucena: 'KRP|kr', philidor: 'KR|krp', ladder: 'KRR|k',
                        backrank: 'KR|krppp', qvp: 'KQ|kp', rookmate: 'KR|k',
@@ -2056,9 +1743,6 @@ const server = http.createServer((req, res) => {
           '…and the link names the position');
       }
       {
-        /* ⚠⚠ THE ERRAND IS A PAIR. A study and an ordinary game against the same person land
-           in one record; without the filter, beating Crockett from the Lucena position filled
-           Crockett's square — the one thing a study must never do. */
         const tl = fn(PROF, 'townLast');
         ok(/String\(r\.pos \|\| ''\) !== String\(pos \|\| ''\)/.test(tl),
           '⭐⭐ the site will not answer a game with a study, or a study with a game');
@@ -2102,11 +1786,7 @@ const server = http.createServer((req, res) => {
       ok(/if \(saved && \(saved\.pos \|\| ''\) !== \(study \? study\.id : ''\)\) saved = null;/.test(PT),
         '⚠⚠ a resume must be the SAME errand, or a study quietly becomes a game that can take a square');
       {
-        /* ⚠⚠ EVERY BOT-SIDE REBUILD GOES THROUGH botGame(). A call site still asking the
-           referee directly rebuilds a study from the standard start and draws it as if it
-           were right — no throw, no error, just the wrong pieces. */
-        /* ⚠ COMMENTS STRIPPED FIRST. The block comment over botGame() names the very call
-           it exists to forbid, so a raw line scan reports the warning as the violation. */
+        /* ⚠⚠ EVERY BOT-SIDE REBUILD GOES THROUGH botGame(). */
         const code = PT.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
         const stray = code.split('\n').filter((ln) =>
           /M\.replayGame\(/.test(ln) && !/M\.replayGame\(m\.moves/.test(ln)
@@ -2128,17 +1808,15 @@ const server = http.createServer((req, res) => {
           '⚠ the ore is the whole prize — no square, and no heart it could not raise anyway');
       }
 
-      /* ══ 28 · THE AIR ═════════════════════════════════════════════════════════════════
-         next-steps #9: *"one ambient bed per region."* ⚠ NOT MUSIC — no key, no tempo, no
-         melody. That line is his and this keeps it. */
+      /* ══ 28 · THE AIR ══ */
+      /* his: "one ambient bed per region." */
       ok(/const BEDS := \{/.test(audio) && /"town":|"night":|"deep":|"sea":|"room":/.test(audio),
         'there is a bed for each kind of place');
       {
         const beds = audio.slice(audio.indexOf('const BEDS := {'), audio.indexOf('static func bed('));
         const ids = (beds.match(/"(town|night|room|deep|sea)":\s*\{/g) || []).length;
         ok(ids === 5, '…five of them', ids + ' found');
-        /* ⚠⚠ WHOLE CYCLES PER BUFFER, NOT FREQUENCIES. A tone that does not complete an exact
-           number of cycles in the loop beats against its own seam once every three seconds. */
+        /* ⚠⚠ WHOLE CYCLES PER BUFFER, NOT FREQUENCIES. */
         const hz = [...beds.matchAll(/\[(\d+), [\d.]+\]/g)].map((x) => parseInt(x[1], 10));
         ok(hz.length >= 6 && hz.every((n) => Number.isInteger(n) && n > 0),
           '…and every tone is a whole number of cycles per loop', hz.join(' '));
@@ -2175,19 +1853,13 @@ const server = http.createServer((req, res) => {
           '…and no room asks for air that does not exist', named.join(' '));
       }
 
-      /* ══ 29 · THE PRICES ══════════════════════════════════════════════════════════════
-         next-steps #1. ⛑⛑ ONE OF THE SEVEN WAS MEASURABLY WRONG: the Seaboard Rep's bishop
-         read `tower-defense`, which is the SCORE — a hundred a wave plus ten a kill — against
-         a threshold of 3. Any run at all cleared it, and the sentence under it said "hold
-         three waves", so the number and the promise were measuring different things. */
+      /* ══ 29 · THE PRICES ══ */
       {
         const games = [];
         let m, re = /"un": \["([a-z-]+)", (\d+)\]/g;
         while ((m = re.exec(gs))) games.push([m[1], parseInt(m[2], 10)]);
         ok(games.length === 7, 'seven squares are bought off the rest of the site', games.length + '');
-        /* ⭐⭐ EVERY ONE OF THEM MUST BE A NUMBER SOMETHING ACTUALLY BANKS. A square whose id
-           nothing writes is a square that can never be won, and nothing in the game says so —
-           this is the whole of #1's correctness half. */
+        /* ⭐⭐ EVERY ONE OF THEM MUST BE A NUMBER SOMETHING ACTUALLY BANKS. */
         const bankers = fs.readdirSync(path.join(ROOT, 'assets/games'))
           .filter((f) => f.endsWith('.html'))
           .map((f) => fs.readFileSync(path.join(ROOT, 'assets/games', f), 'utf8'))
@@ -2216,18 +1888,8 @@ const server = http.createServer((req, res) => {
           'it banks floors BEATEN, so four of them means you are standing on the fifth');
       }
 
-      /* ══ 30 · THE PHONE ═══════════════════════════════════════════════════════════════
-         next-steps #10: *"measure it on a phone."* It was worth measuring, and it found two
-         things at once, both from the same cause. The cabinet is about 352x560 there and
-         `window/stretch/aspect="expand"` turns that into roughly 1152x1833 of VIEWPORT:
-
-           · a room whose camera rect is shorter than that cannot fill the screen, so the
-             Pavilion sat in a gray field with a band above it and a band below;
-           · and a CanvasLayer is drawn in viewport units, so every UI number in the game —
-             the stat row, the conversation box, the pad, the journal — arrived at 30% of
-             the size it was written at. A 14-unit font is FOUR PIXELS.
-
-         Measured on renders at 352x560 and 320x520, not reasoned about. */
+      /* ══ 30 · THE PHONE ══ */
+      /* his: "measure it on a phone." */
       ok(/const BASE_H := 648\.0/.test(zone) && /static func ui_scale\(n: Node\) -> float:/.test(zone),
         'there is ONE number for how big a UI pixel is');
       ok(/return maxf\(1\.0, v \/ BASE_H\)/.test(zone),
@@ -2235,8 +1897,7 @@ const server = http.createServer((req, res) => {
       ok(/n\.get_viewport\(\)\.get_visible_rect\(\)\.size\.y/.test(zone),
         '\u26a0 asked of the VIEWPORT, not of a CanvasItem rect  (a CanvasLayer is not a CanvasItem)');
       {
-        /* Everything that draws UI has to be on the lever, or it is the one thing on screen
-           still four pixels tall. */
+        /* Everything that draws UI has to be on the lever. */
         for (const [f, src] of [['zone.gd', zone], ['town_ui.gd',
               fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8')],
               ['journal.gd', jrn], ['touch_pad.gd', pad]]) {
@@ -2249,10 +1910,7 @@ const server = http.createServer((req, res) => {
       ok(/get_viewport\(\)\.size_changed\.connect\(func\(\) -> void: _fit_camera\(lim\)\)/.test(player),
         '…and again when the window changes  (rotating a phone asks for a different amount of world)');
       {
-        /* ⭐⭐ AND IT IS ARITHMETIC, NOT A PROMISE. Every camera rect in the game is at least
-           as big as the base viewport, so on a desktop every ratio _fit_camera takes is below
-           1 and the zoom comes out exactly 1.0. The day somebody adds a room smaller than the
-           window, this says so before the render does. */
+        /* ⭐⭐ AND IT IS ARITHMETIC, NOT A PROMISE. */
         const BASE = { w: 1152, h: 648 };
         const rects = [];
         for (const f of fs.readdirSync(GD).filter((x) => x.endsWith('.gd'))) {
@@ -2266,9 +1924,7 @@ const server = http.createServer((req, res) => {
           small.length ? small.map((r) => r.f + ' ' + r.w + 'x' + r.h).join(' · ')
                        : rects.length + ' rooms, smallest ' +
                          Math.min(...rects.map((r) => r.w)) + 'x' + Math.min(...rects.map((r) => r.h)));
-        /* ⚠ AND THE PROJECT MUST NOT MOVE THAT WINDOW. BASE_H is 648 because that is Godot's
-           default viewport height and project.godot does not override it; if it ever does,
-           the one number above becomes a guess. */
+        /* ⚠ AND THE PROJECT MUST NOT MOVE THAT WINDOW. */
         const proj = fs.existsSync(path.join(GD, 'project.godot'))
           ? fs.readFileSync(path.join(GD, 'project.godot'), 'utf8') : '';
         ok(!/window\/size\/viewport_height/.test(proj),
@@ -2294,26 +1950,19 @@ const server = http.createServer((req, res) => {
         '\u26a0\u26a0 the journal asks "is this narrow" in BASE units, not viewport units',
         'w has already been multiplied — asking in viewport units is asking about a desktop');
 
-      /* ══ 31 · THE FRONT OF THE ARCADE ═════════════════════════════════════════════════
-         2026-09-04, Nate: *"build out the outside of the arcade building. Make it look
-         nice."* ⚠⚠ EVERY OTHER BUILDING ON THIS MAP IS THE SAME COTTAGE, ON PURPOSE — that
-         is what makes them read as one town, and the doors were unified in August so that a
-         change to one is a change to all. This is the ONE that is not a house. */
+      /* ══ 31 · THE FRONT OF THE ARCADE ══ */
+      /* his: "build out the outside of the arcade building. Make it look nice." */
       ok(/class ArcadeFront extends TownDoor:/.test(town2)
         && /var arc := ArcadeFront\.new\(\)/.test(town2),
         'the Arcade has a front of its own');
       {
-        /* …and only the ones we chose do. A bespoke building nobody decided on is a town
-           coming apart.
-           ⛑ THIS WAS A COUNT (`subs === 3`) AND A COUNT PASSES ON A RENAME — swap
-           ArcadeFront for anything and three is still three. The NAMES are the check.
-           ⭐ THE THEATER JOINED THEM 2026-09-12, his call: a replay theater decked out like
-           the Arcade. Two bespoke buildings is the rule now; a third is a decision. */
+        /* …and only the ones we chose do. */
         const subs = [...town2.matchAll(/class (\w+) extends TownDoor:/g)]
           .map((m) => m[1]).sort();
-        /* ⭐ CheckerHome JOINED 2026-09-21, his: *"make Nate's home a checker"* — his GLB, not a cottage. */
-        /* ⭐ AssemblyShack JOINED 2026-09-22, his: *"more of a shack than a house"* — salvaged
-           board and one slope of tin, on the day the Gauntlet came off the map. */
+        /* ⭐ CheckerHome JOINED 2026-09-21. */
+        /* his: "make Nate's home a checker" */
+        /* ⭐ AssemblyShack JOINED 2026-09-22. */
+        /* his: "more of a shack than a house" */
         /* ⛑ TheaterFront LEFT and TableGrove ARRIVED, both 2026-09-23 and both his. */
         const want = ['ArcadeFront', 'AssemblyShack', 'CheckerHome', 'CityGate', 'Rowboat',
                       'TableGrove'];
@@ -2322,16 +1971,10 @@ const server = http.createServer((req, res) => {
           subs.join(' ') || 'none');
       }
 
-      /* ══ 31b · THE REPLAY THEATER ══════════════════════════════════════════════════
-         2026-09-12, Nate: *"Let's make a theater building — deck it out like you did the
-         arcade, and call it replay theater."* The room is the door's whole reason to
-         exist: the site can replay a game, but it cannot say "this is the game that won
-         you Crockett's square". */
-      /* ⛑⛑ IT CAME OFF THE MAP 2026-09-23 (Nate: *"Let's remove the Replay theater"*).
-         The door, the lot, the road to it and its front are gone; the ROOM is parked, the same
-         way the Gauntlet's stairwell is, because he said take it off the street and not burn
-         it. ⚠⚠ BOTH DIRECTIONS, like §16: nothing may open it, and it must still be here and
-         say so, or it rots where nobody is looking. [[read-before-you-delete]] */
+      /* ══ 31b · THE REPLAY THEATER ══ */
+      /* his: "Let's make a theater building — deck it out like you did the arcade, and call it replay theater." */
+      /* ⛑⛑ IT CAME OFF THE MAP 2026-09-23. */
+      /* his: "Let's remove the Replay theater" */
       const theater = fs.readFileSync(path.join(GD, 'theater.gd'), 'utf8');
       ok(!/TheaterFront/.test(town2) && !/theater\.tscn/.test(town2)
         && !/THEATER_AT/.test(town2),
@@ -2341,15 +1984,12 @@ const server = http.createServer((req, res) => {
       ok(/sign_text = ""/.test(town2.slice(town2.indexOf('class ArcadeFront'))),
         '\u26a0 the marquee IS the sign, so the name is not also floating over the roof');
       {
-        /* ⛑ TO THE NEXT BANNER, WHICHEVER IT IS (2026-09-22). This named the one that
-           happened to follow, so inserting a class between them silently handed ArcadeFront's
-           checks the new class's polygons — and the awning check failed on somebody else's. */
+        /* ⛑ TO THE NEXT BANNER, WHICHEVER IT IS (2026-09-22). */
         const front = town2.slice(town2.indexOf('class ArcadeFront')).split(/\n# ══/)[0];
         ok(/var cabs: Array = Arcade\.CABS/.test(front),
           '\u2b50\u2b50 what you see through the glass is read off the ROOM\u2019S OWN cabinet list',
           'a fifth machine puts itself in the window; nothing here can advertise a machine that is not in there');
-        /* ⚠⚠ AND NOT A COPY OF IT. The four accents live in arcade.gd; a hex typed into this
-           file would be a second palette that drifts the first time one is retinted. */
+        /* ⚠⚠ AND NOT A COPY OF IT. */
         const hexes = [...arc.matchAll(/"hex": "([0-9a-f]{6})"/g)].map((m) => m[1]);
         ok(hexes.length >= 4 && !hexes.some((h) => front.includes(h)),
           '…and not one of their colors is typed into the front',
@@ -2363,23 +2003,17 @@ const server = http.createServer((req, res) => {
           '…and it is asked by the same minute tick as every other lit thing on the map');
         ok(/_spill\.energy = 0\.85 if TownClock\.is_dark\(\) else 0\.0/.test(front),
           '\u26a0 the light on the pavement is night-only');
-        /* ⚠ FOUR-SIDED PIECES, NOT ONE STRIPED SHAPE. draw_colored_polygon renders a concave
-           polygon wrong and silently, and an awning is exactly the shape that tempts you.
-           [[godot-draw-and-save-traps]] */
+        /* ⚠ FOUR-SIDED PIECES, NOT ONE STRIPED SHAPE. draw_colored_polygon renders a concave polygon wrong and silently, and an awning is exactly the shape that tempts you. */
         const poly = front.slice(front.indexOf('func _draw_entrance'));
         ok(/for i in 5:/.test(poly) && (poly.match(/PackedVector2Array\(\[/g) || []).length === 1,
           '\u26a0\u26a0 the awning is built from convex quads in a loop, never one concave polygon');
       }
 
-      /* ══ 32 · THE RHYTHM ══════════════════════════════════════════════════════════════
-         ⛔ next-steps #5 IS HIS AND THIS DOES NOT DECIDE IT. What it proves is that the
-         choice is one line and that the table written beside it is true. */
+      /* ══ 32 · THE RHYTHM ══ */
       ok(/const ENERGY_CAP := 100/.test(gs) && /const GAME_COST := 10/.test(gs),
         'the two numbers that decide how long the campaign takes are in one place');
       {
-        /* ⚠ A NUMBER IN A COMMENT IS NOT A MEASUREMENT. The table under the constants claims
-           four cap/price pairs and what each buys; recompute every row.
-           [[audit-numbers-can-be-wrong]] */
+        /* ⚠ A NUMBER IN A COMMENT IS NOT A MEASUREMENT. */
         const rows = [...gs.matchAll(/^#\s+(\d+) \/ (\d+)\s+(\d+)\s/gm)]
           .map((m) => [+m[1], +m[2], +m[3]]);
         const wrong = rows.filter((r) => Math.floor(r[0] / r[1]) !== r[2]);
@@ -2399,7 +2033,7 @@ const server = http.createServer((req, res) => {
         '\u26a0 every bench seat charges the standard price rather than a literal 10',
         'a price typed on eight seats is a constant that cannot be changed');
       {
-        /* the two that price themselves are TWO GAMES, and say so by arithmetic */
+        /* the two that price themselves are TWO GAMES, and say so by arithmetic. */
         const dep = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
         const both = [/energy_cost = 20/.test(dep), /_ceo\.energy_cost = 20/.test(hall)];
         ok(both[0] && both[1], '…and the shaft and the far chair are two of them', '20 = 2 \u00d7 10');
@@ -2408,11 +2042,8 @@ const server = http.createServer((req, res) => {
         '\u2b50 and the journal prints how many you have left today',
         'a pacing rule nobody can see the edge of is not a pacing rule');
 
-      /* ══ 33 · THE BOARD IS AN OPENING YOU PLAY INTO ═══════════════════════════════════
-         2026-09-05, his correction: *"you should only be able to make legal moves and you
-         can't attack the enemy. Basically, you can set up your opening."*
-         ⚠ THE GHOST'S SECTION WAS HERE AND IS GONE — *"doesn't feel right for what I'm
-         going for."* Its checks went with it rather than being left green over nothing. */
+      /* ══ 33 · THE BOARD IS AN OPENING YOU PLAY INTO ══ */
+      /* his: "you should only be able to make legal moves and you can't attack the enemy. Basically, you can set up your opening." */
       ok(!/func track\(|var ghost|_draw_ghost|trail_step/.test(gs + town2),
         '⛑ yesterday\u2019s ghost is gone from the state AND from the map',
         'a removal that leaves the recorder running is a save still growing for nothing');
@@ -2435,13 +2066,8 @@ const server = http.createServer((req, res) => {
         '⚠ "you cannot attack the enemy" is a WALL, not a rule',
         'there are no captures at all and their two ranks are simply not squares — nothing '
         + 'has to know a white piece exists');
-      /* ══ NOTHING STANDS ON ANYTHING — 2026-09-08 ════════════════════════════
-         Nate: *"you shouldn't be able to move pieces on top of each other, your own or
-         enemy's... You should have to move pawns first before the bishops behind them."*
-         The board drew sixteen pieces and the rules could only see the ones you had WON,
-         so a bishop slid through an unwon pawn and landed on top of whoever was there.
-         Proved in a real Godot before and after: the f-bishop was offered 7 squares from
-         its home square with the bug, and 0 without it. */
+      /* ══ NOTHING STANDS ON ANYTHING — 2026-09-08 ══ */
+      /* his: "you shouldn't be able to move pieces on top of each other, your own or enemy's... You should have to move pawns first before the bishops behind them." */
       ok(/and not blocked_at\(f, r\)/.test(gs),
         '⛑⛑ an open square is one with NOBODY on it, won or not',
         'the picture and the rules disagreed about who is standing where, and the picture '
@@ -2461,13 +2087,8 @@ const server = http.createServer((req, res) => {
           '   and the refusal names the right reason',
           '"the Bishop cannot reach that square" is a lie about a square it can see');
       }
-      /* ══ AND YOU CAN ALWAYS PUT IT DOWN AGAIN — 2026-09-09 ═════════════════════
-         Nate: *"we need to make the assembly so you can put the piece back where you find
-         it. Right now you can't do that."* Picking a piece up was a one-way door — the only
-         exit was a legal square — which was survivable while pieces slid through each other
-         and became a TRAP the day above, when they stopped. Driven in a real Godot: a bishop
-         at its home square has ZERO legal moves, and before this you were holding it for
-         good. [[godot-headless-verification]] */
+      /* ══ AND YOU CAN ALWAYS PUT IT DOWN AGAIN — 2026-09-09 ══ */
+      /* his: "we need to make the assembly so you can put the piece back where you find it. Right now you can't do that." */
       {
         const drop = fnGd(hall, 'drop_at');
         const iBack = drop.indexOf('GameState.cell_of(slot) == Vector2i(f, r)');
@@ -2475,11 +2096,8 @@ const server = http.createServer((req, res) => {
         ok(iBack > -1 && iMove > -1 && iBack < iMove,
           '⛑⛑ a piece can always go back on the square it came from',
           'and the branch is BEFORE move_piece — after it, it is unreachable code');
-        /* ⚠ THE COUNT IS WHAT THE PIRC DOOR READS. A put-back that ticked setup_moves would
-           let six lift-and-replaces stand in for six moves of chess. */
-        /* ⚠ IT READS _put_back(), NOT A SLICE OF drop_at. On 2026-09-09 the cancel became a
-           function — three callers need it now — and a check that slices the caller went red
-           for a refactor that changed nothing it was asking about. */
+        /* ⚠ THE COUNT IS WHAT THE PIRC DOOR READS. */
+        /* ⚠ IT READS _put_back(), NOT A SLICE OF drop_at. */
         ok(iBack > -1 && !/setup_moves/.test(fnGd(hall, '_put_back')),
           '   …and putting it back costs no move',
           'six put-backs must not open the door six moves of chess opens');
@@ -2487,36 +2105,26 @@ const server = http.createServer((req, res) => {
           '   and the square it came from SAYS so while you are holding it',
           'the room skips drawing a piece that is in your hands, so that square reads as '
           + 'empty — with no prompt there is nothing to walk up to and nothing to press');
-        /* ⚠ THE BANNER WAS THE OTHER HALF OF THE TRAP: "the squares it can reach are lit"
-           over a board with nothing lit reads as a broken room rather than a blocked piece. */
+        /* ⚠ THE BANNER WAS THE OTHER HALF OF THE TRAP. */
         const pick = fnGd(hall, 'pick_up');
         ok(/legal_moves\(slot\)\.size\(\)/.test(pick) && /Put it back where it was/.test(pick),
           '   and it does not promise lit squares it has not got',
           'an opening-position bishop or rook has no legal move at all now');
       }
-      /* ══ THE ERRAND COMES BACK — 2026-09-09 ═══════════════════════════════
-         Nate: *"Does the chess game have to open a new window... can we have it close after
-         the game? With the option to review in-game at least?"* The tab stays — a same-tab
-         navigation throws away 38 MB of engine and cold-starts it on the way back — but
-         nothing ever brought you OUT of it. Verified in a real Chrome, opened the way the
-         town opens it: `window.opener` is set on a tab opened by window.open from inside the
-         game's own iframe, and window.close() from there works. */
+      /* ══ THE ERRAND COMES BACK — 2026-09-09 ══ */
+      /* his: "Does the chess game have to open a new window... can we have it close after the game? With the option to review in-game at least?" */
       {
         ok(/url \+= \("&" if url\.contains\("\?"\) else "\?"\) \+ "from=town"/.test(fnGd(gs, 'open_url')),
           '⛑⛑ every tab the town opens knows where it came from',
           'six callers reach open_url and every one of them strands you — marking them one '
           + 'at a time is how the seventh gets forgotten');
-        /* ⚠⚠ READ THE FUNCTION, NOT THE FILE. The first draft of this line tested the whole
-           page for /sessionStorage/ and went GREEN with the storage ripped out — because the
-           COMMENT above it explains why sessionStorage is used. A gate that a comment can
-           satisfy is a gate that measures prose. [[green-must-name-what-ran]] */
+        /* ⚠⚠ READ THE FUNCTION, NOT THE FILE. */
         const townFn = (PT.match(/function from\(\) \{[\s\S]*?\n  \}/) || [''])[0];
         ok(/sessionStorage\.setItem\(KEY/.test(townFn) && /sessionStorage\.getItem\(KEY/.test(townFn),
           '   and the Park Tables REMEMBERS it rather than re-reading the URL',
           'replaceState on sitting down strips the query, which is the one moment the way '
           + 'home has to survive');
-        /* ⚠⚠ THE ESCAPE HATCH MUST NOT SHARE A FAILURE WITH THE ROOM IT ESCAPES. The park's
-           own script is ~2,500 lines needing a backend, a profile layer and an engine. */
+        /* ⚠⚠ THE ESCAPE HATCH MUST NOT SHARE A FAILURE WITH THE ROOM IT ESCAPES. */
         const app = PT.indexOf("var TOWN_KEY") >= 0 ? -1 : PT.indexOf('window.PTTown');
         ok(app > -1 && app < PT.indexOf('function route()'),
           '   and the way home is its OWN script, above the app that needs a backend',
@@ -2528,11 +2136,7 @@ const server = http.createServer((req, res) => {
         ok(/Review this game[\s\S]{0,400}data-town-back/.test(PT),
           '   and the review is offered BEFORE the door out, which is the order he asked for',
           '"with the option to review in-game at least"');
-        /* ⛑⛑ AND THE INSTALLED APP HAS NO TAB TO OPEN. manifest.json is `display: standalone`,
-           and a `_blank` window.open from a standalone iOS home-screen app ejects you into
-           Safari — out of the app entirely, with the town left behind in something you have
-           quit. In standalone we navigate in place and pay the reload coming back; there is
-           no third option, because keeping the engine warm needs a second tab. */
+        /* ⛑⛑ AND THE INSTALLED APP HAS NO TAB TO OPEN. manifest.json is `display. */
         const open = fnGd(gs, 'open_url');
         ok(/display-mode: standalone/.test(open) && /navigator\.standalone/.test(open)
           && /w\.location\.href = u; return;/.test(open),
@@ -2542,15 +2146,8 @@ const server = http.createServer((req, res) => {
           '   asking window.TOP, because the game runs inside an iframe',
           'the iframe is not in standalone mode — the page around it is');
       }
-      /* ══ A MENU ROW IS A THUMB TALL — 2026-09-09 ════════════════════════════
-         Nate: *"the mobile buttons don't really work well… I can't test the park table thing
-         because the buttons work poorly."* MEASURED in a real Godot at the frame his phone
-         gives the game: a conversation row was **25.9 CSS px**, and **16.2** on a 320px
-         phone with **no gap at all** between rows. The site's floor is 44.
-         ⚠ ui_scale did not cover this and was never going to: it holds the UI at a CONSTANT
-         apparent size, which is right for text and wrong for a target. Worse, the row works
-         out to OPT_H x window_height / 648, so making the cabinet FIT the screen made the
-         rows smaller — the two fixes fight, and the floor is what settles it. */
+      /* ══ A MENU ROW IS A THUMB TALL — 2026-09-09 ══ */
+      /* his: "the mobile buttons don't really work well… I can't test the park table thing because the buttons work poorly." */
       {
         const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
         ok(/const FINGER_CSS := 44\.0/.test(ui)
@@ -2570,11 +2167,7 @@ const server = http.createServer((req, res) => {
           + '1/2/3, a 264 CSS-px canvas reports 264/528/792 — so a dpr-3 iPhone would have got '
           + 'a third of the target it was promised');
       }
-      /* ══ AND THE BOTTOM OF THE GAME IS ON THE SCREEN ════════════════════════
-         MEASURED on the real page with the real build at 390x664: the frame ran y 190→750 in
-         a 664px window, so 86px of the game was off the bottom — and everything this game
-         anchors to the bottom of its own viewport was in it: the USE button (36 of its 80px),
-         the hint line that tells a phone how to walk, and the LAST row of every menu. */
+      /* ══ AND THE BOTTOM OF THE GAME IS ON THE SCREEN ══ */
       {
         const ct = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
         ok(/game-frame-wrap fits-phone above-fold ct-frame/.test(ct),
@@ -2584,21 +2177,16 @@ const server = http.createServer((req, res) => {
         ok(/#ct-stage \{ max-height: min\(calc\(100svh - 48px\), calc\(100svh - 210px\)\); \}/.test(ct),
           '   …and the placeholder stage carries the same cap, so the cabinet does not jump',
           'the stage is this page\u2019s own element and the classes only reach the iframe');
-        /* ⛑ 2026-09-09, Nate: *"the Walk the town, fill the assembly should be removed, that
-           description below the game. Then shorten the Chess is Played here description."*
-           The game says the first one better in its own voice one inch up the page; what is
-           left is the one fact the PAGE has to carry, because the game cannot. */
+        /* ⛑ 2026-09-09. */
+        /* his: "the Walk the town, fill the assembly should be removed, that description below the game. Then shorten the Chess is Played here description." */
         ok(!/Walk the town, and fill the Assembly/.test(ct)
           && /The chess is played here, on the site/.test(ct),
           '   and the page keeps ONE line under the game, not two',
           'the surviving line is the warning before a tab opens — the only thing down there '
           + 'the game itself has no way to say');
       }
-      /* ══ ONE PRESS, NO DIALOGUE — 2026-09-09 ════════════════════════════
-         Nate: *"spacebar should pick up the piece and set it down. There shouldn't be a
-         dialogue box to pick it up or leave it. Trying to put it somewhere erroneously or off
-         the board, etc, should result in it going back to where it was picked up initially."*
-         Driven in a real Godot through Cell.interact(), which is what ui_accept reaches. */
+      /* ══ ONE PRESS, NO DIALOGUE — 2026-09-09 ══ */
+      /* his: "spacebar should pick up the piece and set it down. There shouldn't be a dialogue box to pick it up or leave it. Trying to put it somewhere erroneously or off the board, etc, should result in it going back to where it was picked up initially." */
       {
         const cell = hall.slice(hall.indexOf('class Cell extends Interactable'));
         const act = cell.slice(cell.indexOf('func interact'), cell.indexOf('func speech_top'));
@@ -2606,14 +2194,11 @@ const server = http.createServer((req, res) => {
           '⛑⛑ pressing USE on your own piece picks it up — no box, no question',
           '"Leave it where it is" was a do-nothing answer to a question asked every time, in '
           + 'a room whose whole verb is moving pieces');
-        /* ⭐ THE LINE IS THE THING THE MENU WAS FOR. "The sixteen pieces talk" was the point
-           of the box that is gone; losing it with the box would be paying twice. */
+        /* ⭐ THE LINE IS THE THING THE MENU WAS FOR. */
         ok(/say\(GameState\.square_says\(slot\)/.test(act),
           '   …and the piece still says its line, over its own head, for free',
           'a bubble costs no press');
-        /* ⚠ THE REFUSAL PATH SPECIFICALLY. drop_at calls _put_back() twice — once for a press
-           on the square it came from, once for a move the rules refuse — so a check for "any
-           call" stays green with the refusal one deleted. Mutation caught that. */
+        /* ⚠ THE REFUSAL PATH SPECIFICALLY. drop_at calls _put_back() twice. */
         const refuse = fnGd(hall, 'drop_at');
         ok(/cannot reach that square[\s\S]{0,80}_put_back\(\)/.test(refuse),
           '   and a refused move puts the piece BACK, rather than leaving it in your hands',
@@ -2622,18 +2207,13 @@ const server = http.createServer((req, res) => {
         ok(!/setup_moves/.test(fnGd(hall, '_put_back')),
           '   …for no move, because setup_moves is what the Pirc door counts',
           'six put-backs must not open what six moves of chess opens');
-        /* ⚠⚠ A DOOR THAT MOVED, NOT A FEATURE THAT WAS DROPPED. The cell menu was the only
-           way to watch the game that won a square; the lectern is the board's own information
-           desk and already had a menu. [[feature-shipped-but-never-loaded]] in reverse. */
+        /* ⚠⚠ A DOOR THAT MOVED, NOT A FEATURE THAT WAS DROPPED. */
         ok(/watch_replay/.test(hall) && /Show me the game that won/.test(hall),
           '   and the replay kept a door — the lectern has it now',
           'the cell menu was its only way in; deleting the menu would have deleted the feature');
       }
-      /* ══ THE BOTTOM LINE IS FOUR KEYS, AND THEN IT IS GONE ══════════════════
-         Nate: *"Remove the 'the road runs south' — I don't even know what that means. WASD,
-         arrows, Enter, and Spacebar should be the only text on the bottom, and it should
-         disappear after a moment."* Every zone's wayfinding suffix went, not just the one he
-         named. [[one-fix-every-instance]] */
+      /* ══ THE BOTTOM LINE IS FOUR KEYS, AND THEN IT IS GONE ══ */
+      /* his: "Remove the 'the road runs south' — I don't even know what that means. WASD, arrows, Enter, and Spacebar should be the only text on the bottom, and it should disappear after a moment." */
       {
         const zone = fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8');
         const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
@@ -2650,8 +2230,6 @@ const server = http.createServer((req, res) => {
           suffix.length ? suffix.join(', ') + ' still do'
             : 'eight zones clean — a room that needs to say where the exit is wants a sign, '
               + 'not the control legend');
-        /* ⚠ THE CONDITION, NOT THE NAME. `if false: _hint_left -= delta` still mentions
-           _hint_left, and the first draft of this line went green on exactly that. */
         ok(/const HINT_SECS := 7\.0/.test(ui)
           && /if _hint_left > 0\.0:[\s\S]{0,200}_hint = ""/.test(fnGd(ui, '_process')),
           '   and it takes itself down after a moment',
@@ -2660,10 +2238,8 @@ const server = http.createServer((req, res) => {
           '   …with the clock ABOVE the SAY guard, which is the mode it runs in',
           'below that early return the walking-around line would never tick at all');
       }
-      /* ══ AND THE LOADING SCREEN IS OURS ══════════════════════════════
-         Nate: *"does it HAVE to show Godot loading screen or can it be a custom loading
-         screen?"* It does not: `web_head.html` restyles the overlay the stock shell already
-         builds, and gen:checkertown stamps it into the export preset every build. */
+      /* ══ AND THE LOADING SCREEN IS OURS ══ */
+      /* his: "does it HAVE to show Godot loading screen or can it be a custom loading screen?" */
       {
         const built = fs.readFileSync(path.join(ROOT, 'assets/games/checker-town/index.html'), 'utf8');
         ok(/id = 'ct-boot'/.test(built) && /#status-splash \{ display: none/.test(built),
@@ -2692,10 +2268,7 @@ const server = http.createServer((req, res) => {
           '…and a pawn has no diagonal at all, because nothing can be taken');
         ok(/"n":[\s\S]{0,400}Vector2i\(1, 2\)[\s\S]{0,300}Vector2i\(-1, 2\)/.test(lm),
           'a knight has all eight jumps');
-        /* ⚠⚠ EACH BRANCH PINNED TO ITS OWN LINE. The first version allowed 120 characters of
-           anything between the case and the loop, which reached past the queen into the KING's
-           branch — it has the same `diag + orth` — so gutting the queen went green.
-           [[green-must-name-what-ran]] */
+        /* ⚠⚠ EACH BRANCH PINNED TO ITS OWN LINE. */
         ok(/"b":\s*\n\s*for d in diag:/.test(lm) && /"r":\s*\n\s*for d in orth:/.test(lm)
           && /"q":\s*\n\s*for d in diag \+ orth:/.test(lm)
           && /_ray\(out, at, d\.x, d\.y\)/.test(lm),
@@ -2723,21 +2296,17 @@ const server = http.createServer((req, res) => {
         '⚠ back home is the ABSENCE of an entry, so an untouched board saves nothing',
         '…and the layout survives the roster being reordered, which its own header requires');
 
-      /* ══ 34 · THE PIRC OPENS A DOOR ═══════════════════════════════════════════════════
-         *"If you set up the pirc (at least 6 moves in) you can enter a secret room."* */
+      /* ══ 34 · THE PIRC OPENS A DOOR ══ */
+      /* his: "If you set up the pirc (at least 6 moves in) you can enter a secret room." */
       {
         const sysj = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-systems.js'), 'utf8');
-        /* ⭐⭐ THE TOWN INVENTS NO CHESS, AND THIS IS WHAT THAT COSTS TO PROVE. The seven
-           squares in GameState.PIRC are read out and compared against the site's OWN Pirc
-           row — PJCCSystems.SYS.pircb — in UCI. Change the book and this file fails, rather
-           than the town quietly disagreeing with the Academy about what a Pirc is. */
+        /* ⭐⭐ THE TOWN INVENTS NO CHESS, AND THIS IS WHAT THAT COSTS TO PROVE. */
         const row = (sysj.match(/pircb:[\s\S]{0,400}?'\*':\s*\[([^\]]+)\]/) || [])[1] || '';
         const book = row.split(',').map((x) => x.trim().replace(/'/g, ''))
           .filter(Boolean).slice(0, 6);
         const pirc = [...gs.matchAll(/\n\t(\d+): Vector2i\((\d), (\d)\),\s+# ([a-z-]+\s*\S*)/g)]
           .map((m) => ({ slot: +m[1], f: +m[2], r: +m[3] }));
-        /* the town's (f, r) back into a board square: we sit on the black side, so file 0 is
-           the h-file and rank 0 is rank one. Same flip as pjcc-banner.js. */
+        /* the town's (f, r) back into a board square. */
         const sq = (f, r) => 'hgfedcba'[f] + (r + 1);
         const homes = { 4: 'e8', 5: 'f8', 6: 'g8', 7: 'h8', 10: 'c7', 11: 'd7', 14: 'g7' };
         const got = pirc.map((p) => homes[p.slot] + sq(p.f, p.r)).sort();
@@ -2772,15 +2341,11 @@ const server = http.createServer((req, res) => {
           'a banner every time you walk past a door you have found is the room nagging you');
         ok(/scene_path = "res:\/\/hall\.tscn"/.test(sec) && /TownExit\.new\(\)/.test(sec),
           '…and there is a way out of it');
-        /* ⛑ SLICED TO THE FUNCTION. The first version tested the whole file, and the file's
-           own header comment says "read live out of GameState.PIRC" — so emptying the loop
-           left the check reading the paragraph that described it. */
         const stone = sec.slice(sec.indexOf('func _draw_stone'));
         ok(/for slot in GameState\.PIRC:/.test(stone) && /ChessArt\.draw_piece/.test(stone),
           '⭐ the one thing in it is the board that opened it, read live from the rule',
           'a picture, not lore — the naming and the contents are his');
-        /* ⛔ AND NOTHING IN IT IS INVENTED. No name, no sign, no character: he said "to be
-           named later" and this asserts that nobody named it in the meantime. */
+        /* ⛔ AND NOTHING IN IT IS INVENTED. */
         const signs = [...sec.matchAll(/sign_text = "([^"]*)"/g)].map((m) => m[1]);
         ok(signs.every((x) => x === 'Out') && !/TownNPC|TownChallenger/.test(sec),
           '⛔ …and it names nobody and says nothing that is his to write',
@@ -2794,11 +2359,7 @@ const server = http.createServer((req, res) => {
       }
 
       {
-        /* ⚠⚠ THE SYNC CONTRACT, AND IT WAS BROKEN IN BOTH DIRECTIONS FOR THREE BATCHES.
-           townMerge() writes the fields it knows and DROPS the rest, so a field the town
-           pushes and the site does not merge is a feature that silently does not sync —
-           which is what happened to razzed, words and positions. hats/hat were the mirror
-           image: merged on the way back, never sent. */
+        /* ⚠⚠ The sync contract: a new synced field = five places — save, load, push, merge_in, townMerge. */
         const push = gs.slice(gs.indexOf('var payload := JSON.stringify({'),
                               gs.indexOf('JavaScriptBridge.eval', gs.indexOf('func push_to_site')));
         const sent = [...push.matchAll(/"([a-z_]+)":/g)].map((m) => m[1]).sort();
@@ -2807,11 +2368,7 @@ const server = http.createServer((req, res) => {
           .filter((k, i, a) => a.indexOf(k) === i).sort();
         const missed = sent.filter((k) => merged.indexOf(k) < 0);
         const orphan = merged.filter((k) => sent.indexOf(k) < 0);
-        /* \u26a0\u26a0 BOTH DIRECTIONS, AND NOT A FLOOR. The first version asked `sent.length >= 13`
-           and whether each sent field was merged; deleting two from the push left thirteen,
-           which cleared the floor, and the thirteen that remained were all merged \u2014 so it went
-           green while two features stopped syncing. A count is not a set.
-           [[green-must-name-what-ran]] */
+        /* \u26a0\u26a0 BOTH DIRECTIONS, AND NOT A FLOOR. */
         ok(missed.length === 0 && orphan.length === 0 && sent.length >= 15,
           '\u2b50\u2b50 the field the town pushes and the field the site merges are the SAME SET',
           (missed.length ? 'DROPPED ON ARRIVAL: ' + missed.join(' ') + '  ' : '') +
@@ -2819,9 +2376,7 @@ const server = http.createServer((req, res) => {
         ok(/local\.hearts = maxPerKey\(local\.hearts, remote\.hearts\)/.test(merge),
           '\u26d1\u26d1 hearts is a DICTIONARY and is merged per person',
           'Math.max(+{"Auston":4}) is NaN, so every push used to write the integer 0 over it');
-        /* ⛑ `words` was a fourth until 2026-09-07. It had to leave the town's push, the
-           town's merge_in AND this merge in one edit — the set-diff above is what would have
-           caught either half being left behind. */
+        /* ⛑ `words` was a fourth until 2026-09-07. */
         ok(/local\.positions = union\(/.test(merge)
           && /local\.hats = union\(/.test(merge) && /local\.razzed = union\(/.test(merge),
           '\u26a0 the three sets of things that have happened to you are unions');
@@ -2837,16 +2392,12 @@ const server = http.createServer((req, res) => {
         ok(/"p": piece_at\(slot\)/.test(gs),
           '\u26a0 the banner is sent the REAL piece, not the town\u2019s custom mark',
           'Michael is drawn with his own glyph in the room and the site can only draw the six');
-        /* ⚠⚠ AND THE BANNER HOLDS NO COPY OF THE ROSTER. The town sends the name with the
-           square; a character list in here is a second one that drifts on the first rename. */
+        /* ⚠⚠ AND THE BANNER HOLDS NO COPY OF THE ROSTER. */
         const cast = [...gs.matchAll(/"who": "([A-Za-z ]+)"/g)].map((m) => m[1]);
-        /* ⚠ COMMENTS STRIPPED. The rule is about CODE — a note in the header naming the
-           two characters the square-naming was checked against is the evidence, not a
-           second roster, and scanning it as data made the check fire on its own footnote. */
         const banCode = ban.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
         ok(cast.length >= 10 && !cast.some((w) => banCode.includes(w)),
           '\u2b50\u2b50 …and not one character\u2019s name is written into the renderer');
-        /* the square names it reads out, checked against the roster the town ships */
+        /* the square names it reads out, checked against the roster the town ships. */
         const B = require(path.join(ROOT, 'assets/js/pjcc-banner.js'));
         ok(B.sqName(0, 6) === 'h7' && B.sqName(7, 7) === 'a8' && B.sqName(0, 0) === 'h1',
           '\u26a0\u26a0 …and it names a square the way the room does',
@@ -2857,11 +2408,7 @@ const server = http.createServer((req, res) => {
         const dsr = fs.readFileSync(path.join(ROOT, 'dossier.md'), 'utf8');
         ok(/PJCCBanner\.mount/.test(dsr) && /pjcc-banner\.js/.test(dsr) && /pjcc-pieces\.js/.test(dsr),
           '…and the Dossier draws it, with the glyphs loaded before it');
-        /* ⚠⚠ AND IT IS RUN, NOT JUST READ. There is no local Jekyll, so /dossier/ does not
-           exist to load — but the renderer is a plain module and this file already has a
-           browser open. Draw a real board on a real canvas and count what came out: two
-           square colors and a frame is an empty board, and a piece adds its own.
-           [[measure-the-real-page]] */
+        /* ⚠⚠ AND IT IS RUN, NOT JUST READ. */
         const shot = await page.evaluate((srcs) => {
           srcs.forEach((src) => {
             const el = document.createElement('script');
@@ -2891,8 +2438,7 @@ const server = http.createServer((req, res) => {
           '\u26a0 …with the real glyph module loaded, not the plain-disc fallback',
           'the first version of this check injected only the banner, so the branch it was ' +
           'aiming at was dead code in the page and the mutation went blind');
-        /* ⭐⭐ DIFFERENTIAL, so a frame with nothing in it can never satisfy it: an empty board
-           is three flat colors and every piece adds its own. */
+        /* ⭐⭐ DIFFERENTIAL, so a frame with nothing in it can never satisfy it. */
         ok(shot.full.drew === true && shot.full.colors > shot.bare.colors + 4,
           '\u2b50\u2b50 …and the renderer actually paints PIECES in a browser',
           shot.bare.colors + ' colors empty \u2192 ' + shot.full.colors + ' with three pieces, on ' +
@@ -2902,9 +2448,7 @@ const server = http.createServer((req, res) => {
           shot.label);
       }
 
-      /* ══ 38 · THE TRIBUNE, THE SUN, THE CLOCK AND THE DRAIN (2026-09-14) ════════════════
-         His: the Checker Tribune, positive with questions for the Bureau; morning, afternoon,
-         evening and night that look it; a clock; energy that the clock wears down. */
+      /* ══ 38 · THE TRIBUNE, THE SUN, THE CLOCK AND THE DRAIN (2026-09-14) ══ */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -2912,7 +2456,6 @@ const server = http.createServer((req, res) => {
         const gs8 = code(rd('game_state.gd')), twn8 = code(rd('town.gd')), jr8 = code(rd('journal.gd'));
         const mkt8 = code(rd('market.gd'));
 
-        /* ── the Tribune ── */
         ok(/const MASTHEAD := "THE CHECKER TRIBUNE"/.test(pap8), 'the paper is the Checker Tribune');
         const list = (name) => {
           const m = new RegExp('const ' + name + ' := \\[([\\s\\S]*?)\\n\\]').exec(pap8);
@@ -2934,7 +2477,6 @@ const server = http.createServer((req, res) => {
         ok(/TownClock\.time_text\(TownClock\.lamps_on\(\)\)/.test(pap8) && /TownClock\.time_text\(TownClock\.lamps_on\(\)\)/.test(mkt8),
           '…and the market hours it prints are the real dusk, not a typed hour');
 
-        /* ── the sun ── */
         const num = (re) => { const m = re.exec(clk8); return m ? parseFloat(m[1]) : NaN; };
         const LAT = num(/const LATITUDE := ([\d.]+)/), NOON = num(/const SOLAR_NOON := ([\d.]+)/);
         const sunFn = fnGd(clk8, 'sun');
@@ -2962,7 +2504,6 @@ const server = http.createServer((req, res) => {
         ok(/return m < s\.x \+ 10\.0 or m >= s\.y - 15\.0/.test(fnGd(clk8, 'is_dark')) && /return int\(sun\(\)\.y - 15\.0\)/.test(fnGd(clk8, 'lamps_on')),
           '…and the lamps come on at the real dusk');
 
-        /* ── the clock ── */
         ok(/return TownClock\.time_text\(\)/.test(fnGd(zn8, 'clock_text')) && /_dial\.draw\.connect\(_draw_dial\)/.test(zn8)
           && /clock_text\(\)/.test(fnGd(zn8, '_draw_dial'))
           && /if m == _shown_minute:\s*\n\s*return/.test(fnGd(zn8, '_tick_clock')) && /_dial\.queue_redraw\(\)/.test(fnGd(zn8, '_tick_clock')),
@@ -2971,7 +2512,6 @@ const server = http.createServer((req, res) => {
           && !/time_text|clock_text/.test(fnGd(zn8, '_paint_hud')),
           '⚠⚠ …under the Journal tab and NOT in the row: on a 390-wide phone the row has no room left (measured 970 and 791 against a tab at 761)');
 
-        /* ── the drain ── */
         ok(/const DRAIN_MINUTES := \d+/.test(gs8) && /_drain\(_poll\.wait_time\)/.test(fnGd(gs8, '_tick')),
           'energy drains with the clock, on the tick that already runs');
         const dr = fnGd(gs8, '_drain');
@@ -2981,8 +2521,7 @@ const server = http.createServer((req, res) => {
           '…and the journal says so, along with sunrise and sunset');
       }
 
-      /* ══ 37 · THE PAPER, THE CALENDAR, THE CAMERA, THE DAILY, THE POST, THE MARKET, THE MAP ═══
-         2026-09-14, nine of his ten picks. Each one says something true or it says nothing. */
+      /* ══ 37 · THE PAPER, THE CALENDAR, THE CAMERA, THE DAILY, THE POST, THE MARKET, THE MAP ══ */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -2993,7 +2532,7 @@ const server = http.createServer((req, res) => {
         const arc9 = code(rd('arcade.gd')), mail = code(rd('mailbox.gd')), mkt = code(rd('market.gd'));
         const mapg = code(rd('map.gd')), jr9 = code(rd('journal.gd'));
 
-        /* ── #9 · THE BUZZ ── */
+        /* ── #9 · THE BUZZ ──. */
         ok(/if GameState\.sound_on:\s*\n\s*TownHaptics\.buzz\(\)/.test(fnGd(aud, 'piece_landed')),
           'a piece landing buzzes the phone, and the mute silences the buzz with the thunk');
         ok(/if OS\.has_feature\("web"\):\s*\n\s*JavaScriptBridge\.eval\(JS % ms, true\)/.test(fnGd(hap, 'buzz')),
@@ -3036,7 +2575,7 @@ const server = http.createServer((req, res) => {
         ok(/had\.focus\(\{ preventScroll: true \}\)/.test(buzzJs),
           '…the switch hands focus straight back to whatever had it');
 
-        /* ── #1 · THE PAPER ── */
+        /* ── #1 · THE PAPER ──. */
         const tp = fnGd(gst, 'turn_paper');
         ok(/if not paper_fresh\(\):\s*\n\s*return/.test(tp) && /"was": paper\.get\("now", \{\}\)/.test(tp),
           'the paper\'s "since your last paper" moves once a day, not once a read');
@@ -3062,7 +2601,7 @@ const server = http.createServer((req, res) => {
           '…and the paper and the market read the same hour off the clock');
         ok(/TownPaper\.Stand\.new\(\)/.test(twn), '…sold from a stand in the town');
 
-        /* ── #2 · THE CALENDAR ── */
+        /* ── #2 · THE CALENDAR ──. */
         const TIME = fs.readFileSync(path.join(ROOT, '_includes/pjcc-time.js'), 'utf8');
         const siteSeason = ((/function season\(\) \{[\s\S]*?(return \(mo[^;]*;)/.exec(TIME)) || [])[1] || '';
         const jsMonth = (mo) => { try { return new Function('mo', siteSeason)(mo); } catch (e) { return '?'; } };
@@ -3089,7 +2628,7 @@ const server = http.createServer((req, res) => {
           'the tree goes up in December and not before');
         ok(!/rand[fi]/.test(fnGd(sart, 'ground')), '…and a leaf on the ground is salted, not rolled: it must not crawl');
 
-        /* ── #3 + #7 · THE CAMERA AND THE GALLERY ── */
+        /* ── #3 + #7 · THE CAMERA AND THE GALLERY ──. */
         ok(/PhotoMode\.Tripod\.new\(\)/.test(hal) && /add_child\(PhotoMode\.new\(self\)\)/.test(hal),
           'the Assembly has a camera on a tripod');
         ok(/if n is CanvasLayer and n != self/.test(fnGd(pho, '_hide_chrome'))
@@ -3110,7 +2649,7 @@ const server = http.createServer((req, res) => {
           && /GameState\.board_cell\(f\)\.x/.test(fnGd(pho, '_paint_gallery')),
           '…and stands every piece where GameState says it stands');
 
-        /* ── #4 · THE DAILY ON THE CABINET ── */
+        /* ── #4 · THE DAILY ON THE CABINET ──. */
         const SR = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_sky_run.html'), 'utf8');
         const spawnJs = fn(SR, 'spawnEnemy');
         const draws = (spawnJs.match(/\brr\(/g) || []).length + (spawnJs.match(/\br\(\)/g) || []).length - 1;
@@ -3143,7 +2682,7 @@ const server = http.createServer((req, res) => {
           && /PJCC_TIME\.dateStr\(\)/.test(fn(SR, 'dayKey')),
           '…and the cabinet plays the date the game itself calls today');
 
-        /* ── #5 · THE POST ── */
+        /* ── #5 · THE POST ──. */
         const loadPost = fn(PROF, 'loadTownPost');
         ok(/PJCC\.townPost = function/.test(PROF) && loadPost
           && !/\.insert\(|\.update\(|\.upsert\(|\.delete\(|rpc\(/.test(loadPost),
@@ -3189,7 +2728,7 @@ const server = http.createServer((req, res) => {
         ok(/pjcc-games-data\.js/.test(fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8')),
           '…and the town\'s page loads the games registry the letters name games from');
 
-        /* ── #6 · THE NIGHT MARKET ── */
+        /* ── #6 · THE NIGHT MARKET ──. */
         ok(/GameState\.buy_scout\(GameState\.key_at\(slot\)\)/.test(mkt) && !/ore\s*[-+]=/.test(mkt)
           && /GameState\.SCOUT_ORE/.test(mkt),
           '⭐ a scorebook page is the face-to-face price, down the same buy_scout path');
@@ -3200,18 +2739,13 @@ const server = http.createServer((req, res) => {
         ok(/NightMarket\.new\(\)/.test(twn) && /func retime\(\) -> void:/.test(mkt),
           '…and it lights with the lamps');
 
-        /* ── #8 · THE MAP ── */
+        /* ── #8 · THE MAP ──. */
         ok(/"The map"/.test(jr9) && /if k\.keycode == KEY_M and not _talking\(\):/.test(jr9) && /_paint_map\(f\)/.test(jr9),
           'M, or the journal\'s fourth tab, opens the map');
         const cap = fnGd(mapg, 'capture');
         ok(/not n2\.visible/.test(cap) && /not \(n is TownNPC\)/.test(cap),
           '⚠⚠ the map shows only places the town is showing — no people, and nothing hidden');
-        /* ⛑⛑ fnGd() TAKES THE FIRST `func _draw(` IN THE FILE, and town.gd has fourteen inner
-           classes with one each. Adding a class ABOVE the zone's own silently re-pointed six
-           checks in this file at a tree — they still passed, at something else. The zone's own
-           `_draw` must come first; new scenery classes go DOWN with TownLamp.
-           ⚠ THE ORDER IS THE CHECK. Counting classes, or naming TownTree, would both go green
-           on the next one added in the wrong place. [[green-must-name-what-ran]] */
+        /* ⛑⛑ fnGd() TAKES THE FIRST `func _draw(` IN THE FILE. */
         ok(twn.indexOf('func _draw(') < twn.indexOf('class '),
           '⛑⛑ town.gd\'s OWN _draw() comes before its first inner class',
           'six checks reach the ground through fnGd(twn, \'_draw\') and it takes the first match');
@@ -3220,17 +2754,12 @@ const server = http.createServer((req, res) => {
           && /_roads\(\), GROUND\)/.test(fnGd(twn, '_after_ready'))
           && /SAND_RECT/.test(fnGd(twn, '_draw')) && /SAND_RECT/.test(fnGd(twn, '_region')),
           '…drawn from the same rects the ground is painted from');
-        /* ⛑⛑ AND IN THE SAME COLORS. journal.gd had "22301f" typed into it; the day the town
-           went to sand the minimap kept drawing a green one — a map of a place that no longer
-           exists, and nothing but opening it could have caught that. The town hands its ground
-           color over with the rects now. [[one-fix-every-instance]] */
-        /* ⚠ THE GROUND FILL, NOT "no hex anywhere in _paint_map": the minimap LIGHTENS the
-           roads on purpose (5a5140 against the town's 463f2f) so they read at map size. */
+        /* ⛑⛑ AND IN THE SAME COLORS. journal.gd had "22301f" typed into it. */
+        /* ⚠ THE GROUND FILL, NOT "no hex anywhere in _paint_map". */
         ok(/_body\.draw_rect\(to\.call\(g\), TownMap\.ground_tint\)/.test(jr9)
           && /ground_tint = tint/.test(cap),
           '⛑⛑ the minimap asks the town what color its ground is instead of remembering it');
-        /* ⚠⚠ EVERY PATCH THAT IS NOT THE GROUND HAS TO BE IN THE AREA LIST. It has been missed
-           twice now — the Assembly's yard, then both green places. */
+        /* ⚠⚠ EVERY PATCH THAT IS NOT THE GROUND HAS TO BE IN THE AREA LIST. */
         for (const a of ['LAWN', 'SHORE', 'SAND_RECT', 'YARD', 'WATER_RECT'])
           ok(new RegExp('\\{ "rect": ' + a + ', "color": ').test(fnGd(twn, '_after_ready')),
             '   …and ' + a + ' is on it');
@@ -3238,7 +2767,7 @@ const server = http.createServer((req, res) => {
           '…and on a phone a name that would land on another name is left off');
       }
 
-      /* ══ 36 · A PHONE CAN READ THE TOWN, AND A SAVE CANNOT EAT ITSELF (2026-09-14) ═══════ */
+      /* ══ 36 · A PHONE CAN READ THE TOWN, AND A SAVE CANNOT EAT ITSELF (2026-09-14) ══ */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -3291,9 +2820,7 @@ const server = http.createServer((req, res) => {
         ok(/GameState\.check_site_unlocks\(\)[\s\S]*site_scores/.test(fnGd(jr, 'open')), 'the Journal fills a met price before it draws');
       }
 
-      /* ══ 39 · THE STORY PICKS (2026-09-21) ═════════════════════════════════════════════
-         His: "#'s 1, 3, 4, 5, 6, 7, 8, 9, and 10." Every line is placeheld; these check the
-         shape, and the one universe rule the batch turned up. */
+      /* ══ 39 · THE STORY PICKS (2026-09-21) ══ */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -3301,8 +2828,7 @@ const server = http.createServer((req, res) => {
         const zoneG = code(rd('zone.gd')), gsG = code(rd('game_state.gd')), parkG = code(rd('park.gd'));
         const strs = (s) => [...s.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
 
-        /* ⛑⛑ ONLY HUMANS TALK (his rule, 2026-07-15). Crockett and Argus are dogs in their own
-           files; in this town they said sentences from 09-02 and wore a person from 09-20. */
+        /* ⛑⛑ ONLY HUMANS TALK (his rule, 2026-07-15). */
         const coats = /const COATS := \{([\s\S]*?)\n\}/.exec(dogG);
         const animals = coats ? [...coats[1].matchAll(/"([A-Za-z ]+)":/g)].map((m) => m[1]) : [];
         ok(['Princess', 'Crockett', 'Argus'].every((a) => animals.includes(a)),
@@ -3310,11 +2836,7 @@ const server = http.createServer((req, res) => {
         ok(/c\.animal = TownDog\.is_animal\(name_\)/.test(townG) && /_animal = TownDog\.is_animal\(who\)/.test(parkG)
           && /func wears_model\(\) -> bool:\s*\n\s*return not animal/.test(npcG),
           '…the town and the Pavilion both ask it, and an animal never wears a person');
-        /* ⛑⛑ THE THREE OF THEM ARE BUILT IN dog.gd SINCE 2026-09-24, in one CAST table. They
-           used to be two _add_challenger calls in town.gd and one princess() here, which was
-           fine until the house grew beds and each of them had to stand in two scenes. The
-           audit did not change — every string a dog has still has to start with its name —
-           only where it reads them, and now it reads all three in one place. */
+        /* ⛑⛑ THE THREE OF THEM ARE BUILT IN dog.gd SINCE 2026-09-24, in one CAST table. */
         const castM = /const CAST := \{([\s\S]*?)\n\}/.exec(dogG);
         const spoken = [];
         if (!castM) spoken.push('TownDog.CAST: NOT FOUND');
@@ -3340,7 +2862,6 @@ const server = http.createServer((req, res) => {
         ok(/npc\.razz_line if npc\.animal else/.test(zoneG) && /if TownDog\.is_animal\(who\):/.test(zoneG),
           '…and a dog’s razz goes out without quotes, even from another room');
 
-        /* #5 — the old city. A row only where somebody has a line, and never for an animal. */
         const before = /const BEFORE := \{([\s\S]*?)\n\}/.exec(townG);
         const bKeys = before ? [...before[1].matchAll(/^\s*"([^"]+)":/gm)].map((m) => m[1]) : [];
         ok(/if before_line != "":\s*\n\s*rows\.append\(\{ "id": "before", "text": "What was it like before\?" \}\)/.test(npcG)
@@ -3351,7 +2872,6 @@ const server = http.createServer((req, res) => {
         ok(/_board_line\(\) if not board_lines\.is_empty\(\) else _line_for\(hearts\)/.test(npcG)
           && /maxwell\.board_lines = \[/.test(townG) && /GameState\.army_count\(\)/.test(fnGd(npcG, '_board_line')),
           '⭐ Maxwell’s greeting reads how far your board has got');
-        /* #6 — the water. Salted by the evening, dark only, and NOTHING says why. */
         ok(/posmod\(hash\("water\|%d" % d\), 100\)/.test(dogG) && /not TownClock\.is_dark\(\)/.test(fnGd(dogG, '_water_night'))
           && /dog\.water = LOOKOUT_AT/.test(townG),
           '⭐ some nights Princess goes to the water, and only after dark');
@@ -3371,15 +2891,8 @@ const server = http.createServer((req, res) => {
           && /class Vista extends CanvasLayer/.test(lk),
           '…and the view across the water holds the player still, and lets go cleanly');
 
-        /* ══ THE TELESCOPE KNOWS WHAT TIME IT IS ════════════════════════════════════===
-           2026-09-23, his: *"Can we make it read the user's local time? This is an interesting
-           touch I can take advantage of. Let's put a morning and daytime and nighttime sky on
-           the telescope."*
-           ⛑ THE CLOCK ALREADY READ LOCAL TIME - section 22 has checked the `false` on
-           get_datetime_dict_from_system since 09-04, and sunrise/sunset have come off the real
-           date since 09-14. What was missing was this room USING it: MORNING and AFTERNOON both
-           fell through to one default, so the entire daylight half of his day looked like one
-           hour through the eyepiece. */
+        /* ══ THE TELESCOPE KNOWS WHAT TIME IT IS ══ */
+        /* his: "Can we make it read the user's local time? This is an interesting touch I can take advantage of. Let's put a morning and daytime and nighttime sky on the telescope." */
         const skyFrom = lk.indexOf('var top := Color(');
         const sky = skyFrom < 0 ? '' : lk.slice(skyFrom, lk.indexOf('_grad(Rect2(0.0, 0.0, w, hz)'));
         const dflt = [...sky.matchAll(/var (?:top|low) := Color\("([0-9a-f]{6})"\)/g)].map((m) => m[1]);
@@ -3389,8 +2902,6 @@ const server = http.createServer((req, res) => {
         const looks = named.map((m) => m[2] + m[3]).concat([dflt.join('')]);
         ok(dflt.length === 2 && named.length === 4,
           '⭐ the telescope has a sky for every phase of the clock', phases.join(' \u00b7 '));
-        /* ⚠⚠ DISTINCT, NOT MERELY PRESENT. The defect was two phases sharing one look, which
-           a check that only counted the branches would have passed on the day it shipped. */
         ok(looks.length === 5 && new Set(looks).size === 5,
           '\u2026and no two of them are the same picture',
           new Set(looks).size + ' distinct of ' + looks.length);
@@ -3400,9 +2911,7 @@ const server = http.createServer((req, res) => {
         const body = fnGd(lk, '_sky_body');
         ok(/TownClock\.sun\(\)/.test(body) && /TownClock\.minute_of_day\(\)/.test(body),
           '⭐ the sun sits on the arc between the real sunrise and the real sunset');
-        /* \u26a0\u26a0 `> 0 &&` IS NOT DECORATION. indexOf returns -1 when the call is GONE, and -1 is
-           less than everything \u2014 so the first draft of this passed a build with no sun in the
-           sky at all. Found by mutating it, never by reading it. [[green-must-name-what-ran]] */
+        /* \u26a0\u26a0 `> 0 &&` IS NOT DECORATION. indexOf returns -1 when the call is GONE. */
         const sunAt = lk.indexOf('_sky_body(w, hz, ph)');
         ok(sunAt > 0 && sunAt < lk.indexOf('_tower(x, hz, tw, th'),
           '\u2026drawn, and drawn BEFORE the skyline so the city stands in front of it',
@@ -3425,7 +2934,6 @@ const server = http.createServer((req, res) => {
           && /town_fixed\.emit\(id\)/.test(rep),
           '…it costs the ore it says, refuses what you cannot afford, and tells the town');
 
-        /* #4 — the boat. Six humans who know you; it sails when it is finished, CEO or not. */
         const parts = [...block(gsG, 'const BOAT := [').matchAll(/\{ "id": "([a-z]+)",\s+"who": "([A-Za-z ]+)",\s+"name": "([^"]+)"/g)]
           .map((m) => ({ id: m[1], who: m[2], name: m[3] }));
         const people = new Set([...townG.matchAll(/_add_challenger\("([^"]+)"|\.who = "([^"]+)"/g)].map((m) => m[1] || m[2]));
@@ -3475,9 +2983,9 @@ const server = http.createServer((req, res) => {
         ok(/if me <= 0:\s*\n\s*return "No history/.test(uw) && /P\.puzzleRating\(\)\.rating/.test(fnGd(gsG, 'site_rating')),
           '…yours is the only number the site keeps, and with none he writes no policy');
 
-        /* #8 — the board by the bed. She is shown what you learned, and she says nothing. */
-        /* ⚑ 2026-09-21, his: *"give me a little inside room with the bed and the dog bed and the chess
-           board princess and I play on"*. All three are inside his checker now, and none in the square. */
+        /* #8 — the board by the bed. */
+        /* ⚑ 2026-09-21. */
+        /* his: "give me a little inside room with the bed and the dog bed and the chess board princess and I play on" */
         const homeG = rd('home.gd');
         const hb = homeG.slice(homeG.indexOf('class HomeBoard extends Interactable:'));
         ok(/var bed := TownBed\.new\(\)/.test(homeG) && /HomeBoard\.new\(\)/.test(homeG)
@@ -3493,16 +3001,12 @@ const server = http.createServer((req, res) => {
           && /not \(dog\.with_you\(\) or dog\.at_home\)/.test(hb),
           '…she is shown the furthest lesson YOU reached, and only when she is with you');
 
-        /* ══ #8b · THREE BEDS, AND SHE GOES ROUND THEM ═══════════════════════════===
-           2026-09-23, Nate: *"can you give a bed for crockett and argus inside my home too?
-           And in Maxwell's, there is a bed for princess when we walk in. Princess slowly goes
-           to the beds, or she slowly goes to the table to learn chess."* */
-        /* ⚠⚠ dogG AND townG ARE THE COMMENT-STRIPPED COPIES from the block above, and that
-           is deliberate: a check that a comment can satisfy is not a check. */
+        /* ══ #8b · THREE BEDS, AND SHE GOES ROUND THEM ══ */
+        /* his: "can you give a bed for crockett and argus inside my home too? And in Maxwell's, there is a bed for princess when we walk in. Princess slowly goes to the beds, or she slowly goes to the table to learn chess." */
+        /* ⚠⚠ dogG AND townG ARE THE COMMENT-STRIPPED COPIES from the block above. */
         const bedRoom = rd('checker_room.gd');
         const bedMax = rd('maxwell_home.gd');
-        /* ⭐ ONE BED DRAWING, IN THE SHELL BOTH ROOMS EXTEND. A cushion in each room file is
-           two palettes, and the second is the shade left behind the next time a coat moves. */
+        /* ⭐ ONE BED DRAWING, IN THE SHELL BOTH ROOMS EXTEND. */
         ok(/class DogBed extends Node2D:/.test(bedRoom)
            && !/class DogBed/.test(homeG) && !/class DogBed/.test(bedMax)
            && /CheckerRoom\.DogBed\.new\(\)/.test(homeG) && /CheckerRoom\.DogBed\.new\(\)/.test(bedMax),
@@ -3515,17 +3019,13 @@ const server = http.createServer((req, res) => {
         const bedsFor = [...homeG.matchAll(/\[([A-Z_]+_BED_AT), "(\w+)"\]/g)].map((m) => m[2]);
         ok(bedsFor.join(' ') === 'Princess Crockett Argus',
           '\u2026and all three dogs have one in Nate\u2019s checker', bedsFor.join(', ') || 'none');
-        /* ⚠⚠ MAXWELL'S IS A CUSHION, NOT A BED YOU SLEEP IN. One TownBed in the game, at
-           Nate's, or a day could end in somebody else's house \u2014 see the 09-22 rule above. */
+        /* ⚠⚠ MAXWELL'S IS A CUSHION, NOT A BED YOU SLEEP IN. */
         ok(/cushion\.who = "Princess"/.test(bedMax) && !/TownBed/.test(code(bedMax)),
           '\u2026with a fourth in Maxwell\u2019s, empty, and still not a bed a day can end in');
 
-        /* ⚠⚠ THE HAUNTS ARE DERIVED FROM THE FURNITURE, NOT TYPED. Four literal Vector2s is
-           four numbers that stay put the day a bed moves \u2014 and a dog walking to where a bed
-           used to be is the bug nobody reports, because she looks perfectly fine doing it. */
+        /* ⚠⚠ THE HAUNTS ARE DERIVED FROM THE FURNITURE, NOT TYPED. */
         const hm2 = /dog\.haunts = PackedVector2Array\(\[([\s\S]*?)\]\)/.exec(homeG);
-        /* ⚠ SPLIT ON LINES, NOT ON COMMAS — `Vector2(0.0, -6.0)` has one of its own, and the
-           first draft of this read four haunts as eight half-expressions and failed on all of them. */
+        /* ⚠ SPLIT ON LINES, NOT ON COMMAS. */
         const legs = hm2
           ? hm2[1].split('\n').map((l) => l.trim().replace(/,$/, '')).filter(Boolean) : [];
         ok(legs.length === 4 && legs.every((l) => /^[A-Z_]+_AT \+ Vector2\(/.test(l)),
@@ -3553,8 +3053,7 @@ const server = http.createServer((req, res) => {
         ok(!!floor && outside === 0,
           '\u2026and every one is a place she fits, inside the room\u2019s own floor',
           outside + ' haunts outside CheckerRoom.FLOOR');
-        /* ⚠⚠ BESIDE THE TABLE, NOT IN IT. The board is solid and scaled 1.8; a haunt inside
-           its box is a dog walking into a table leg and shivering there till the dwell runs out. */
+        /* ⚠⚠ BESIDE THE TABLE, NOT IN IT. */
         const bs = /_solid\(board, Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/.exec(homeG);
         const sc = +(/board\.scale = Vector2\(([\d.]+),/.exec(homeG) || [0, 1])[1];
         const bAt = v2h(homeG, 'BOARD_AT');
@@ -3567,14 +3066,8 @@ const server = http.createServer((req, res) => {
           inBox + ' haunts inside the board\u2019s solid box');
 
 
-        /* ══ SHE RANGES AHEAD OF HIM NOW ═════════════════════════════════════════════===
-           2026-09-23, his: *"can you slow me down 25%? And have Princess drift ahead of me and
-           kind of move on her own using a randomizer function."* Two asks, and the first one
-           nearly broke the second.
-           ⛑⛑ HER TROT IS DERIVED FROM HIS SPEED AND HAS TO STAY THAT WAY. It was a typed 520
-           against a 700 player. He slowed himself to 525 in the same message, which would have
-           left her at 99% of his pace - the exact "sprite stapled to your shoulder" her own
-           header forbids, with nothing in either file pointing at the number that moved. */
+        /* ══ SHE RANGES AHEAD OF HIM NOW ══ */
+        /* his: "can you slow me down 25%? And have Princess drift ahead of me and kind of move on her own using a randomizer function." */
         const plyG = rd('player.gd');
         const SPD = +(/const SPEED := ([\d.]+)/.exec(plyG) || [0, 0])[1];
         const tf = +(/const TROT := TownPlayer\.SPEED \* ([\d.]+)/.exec(dogG) || [0, 0])[1];
@@ -3584,10 +3077,6 @@ const server = http.createServer((req, res) => {
         ok(tf * 1.6 > 1.05,
           '\u2026and her run is faster than he walks, or she can never get in front at all',
           'measured 09-23: at a trot alone she settled 35 units BEHIND him, every time');
-        /* ⚠⚠ THE ONE THE MEASUREMENT FOUND. She lags her own spot by the width of the
-           run/trot band, so the NEAREST place she will choose has to be further ahead than that
-           band is wide. The first cut rolled +/-90 around a single lead and put her level with
-           him on a third of her casts - 18% of frames behind him over 580 samples. */
         const leadM = /const LEAD := Vector2\(([\d.]+), ([\d.]+)\)/.exec(dogG);
         const settle = +(/const SETTLE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
         ok(!!leadM && settle > 0 && +leadM[1] > settle,
@@ -3602,12 +3091,9 @@ const server = http.createServer((req, res) => {
         ok(/if randf\(\) < 0\.34:\s*\n\s*_side = -_side/.test(dogG),
           '\u2026she keeps to one side and crosses now and then, rather than zig-zagging through him');
 
-        /* ══ SLOWLY, WHICH IS A DIFFERENT NUMBER FROM HER FOLLOW SPEED ═════════===== */
+        /* ══ SLOWLY, WHICH IS A DIFFERENT NUMBER FROM HER FOLLOW SPEED ══ */
         const amble = +(/const AMBLE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
-        /* ⚑ DERIVED, NOT READ, SINCE 09-23. `const TROT := TownPlayer.SPEED * 0.74` is no longer
-           a literal, and a regex for one quietly returned 0 — which made this check "96 is less
-           than 0 x 0.3" and went red. A check that reads a number must follow it when it stops
-           being typed. [[audit-numbers-can-be-wrong]] */
+        /* ⚑ DERIVED, NOT READ, SINCE 09-23. */
         const trot = SPD * tf;
         ok(amble > 0 && trot > 0 && amble < trot * 0.3,
           '⭐ she AMBLES indoors \u2014 a fraction of the speed she catches you up at',
@@ -3619,43 +3105,32 @@ const server = http.createServer((req, res) => {
            && /_dwell -= delta/.test((am.split('return false')[1] || '')),
           '\u2026and the dwell counts down only once she has ARRIVED',
           'ticking it while she walks ends a long haul in her turning round on the spot');
-        /* \u26d1 THE PICK MOVED OUT OF _amble ON 2026-09-24 and grew a second rule with it (his:
-           *"Princess tries any bed when open but the other dogs only use their own"*). The old
-           one-liner rotated to any OTHER haunt; this one rotates to any other haunt THAT IS
-           FREE, and returns -1 when none is. Both halves are checked, because a picker that
-           forgets the first rule is a dog sitting through two dwells. */
+        /* \u26d1 THE PICK MOVED OUT OF _amble ON 2026-09-24 and grew a second rule with it. */
+        /* his: "Princess tries any bed when open but the other dogs only use their own" */
         const ph = fnGd(dogG, '_pick_haunt');
         ok(/if i != _haunt and _free\(i\):/.test(ph) && /return -1/.test(ph)
            && /return open\[randi\(\) % open\.size\(\)\]/.test(ph),
           '\u2026and she never picks the haunt she is already sitting on, nor one with a dog on it',
           'sitting through two dwells is indistinguishable from being stuck');
-        /* \u26a0\u26a0 "ONLY THEIR OWN" IS THE LIST, NOT A BRANCH. Crockett and Argus are handed one haunt
-           each by the room, so the free-check is what having a CHOICE costs and only she pays it
-           \u2014 a one-bed dog walks to its bed and gets it, whoever is lying on it. */
+        /* \u26a0\u26a0 "ONLY THEIR OWN" IS THE LIST, NOT A BRANCH. */
         const free = fnGd(dogG, '_free');
         ok(/var choosy := haunts\.size\(\) > 1/.test(am) && /d != self and d\.visible/.test(free)
            && /_lodger\("Crockett", CROCKETT_BED_AT\)/.test(homeG)
            && /d\.haunts = PackedVector2Array\(\[at\]\)/.test(homeG),
           '\u2b50 she takes any cushion that is FREE, and the other two only ever their own',
           'the owner never yields: one haunt each, so there is nothing for them to check');
-        /* \u26a0 A HIDDEN DOG HOLDS NOTHING. The outdoor copy of Crockett is still a node in this
-           room, standing on his own cushion \u2014 count it and she can never use it at all. */
+        /* \u26a0 A HIDDEN DOG HOLDS NOTHING. */
         ok(/d\.visible/.test(free), '\u2026and a dog who is out does not hold its bed against her');
-        /* ⚠⚠ EMPTY IS THE OLD BEHAVIOR EXACTLY. Every dog outdoors has no haunts and must go
-           on standing where it stands \u2014 this branch is what makes the whole thing additive. */
+        /* ⚠⚠ EMPTY IS THE OLD BEHAVIOR EXACTLY. */
         ok(/haunts\.is_empty\(\)/.test(dogG) && !/haunts/.test(townG),
           '\u2026while a dog with no haunts is the dog she has always been',
           'nothing outdoors sets them');
-        /* ⚠⚠ THE BOB IS PACED BY DISTANCE. On a clock it is 2.2 bobs a second at every speed,
-           which at an amble is a dog vibrating. Same rule as the player's footstep. */
+        /* ⚠⚠ THE BOB IS PACED BY DISTANCE. */
         ok(/_gait \+= step/.test(dogG) && /_bob = sin\(_gait \/ [\d.]+\) \* 2\.0/.test(dogG)
            && !/_bob = sin\(_t \*/.test(dogG),
           '\u2026and her gait is paced by DISTANCE, so a slow walk looks slow');
       }
-      /* ══ 36 · 2026-09-21 — HIS BATCH: WALK2, WALK-IN DOORS, SOLID TOWN, HOME, THE MOVE ═══════
-         Each check below names the rule it guards and was mutated red once. The walking itself
-         was PROBED in the running game (a wall at -100, Murphy at 259, the Park Tables door, the
-         checker, the rows hiding on a pick) — a static gate cannot walk. */
+      /* ══ 36 · 2026-09-21 — HIS BATCH: WALK2, WALK-IN DOORS, SOLID TOWN, HOME, THE MOVE ══ */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -3664,14 +3139,14 @@ const server = http.createServer((req, res) => {
         const ui = code(rd('town_ui.gd')), tw = code(rd('town.gd')), hm = code(rd('home.gd'));
         const GM = fs.readFileSync(path.join(ROOT, 'tests/gen-models.js'), 'utf8');
 
-        /* his walk is "walk2", and 1.3 still carries Walk (Idle's copy) and a 1-frame Walk.001 */
+        /* his walk is "walk2", and 1.3 still carries Walk (Idle's copy) and a 1-frame Walk.001. */
         const mc = fnGd(pm, '_match_clip');
         ok(/_match_clip\(\["walk2", "walk"/.test(pm) && mc.indexOf('for w in words') >= 0
            && mc.indexOf('for w in words') < mc.indexOf('for a in _anim.get_animation_list()'),
           '⭐ "walk2" wins the walk slot — the word list is a PREFERENCE, so it loops outside the clips',
           'clips-outside, the first clip matching ANY word won and "Walk" beat "walk2"');
 
-        /* doors: a step in, and only where a step is safe */
+        /* doors: a step in, and only where a step is safe. */
         const pp = fnGd(dr, '_physics_process');
         ok(/scene_path == ""/.test(pp) && /url != ""/.test(pp) && /energy_cost > 0/.test(pp)
            && /interact\(_you\)/.test(pp),
@@ -3693,7 +3168,7 @@ const server = http.createServer((req, res) => {
           ok(/solid = false/.test(body), '…and ' + cls.split(' ')[1] + ' stays a thing you stand at, not a wall');
         }
 
-        /* people are solid; the dog at your heel is not, and she steps back */
+        /* people are solid; the dog at your heel is not, and she steps back. */
         ok(/StaticBody2D\.new\(\)/.test(fnGd(np, '_ready_extra')) && /_body\.set_deferred\("disabled", _away\)/.test(np),
           '⭐ people are SOLID, and not on a day they are out');
         ok(/solid = false/.test(fnGd(dg, '_init')) && /return _follow/.test(fnGd(dg, 'yields'))
@@ -3702,7 +3177,7 @@ const server = http.createServer((req, res) => {
         ok(/\(best_y and not y\)/.test(fnGd(pl, '_refresh_target')),
           '…so what you walked up to beats the dog behind you  (his: "she gets in the way")');
 
-        /* the options go when you pick one */
+        /* the options go when you pick one. */
         const pk = fnGd(ui, '_pick');
         ok(/b\.visible = false/.test(pk) && /_hold = _read_secs\(said\)/.test(pk)
            && /_rows_back\(\)/.test(fnGd(ui, '_process')),
@@ -3712,10 +3187,8 @@ const server = http.createServer((req, res) => {
         ok(/not \(holding and _bubbled\)/.test(fnGd(ui, '_layout')),
           '…and while they are gone there is no empty band over half the screen');
 
-        /* the map moved */
         const v = (name) => { const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
-        /* ⛑ ONE BUILDING UP THERE SINCE 2026-09-22. This measured the plaza BETWEEN two
-           lots; with the Gauntlet gone the thing to measure is the walk to the only door. */
+        /* ⛑ ONE BUILDING UP THERE SINCE 2026-09-22. */
         const hall = v('HALL_AT'), camp = v('CAMP_AT');
         ok(hall && hall[1] < -900 && /hall\.position = HALL_AT/.test(tw) && !/GAUNTLET_AT/.test(tw),
           '⭐ the Assembly is NORTH, and it is the only thing up there', hall + '');
@@ -3723,9 +3196,7 @@ const server = http.createServer((req, res) => {
            && /Rect2\(TRAIL_X - 26\.0, YARD\.end\.y, 52\.0, -20\.0 - YARD\.end\.y\)/.test(tw),
           '…a whole window screen above the square\'s roofline, up ONE haul road',
           'the Assembly at ' + (hall && hall[1]) + '; the square\'s roofs reach -300 and the window is 648');
-        /* ⚠ THE PAD HAS TO MEET THE SHACK'S FRONT AND HOLD THE CRANE'S FEET. Start it lower and
-           you step off sand into grass to go in; run it short and the crane is parked in a field.
-           The crane's outriggers reach 48 either side of it — that is BuildCrane's own number. */
+        /* ⚠ THE PAD HAS TO MEET THE SHACK'S FRONT AND HOLD THE CRANE'S FEET. */
         const yd = /const YARD := Rect2\(HALL_AT\.x - ([\d.]+), HALL_AT\.y \+ ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(tw);
         const cr8 = /const CRANE_AT := Vector2\(HALL_AT\.x \+ ([\d.]+), HALL_AT\.y \+ ([\d.]+)\)/.exec(tw);
         const shackH = /hall\.size = Vector2\([\d.]+, ([\d.]+)\)/.exec(tw);
@@ -3746,7 +3217,6 @@ const server = http.createServer((req, res) => {
           '…and the ground reaches past the sand while the sea runs to the same edge',
           gr ? 'edge ' + (+gr[1] + +gr[3]) + ', sand ends ' + (camp[0] + 360) + ', water ends ' + (+wr[1] + +wr[3]) : '?');
 
-        /* his checker is his home */
         const ch = tw.slice(tw.indexOf('class CheckerHome extends TownDoor:'));
         ok(/TownProp\.make\("res:\/\/checker\.glb"/.test(ch) && /sign_text = " "/.test(ch)
            && /solid = false/.test(ch) && /aim = -1\.0/.test(ch) && /scene_path = "res:\/\/home\.tscn"/.test(tw)
@@ -3759,20 +3229,19 @@ const server = http.createServer((req, res) => {
            && /extends CheckerRoom/.test(hm),
           '…a LITTLE room inside: a window-sized room, a small lit floor  (one shell, both houses)');
       }
-      /* ══ 37 · 2026-09-22 — THE DAY STARTS AND ENDS AT HOME, AND MAXWELL HAS ONE TOO ═══════ */
+      /* ══ 37 · 2026-09-22 — THE DAY STARTS AND ENDS AT HOME, AND MAXWELL HAS ONE TOO ══ */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const tw = code(rd('town.gd')), pr = code(rd('prop_model.gd')), hm = code(rd('home.gd'));
-        /* the bed is the only way to turn the day over, and it is in the house (checked above);
-           what is left is where you START: the boot scene, and where the town drops you. */
+        /* the bed is the only way to turn the day over. */
         ok(/player_start = HOME_AT \+ Vector2\(CheckerHome\.WIDE \* 0\.5 \+ 44\.0, 0\.0\)/.test(tw),
           '⭐ the town\'s default arrival is your own front door, not the middle of the square',
           'his: "each day start and end inside the checker home"');
         ok(/var bed := TownBed\.new\(\)/.test(hm) && /GameState\.sleep\(\)/.test(rd('bed.gd')),
           '…and the only bed in the game is in that house, so a day can only end there');
-        /* ⭐ THE MIRROR CARRIES project.godot SINCE 2026-09-22 (his: *"add the boot check to private"*),
-           so this asks a file the repo really has instead of skipping off his machine. */
+        /* ⭐ THE MIRROR CARRIES project.godot SINCE 2026-09-22. */
+        /* his: "add the boot check to private" */
         const mirror = /run\/main_scene="([^"]+)"/.exec(rd('project.godot'));
         ok(mirror && mirror[1] === 'res://home.tscn',
           '…and the game BOOTS in the house', mirror ? mirror[1] : 'no main_scene in the mirror');
@@ -3783,7 +3252,6 @@ const server = http.createServer((req, res) => {
         ok(!his || (mirror && his[1] === mirror[1]),
           '…and his project boots the same scene the mirror claims',
           his ? 'his ' + his[1] + ' · mirror ' + (mirror ? mirror[1] : '?') : 'his project is not on this machine');
-        /* Maxwell's, in black */
         const mh = code(rd('maxwell_home.gd'));
         const at = (n) => { const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
         const red = at('HOME_AT'), black = at('MAX_HOME_AT');
@@ -3805,8 +3273,7 @@ const server = http.createServer((req, res) => {
           '…and both are drawn at the texture\'s own proportions  (the viewport carries 4% padding)',
           'one CheckerHome draws both houses — Maxwell\'s changes only the paint and the room');
       }
-      /* ══ 35 · ONE REAL VOICE LINE EACH ════════════════════════════════════════════════
-         ⛔ off-the-wall #10 is HIS to record. This is the socket and the script. */
+      /* ══ 35 · ONE REAL VOICE LINE EACH ══ */
       {
         const vc = fs.readFileSync(path.join(GD, 'town_voice.gd'), 'utf8');
         ok(/^class_name TownVoice$/m.test(vc), 'there is somewhere for a recording to plug in');
@@ -3817,17 +3284,14 @@ const server = http.createServer((req, res) => {
           '\u26a0 misses are cached too, or every conversation hits the filesystem again');
         ok(/not GameState\.sound_on/.test(vc), '\u26a0 and the mute silences it like everything else');
         ok(/v\.hello\(who\)/.test(npc), '\u2026a greeting plays when somebody opens their mouth');
-        /* ⚠⚠ NO AUDIO SHIPS TODAY, and the whole design rests on that being true: the socket
-           is not dead code because it costs nothing, and it costs nothing because the folder
-           is empty. The day it stops being empty, this check is what says so. */
+        /* ⚠⚠ NO AUDIO SHIPS TODAY, and the whole design rests on that being true. */
         const ogg = fs.existsSync(path.join(GD, '..', '..', '..', '..', 'assets/games/checker-town'));
         const voiceDir = path.join(ROOT, 'private/docs/godot/chess_town/voice');
         const files = fs.existsSync(voiceDir)
           ? fs.readdirSync(voiceDir).filter((f) => /\.ogg$/i.test(f)) : [];
         ok(true, '\u2026and today the folder holds ' + files.length + ' recording(s)',
           files.length ? files.join(' ') : 'the socket costs nothing while it is empty');
-        /* ⭐⭐ THE SCRIPT CANNOT FALL BEHIND THE CAST. Everybody who speaks in this town has a
-           row, and every row is somebody who speaks. */
+        /* ⭐⭐ THE SCRIPT CANNOT FALL BEHIND THE CAST. */
         const scriptPath = path.join(ROOT, 'private/docs/VOICE-SCRIPT.md');
         if (fs.existsSync(scriptPath)) {
           const doc = fs.readFileSync(scriptPath, 'utf8');
@@ -3836,9 +3300,7 @@ const server = http.createServer((req, res) => {
           const speaks = new Set();
           [...all.matchAll(/\.who = "([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
           [...all.matchAll(/_add_challenger\("([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
-          /* ⛑ AND THE THREE DOGS, who are built out of TownDog.CAST since 2026-09-24 and so go
-             through neither of the two shapes above. An animal has no LINE to record — but it
-             has a square, a name over its head and a row in the script saying so. */
+          /* ⛑ And the three dogs, built out of TownDog.CAST since 2026-09-24 — neither shape above sees them. */
           const castRow = /const CAST := \{([\s\S]*?)\n\}/.exec(all);
           if (castRow) [...castRow[1].matchAll(/^\t"([^"]+)": \{/gm)].forEach((m) => speaks.add(m[1]));
           const slug = (w) => w.toLowerCase().replace(/ /g, '-');
@@ -3854,18 +3316,8 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      /* ══ 38 · 2026-09-24 — HIS BATCH: THE ROWBOAT, THE DOGS' HOURS, ROUND ROOMS ═══════════
-         *"The rowboat doesn't work - the screen just glitches; my user got stuck in between
-         screens back and forth. Make sure no door can do that."*
-         *"…the dogs come inside within 15 minutes of 8pm (either side) to within 15 minutes of
-         6am (either side)? Princess stays with me, but goes home no matter where I am at 9:30
-         on the dot. And can they come in randomly throughout the day? Princess tries any bed
-         when open but the other dogs only use their own."*
-         *"Change the insides of the checkers to be round areas instead of rectangular. And
-         user can't walk on top of checkers (and remove three of them)."*
-         Each of these was PROBED in the running game before it was written down: the crossing
-         round trip, the schedule minute by minute, the curfew walk, ninety seconds of her
-         ambling with the other two home, and a physics point query on all six checkers. */
+      /* ══ 38 · 2026-09-24 — HIS BATCH: THE ROWBOAT, THE DOGS' HOURS, ROUND ROOMS ══ */
+      /* his: "The rowboat doesn't work - the screen just glitches; my user got stuck in between screens back and forth. Make sure no door can do that." */
       {
         const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -3873,13 +3325,7 @@ const server = http.createServer((req, res) => {
         const cr = code(rd('checker_room.gd')), hm = code(rd('home.gd')), mx = code(rd('maxwell_home.gd'));
         const num = (src, n) => { const m = new RegExp('const ' + n + ' := (-?[\\d.]+)').exec(src); return m ? +m[1] : NaN; };
 
-        /* ── the rowboat, and every other door ──────────────────────────────────────────
-           ⛑⛑⛑ THE BUG WAS AN Area2D ANSWERING TOO EARLY. `_mat.overlaps_body(you)` is false on
-           the frame a scene loads, because the overlap list is built by the physics step — so
-           `_armed` was set by "you are not on the mat" for a player plainly standing on it, and
-           the door fired again on the next frame. Measured: town → sea → town → sea, a scene
-           change every TWO physics frames, for ever. Both ends of the crossing land you on the
-           mat ON PURPOSE (their own comments say so), so both ends bounced. */
+        /* ══ the rowboat, and every other door ══ */
         ok(!/overlaps_body/.test(dr) && !/_mat: Area2D/.test(dr),
           '⛑⛑ no door asks an Area2D whether you are standing on it',
           'an Area2D\'s overlap list is EMPTY on the frame a scene loads — it answers "no" and arms the door');
@@ -3888,10 +3334,7 @@ const server = http.createServer((req, res) => {
            && /distance_squared_to\(near\) <= r \* r/.test(om) && /_you\.radius/.test(om),
           '…it MEASURES it — the mat is a rect, you are a circle, and the answer is true on frame zero');
         const pp2 = fnGd(dr, '_physics_process');
-        /* ⚠⚠ THE HYSTERESIS IS INSET, NOT GROWN, and the difference is a doorway that opens. A
-           band grown around the mat is a ring you cross in the ticks a scene spends settling:
-           land inside it and the door never arms, which is a door that refuses. Probed twice —
-           once at the checker's own front step, once at Maxwell's. */
+        /* ⚠⚠ THE HYSTERESIS IS INSET, NOT GROWN, and the difference is a doorway that opens. */
         ok(/if not _on_mat\(at, 0\.0\):\s*\n\s*_armed = true/.test(pp2)
            && /_on_mat\(at, -ARM_INSET\)/.test(pp2) && num(dr, 'ARM_INSET') > 0,
           '⭐ arming is "off the mat" and firing is "properly ON it" — the dead band is inside the doorstep',
@@ -3901,20 +3344,11 @@ const server = http.createServer((req, res) => {
           '⭐ …and a door neither fires NOR ARMS for a tick or two after a scene loads',
           '⛑ doors are furnished before the player, so on tick one they read a position the clamp has not seen; '
           + 'and every tick after that is 9 units you walk unseen');
-        /* ⛑⛑ THE SECOND BOUNCE THIS BATCH FOUND. The rooms' way out had no return_at, so
-           TownDoor's fallback put you a doorway-height BELOW the doorway — outside a round
-           floor. The clamp dragged you onto the mat from off it, which is the one move that
-           arms a door, and town → home → town ran every 25 frames. */
+        /* ⛑⛑ THE SECOND BOUNCE THIS BATCH FOUND. */
         ok(/out\.return_at = Vector2\(MID\.x, MID\.y \+ RY - [\d.]+\)/.test(cr),
           '…and the checker rooms say where you come back IN, rather than leaving it to a fallback',
           'a landing point a clamp has to rescue is a landing point that arms the door you arrived by');
-        /* ⚠⚠ THE OTHER HALF, AND IT IS WHY THE FIX HAD TO GO IN door.gd: the two ends of the
-           crossing and both checker doors deliberately put you down INSIDE their own mat. */
-        /* ⚠ DERIVED, NOT TYPED. Section 6c already proves each tie-up sits on its own dock and
-           inside the sailable water; what this adds is the half the door cares about — the
-           point you are put down on is the point the door's own mat covers, at all four ends.
-           ⛑ The crossing halved on 2026-09-24 and three of these four numbers moved; a literal
-           here would have gone red for the wrong reason and been "fixed" by retyping it. */
+        /* ⚠⚠ THE OTHER HALF, AND IT IS WHY THE FIX HAD TO GO IN door.gd. */
         const onSelf = (src, tie, dock) => {
           const t = /const ([A-Z_]+_TIE) := Vector2\((-?[\d.]+), (-?[\d.]+)\)/g;
           const a = [...src.matchAll(t)].find((m) => m[1] === tie);
@@ -3929,10 +3363,8 @@ const server = http.createServer((req, res) => {
            && /boat\.return_at = Vector2\(930\.0, 900\.0\)/.test(tw),
           '…and all four landing points still put you down IN the boat you arrived in',
           'that is the design; what was broken was the door reading it wrong');
-        /* ⛑ HALF THE WATER, WHOLE DOCKS (2026-09-24, his: *"shorten the distance to shogi
-           island by rowboat in half"*). The docks are drawn by the same plank_dock() as the
-           town's jetty and the island's landing, so shrinking one here would quietly stop the
-           two ends of the trip matching the two places they join. */
+        /* ⛑ HALF THE WATER, WHOLE DOCKS (2026-09-24. */
+        /* his: "shorten the distance to shogi island by rowboat in half" */
         const tieA = /const TOWN_TIE := Vector2\((-?[\d.]+),/.exec(seaSrc);
         const tieB = /const ISLE_TIE := Vector2\((-?[\d.]+),/.exec(seaSrc);
         const dockW = /const TOWN_DOCK := Rect2\(-?[\d.]+, -?[\d.]+, ([\d.]+),/.exec(seaSrc);
@@ -3941,7 +3373,7 @@ const server = http.createServer((req, res) => {
           '⭐ the crossing is about 1,400 units of water, and the docks are still 230 across',
           gap + ' units tie to tie, dock ' + (dockW ? dockW[1] : '?'));
 
-        /* ── the dogs' hours ────────────────────────────────────────────────────────── */
+        /* ══ the dogs' hours ══ */
         const inAt = /const IN_AT := (\d+) \* 60/.exec(dg), outAt = /const OUT_AT := (\d+) \* 60/.exec(dg);
         const slop = /const SLOP := (\d+)/.exec(dg);
         ok(inAt && +inAt[1] === 20 && outAt && +outAt[1] === 6 && slop && +slop[1] === 15,
@@ -3952,8 +3384,7 @@ const server = http.createServer((req, res) => {
            && /CURFEW if who_ == "Princess" else IN_AT \+ _slop/.test(dg),
           '⭐ …and hers is 9:30 ON THE DOT, with no slop on it',
           'his words: "goes home no matter where I am at 9:30 on the dot"');
-        /* ⚠⚠ SALTED, NEVER randf(). This is asked every frame by every dog in two scenes; a
-           rolled answer is three dogs flickering through a door while you stand watching. */
+        /* ⚠⚠ SALTED, NEVER randf(). */
         ok(/posmod\(hash\("dog\|%s\|%s\|%d" % \[who_, tag, night\]\), SLOP \* 2 \+ 1\) - SLOP/.test(dg)
            && !/rand/.test(fnGd(dg, 'indoors')) && !/rand/.test(fnGd(dg, '_visiting'))
            && !/rand/.test(fnGd(dg, '_slop')),
@@ -3962,11 +3393,10 @@ const server = http.createServer((req, res) => {
            && /if who_ == "Princess":\s*\n\s*return false/.test(fnGd(dg, '_visiting')),
           '⭐ they drop in during the day too, and she does not  (she is at your heel all day)',
           'a second copy of her asleep at home while she walks beside you is two dogs');
-        /* ⚠ THE NIGHT A MINUTE BELONGS TO IS THE DATE OF ITS EVENING, or a dog that went in at
-           8:07 comes out again at one minute past midnight on a different roll. */
+        /* ⚠ THE NIGHT A MINUTE BELONGS TO IS THE DATE OF ITS EVENING. */
         ok(/var out_m: int = OUT_AT \+ _slop\(who_, "out", doy - 1\)/.test(dg),
           '…and the morning reads the slop the night went to sleep on');
-        /* ⭐⭐ ONE DOG, TWO NODES, and the clock picks. Nothing spawns and nothing teleports. */
+        /* ⭐⭐ ONE DOG, TWO NODES, and the clock picks. */
         const duty = fnGd(dg, '_on_duty');
         ok(/return TownDog\.indoors\(who\) == at_home/.test(duty)
            && /if at_home and companion:\s*\n\s*return true/.test(duty),
@@ -3978,18 +3408,14 @@ const server = http.createServer((req, res) => {
         ok(/if visible and door_home != Vector2\.ZERO and not _walk_to\(door_home/.test(fnGd(dg, '_process'))
            && /dog\.door_home = HOME_AT/.test(tw) && /d\.door_home = HOME_AT/.test(tw),
           '⭐ she WALKS home at half nine, she does not blink out — and every lane dog uses the door with the cushions behind it');
-        /* ⛑ CROCKETT WAS A PLAIN CHALLENGER AND GOT TownNPC's PATROL FOR FREE. A TownDog
-           overrides _process, so it is lost — silently, and he simply stands still. */
+        /* ⛑ CROCKETT WAS A PLAIN CHALLENGER AND GOT TownNPC's PATROL FOR FREE. */
         ok(/elif patrol != Vector2\.ZERO:\s*\n\s*sit = _pace\(delta\)/.test(dg)
            && /_lane_dog\("Crockett", HOME_AT \+ Vector2\(-60\.0, 130\.0\)\)\.patrol = Vector2\(90\.0, 0\.0\)/.test(tw),
           '…and Crockett still paces the lane after becoming a dog');
         ok(/d\.solid = false/.test(hm) && /dog\.solid = not dog\.companion/.test(dg),
           '⚠ the lane dogs stay solid and the room\'s do not  (a 1000-unit floor with two invisible-edged walls on it)');
 
-        /* ── round rooms ──────────────────────────────────────────────────────────────
-           ⚠⚠ TWO SOURCES, ONE SHAPE. FLOOR is the disc's bounding box and stays a literal
-           because everything that only wants "how big is the room" reads it; this is what
-           keeps it from drifting off the curve the walking and the painting use. */
+        /* ══ round rooms ══ */
         const fl = /const FLOOR := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(cr);
         const mid = /const MID := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(cr);
         const RX = num(cr, 'RX'), RY = num(cr, 'RY'), WT = num(cr, 'WALL_T');
@@ -4006,9 +3432,7 @@ const server = http.createServer((req, res) => {
         ok(/static func half_at\(y: float\)/.test(cr) && /static func rim_y\(x: float\)/.test(cr)
            && /var half := CheckerRoom\.half_at\(y\)/.test(cr),
           '…and the planks stop where the floor does, off the ONE curve everything else reads');
-        /* ⚠⚠ A ROUND ROOM HAS NO CORNERS, so every stick of furniture in both checkers has to
-           be re-checked against the ellipse — this is the whole reason the disc is 500×278 and
-           not the old rect's 380×205. Derived from the _solid boxes the rooms already declare. */
+        /* ⚠⚠ A ROUND ROOM HAS NO CORNERS. */
         const ell = (x, y) => Math.sqrt(Math.pow((x - M.x) / RX, 2) + Math.pow((y - M.y) / RY, 2));
         const outside = [];
         for (const [name_, src] of [['home.gd', hm], ['maxwell_home.gd', mx]]) {
@@ -4031,7 +3455,7 @@ const server = http.createServer((req, res) => {
           '…and nothing either room stands on the floor sticks out through the round wall',
           outside.length ? [...new Set(outside)].join(' ') : 'every solid in both checkers is inside the disc');
 
-        /* ── you cannot walk on somebody else's roof ──────────────────────────────────── */
+        /* ══ you cannot walk on somebody else's roof ══ */
         const shell = tw.slice(tw.indexOf('class CheckerShell extends Node2D:'),
                                tw.indexOf('func _furnish_square_extras'));
         ok(/ConvexPolygonShape2D\.new\(\)/.test(shell) && /StaticBody2D\.new\(\)/.test(shell)
@@ -4046,8 +3470,7 @@ const server = http.createServer((req, res) => {
           .map((m) => [+m[1], +m[2]]);
         ok(lots.length === 6, '⛑ …and there are six of them  (his: "remove three of them")',
           lots.length + ' lots');
-        /* ⚠⚠ SOLID NOW, so a lot that overlaps a road is a road with a house parked in it. The
-           two the town cannot lose are the haul road and the lane to the two front doors. */
+        /* ⚠⚠ SOLID NOW, so a lot that overlaps a road is a road with a house parked in it. */
         const trail = num(tw, 'TRAIL_X'), WIDE = 230;
         const homeAt = /const HOME_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(tw);
         const maxAt = /const MAX_HOME_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(tw);
@@ -4058,12 +3481,10 @@ const server = http.createServer((req, res) => {
         ok(blocks.length === 0, '…and not one of them stands in the haul road or in the lane',
           blocks.map((b) => b.join(',')).join(' · ') || 'the roads are clear');
 
-        /* ── the Academy takes you in any order ──────────────────────────────────────── */
+        /* ══ the Academy takes you in any order ══ */
         const acad = rd('academy.gd');
         const page = fs.readFileSync(path.join(ROOT, 'academy.md'), 'utf8');
-        /* ⚠ WHAT SHIPS, NOT WHAT IS EXPLAINED. Both files carry a comment quoting the line they
-           used to say, which is exactly the history worth keeping — so the comments come off
-           before the search, or the check fires on its own footnote. */
+        /* ⚠ WHAT SHIPS, NOT WHAT IS EXPLAINED. */
         const shown = code(acad) + page.replace(/\{%-?\s*comment[\s\S]*?endcomment\s*-?%\}/g, '');
         ok(!/nobody starts in the middle|Start at the first one/i.test(shown),
           '⭐ nothing in the Academy tells you to start at the first lesson',
@@ -4072,8 +3493,7 @@ const server = http.createServer((req, res) => {
            && /<h2 class="ac-h2">The Lessons<\/h2>/.test(page),
           '…and BOTH doors say so — the room in the town and the page on the site',
           'the same sentence lived in two files and only one of them would have been found');
-        /* ⚠ THE THIRD CARD WAS THE ONLY ONE WITHOUT A "Start", which on a page of three is a
-           door that reads shut. It keeps the dev pill; what it gains is the way in. */
+        /* ⚠ THE THIRD CARD WAS THE ONLY ONE WITHOUT A "Start". */
         const l3 = page.slice(page.indexOf('/academy/opening-trainer/'), page.indexOf('</div>', page.indexOf('/academy/opening-trainer/')));
         ok(/ac-lesson-dev/.test(l3) && /ac-lesson-state/.test(l3)
            && /\.ac-lesson-dev \+ \.ac-lesson-state \{ margin-left: 0; \}/.test(page),
