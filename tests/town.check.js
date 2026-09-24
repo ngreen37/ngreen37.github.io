@@ -1761,9 +1761,14 @@ const server = http.createServer((req, res) => {
         '…keeping her seat, and never randomly missing  (a companion who vanishes reads as a bug)');
       ok(/_follow = GameState\.hearts_for\(who\) > 0/.test(dog),
         '…and she does not follow a stranger');
-      /* ⭐ she says only true things, and every one is read off state that already exists */
+      /* ⭐ she says only true things, and every one is read off state that already exists
+         ⚠⚠ THE BAN IS ON WHAT SHE SAYS, NOT ON WHAT SHE DOES. This was a file-wide `!/randf/`
+         and it was a PROXY: it went red on 2026-09-23 for the indoor amble rolling which bed to
+         lie down on, which is a dog rather than a claim. The three functions that build a
+         sentence are the ones that were ever in danger of inventing something. */
       ok(/npc\.away\(\)/.test(dog) && /GameState\.claimable\(\)/.test(dog)
-        && /GameState\.island_open/.test(dog) && !/randf/.test(dog),
+        && /GameState\.island_open/.test(dog)
+        && !['_find', '_who_is_out', '_first_owed'].some((f) => /rand/.test(fnGd(dog, f))),
         '⭐ every word she says is TRUE — who is out, what is owed, whether the boat is yours',
         '⚠ a companion who says "I smell something" and means nothing is one you stop asking');
       ok(/func away\(\) -> bool:/.test(npc),
@@ -3428,6 +3433,106 @@ const server = http.createServer((req, res) => {
           && /id === 'academy-bootcamp'/.test(PROF) && /pjcc\.academy\.bootcamp/.test(fn(PROF, 'townScore') || PROF)
           && /not \(dog\.with_you\(\) or dog\.at_home\)/.test(hb),
           '…she is shown the furthest lesson YOU reached, and only when she is with you');
+
+        /* ══ #8b · THREE BEDS, AND SHE GOES ROUND THEM ═══════════════════════════===
+           2026-09-23, Nate: *"can you give a bed for crockett and argus inside my home too?
+           And in Maxwell's, there is a bed for princess when we walk in. Princess slowly goes
+           to the beds, or she slowly goes to the table to learn chess."* */
+        /* ⚠⚠ dogG AND townG ARE THE COMMENT-STRIPPED COPIES from the block above, and that
+           is deliberate: a check that a comment can satisfy is not a check. */
+        const bedRoom = rd('checker_room.gd');
+        const bedMax = rd('maxwell_home.gd');
+        /* ⭐ ONE BED DRAWING, IN THE SHELL BOTH ROOMS EXTEND. A cushion in each room file is
+           two palettes, and the second is the shade left behind the next time a coat moves. */
+        ok(/class DogBed extends Node2D:/.test(bedRoom)
+           && !/class DogBed/.test(homeG) && !/class DogBed/.test(bedMax)
+           && /CheckerRoom\.DogBed\.new\(\)/.test(homeG) && /CheckerRoom\.DogBed\.new\(\)/.test(bedMax),
+          '⭐ a dog bed is one drawing, in the shell both checkers are built from');
+        ok(/TownDog\.paint_bed\(self, who\)/.test(bedRoom) && /static func paint_bed\(/.test(dogG)
+           && /\(c\[0\] as Color\)\.darkened\(/.test(fnGd(dogG, 'paint_bed'))
+           && /c\[2\]/.test(fnGd(dogG, 'paint_bed')),
+          '\u2026painted out of TownDog.COATS \u2014 whose bed it is can be SEEN, in coat and collar',
+          'a hex typed in a room file is the shade that survives the next repaint of a dog');
+        const bedsFor = [...homeG.matchAll(/\[([A-Z_]+_BED_AT), "(\w+)"\]/g)].map((m) => m[2]);
+        ok(bedsFor.join(' ') === 'Princess Crockett Argus',
+          '\u2026and all three dogs have one in Nate\u2019s checker', bedsFor.join(', ') || 'none');
+        /* ⚠⚠ MAXWELL'S IS A CUSHION, NOT A BED YOU SLEEP IN. One TownBed in the game, at
+           Nate's, or a day could end in somebody else's house \u2014 see the 09-22 rule above. */
+        ok(/cushion\.who = "Princess"/.test(bedMax) && !/TownBed/.test(code(bedMax)),
+          '\u2026with a fourth in Maxwell\u2019s, empty, and still not a bed a day can end in');
+
+        /* ⚠⚠ THE HAUNTS ARE DERIVED FROM THE FURNITURE, NOT TYPED. Four literal Vector2s is
+           four numbers that stay put the day a bed moves \u2014 and a dog walking to where a bed
+           used to be is the bug nobody reports, because she looks perfectly fine doing it. */
+        const hm2 = /dog\.haunts = PackedVector2Array\(\[([\s\S]*?)\]\)/.exec(homeG);
+        /* ⚠ SPLIT ON LINES, NOT ON COMMAS — `Vector2(0.0, -6.0)` has one of its own, and the
+           first draft of this read four haunts as eight half-expressions and failed on all of them. */
+        const legs = hm2
+          ? hm2[1].split('\n').map((l) => l.trim().replace(/,$/, '')).filter(Boolean) : [];
+        ok(legs.length === 4 && legs.every((l) => /^[A-Z_]+_AT \+ Vector2\(/.test(l)),
+          '⭐ she has four places to be, every one read off the furniture that is there',
+          legs.join(' \u00b7 ') || 'no haunts');
+        ok(legs.filter((l) => /BED_AT \+/.test(l)).length === 3
+           && legs.some((l) => /^BOARD_AT \+/.test(l)),
+          '\u2026the three beds and the board  (his: "the beds, or \u2026 the table to learn chess")');
+        const v2h = (src, name) => {
+          const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
+          return m ? { x: +m[1], y: +m[2] } : null;
+        };
+        const fm = /const FLOOR := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(bedRoom);
+        const floor = fm ? { x: +fm[1], y: +fm[2], w: +fm[3], h: +fm[4] } : null;
+        const spotOf = (leg) => {
+          const m = /^([A-Z_]+_AT) \+ Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(leg);
+          const base = m && v2h(homeG, m[1]);
+          return base ? { x: base.x + +m[2], y: base.y + +m[3] } : null;
+        };
+        const HER = 22;                                  // TownDog.radius_body
+        const places = legs.map(spotOf);
+        const outside = places.filter((q) => !q || !floor
+          || q.x - HER < floor.x || q.x + HER > floor.x + floor.w
+          || q.y - HER < floor.y || q.y + HER > floor.y + floor.h).length;
+        ok(!!floor && outside === 0,
+          '\u2026and every one is a place she fits, inside the room\u2019s own floor',
+          outside + ' haunts outside CheckerRoom.FLOOR');
+        /* ⚠⚠ BESIDE THE TABLE, NOT IN IT. The board is solid and scaled 1.8; a haunt inside
+           its box is a dog walking into a table leg and shivering there till the dwell runs out. */
+        const bs = /_solid\(board, Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/.exec(homeG);
+        const sc = +(/board\.scale = Vector2\(([\d.]+),/.exec(homeG) || [0, 1])[1];
+        const bAt = v2h(homeG, 'BOARD_AT');
+        const box = bs && bAt ? { x: bAt.x + +bs[1] * sc, y: bAt.y + +bs[2] * sc,
+          w: +bs[3] * sc, h: +bs[4] * sc } : null;
+        const inBox = places.filter((q) => q && box && q.x > box.x - HER && q.x < box.x + box.w + HER
+          && q.y > box.y - HER && q.y < box.y + box.h + HER).length;
+        ok(!!box && inBox === 0,
+          '\u2026and the table one is BESIDE the table, not standing inside it',
+          inBox + ' haunts inside the board\u2019s solid box');
+
+        /* ══ SLOWLY, WHICH IS A DIFFERENT NUMBER FROM HER FOLLOW SPEED ═════════===== */
+        const amble = +(/const AMBLE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
+        const trot = +(/const TROT := ([\d.]+)/.exec(dogG) || [0, 0])[1];
+        ok(amble > 0 && trot > 0 && amble < trot * 0.3,
+          '⭐ she AMBLES indoors \u2014 a fraction of the speed she catches you up at',
+          amble + ' u/s against a trot of ' + trot);
+        ok(/var speed: float = pace if pace > 0\.0 else TROT \* \(1\.6 if d > RUN_AT/.test(dogG),
+          '\u2026and an amble never breaks into a run, the way the catch-up gait does');
+        const am = fnGd(dogG, '_amble');
+        ok(/if not _walk_to\(haunts\[_haunt\], [\d.]+, delta, AMBLE\):\s*\n\s*return false/.test(am)
+           && /_dwell -= delta/.test((am.split('return false')[1] || '')),
+          '\u2026and the dwell counts down only once she has ARRIVED',
+          'ticking it while she walks ends a long haul in her turning round on the spot');
+        ok(/_haunt = \(_haunt \+ 1 \+ randi\(\) % \(haunts\.size\(\) - 1\)\) % haunts\.size\(\)/.test(am),
+          '\u2026and she never picks the haunt she is already sitting on',
+          'sitting through two dwells is indistinguishable from being stuck');
+        /* ⚠⚠ EMPTY IS THE OLD BEHAVIOR EXACTLY. Every dog outdoors has no haunts and must go
+           on standing where it stands \u2014 this branch is what makes the whole thing additive. */
+        ok(/haunts\.is_empty\(\)/.test(dogG) && !/haunts/.test(townG),
+          '\u2026while a dog with no haunts is the dog she has always been',
+          'nothing outdoors sets them');
+        /* ⚠⚠ THE BOB IS PACED BY DISTANCE. On a clock it is 2.2 bobs a second at every speed,
+           which at an amble is a dog vibrating. Same rule as the player's footstep. */
+        ok(/_gait \+= step/.test(dogG) && /_bob = sin\(_gait \/ [\d.]+\) \* 2\.0/.test(dogG)
+           && !/_bob = sin\(_t \*/.test(dogG),
+          '\u2026and her gait is paced by DISTANCE, so a slow walk looks slow');
       }
       /* ══ 36 · 2026-09-21 — HIS BATCH: WALK2, WALK-IN DOORS, SOLID TOWN, HOME, THE MOVE ═══════
          Each check below names the rule it guards and was mutated red once. The walking itself
