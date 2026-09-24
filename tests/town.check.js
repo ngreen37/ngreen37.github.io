@@ -3910,14 +3910,36 @@ const server = http.createServer((req, res) => {
           'a landing point a clamp has to rescue is a landing point that arms the door you arrived by');
         /* ⚠⚠ THE OTHER HALF, AND IT IS WHY THE FIX HAD TO GO IN door.gd: the two ends of the
            crossing and both checker doors deliberately put you down INSIDE their own mat. */
-        const lands = [
-          ['sea.gd', /const TOWN_TIE := Vector2\(-1420\.0, 0\.0\)/],
-          ['sea.gd', /const ISLE_TIE := Vector2\(1420\.0, 0\.0\)/],
-          ['island.gd', /const MOORING := Vector2\(0\.0, 398\.0\)/],
-        ];
-        ok(lands.every(([f, re]) => re.test(rd(f))) && /boat\.return_at = Vector2\(930\.0, 900\.0\)/.test(tw),
+        /* ⚠ DERIVED, NOT TYPED. Section 6c already proves each tie-up sits on its own dock and
+           inside the sailable water; what this adds is the half the door cares about — the
+           point you are put down on is the point the door's own mat covers, at all four ends.
+           ⛑ The crossing halved on 2026-09-24 and three of these four numbers moved; a literal
+           here would have gone red for the wrong reason and been "fixed" by retyping it. */
+        const onSelf = (src, tie, dock) => {
+          const t = /const ([A-Z_]+_TIE) := Vector2\((-?[\d.]+), (-?[\d.]+)\)/g;
+          const a = [...src.matchAll(t)].find((m) => m[1] === tie);
+          const d = new RegExp('const ' + dock + ' := Rect2\\((-?[\\d.]+), (-?[\\d.]+), ([\\d.]+), ([\\d.]+)\\)').exec(src);
+          if (!a || !d) return false;
+          return +a[2] >= +d[1] && +a[2] <= +d[1] + +d[3]
+              && +a[3] >= +d[2] && +a[3] <= +d[2] + +d[4];
+        };
+        const seaSrc = rd('sea.gd');
+        ok(onSelf(seaSrc, 'TOWN_TIE', 'TOWN_DOCK') && onSelf(seaSrc, 'ISLE_TIE', 'ISLE_DOCK')
+           && /const MOORING := Vector2\(0\.0, 398\.0\)/.test(rd('island.gd'))
+           && /boat\.return_at = Vector2\(930\.0, 900\.0\)/.test(tw),
           '…and all four landing points still put you down IN the boat you arrived in',
           'that is the design; what was broken was the door reading it wrong');
+        /* ⛑ HALF THE WATER, WHOLE DOCKS (2026-09-24, his: *"shorten the distance to shogi
+           island by rowboat in half"*). The docks are drawn by the same plank_dock() as the
+           town's jetty and the island's landing, so shrinking one here would quietly stop the
+           two ends of the trip matching the two places they join. */
+        const tieA = /const TOWN_TIE := Vector2\((-?[\d.]+),/.exec(seaSrc);
+        const tieB = /const ISLE_TIE := Vector2\((-?[\d.]+),/.exec(seaSrc);
+        const dockW = /const TOWN_DOCK := Rect2\(-?[\d.]+, -?[\d.]+, ([\d.]+),/.exec(seaSrc);
+        const gap = tieA && tieB ? +tieB[1] - +tieA[1] : 0;
+        ok(gap > 1200 && gap < 1700 && dockW && +dockW[1] === 230,
+          '⭐ the crossing is about 1,400 units of water, and the docks are still 230 across',
+          gap + ' units tie to tie, dock ' + (dockW ? dockW[1] : '?'));
 
         /* ── the dogs' hours ────────────────────────────────────────────────────────── */
         const inAt = /const IN_AT := (\d+) \* 60/.exec(dg), outAt = /const OUT_AT := (\d+) \* 60/.exec(dg);
