@@ -49,7 +49,20 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
   <a class="ac-cta" id="ac-cta" href="{{ '/academy/bootcamp/' | relative_url }}">Start Lesson 1 — Auston's Bootcamp ▸</a>
 </div>
 
-<h2 class="ac-h2">The Path</h2>
+{%- comment -%} ⛑ "THE PATH" WAS A LADDER AND NOTHING WAS EVER LOCKED (2026-09-24, Nate:
+     *"in the academy, allow them to pick any lesson they wish to (play notation blitz right
+     away, for example). Same with the website."*).
+
+     ⚠⚠ THERE WAS NO GATE IN THE CODE — all three cards have always been plain links and all
+     three pages have always opened. What said "first one first" was the WORDS and the shape:
+     a heading called The Path, 01/02/03 down the left, one big CTA pointing at Lesson 1, and
+     Lesson 3 the only card with no "Start" on it. So the fix is the wording, the third card's
+     state, and the Godot noticeboard that repeated the same line inside Checker Town
+     (academy.gd). ⚠ THE CTA STILL POINTS AT LESSON 1 — a beginner with no idea where to start
+     is who it is for, and the line under the heading is what tells everybody else they can
+     ignore it. {%- endcomment -%}
+<h2 class="ac-h2">The Lessons</h2>
+<p class="ac-any">Take them in any order — nothing here is locked. If Notation Blitz is what you came for, start there.</p>
 <div class="ac-lessons">
 
   <a class="ac-lesson ac-lesson--open" href="{{ '/academy/bootcamp/' | relative_url }}">
@@ -105,6 +118,7 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
       <small>The Pirc Defense as Black — walk into the line, then play it out.</small>
     </span>
     <span class="ac-lesson-dev">In Dev</span>
+    <span class="ac-lesson-state">Start ▸</span>
   </a>
 
 </div>
@@ -198,6 +212,8 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
 /* ── The path ─────────────────────────────────────────────────────────────── */
 .ac-h2 { color: #ffb347; margin: 28px 0 10px; font-size: 1.15rem; }
 .ac-h2--soft { color: #8fae94; font-size: 1rem; margin-top: 30px; }
+/* the line that says the numbers are an order, not a queue */
+.ac-any { max-width: 640px; margin: -4px 0 12px; color: #8fae94; font-size: 0.88rem; line-height: 1.55; }
 .ac-lessons { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
 .ac-lesson { display: flex; align-items: center; gap: 14px; padding: 13px var(--space-4); text-decoration: none;  /* 16px = --space-4 exact; 13px + 14px gap stay literal */
   background: rgba(23,42,30,0.7); border: 1px solid #2c4636;
@@ -239,7 +255,11 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
   .ac-lesson-n     { order: 1; }
   .ac-lesson-ico   { order: 2; }
   .ac-lesson-state,
+  .ac-lesson-dev,
   .ac-soon         { order: 3; margin-left: auto; }
+  /* ⚠ ONLY THE FIRST OF THE THREE PUSHES. Lesson 3 carries a dev pill AND a Start, and two
+     `margin-left:auto` in a row throws the whole gap between them. */
+  .ac-lesson-dev + .ac-lesson-state { margin-left: 0; }
   .ac-lesson-main  { order: 4; flex: 1 1 100%; }
 }
 

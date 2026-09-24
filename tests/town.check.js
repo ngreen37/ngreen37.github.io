@@ -432,7 +432,7 @@ const server = http.createServer((req, res) => {
          gates, and she still owns the c-bishop. Both halves, or the spelling change would have
          quietly taken her off the map. */
       ok(/var dog := TownDog\.princess\(\)/.test(town) && /dog\.position = HALL_AT \+/.test(town)
-         && /dog\.key = "princess"/.test(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8')),
+         && /"Princess": \{ "key": "princess"/.test(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8')),
         '…and Princess stands outside the Assembly she gates  (built once, in dog.gd — the house has her too)');
       /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once */
       const yml = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
@@ -1750,7 +1750,7 @@ const server = http.createServer((req, res) => {
       const FTD = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_space_run.html'), 'utf8');
       const pmd = fs.readFileSync(path.join(ROOT, '_characters/princess.md'), 'utf8');
       ok(/function updatePrincess\(/.test(FTD) && /a dog who can learn/.test(pmd)
-        && /dog\.who = "Princess"/.test(dog),
+        && /static func princess\(\) -> TownDog:\s*\n\s*return TownDog\.of\("Princess"\)/.test(dog),
         '…and she is PRINCESS, because Follow the Dog is her game',
         '⚑ Crockett is the other dog and his file says "always around" — one word moves it');
       /* ⚠⚠ ANCHORED TO THE END OF THE LINE. `0.0` is a PREFIX of `0.09`, so the first draft
@@ -1758,10 +1758,17 @@ const server = http.createServer((req, res) => {
          `-33`, which this file has now had twice. ⚠ AND `$` IS NOT THE ANCHOR TO REACH FOR:
          the line carries a trailing comment, so end-of-line failed on the truth. A lookahead
          for a digit is the one that asks the real question. [[green-must-name-what-ran]] */
-      ok(/dog\.elo = 2100/.test(dog) && /dog\.away_chance = 0\.0(?!\d)/.test(dog),
+      ok(/"Princess": \{ "key": "princess", "elo": 2100/.test(dog) && /dog\.away_chance = 0\.0(?!\d)/.test(dog),
         '…keeping her seat, and never randomly missing  (a companion who vanishes reads as a bug)');
       ok(/_follow = GameState\.hearts_for\(who\) > 0/.test(dog),
         '…and she does not follow a stranger');
+      /* ⛑⛑ AND SHE IS THE ONLY ONE WHO FOLLOWS (2026-09-24). Crockett and Argus became TownDogs
+         the day the house grew beds for them, and everything that is HERS — the nose, the dig,
+         the water nights, the half-nine curfew — had to stop being theirs in the same breath. */
+      ok(/_follow = GameState\.hearts_for\(who\) > 0 and not at_home and companion/.test(dog)
+         && /if not companion:\s*\n\s*return super\(\)/.test(fnGd(dog, 'menu'))
+         && /"companion": true/.test(dog) && (dog.match(/"companion": false/g) || []).length === 2,
+        '…and she is the ONLY one who does  (the other two are dogs with her legs and none of her job)');
       /* ⭐ she says only true things, and every one is read off state that already exists
          ⚠⚠ THE BAN IS ON WHAT SHE SAYS, NOT ON WHAT SHE DOES. This was a file-wide `!/randf/`
          and it was a PROXY: it went red on 2026-09-23 for the indoor amble rolling which bed to
@@ -3303,15 +3310,26 @@ const server = http.createServer((req, res) => {
         ok(/c\.animal = TownDog\.is_animal\(name_\)/.test(townG) && /_animal = TownDog\.is_animal\(who\)/.test(parkG)
           && /func wears_model\(\) -> bool:\s*\n\s*return not animal/.test(npcG),
           '…the town and the Pavilion both ask it, and an animal never wears a person');
+        /* ⛑⛑ THE THREE OF THEM ARE BUILT IN dog.gd SINCE 2026-09-24, in one CAST table. They
+           used to be two _add_challenger calls in town.gd and one princess() here, which was
+           fine until the house grew beds and each of them had to stand in two scenes. The
+           audit did not change — every string a dog has still has to start with its name —
+           only where it reads them, and now it reads all three in one place. */
+        const castM = /const CAST := \{([\s\S]*?)\n\}/.exec(dogG);
         const spoken = [];
-        for (const a of ['Crockett', 'Argus']) {
-          const at = townG.indexOf('_add_challenger("' + a + '"');
-          const call = at < 0 ? '' : townG.slice(at, townG.indexOf('\n\t_', at + 10) > 0 ? townG.indexOf('\n\t_', at + 10) : at + 2000);
-          strs(call).slice(1).filter((s) => !/^[a-z]+$/.test(s)).forEach((s) => { if (!s.startsWith(a)) spoken.push(a + ': ' + s); });
-          if (at < 0) spoken.push(a + ': NOT FOUND');
+        if (!castM) spoken.push('TownDog.CAST: NOT FOUND');
+        const cast = castM ? castM[1] : '';
+        for (const a of ['Princess', 'Crockett', 'Argus']) {
+          const at = cast.indexOf('"' + a + '": {');
+          if (at < 0) { spoken.push(a + ': NOT IN THE CAST'); continue; }
+          const end = cast.indexOf('\n\t"', at + 4);
+          const row = cast.slice(at, end > 0 ? end : cast.length);
+          /* ⚠ THE KEYS ARE STRINGS TOO — "key", "elo", "lines" and the slug are not lines. */
+          strs(row).filter((s) => / /.test(s)).forEach((s) => {
+            if (!s.startsWith(a)) spoken.push(a + ': ' + s);
+          });
         }
-        const pb = townG.slice(townG.indexOf('dog.lines = ['), townG.indexOf('dog.water ='));
-        strs(pb).forEach((s) => { if (!s.startsWith('Princess')) spoken.push('Princess: ' + s); });
+        const pb = cast;
         for (const a of ['Princess', 'Crockett', 'Argus']) {
           const row = new RegExp('"who": "' + a + '"[^\\n]*\\n[^\\n]*"say": "([^"]*)"').exec(gsG);
           if (!row || !row[1].startsWith(a)) spoken.push(a + ' (Assembly): ' + (row ? row[1] : 'NOT FOUND'));
@@ -3601,9 +3619,28 @@ const server = http.createServer((req, res) => {
            && /_dwell -= delta/.test((am.split('return false')[1] || '')),
           '\u2026and the dwell counts down only once she has ARRIVED',
           'ticking it while she walks ends a long haul in her turning round on the spot');
-        ok(/_haunt = \(_haunt \+ 1 \+ randi\(\) % \(haunts\.size\(\) - 1\)\) % haunts\.size\(\)/.test(am),
-          '\u2026and she never picks the haunt she is already sitting on',
+        /* \u26d1 THE PICK MOVED OUT OF _amble ON 2026-09-24 and grew a second rule with it (his:
+           *"Princess tries any bed when open but the other dogs only use their own"*). The old
+           one-liner rotated to any OTHER haunt; this one rotates to any other haunt THAT IS
+           FREE, and returns -1 when none is. Both halves are checked, because a picker that
+           forgets the first rule is a dog sitting through two dwells. */
+        const ph = fnGd(dogG, '_pick_haunt');
+        ok(/if i != _haunt and _free\(i\):/.test(ph) && /return -1/.test(ph)
+           && /return open\[randi\(\) % open\.size\(\)\]/.test(ph),
+          '\u2026and she never picks the haunt she is already sitting on, nor one with a dog on it',
           'sitting through two dwells is indistinguishable from being stuck');
+        /* \u26a0\u26a0 "ONLY THEIR OWN" IS THE LIST, NOT A BRANCH. Crockett and Argus are handed one haunt
+           each by the room, so the free-check is what having a CHOICE costs and only she pays it
+           \u2014 a one-bed dog walks to its bed and gets it, whoever is lying on it. */
+        const free = fnGd(dogG, '_free');
+        ok(/var choosy := haunts\.size\(\) > 1/.test(am) && /d != self and d\.visible/.test(free)
+           && /_lodger\("Crockett", CROCKETT_BED_AT\)/.test(homeG)
+           && /d\.haunts = PackedVector2Array\(\[at\]\)/.test(homeG),
+          '\u2b50 she takes any cushion that is FREE, and the other two only ever their own',
+          'the owner never yields: one haunt each, so there is nothing for them to check');
+        /* \u26a0 A HIDDEN DOG HOLDS NOTHING. The outdoor copy of Crockett is still a node in this
+           room, standing on his own cushion \u2014 count it and she can never use it at all. */
+        ok(/d\.visible/.test(free), '\u2026and a dog who is out does not hold its bed against her');
         /* ⚠⚠ EMPTY IS THE OLD BEHAVIOR EXACTLY. Every dog outdoors has no haunts and must go
            on standing where it stands \u2014 this branch is what makes the whole thing additive. */
         ok(/haunts\.is_empty\(\)/.test(dogG) && !/haunts/.test(townG),
@@ -3799,6 +3836,11 @@ const server = http.createServer((req, res) => {
           const speaks = new Set();
           [...all.matchAll(/\.who = "([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
           [...all.matchAll(/_add_challenger\("([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
+          /* ⛑ AND THE THREE DOGS, who are built out of TownDog.CAST since 2026-09-24 and so go
+             through neither of the two shapes above. An animal has no LINE to record — but it
+             has a square, a name over its head and a row in the script saying so. */
+          const castRow = /const CAST := \{([\s\S]*?)\n\}/.exec(all);
+          if (castRow) [...castRow[1].matchAll(/^\t"([^"]+)": \{/gm)].forEach((m) => speaks.add(m[1]));
           const slug = (w) => w.toLowerCase().replace(/ /g, '-');
           const listed = new Set([...doc.matchAll(/`([a-z-]+)\.ogg`/g)].map((m) => m[1]));
           const noRow = [...speaks].filter((w) => !listed.has(slug(w)));
@@ -3810,6 +3852,210 @@ const server = http.createServer((req, res) => {
         } else {
           ok(false, 'private/docs/VOICE-SCRIPT.md is missing');
         }
+      }
+
+      /* ══ 38 · 2026-09-24 — HIS BATCH: THE ROWBOAT, THE DOGS' HOURS, ROUND ROOMS ═══════════
+         *"The rowboat doesn't work - the screen just glitches; my user got stuck in between
+         screens back and forth. Make sure no door can do that."*
+         *"…the dogs come inside within 15 minutes of 8pm (either side) to within 15 minutes of
+         6am (either side)? Princess stays with me, but goes home no matter where I am at 9:30
+         on the dot. And can they come in randomly throughout the day? Princess tries any bed
+         when open but the other dogs only use their own."*
+         *"Change the insides of the checkers to be round areas instead of rectangular. And
+         user can't walk on top of checkers (and remove three of them)."*
+         Each of these was PROBED in the running game before it was written down: the crossing
+         round trip, the schedule minute by minute, the curfew walk, ninety seconds of her
+         ambling with the other two home, and a physics point query on all six checkers. */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const dr = code(rd('door.gd')), dg = code(rd('dog.gd')), tw = code(rd('town.gd'));
+        const cr = code(rd('checker_room.gd')), hm = code(rd('home.gd')), mx = code(rd('maxwell_home.gd'));
+        const num = (src, n) => { const m = new RegExp('const ' + n + ' := (-?[\\d.]+)').exec(src); return m ? +m[1] : NaN; };
+
+        /* ── the rowboat, and every other door ──────────────────────────────────────────
+           ⛑⛑⛑ THE BUG WAS AN Area2D ANSWERING TOO EARLY. `_mat.overlaps_body(you)` is false on
+           the frame a scene loads, because the overlap list is built by the physics step — so
+           `_armed` was set by "you are not on the mat" for a player plainly standing on it, and
+           the door fired again on the next frame. Measured: town → sea → town → sea, a scene
+           change every TWO physics frames, for ever. Both ends of the crossing land you on the
+           mat ON PURPOSE (their own comments say so), so both ends bounced. */
+        ok(!/overlaps_body/.test(dr) && !/_mat: Area2D/.test(dr),
+          '⛑⛑ no door asks an Area2D whether you are standing on it',
+          'an Area2D\'s overlap list is EMPTY on the frame a scene loads — it answers "no" and arms the door');
+        const om = fnGd(dr, '_on_mat');
+        ok(/clampf\(p\.x, m\.position\.x, m\.end\.x\)/.test(om)
+           && /distance_squared_to\(near\) <= r \* r/.test(om) && /_you\.radius/.test(om),
+          '…it MEASURES it — the mat is a rect, you are a circle, and the answer is true on frame zero');
+        const pp2 = fnGd(dr, '_physics_process');
+        /* ⚠⚠ THE HYSTERESIS IS INSET, NOT GROWN, and the difference is a doorway that opens. A
+           band grown around the mat is a ring you cross in the ticks a scene spends settling:
+           land inside it and the door never arms, which is a door that refuses. Probed twice —
+           once at the checker's own front step, once at Maxwell's. */
+        ok(/if not _on_mat\(at, 0\.0\):\s*\n\s*_armed = true/.test(pp2)
+           && /_on_mat\(at, -ARM_INSET\)/.test(pp2) && num(dr, 'ARM_INSET') > 0,
+          '⭐ arming is "off the mat" and firing is "properly ON it" — the dead band is inside the doorstep',
+          'arming and firing on one shared edge is a door a body can jitter open');
+        const st = /const SETTLE_TICKS := (\d+)/.exec(dr);
+        ok(/if _ticks <= SETTLE_TICKS:\s*\n\s*return/.test(pp2) && st && +st[1] >= 1 && +st[1] <= 4,
+          '⭐ …and a door neither fires NOR ARMS for a tick or two after a scene loads',
+          '⛑ doors are furnished before the player, so on tick one they read a position the clamp has not seen; '
+          + 'and every tick after that is 9 units you walk unseen');
+        /* ⛑⛑ THE SECOND BOUNCE THIS BATCH FOUND. The rooms' way out had no return_at, so
+           TownDoor's fallback put you a doorway-height BELOW the doorway — outside a round
+           floor. The clamp dragged you onto the mat from off it, which is the one move that
+           arms a door, and town → home → town ran every 25 frames. */
+        ok(/out\.return_at = Vector2\(MID\.x, MID\.y \+ RY - [\d.]+\)/.test(cr),
+          '…and the checker rooms say where you come back IN, rather than leaving it to a fallback',
+          'a landing point a clamp has to rescue is a landing point that arms the door you arrived by');
+        /* ⚠⚠ THE OTHER HALF, AND IT IS WHY THE FIX HAD TO GO IN door.gd: the two ends of the
+           crossing and both checker doors deliberately put you down INSIDE their own mat. */
+        const lands = [
+          ['sea.gd', /const TOWN_TIE := Vector2\(-1420\.0, 0\.0\)/],
+          ['sea.gd', /const ISLE_TIE := Vector2\(1420\.0, 0\.0\)/],
+          ['island.gd', /const MOORING := Vector2\(0\.0, 398\.0\)/],
+        ];
+        ok(lands.every(([f, re]) => re.test(rd(f))) && /boat\.return_at = Vector2\(930\.0, 900\.0\)/.test(tw),
+          '…and all four landing points still put you down IN the boat you arrived in',
+          'that is the design; what was broken was the door reading it wrong');
+
+        /* ── the dogs' hours ────────────────────────────────────────────────────────── */
+        const inAt = /const IN_AT := (\d+) \* 60/.exec(dg), outAt = /const OUT_AT := (\d+) \* 60/.exec(dg);
+        const slop = /const SLOP := (\d+)/.exec(dg);
+        ok(inAt && +inAt[1] === 20 && outAt && +outAt[1] === 6 && slop && +slop[1] === 15,
+          '⭐ the dogs come in at eight and go out at six, give or take a quarter of an hour',
+          inAt && outAt && slop ? inAt[1] + ':00 / ' + outAt[1] + ':00 ±' + slop[1] : 'missing');
+        const cur = /const CURFEW := (\d+) \* 60 \+ (\d+)/.exec(dg);
+        ok(cur && +cur[1] === 21 && +cur[2] === 30
+           && /CURFEW if who_ == "Princess" else IN_AT \+ _slop/.test(dg),
+          '⭐ …and hers is 9:30 ON THE DOT, with no slop on it',
+          'his words: "goes home no matter where I am at 9:30 on the dot"');
+        /* ⚠⚠ SALTED, NEVER randf(). This is asked every frame by every dog in two scenes; a
+           rolled answer is three dogs flickering through a door while you stand watching. */
+        ok(/posmod\(hash\("dog\|%s\|%s\|%d" % \[who_, tag, night\]\), SLOP \* 2 \+ 1\) - SLOP/.test(dg)
+           && !/rand/.test(fnGd(dg, 'indoors')) && !/rand/.test(fnGd(dg, '_visiting'))
+           && !/rand/.test(fnGd(dg, '_slop')),
+          '…and the hour a dog keeps is SALTED, so it does not move while you are looking at it');
+        ok(/const DAY_VISITS := \d+/.test(dg) && /const VISIT_MINS := \d+/.test(dg)
+           && /if who_ == "Princess":\s*\n\s*return false/.test(fnGd(dg, '_visiting')),
+          '⭐ they drop in during the day too, and she does not  (she is at your heel all day)',
+          'a second copy of her asleep at home while she walks beside you is two dogs');
+        /* ⚠ THE NIGHT A MINUTE BELONGS TO IS THE DATE OF ITS EVENING, or a dog that went in at
+           8:07 comes out again at one minute past midnight on a different roll. */
+        ok(/var out_m: int = OUT_AT \+ _slop\(who_, "out", doy - 1\)/.test(dg),
+          '…and the morning reads the slop the night went to sleep on');
+        /* ⭐⭐ ONE DOG, TWO NODES, and the clock picks. Nothing spawns and nothing teleports. */
+        const duty = fnGd(dg, '_on_duty');
+        ok(/return TownDog\.indoors\(who\) == at_home/.test(duty)
+           && /if at_home and companion:\s*\n\s*return true/.test(duty),
+          '⭐⭐ the clock decides which copy of a dog is on screen — the lane\'s or the room\'s',
+          '⚠⚠ except HER indoor copy, which is never off: walk in at three in the afternoon and she is there');
+        ok(/_body\.set_deferred\("disabled", true\)/.test(fnGd(dg, '_step_out')),
+          '⚠⚠ …and a dog that has gone indoors takes its body with it',
+          'Crockett is solid and stands beside the only road to two front doors — a hidden solid is a wall nobody can report');
+        ok(/if visible and door_home != Vector2\.ZERO and not _walk_to\(door_home/.test(fnGd(dg, '_process'))
+           && /dog\.door_home = HOME_AT/.test(tw) && /d\.door_home = HOME_AT/.test(tw),
+          '⭐ she WALKS home at half nine, she does not blink out — and every lane dog uses the door with the cushions behind it');
+        /* ⛑ CROCKETT WAS A PLAIN CHALLENGER AND GOT TownNPC's PATROL FOR FREE. A TownDog
+           overrides _process, so it is lost — silently, and he simply stands still. */
+        ok(/elif patrol != Vector2\.ZERO:\s*\n\s*sit = _pace\(delta\)/.test(dg)
+           && /_lane_dog\("Crockett", HOME_AT \+ Vector2\(-60\.0, 130\.0\)\)\.patrol = Vector2\(90\.0, 0\.0\)/.test(tw),
+          '…and Crockett still paces the lane after becoming a dog');
+        ok(/d\.solid = false/.test(hm) && /dog\.solid = not dog\.companion/.test(dg),
+          '⚠ the lane dogs stay solid and the room\'s do not  (a 1000-unit floor with two invisible-edged walls on it)');
+
+        /* ── round rooms ──────────────────────────────────────────────────────────────
+           ⚠⚠ TWO SOURCES, ONE SHAPE. FLOOR is the disc's bounding box and stays a literal
+           because everything that only wants "how big is the room" reads it; this is what
+           keeps it from drifting off the curve the walking and the painting use. */
+        const fl = /const FLOOR := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(cr);
+        const mid = /const MID := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(cr);
+        const RX = num(cr, 'RX'), RY = num(cr, 'RY'), WT = num(cr, 'WALL_T');
+        const M = mid ? { x: +mid[1], y: +mid[2] } : null;
+        ok(fl && M && RX > 0 && RY > 0
+           && +fl[1] === M.x - RX && +fl[2] === M.y - RY && +fl[3] === RX * 2 && +fl[4] === RY * 2,
+          '⭐ the checker rooms are ROUND, and FLOOR is exactly the disc\'s bounding box',
+          fl ? 'FLOOR ' + fl.slice(1).join(',') + ' vs MID ' + (M ? M.x + ',' + M.y : '?') + ' r ' + RX + 'x' + RY : 'no FLOOR');
+        ok(/class Inside extends TownPlayer:/.test(cr) && /pow\(to\.x \/ rx, 2\.0\) \+ pow\(to\.y \/ ry, 2\.0\)/.test(cr)
+           && /func _make_player\(\) -> TownPlayer:\s*\n\s*return Inside\.new\(\)/.test(cr)
+           && !/draw_walls/.test(cr),
+          '⛑⛑ …and the CLAMP is the wall, because a rect wall cannot fence a curve',
+          'the island measured 166 units of walkable ocean off a band of StaticBody2D on the same shape of problem');
+        ok(/static func half_at\(y: float\)/.test(cr) && /static func rim_y\(x: float\)/.test(cr)
+           && /var half := CheckerRoom\.half_at\(y\)/.test(cr),
+          '…and the planks stop where the floor does, off the ONE curve everything else reads');
+        /* ⚠⚠ A ROUND ROOM HAS NO CORNERS, so every stick of furniture in both checkers has to
+           be re-checked against the ellipse — this is the whole reason the disc is 500×278 and
+           not the old rect's 380×205. Derived from the _solid boxes the rooms already declare. */
+        const ell = (x, y) => Math.sqrt(Math.pow((x - M.x) / RX, 2) + Math.pow((y - M.y) / RY, 2));
+        const outside = [];
+        for (const [name_, src] of [['home.gd', hm], ['maxwell_home.gd', mx]]) {
+          for (const m of src.matchAll(/_solid\((\w+), Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/g)) {
+            const av = new RegExp('const ([A-Z_]+) := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)', 'g');
+            let at = null;
+            const want = new RegExp(m[1] + '\\.position = ([A-Z_]+)').exec(src);
+            if (!want) { outside.push(name_ + ':' + m[1] + ' has no position'); continue; }
+            for (const c of src.matchAll(av)) if (c[1] === want[1]) at = { x: +c[2], y: +c[3] };
+            if (!at) { outside.push(name_ + ':' + m[1] + ' has no ' + want[1]); continue; }
+            const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(src) || [0, 1])[1];
+            const corners = [[+m[2], +m[3]], [+m[2] + +m[4], +m[3]],
+                             [+m[2], +m[3] + +m[5]], [+m[2] + +m[4], +m[3] + +m[5]]];
+            for (const [cx, cy] of corners) {
+              if (ell(at.x + cx * sc, at.y + cy * sc) > 1.0) outside.push(name_ + ':' + m[1]);
+            }
+          }
+        }
+        ok(M && outside.length === 0,
+          '…and nothing either room stands on the floor sticks out through the round wall',
+          outside.length ? [...new Set(outside)].join(' ') : 'every solid in both checkers is inside the disc');
+
+        /* ── you cannot walk on somebody else's roof ──────────────────────────────────── */
+        const shell = tw.slice(tw.indexOf('class CheckerShell extends Node2D:'),
+                               tw.indexOf('func _furnish_square_extras'));
+        ok(/ConvexPolygonShape2D\.new\(\)/.test(shell) && /StaticBody2D\.new\(\)/.test(shell)
+           && /cos\(a\) \* d\.x \* 0\.5 \* FILL/.test(shell) && !/solid = false/.test(shell),
+          '⭐ the other people\'s checkers are SOLID, as a disc and not as its box',
+          '⚠ a rect\'s corners are open sand, and sand you cannot walk on is a wall with nothing drawn in it');
+        /* ⚠ CircleShape2D UNDER A SQUASHED NODE does not error — Godot quietly uses one axis. */
+        ok(!/CircleShape2D/.test(shell),
+          '…and not a circle shape under a non-uniform scale, which Godot ignores without saying so');
+        const lots = [...tw.slice(tw.indexOf('func _furnish_neighbors'),
+          tw.indexOf('func _furnish_trees')).matchAll(/Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+          .map((m) => [+m[1], +m[2]]);
+        ok(lots.length === 6, '⛑ …and there are six of them  (his: "remove three of them")',
+          lots.length + ' lots');
+        /* ⚠⚠ SOLID NOW, so a lot that overlaps a road is a road with a house parked in it. The
+           two the town cannot lose are the haul road and the lane to the two front doors. */
+        const trail = num(tw, 'TRAIL_X'), WIDE = 230;
+        const homeAt = /const HOME_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(tw);
+        const maxAt = /const MAX_HOME_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(tw);
+        const blocks = lots.filter(([x, y]) =>
+          (Math.abs(x - trail) < WIDE * 0.5 + 26)
+          || (homeAt && maxAt && Math.abs(y - +homeAt[2]) < WIDE * 0.28
+              && x > Math.min(+maxAt[1], +homeAt[1]) - 40 && x < Math.max(+maxAt[1], +homeAt[1]) + 40));
+        ok(blocks.length === 0, '…and not one of them stands in the haul road or in the lane',
+          blocks.map((b) => b.join(',')).join(' · ') || 'the roads are clear');
+
+        /* ── the Academy takes you in any order ──────────────────────────────────────── */
+        const acad = rd('academy.gd');
+        const page = fs.readFileSync(path.join(ROOT, 'academy.md'), 'utf8');
+        /* ⚠ WHAT SHIPS, NOT WHAT IS EXPLAINED. Both files carry a comment quoting the line they
+           used to say, which is exactly the history worth keeping — so the comments come off
+           before the search, or the check fires on its own footnote. */
+        const shown = code(acad) + page.replace(/\{%-?\s*comment[\s\S]*?endcomment\s*-?%\}/g, '');
+        ok(!/nobody starts in the middle|Start at the first one/i.test(shown),
+          '⭐ nothing in the Academy tells you to start at the first lesson',
+          'his: "allow them to pick any lesson they wish to (play notation blitz right away, for example)"');
+        ok(/None of them is locked/.test(code(acad)) && /nothing here is locked/i.test(page)
+           && /<h2 class="ac-h2">The Lessons<\/h2>/.test(page),
+          '…and BOTH doors say so — the room in the town and the page on the site',
+          'the same sentence lived in two files and only one of them would have been found');
+        /* ⚠ THE THIRD CARD WAS THE ONLY ONE WITHOUT A "Start", which on a page of three is a
+           door that reads shut. It keeps the dev pill; what it gains is the way in. */
+        const l3 = page.slice(page.indexOf('/academy/opening-trainer/'), page.indexOf('</div>', page.indexOf('/academy/opening-trainer/')));
+        ok(/ac-lesson-dev/.test(l3) && /ac-lesson-state/.test(l3)
+           && /\.ac-lesson-dev \+ \.ac-lesson-state \{ margin-left: 0; \}/.test(page),
+          '…and all three cards offer a way in, the third one alongside its In Dev pill');
       }
       }
     } else {
