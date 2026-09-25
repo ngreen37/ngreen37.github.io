@@ -675,8 +675,14 @@ const server = http.createServer((req, res) => {
       /* ⚠⚠ CANON PUTS THEM IN DIFFERENT PLACES AND THE ASK DID NOT. */
       const kmd = fs.readFileSync(path.join(ROOT, '_characters/kaede.md'), 'utf8');
       const mmd = fs.readFileSync(path.join(ROOT, '_characters/matsu.md'), 'utf8');
-      ok(/last_seen:\s*CHECKER TOWN/.test(kmd) && /kaede\.who = "Kaede"/.test(town2),
-        'Kaede is in Checker Town, where her own character file puts her');
+      /* ⛑ SHE IS INSIDE THE ACADEMY SINCE 2026-09-24 (his: "Put Kaede and Robert into the
+         academy building instead of outside"). Still Checker Town, which is what her file
+         says — what changed is which side of the door. ⚠ AND NOT IN town.gd ANY MORE: two
+         copies of a character is two characters. */
+      ok(/last_seen:\s*CHECKER TOWN/.test(kmd) && /kaede\.who = "Kaede"/.test(acad)
+        && !/kaede\.who = "Kaede"/.test(town2),
+        'Kaede is in Checker Town, where her own character file puts her — inside the Academy',
+        'academy.gd places her, town.gd no longer does');
       ok(/last_seen:\s*SHOGI ISLAND/.test(mmd) && /matsu\.who = "Matsu"/.test(isl),
         '…and Matsu is on the island, where his does');
       ok(/matsu\.no_english = true/.test(isl),
@@ -687,7 +693,7 @@ const server = http.createServer((req, res) => {
         && !/const WORDS :=/.test(gs) && !/func learn_word\(/.test(gs),
         'nobody in the town runs a vocabulary drill any more',
         '⚠ SHAPES, NOT THE WORD "teaches_words" — the comment recording the removal says it');
-      const kline = /kaede\.lines = \[([\s\S]*?)\]/.exec(town2);
+      const kline = /kaede\.lines = \[([\s\S]*?)\]/.exec(acad);
       const mline = /matsu\.lines = \[([\s\S]*?)\]/.exec(isl);
       /* ⚠ EVERY LINE, NOT FOUR OF THEM. */
       const kEntries = kline ? (kline[1].match(/"/g) || []).length / 2 : 0;
@@ -1226,6 +1232,29 @@ const server = http.createServer((req, res) => {
         walled.join(', ') || Object.keys(named).length + ' places checked, all outside');
       ok(/func _draw_fences\(\) -> void:/.test(town2) && /_draw_fences\(\)/.test(fnGd(town2, '_draw')),
         '…and the fence is DRAWN, because an invisible wall is a bug you cannot report');
+      /* ⛑⛑ AND NOTHING STANDS ON THE LINE IT DRAWS — 2026-09-24. The check above asks whether a
+         place is INSIDE a fenced rect; this asks whether anything is ON its edge, which is where
+         the rails and the posts actually go. A lot at (-700, 760) had its bottom at y 823 and the
+         south-west fence runs along y 820: the rails went through the house and had done for days.
+         ⚠⚠ NOBODY SAW IT WHILE THE FENCE WAS THREE UNITS WIDE AND THE COLOR OF THE SAND. Making a
+         thing visible makes what it overlaps visible too. [[one-fix-every-instance]] */
+      const lotsF = [...town2.slice(town2.indexOf('func _furnish_neighbors'),
+        town2.indexOf('func _furnish_trees')).matchAll(/Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+        .map((m) => [+m[1], +m[2]]);
+      /* the two inside edges of each corner — the same six lines _draw_fences() walks */
+      const lines = [];
+      for (const f of fenced) {
+        lines.push({ x0: f.x, x1: f.x + f.w, y0: f.y, y1: f.y });
+        lines.push({ x0: f.x + f.w, x1: f.x + f.w, y0: f.y, y1: f.y + f.h });
+        lines.push({ x0: f.x, x1: f.x, y0: f.y, y1: f.y + f.h });
+      }
+      /* a checker is 230 across and about 126 tall on screen; the posts stand 46 above the line */
+      const straddle = lotsF.filter(([x, y]) => lines.some((L) =>
+        Math.max(L.x0, L.x1) >= x - 115 && Math.min(L.x0, L.x1) <= x + 115
+        && Math.max(L.y0, L.y1) >= y - 63 - 46 && Math.min(L.y0, L.y1) <= y + 63));
+      ok(straddle.length === 0, '…and not one house is standing on a fence line',
+        straddle.map((p) => p.join(',')).join(' · ') || lotsF.length + ' lots against '
+          + lines.length + ' fence lines, all clear');
 
       /* ══ 16h · THERE IS A WAY BACK FROM THE ARCADE'S MACHINES ══ */
       /* his: "Make it so sky run and mine depths, you have the option to return to Game like we did with the puzzles." */
@@ -2826,6 +2855,10 @@ const server = http.createServer((req, res) => {
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const npcG = code(rd('npc.gd')), dogG = code(rd('dog.gd')), townG = code(rd('town.gd'));
         const zoneG = code(rd('zone.gd')), gsG = code(rd('game_state.gd')), parkG = code(rd('park.gd'));
+        /* ⛑ THREE PLACES PUT PEOPLE DOWN SINCE 2026-09-24 — the square, the Academy and the
+           island. Anything that used to ask "is this person in the town?" has to ask all three. */
+        const acadG = code(rd('academy.gd')), islG = code(rd('island.gd'));
+        const chalG = code(rd('challenger.gd')), jrG = code(rd('journal.gd'));
         const strs = (s) => [...s.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
 
         /* ⛑⛑ ONLY HUMANS TALK (his rule, 2026-07-15). */
@@ -2864,10 +2897,127 @@ const server = http.createServer((req, res) => {
 
         const before = /const BEFORE := \{([\s\S]*?)\n\}/.exec(townG);
         const bKeys = before ? [...before[1].matchAll(/^\s*"([^"]+)":/gm)].map((m) => m[1]) : [];
-        ok(/if before_line != "":\s*\n\s*rows\.append\(\{ "id": "before", "text": "What was it like before\?" \}\)/.test(npcG)
+        ok(/if before_line != "" and SMALL_TALK\.has\(who\):\s*\n\s*rows\.append\(\{ "id": "before", "text": "What was it like before\?" \}\)/.test(npcG)
           && bKeys.length >= 6 && bKeys.every((k) => !animals.includes(k)),
           '⭐ "What was it like before?" — a row where somebody remembers, and no animal remembers aloud',
           bKeys.join(', '));
+        /* ══ TWO ROWS, TWO PEOPLE — 2026-09-24 ══ */
+        /* his: "Take out the What's out this way? and 'What was it like before?' for all
+           characters except for Nate and Murphy" */
+        const talk = /const SMALL_TALK := \[([^\]]*)\]/.exec(npcG);
+        const tNames = talk ? strs(talk[1]) : [];
+        ok(tNames.length === 2 && tNames.includes('Nate') && tNames.includes('Murphy'),
+          '⛑ only Nate and Murphy are asked what is out this way and what it was like before',
+          tNames.join(', ') || 'no SMALL_TALK list');
+        ok(/if SMALL_TALK\.has\(who\):\s*\n\s*rows\.append\(\{ "id": "local"/.test(npcG)
+          && /rows\.append\(\{ "id": "self", "text": "How have you been\?" \}\)/.test(npcG),
+          '…and "How have you been?" stays everybody\'s — it is the row about the person',
+          '⚠ a menu with one row left is a character with nothing to say');
+        /* ⚠⚠ A LIST OF NAMES, NOT A DELETION. Every line he wrote is still in the files; one
+           word puts a character back. Deleting them would make this reversal a rewrite. */
+        const stillThere = ['Maxwell', 'Kedar', 'Robert', 'Vince'].filter((n) => bKeys.includes(n));
+        ok(stillThere.length === 4 && /local_line = /.test(townG),
+          '…and nobody\'s words were deleted to do it  [[text-changes-need-approval]]',
+          stillThere.join(', ') + ' still have their before-lines on file');
+
+        /* ══ YOUR NOTES LEFT THE CONVERSATION — 2026-09-24 ══ */
+        /* his: "Take out 'Let me see what I've got on you' and move it to a different process,
+           like the Journal" */
+        ok(!/"id": "recall"/.test(chalG) && !/got on you/.test(chalG),
+          '⛑ "Let me see what I\'ve got on you" is no longer a thing you say to somebody\'s face',
+          '⚠ it was the one row that was not a sentence — you were reading your own notes AT them');
+        /* ⚠⚠ MOVED, NOT DELETED. A row taken out of one place and not put in another is a
+           feature quietly dropped, and nothing would ever say so. */
+        ok(/"wide": true, "b": " "\.join\(PackedStringArray\(facts\)\)/.test(jrG)
+          && /GameState\.known_facts\(key\)/.test(fnGd(jrG, '_people_rows')),
+          '…and the Journal\'s People tab carries it, under the person it is about',
+          '⭐ readable anywhere now, not only while standing in front of them');
+        /* ⚠⚠ ONE ROW PER PERSON, NOT ONE PER FACT. Nine people with three facts each is 27
+           extra rows and this card does not scroll — the header says so twice. */
+        ok(/if not facts\.is_empty\(\):\s*\n\s*out\.append\(\{ "wide": true/.test(jrG)
+          && /w - 50\.0 \* k, size, DIM\)/.test(jrG),
+          '…as ONE line per person that runs the whole card, ellipsized like every other row',
+          '⚠ a row per fact would push the People tab off the bottom of a phone');
+
+        /* ══ THE PARK KEEPS HOURS — 2026-09-24 ══ */
+        /* his: "close down the park after 11:30pm. Open it back up at 5:30am." */
+        ok(/const SHUT_AT := 23 \* 60 \+ 30/.test(parkG) && /const OPEN_AT := 5 \* 60 \+ 30/.test(parkG)
+          && /return m >= OPEN_AT and m < SHUT_AT/.test(fnGd(parkG, 'is_open')),
+          '⭐ the Park Tables shut at half eleven and open at half five');
+        /* ⚠⚠ WALL-CLOCK MINUTES, NOT THE SUN. Everything that LIGHTS this town rides sunset and
+           moves with the calendar; in June the sun is still up at half nine. Opening hours are
+           three fixed numbers he named. Same argument as TownClock.greeting(). */
+        ok(!/phase\(\)|is_dark\(\)|sun\(\)/.test(fnGd(parkG, 'is_open')),
+          '…off the wall clock, so the sign says the same thing in June and in December');
+        /* ⚠ ONE OWNER. The gate in the square and the room behind it disagreeing about when it
+           is open is a bug that only shows itself at 11:31 at night. */
+        const grove = townG.slice(townG.indexOf('class TableGrove extends TownDoor:'),
+          townG.indexOf('class CheckerShell extends Node2D:'));
+        ok(/Pavilion\.is_open\(\)/.test(grove) && !/23|11:30|5:30/.test(grove.replace(/Pavilion\.\w+\(\)/g, '')),
+          '…and the gate in the square ASKS the park rather than carrying its own pair of numbers');
+        /* ⚠⚠ A REFUSAL, NOT A DEAD DOOR. You walk ONTO this one, so a door that quietly did
+           nothing after midnight is indistinguishable from the game having frozen. */
+        ok(/if Pavilion\.is_open\(\):\s*\n\s*super\(player\)\s*\n\s*return\s*\n\s*say\("Closed for the night/.test(grove)
+          && /Pavilion\.opens_text\(\)/.test(grove),
+          '…and it says the hour out loud instead of doing nothing',
+          '⚠ walk-in routes through interact() too, so one override covers both ways in');
+        /* ⚠ AND THE SIGN CHANGES ON THE MINUTE, off town.gd's _retime walk — not the next time
+           somebody happens to wander past. ⚠⚠ relabel(), never set_highlight(): a subclass that
+           lights its own prompt lights it at _ready and never puts it down. */
+        ok(/func retime\(\) -> void:/.test(grove) && /relabel\(_open_prompt if Pavilion\.is_open\(\)/.test(grove)
+          && !/set_highlight\(true\)/.test(grove),
+          '…and the prompt and the sign both go gray at half eleven, on the clock tick',
+          '[[godot-draw-and-save-traps]]');
+
+        /* ══ THE FENCE, DARKER AND THICKER — 2026-09-24, his ══ */
+        const lum = (hex) => {
+          const n = parseInt(hex, 16);
+          return 0.2126 * (((n >> 16) & 255) / 255) + 0.7152 * (((n >> 8) & 255) / 255)
+            + 0.0722 * ((n & 255) / 255);
+        };
+        const post = /const FENCE_POST := Color\("([0-9a-f]{6})"\)/.exec(townG);
+        const rail = /const FENCE_RAIL := Color\("([0-9a-f]{6})"\)/.exec(townG);
+        const floorC = /const GROUND := Color\("([0-9a-f]{6})"\)/.exec(townG);
+        const sandC = /const SAND := Color\("([0-9a-f]{6})"\)/.exec(townG);
+        /* ⚠⚠ AGAINST THE GROUND IT STANDS ON, NOT AN ABSOLUTE. The old rail (6d5636, 0.347) was
+           LIGHTER than the desert floor it was drawn on (5b4f34, 0.312) — which is why a fence
+           built to say NO read as a line of twigs. */
+        ok(post && rail && floorC && sandC && lum(rail[1]) < lum(floorC[1]) * 0.65
+          && lum(rail[1]) < lum(sandC[1]) * 0.45 && lum(post[1]) < lum(rail[1]),
+          '⛑ the fence is darker than the floor and the sand, and the posts darker than the rails',
+          post ? 'post ' + lum(post[1]).toFixed(3) + ' · rail ' + lum(rail[1]).toFixed(3)
+            + ' vs floor ' + lum(floorC[1]).toFixed(3) + ' · sand ' + lum(sandC[1]).toFixed(3) : '?');
+        /* ⚠ AND THE POSTS CLOSER WITH IT. Widening a rail without closing the gaps makes a
+           heavier fence with exactly the same holes in it. */
+        const fen = fnGd(townG, '_draw_fence');
+        const railW = /FENCE_RAIL, ([\d.]+)\)/.exec(fen);
+        const postW = /Rect2\(at\.x - ([\d.]+), at\.y - ([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(fen);
+        const pitch = /distance_to\(b\) \/ ([\d.]+)\)/.exec(fen);
+        ok(railW && postW && pitch && +railW[1] >= 5 && +postW[3] >= 9 && +pitch[1] <= 50,
+          '…and thicker: the rails, the posts, and the gaps between them',
+          railW ? 'rail ' + railW[1] + ' wide (was 3) · post ' + postW[3] + ' (was 6) · every '
+            + pitch[1] + ' units (was 58)' : '?');
+
+        /* ══ KAEDE AND ROBERT CAME INDOORS — 2026-09-24 ══ */
+        /* his: "Put Kaede and Robert into the academy building instead of outside" */
+        ok(/kaede\.who = "Kaede"/.test(acadG) && /rob\.who = "Robert"/.test(acadG)
+          && !/_add_challenger\("Robert"/.test(townG) && !/kaede\.who/.test(townG),
+          '⛑ Kaede and Robert are inside the Academy, and in only one file each');
+        ok(/rob\.key = "robert"/.test(acadG) && /rob\.elo = 1800/.test(acadG),
+          '…and Robert kept his bench seat and his rating through the move', 'robert / 1800');
+        /* ⚠⚠ THE ROOM IS 1120 × 760 AND THREE LESSON DOORS TAKE THE TOP OF IT. A door's sign is
+           drawn 62 above its roof, so anybody standing high in this room stands in a doorway. */
+        const aW = num(acadG, 'W'), aH = num(acadG, 'H'), aT = num(acadG, 'WALL_T');
+        const standing = [...acadG.matchAll(/(?:kaede|rob)\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+          .map((m) => [+m[1], +m[2]]);
+        const offFloor = standing.filter(([x, y]) =>
+          Math.abs(x) > aW - aT || Math.abs(y) > aH - aT || y < 0 || Math.abs(x) < 70);
+        ok(standing.length === 2 && offFloor.length === 0,
+          '…both on the floor, in the bottom half clear of the lesson doors, and off the runner',
+          offFloor.length ? 'BAD: ' + offFloor.map((p) => p.join(',')).join(' · ')
+            : standing.map((p) => p.join(',')).join(' · ') + ' inside ±'
+              + (aW - aT) + ', ±' + (aH - aT));
+
         /* #7 — Maxwell greets you off the board, not off the hearts. */
         ok(/_board_line\(\) if not board_lines\.is_empty\(\) else _line_for\(hearts\)/.test(npcG)
           && /maxwell\.board_lines = \[/.test(townG) && /GameState\.army_count\(\)/.test(fnGd(npcG, '_board_line')),
@@ -2936,13 +3086,24 @@ const server = http.createServer((req, res) => {
 
         const parts = [...block(gsG, 'const BOAT := [').matchAll(/\{ "id": "([a-z]+)",\s+"who": "([A-Za-z ]+)",\s+"name": "([^"]+)"/g)]
           .map((m) => ({ id: m[1], who: m[2], name: m[3] }));
-        const people = new Set([...townG.matchAll(/_add_challenger\("([^"]+)"|\.who = "([^"]+)"/g)].map((m) => m[1] || m[2]));
-        const pl = /const PART_LINES := \{([\s\S]*?)\n\}/.exec(townG);
+        /* ⛑ ROBERT WENT INDOORS 2026-09-24, so "standing in the town" is three files now —
+           the square, the Academy and the island. A giver in a room town.gd cannot walk is
+           the exact bug that moved PART_LINES into GameState. */
+        const placedIn = townG + acadG + islG;
+        const people = new Set([...placedIn.matchAll(/_add_challenger\("([^"]+)"|\.who = "([^"]+)"/g)].map((m) => m[1] || m[2]));
+        const pl = /const PART_LINES := \{([\s\S]*?)\n\}/.exec(gsG);
         const bad = parts.filter((p) => animals.includes(p.who) || !people.has(p.who)
           || !pl || !new RegExp('"' + p.who + '": "').test(pl[1]));
         ok(parts.length === 6 && bad.length === 0,
-          '⭐ six parts, each from a person standing in the town, each with their words',
+          '⭐ six parts, each from a person standing somewhere you can walk to, each with their words',
           bad.length ? 'BAD: ' + bad.map((p) => p.who).join(' ') : parts.map((p) => p.who + ':' + p.id).join(' '));
+        /* ⚠⚠ ONE TABLE, READ BY BOTH ROOMS. town.gd hands these out by walking its OWN
+           children; a second copy of Robert's sentence in academy.gd is how the two drift. */
+        ok(!/const PART_LINES := \{/.test(townG) && /GameState\.PART_LINES\[who\]/.test(townG)
+          && /GameState\.PART_LINES\.get\("Robert"/.test(acadG)
+          && !/rob\.part_line = "[A-Z]/.test(acadG),
+          '…and Robert\'s reaches him in the Academy out of the SAME table, not a copy of it',
+          '⚠ town.gd walks its own children — a giver in another scene silently got the fallback');
         const robert = parts.find((p) => p.who === 'Robert');
         ok(robert && !/plank|wood|timber|nail|tool|hammer|carpent|beam|saw/i.test(robert.id + ' ' + robert.name),
           '⚠⚠ …and Robert’s part is nothing wooden and nothing a carpenter holds',
@@ -2974,9 +3135,31 @@ const server = http.createServer((req, res) => {
           '…he is not in the town (he is where you are going), and a letter read stays read everywhere');
 
         /* #10 — Murphy prices you off real numbers and invents none. */
-        const uw = townG.slice(townG.indexOf('class Underwriter extends TownNPC:'), townG.indexOf('class HomeBoard extends Interactable:'));
-        ok(/murphy\.who = "Murphy"/.test(townG) && /"who": "Murphy"/.test(gsG),
-          '⭐ Murphy’s nameplate is his square’s name, so talking to him is meeting that square');
+        /* ⛑ HE ROWED OUT 2026-09-24 (his: "move Murphy to Shogi Island"). The Underwriter class
+           went with him rather than staying an inner class of a file that no longer places him. */
+        const uw = islG.slice(islG.indexOf('class Underwriter extends TownNPC:'));
+        ok(/murphy\.who = "Murphy"/.test(islG) && !/murphy\.who = "Murphy"/.test(townG)
+          && /"who": "Murphy"/.test(gsG),
+          '⭐ Murphy’s nameplate is his square’s name, so talking to him is meeting that square',
+          '⛑ and he is on Shogi Island now, not on the road east');
+        /* ⚠⚠ ON THE SAND, NOT IN THE SEA. The island is an ellipse and its beach narrows with
+           the row — a position typed against the bounding box stands on open water. The room's
+           own sand_half() is the one answer; this is that arithmetic, not a second copy. */
+        const mAt = /murphy\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(islG);
+        const rx = num(islG, 'RX'), ry = num(islG, 'RY');
+        const midY = (/const MID := Vector2\(-?[\d.]+, (-?[\d.]+)\)/.exec(islG) || [0, 0])[1];
+        const reach = mAt ? rx * Math.sqrt(Math.max(0, 1 - Math.pow((+mAt[2] - +midY) / ry, 2))) : 0;
+        ok(mAt && Math.abs(+mAt[1]) + 40 < reach,
+          '…standing on sand: the beach is wider than he is at his own row',
+          mAt ? 'x ' + mAt[1] + ', sand reaches ' + Math.round(reach) + ' at y ' + mAt[2] : 'no position');
+        /* ⚠ AND CLEAR OF EVERY DOOR ON THE ISLAND. Three of the five things out here are doors,
+           and a person standing on a mat is a prompt fighting another prompt. */
+        const islSpots = [...islG.matchAll(/\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+          .map((m) => [+m[1], +m[2]]).filter(([x, y]) => !(mAt && x === +mAt[1] && y === +mAt[2]));
+        const tooNear = mAt ? islSpots.filter(([x, y]) =>
+          Math.hypot(x - +mAt[1], y - +mAt[2]) < 150) : [];
+        ok(tooNear.length === 0, '…and clear of the dojo, the Reading Room, Matsu and the sign',
+          tooNear.map((p) => p.join(',')).join(' · ') || islSpots.length + ' other spots, nearest is clear');
         ok(/Pavilion\.SEATS \+ Pavilion\.OFF/.test(uw) && /GameState\.CEO_ELO/.test(uw) && !/2400|1800|1400/.test(uw) && /\/ 400\.0/.test(uw),
           '…every rating he quotes is read off the Pavilion’s own table, through Elo’s 400',
           '⚠ a second copy of the seat ratings is a bookmaker quoting last season’s odds');
@@ -3210,7 +3393,7 @@ const server = http.createServer((req, res) => {
         ok(camp && camp[0] >= 1700 && /Rect2\(GATE_AT\.x - 90\.0, -20\.0, CAMP_AT\.x \+ 20\.0/.test(tw)
            && /_add_challenger\("Kedar", "dad", 1400, "k", CAMP_AT \+/.test(tw),
           '⭐ the Sand Mines are RIGHT and a walk away, and Kedar works there',
-          'camp ' + camp + ' — most of a screen of road past Murphy at 700');
+          'camp ' + camp + ' — most of a screen of road east of the square');
         /* ⚠ THE MAP AND THE SEA HAVE TO FOLLOW IT OUT: sand past the edge, or water stopping in grass. */
         ok(gr && wr && camp && +gr[1] + +gr[3] >= camp[0] + 360 + 100
            && +wr[1] + +wr[3] >= +gr[1] + +gr[3] - 1,
@@ -3255,11 +3438,30 @@ const server = http.createServer((req, res) => {
         const mh = code(rd('maxwell_home.gd'));
         const at = (n) => { const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
         const red = at('HOME_AT'), black = at('MAX_HOME_AT');
-        ok(red && black && Math.hypot(red[0] - black[0], red[1] - black[1]) < 400
-           && /his\.position = MAX_HOME_AT/.test(tw) && /class CheckerHut extends CheckerHome:/.test(tw)
-           && /Rect2\(MAX_HOME_AT\.x, HOME_AT\.y - 20\.0/.test(tw),
-          '⭐ Maxwell\'s checker is next door to yours, on the same lane',
-          red + ' · ' + black);
+        /* ⛑ SPACED OUT AND OFF THE LANE, 2026-09-24 (his: "Remove the road between black and
+           red checker, and space them out a bit"). Two numbers moved: the gap between the two
+           discs and where the lane stops. ⚠ STILL A NEIGHBOR, NOT A SUBURB — the checkers are
+           230 across, so the band below is "more than one checker of clear ground, under three". */
+        const gap = red && black ? Math.hypot(red[0] - black[0], red[1] - black[1]) - 230 : 0;
+        ok(red && black && gap > 150 && gap < 700
+           && /his\.position = MAX_HOME_AT/.test(tw) && /class CheckerHut extends CheckerHome:/.test(tw),
+          '⭐ Maxwell\'s checker is spaced out from yours, and still on the same row',
+          red + ' · ' + black + ' — ' + Math.round(gap) + ' of clear ground between the discs');
+        /* ⚠⚠ THE LANE STOPS AT YOUR OWN DOOR. It used to start at MAX_HOME_AT and run past
+           both, which is the thing he asked to have taken out. */
+        ok(/Rect2\(HOME_AT\.x, HOME_AT\.y - 20\.0, -ROAD_X - HOME_AT\.x, 40\.0\)/.test(tw)
+           && !/Rect2\(MAX_HOME_AT\.x, HOME_AT\.y - 20\.0/.test(tw),
+          '…and there is no road between the two of them any more',
+          '⚠ the lane runs from your checker to the main road, and nowhere else');
+        /* ⚠ AND NO OTHER CHECKER MOVED INTO THE SPACE. A lot 180 away in x and 30 in y was
+           overlapping the black disc by 50 units the moment it went out to -700. */
+        const otherLots = [...tw.slice(tw.indexOf('func _furnish_neighbors'),
+          tw.indexOf('func _furnish_trees')).matchAll(/Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+          .map((m) => [+m[1], +m[2]]);
+        const onTop = otherLots.filter(([x, y]) => [red, black].some((h) =>
+          h && Math.abs(x - h[0]) < 230 && Math.abs(y - h[1]) < 126));
+        ok(onTop.length === 0, '…and no neighbor\'s checker is parked on top of either of them',
+          onTop.map((p) => p.join(',')).join(' · ') || otherLots.length + ' lots, all clear');
         ok(/his\.scene_path = "res:\/\/maxwell\.tscn"/.test(tw) && fs.existsSync(path.join(GD, 'maxwell.tscn'))
            && /extends CheckerRoom/.test(mh) && /_furnish_room/.test(mh),
           '…and it OPENS: a room like Nate\'s, out of the same shell');
