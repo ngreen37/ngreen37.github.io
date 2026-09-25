@@ -3269,7 +3269,9 @@ const server = http.createServer((req, res) => {
            && /src\.duplicate\(\)/.test(fnGd(pr, '_tint')),
           '…and BLACK is the scene dressing it: albedo on a DUPLICATED material',
           '⚠⚠ his dark material never left Blender — glTF writes only the materials faces use');
-        ok(/size = _prop\.draw_size\(WIDE\)/.test(tw) && /float\(size\.y\) \/ float\(size\.x\)/.test(pr),
+        /* ⚑ `_px` SINCE THE BAKE, 2026-09-24 — a TownProp is no longer the SubViewport itself,
+           so it remembers the pixel size it asked for. Same rule, different name. */
+        ok(/size = _prop\.draw_size\(WIDE\)/.test(tw) && /float\(_px\.y\) \/ float\(_px\.x\)/.test(pr),
           '…and both are drawn at the texture\'s own proportions  (the viewport carries 4% padding)',
           'one CheckerHome draws both houses — Maxwell\'s changes only the paint and the room');
       }
@@ -3503,6 +3505,33 @@ const server = http.createServer((req, res) => {
            && /_solid\(fridge, Rect2\(/.test(hm),
           '⭐ there is a fridge in Nate\'s checker, and you walk round it',
           '⚠ the disc audit above already holds it inside the round wall, off FRIDGE_AT');
+
+        /* ══ a Blender prop BAKES and throws its viewport away — 2026-09-24 ══ */
+        /* his: "yes, go for the bake. We're going grand-scale so we'll want to keep as many MB's available as possible." */
+        const pr2 = code(rd('prop_model.gd'));
+        ok(/^class_name TownProp\s*\nextends Node$/m.test(pr2) && !/extends SubViewport/.test(pr2),
+          '⭐⭐ a prop is a picture, not a live 3D viewport',
+          'measured: the town went 168 MB -> 107 MB of video memory, at the same 60 fps and 140 draws');
+        const bk = fnGd(pr2, '_bake');
+        ok(/ImageTexture\.create_from_image\(_vp\.get_texture\(\)\.get_image\(\)\)/.test(bk)
+           && /_vp\.queue_free\(\)/.test(bk) && /_vp = null/.test(bk),
+          '…it takes the picture and frees the machinery that drew it');
+        /* ⚠⚠ UPDATE_ONCE PUTS ITSELF BACK TO DISABLED once it has drawn, and that is the only
+           honest signal the picture exists. Read it early and you get a transparent image and
+           no error — a prop that is simply not there. */
+        ok(/_vp\.render_target_update_mode == SubViewport\.UPDATE_DISABLED/.test(bk),
+          '…and waits for the viewport to say it has drawn, rather than for a frame count');
+        /* ⚠⚠ THE PARENT ALREADY DREW WITH THE VIEWPORT'S TEXTURE and that RID is about to die. */
+        ok(/var ci := get_parent\(\) as CanvasItem/.test(bk) && /ci\.queue_redraw\(\)/.test(bk),
+          '…and repaints whoever drew it, or the prop goes blank the frame it is baked');
+        ok(/static var _slot/.test(pr2) && /_slot = \(_slot \+ 1\) % 4/.test(pr2),
+          '⚠ the readbacks are spread over four frames  (a GPU stall each, and a room loads many at once)');
+        /* ⭐ AND MOVEMENT, ASKED IN THE SAME MESSAGE: *"what if I want it to sway in the wind?"*
+           A shear on the baked picture — 0.12 MB and nothing per frame, against 1.47 MB for a
+           12-frame baked strip and 28.9 MB for 12 live viewports. All three held 60 fps. */
+        ok(/func draw_swayed\(ci: CanvasItem, r: Rect2, lean: float\)/.test(pr2)
+           && /ci\.draw_polygon\(/.test(fnGd(pr2, 'draw_swayed')),
+          '⭐ …and a baked prop can still sway, because a sway is a shear');
 
         /* ══ the Academy takes you in any order ══ */
         const acad = rd('academy.gd');
