@@ -3179,10 +3179,68 @@ const server = http.createServer((req, res) => {
         const sl = shown ? strs(shown[1]) : [];
         ok(sl.length === 4 && sl.every((s) => /^(She|You)\b/.test(s) && !/"/.test(s)),
           '⛑ …and every line is what she DOES or what you do — never a word from her');
+        /* ⚑ THE "is she here" TEST MOVED INTO _princess() ON 2026-09-25 when the board became a
+           conversation — same question, asked once instead of inline. */
         ok(/site_scores\(\["academy-bootcamp", "notation-run", "trainer-pirc"\]\)/.test(fnGd(gsG, 'academy_stage'))
           && /id === 'academy-bootcamp'/.test(PROF) && /pjcc\.academy\.bootcamp/.test(fn(PROF, 'townScore') || PROF)
-          && /not \(dog\.with_you\(\) or dog\.at_home\)/.test(hb),
+          && /d\.companion and \(d\.with_you\(\) or d\.at_home\)/.test(hb),
           '…she is shown the furthest lesson YOU reached, and only when she is with you');
+
+        /* ══ THE BOARD IN THE HOUSE IS THE ONLY TABLE SHE SITS AT — 2026-09-25 ══ */
+        /* his: "That's the only place you challenge princess, and teach her, etc. It's also
+           when you realize she can play." · "Make Argus and Crockett NOT sit at the park
+           tables, and you CAN'T challenge them until you discover that the dogs can play." */
+        ok(/"id": "play"/.test(hb) && /GameState\.sit_down\("Princess", "princess"/.test(hb),
+          '⭐ the board in your house is where you sit down with Princess');
+        /* ⚠⚠ AND THE ONLY ONE. A second door would make "the only place" false: her row is
+           refused wherever she is standing, discovered or not, and her table is gone. */
+        ok(/if companion:\s*\n\s*return "she only plays on the board at home"/.test(dogG),
+          '…and she refuses everywhere else, in a sentence rather than by vanishing');
+        /* ⚠ THE LOCK IS A SENTENCE, NOT A BOOL — a row that is gray for no stated reason reads
+           as a bug, which is the same argument that killed the timed second press. */
+        ok(/func locked_say\(\) -> String:/.test(chalG) && /elif shut != "":/.test(chalG)
+          && /play\["text"\] = "Sit down\. Let's play\. — %s" % shut/.test(chalG),
+          '…off one hook on TownChallenger, so any seat can say why it is shut');
+        ok(/if not GameState\.dogs_play:\s*\n\s*return "he is a dog"/.test(dogG),
+          '⛑ Crockett and Argus cannot be challenged until you know dogs play');
+        /* ⚠⚠ THE REFUSAL MUST NOT GIVE THE SECRET AWAY. "he is a dog" is what you would think
+           looking at him; "he can play, you just have not found out" is the game spoiling itself. */
+        const shutLine = /return "([^"]*)"\s*\n\s*return ""/.exec(fnGd(dogG, 'locked_say'));
+        ok(shutLine && !/chess|play|princess|secret|yet/i.test(shutLine[1]),
+          '…and the refusal does not tell you what you have not found out',
+          shutLine ? '"' + shutLine[1] + '"' : 'no line');
+        /* ⭐ THE DISCOVERY: sticky, saved, and pushed BOTH WAYS or a new device forgets it. */
+        ok(/var dogs_play: bool = false/.test(gsG) && /func discover_dogs_play\(\) -> bool:/.test(gsG)
+          && /"dogs_play": dogs_play/.test(gsG) && /dogs_play = bool\(d\.get\("dogs_play", false\)\)/.test(gsG)
+          && /if bool\(d\.get\("dogs_play", false\)\) and not dogs_play:/.test(gsG)
+          && /local\.dogs_play = !!\(local\.dogs_play \|\| remote\.dogs_play\)/.test(PROF),
+          '⭐⭐ …and finding out is EARNED: saved, pushed, and merged by OR on both sides',
+          '⚠ one-way sync has shipped here once already  [[everything-earned-syncs]]');
+        /* ⚠⚠ STAGE 0 IS HER LYING DOWN ON THE BOARD and must unlock nothing. */
+        ok(/const PLAYS_AT := 1/.test(hb) && /_stage >= PLAYS_AT and GameState\.discover_dogs_play\(\)/.test(hb),
+          '⚠⚠ …and it takes a MOVE: at stage 0 she lies down on the board, which unlocks nothing');
+        /* ══ NO DOG SITS AT A PARK TABLE ══ */
+        ok(/static func tabled\(\) -> Array:/.test(parkG)
+          && /if not TownDog\.is_animal\(str\(\(r as Dictionary\)\["who"\]\)\):/.test(fnGd(parkG, 'tabled'))
+          && /for row in rungs:/.test(parkG) && !/for row in SEATS:/.test(parkG),
+          '⛑ no dog gets a table in the Pavilion, and who is an animal is asked of TownDog');
+        /* ⚠⚠ AND THE LADDER IS UNTOUCHED. Deleting the rows would re-rate the room and take
+           the Underwriter's next-cheapest-seat answer with it. */
+        const seatRows = [...(/const SEATS := \[([\s\S]*?)\n\]/.exec(parkG) || [0, ''])[1]
+          .matchAll(/"key": "([a-z]+)"/g)].map((m) => m[1]);
+        ok(seatRows.length === 7 && ['princess', 'crockett', 'argus'].every((k) => seatRows.includes(k)),
+          '…while SEATS still carries all seven — their rungs and ratings are real',
+          seatRows.join(' '));
+        /* ⚠ AND THE SIGN COUNTS THE ROOM IT IS NAILED UP IN, not the whole bench — "nine seats"
+           over six tables is a board lying about where it is standing.
+           ⚠⚠ SCOPED TO Standings. `Table._lock_who()` resolves a lock key to a name and MUST
+           still search the whole ladder: Vince is locked behind Crockett, who has no table now
+           and is still the lock. A blanket ban on SEATS+OFF in this file would break that. */
+        const stand = parkG.slice(parkG.indexOf('class Standings extends Interactable:'));
+        ok(/Pavilion\.tabled\(\) \+ Pavilion\.OFF/.test(stand)
+          && !/Pavilion\.SEATS \+ Pavilion\.OFF/.test(stand)
+          && /Pavilion\.SEATS \+ Pavilion\.OFF/.test(fnGd(parkG, '_lock_who')),
+          '…and the ladder board counts the tables actually out there, while a LOCK still reads the whole bench');
 
         /* ══ #8b · THREE BEDS, AND SHE GOES ROUND THEM ══ */
         /* his: "can you give a bed for crockett and argus inside my home too? And in Maxwell's, there is a bed for princess when we walk in. Princess slowly goes to the beds, or she slowly goes to the table to learn chess." */

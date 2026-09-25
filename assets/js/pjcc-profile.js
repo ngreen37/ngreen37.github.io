@@ -653,6 +653,11 @@
        they do not un-buy on another device. A run IN PROGRESS is deliberately not here:
        it is not earned yet and it belongs to the tab it was started in. */
     local.island_open = !!(local.island_open || remote.island_open);
+    /* ⚠ SAME SHAPE, SAME REASON (2026-09-25): finding out that the dogs play chess is a
+       DISCOVERY, and a discovery that can come back is a secret the game forgets it told you.
+       Princess shows you on the board in your own house; Crockett and Argus are locked until
+       she has. [[everything-earned-syncs]] */
+    local.dogs_play = !!(local.dogs_play || remote.dogs_play);
     /* the army is SLOT INDICES, so a union needs no arithmetic and two devices that filled
        different squares keep both */
     var army = {}, i;
