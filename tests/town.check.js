@@ -3481,6 +3481,29 @@ const server = http.createServer((req, res) => {
         ok(blocks.length === 0, '…and not one of them stands in the haul road or in the lane',
           blocks.map((b) => b.join(',')).join(' · ') || 'the roads are clear');
 
+        /* ══ the greeting reads the wall clock — 2026-09-24 ══ */
+        /* his: "make the 'Good Morning, User' line reflect the true local time … good afternoon after noon local, and good evening after 5 pm local, then good morning again after midnight" */
+        const clk = code(rd('clock.gd')), zn = code(rd('zone.gd'));
+        const gf = fnGd(clk, 'greeting');
+        ok(/const GREET_NOON := 12 \* 60/.test(clk) && /const GREET_EVENING := 17 \* 60/.test(clk)
+           && /m >= GREET_EVENING:\s*\n\s*return "Evening"/.test(gf)
+           && /m >= GREET_NOON:\s*\n\s*return "Afternoon"/.test(gf) && /return "Morning"/.test(gf),
+          '⭐ the greeting turns over at noon, at five, and at midnight');
+        ok(/TownClock\.greeting\(\)/.test(fnGd(zn, '_greet')) && !/"Morning, %s/.test(zn),
+          '…and the room asks the clock for it rather than typing one in',
+          'it said Morning at eleven at night');
+        /* ⚠⚠ NOT phase(). Everything that LIGHTS the town rides the sun and moves with the
+           calendar; a greeting is three fixed hours he named, the same every day of the year. */
+        ok(!/phase\(\)|sun\(\)|is_dark\(\)/.test(gf),
+          '⚠⚠ …off FIXED hours, not the sun  (in June 8 pm is broad daylight and phase() says so)');
+
+        /* ══ a fridge in the checker ══ */
+        /* his: "Let's add a fridge to my checker home." */
+        ok(/const FRIDGE_AT := Vector2\(/.test(hm) && /class Fridge extends Node2D:/.test(hm)
+           && /_solid\(fridge, Rect2\(/.test(hm),
+          '⭐ there is a fridge in Nate\'s checker, and you walk round it',
+          '⚠ the disc audit above already holds it inside the round wall, off FRIDGE_AT');
+
         /* ══ the Academy takes you in any order ══ */
         const acad = rd('academy.gd');
         const page = fs.readFileSync(path.join(ROOT, 'academy.md'), 'utf8');
