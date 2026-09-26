@@ -3911,6 +3911,41 @@ const server = http.createServer((req, res) => {
             '⚠ GROWTH ONLY — every line that already fit is laid out at exactly the numbers it had');
         }
 
+        /* ══ 41 · THE TOWN DROPPED A FRAME IN TWENTY, AND IT WAS THE PEOPLE (2026-09-26) ══
+           His: the web build was "a bit laggy" outside the home, smoother inside it. Every
+           human wears a live 3D SubViewport with its own World3D; the town ran SEVEN of them
+           every frame and his checker runs one — exactly the room boundary he described.
+           MEASURED in Chrome on his own GPU, clock pinned to 12:30, each arm run twice:
+             every frame (shipped)  p95 33.30  p99 33.40   51-55 fps
+             every 2nd frame        p95 16.80  p99 33.30   59 fps    <- tail survives
+             every 3rd frame        p95 16.80  p99 16.80   59-60 fps <- clean
+             every NPC model gone   p95 16.80  p99 16.80   60 fps    <- the ceiling it matches
+           ⚠⚠ THE MEDIAN IS 16.70 IN EVERY ARM. "Is it 60fps?" answers YES on a game that
+           judders, so a FEEL complaint is read off p95/p99 and never off the average. */
+        {
+          const npcG = rd('npc.gd'), pm2 = rd('player_model.gd');
+          const proc = fnGd(npcG, '_process');
+          ok(/_vpf \+ _vpoff\) % 3 == 0/.test(proc)
+            && /SubViewport\.UPDATE_WHEN_VISIBLE/.test(proc)
+            && /SubViewport\.UPDATE_DISABLED/.test(proc),
+            '⛑⛑ each person re-renders their 3D model ONE FRAME IN THREE, and they take turns',
+            'every 2nd frame was measured and is NOT enough — p99 stayed at 33.30');
+          ok(/static var _vpn: int = 0/.test(npcG) && /_vpoff = _vpn/.test(npcG),
+            '⚠ …offset by arrival order, or all seven land on the same frame and nothing is saved');
+          ok(/_model\.render_target_update_mode = SubViewport\.UPDATE_DISABLED\n\t\t\tadd_child/.test(npcG),
+            '⚠ …and they start OFF, so nobody renders on the frame they are built as well as on their own');
+          ok(/UPDATE_WHEN_VISIBLE/.test(proc),
+            '⚠ still WHEN_VISIBLE on the frames it does render — somebody off screen costs zero');
+          /* ⚠⚠ THE TWO DIALS THAT LOOK LIKE THE FIX AND ARE NOT. Both measured at NO CHANGE:
+             it is the NUMBER of render passes, not the cost of one. Do not "optimize" these. */
+          ok(/msaa_3d = Viewport\.MSAA_4X/.test(pm2) && /const SUPERSAMPLE := 3\.0/.test(pm2),
+            '⚠⚠ …and HIS look dials are untouched — MSAA off and supersample 2.0 both measured at NO change',
+            'making each viewport cheaper does nothing; rendering fewer of them is the whole fix');
+          /* ⭐ THE PLAYER IS NOT THROTTLED. He is the one you look at. */
+          ok(/UPDATE_ALWAYS/.test(rd('player.gd')),
+            '⭐ …and YOUR own model still renders every frame  (six background figures is the cost, not the lead)');
+        }
+
         /* ⚠⚠ CANON, RULED 2026-08-14: nobody tells her and nobody knows. The beat lines are
            the easiest place in the project to break it, because they are narration. */
         ok(!/tilt|planet|\bBill\b|queen/i.test(st.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n')),
