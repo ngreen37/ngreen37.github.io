@@ -692,6 +692,9 @@
     local.repairs = union(local.repairs, remote.repairs);
     local.boat = union(local.boat, remote.boat);
     local.garrett = union(local.garrett, remote.garrett);
+    /* ⭐ A STORY BEAT THAT HAS PLAYED (2026-09-25): a union, or the cold open opens twice on
+       the second device. */
+    local.told = union(local.told, remote.told);
     /* a study beaten is a thing earned, like a word learned */
     local.positions = union(local.positions, remote.positions);
     /* ⚠ WEARING A HAT AND ARRANGING A BOARD ARE PREFERENCES, NOT THINGS EARNED. Take the

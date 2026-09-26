@@ -3811,6 +3811,111 @@ const server = http.createServer((req, res) => {
            && /\.ac-lesson-dev \+ \.ac-lesson-state \{ margin-left: 0; \}/.test(page),
           '…and all three cards offer a way in, the third one alongside its In Dev pill');
       }
+
+      /* ══ 40 · EPISODE 1, WALKABLE — the beat player (2026-09-25) ══════════════════════
+         His: "I'm going to use the plotline to PJCC to build Checker Town - the Game."
+         Scope the same day: Episode 1 end to end, and beats fire on what you already do. */
+      {
+        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const st = rd('story.gd'), bt = rd('beat.gd');
+        const znS = rd('zone.gd'), gsS = rd('game_state.gd');
+
+        /* ⭐⭐ THE ONE LINE THAT IS HIS. It is quoted out of his canon file, so the two copies
+           have to agree — a reword in either place is a character speaking somebody else's
+           words, and nothing else in this repo would notice. */
+        {
+          const notes = path.join(ROOT, 'private/_pjcc/notes.md');
+          const beats = [...st.matchAll(/^\t\t\t"(.+)",$/gm)].map((m) => m[1]);
+          ok(beats.length >= 4, 'the beat table has lines in it', beats.length + '');
+          if (fs.existsSync(notes)) {
+            const canon = fs.readFileSync(notes, 'utf8');
+            /* ⚠ THE WORDS, NOT THE FULL STOP. His notes write it as a bullet with no period
+               and the box needs one; every other character is compared as typed. */
+            const mono = (beats[0] || '').replace(/\.$/, '');
+            ok(mono.length > 40 && canon.includes(mono),
+              '⭐⭐ the monologue in the game is HIS line, verbatim from private/_pjcc/notes.md',
+              mono ? '"' + mono.slice(0, 48) + '…"' : 'no first line');
+          }
+          ok(/PLACEHELD/.test(st) && /MEANT TO BE\s*\n# THROWN AWAY/.test(st),
+            '⚠⚠ …and every other line says PLACEHELD, so a later session cannot mistake filler for his voice');
+        }
+
+        /* ⚠⚠ A TRIGGER WITH NO CONDITION IS A BEAT THAT NEVER FIRES, and it would look
+           exactly like a beat he simply has not reached. */
+        {
+          const ats = [...st.matchAll(/"at": "([a-z]+)"/g)].map((m) => m[1]);
+          const handled = [...fnGd(st, 'ready_for').matchAll(/^\t\t"([a-z]+)":$/gm)].map((m) => m[1]);
+          const orphan = ats.filter((a) => handled.indexOf(a) < 0);
+          ok(ats.length >= 3 && orphan.length === 0,
+            'every beat names a trigger that ready_for() actually answers',
+            orphan.length ? 'NEVER FIRES: ' + orphan.join(' ') : ats.join(' '));
+        }
+
+        /* ⛑⛑ THE RULE HE CHOSE: beats ride alongside, they never gate. If anything but the
+           zone's own runner ever asks TownStory a question, something is being withheld. */
+        {
+          /* ⚠ COMMENTS DON'T COUNT — beat.gd and game_state.gd both NAME the table in prose. */
+          const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+          const askers = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+            .filter((f) => f !== 'story.gd' && /TownStory\./.test(bare(rd(f))));
+          ok(askers.length === 1 && askers[0] === 'zone.gd',
+            '⛑⛑ only zone.gd reads the story — no door, no lesson and no boat asks it for permission',
+            askers.join(' ') || 'nobody');
+        }
+
+        /* ⚠⚠ THE THREE WAYS A BEAT COULD HANG THE GAME, all of them one line. */
+        ok(/add_to_group\("town_cover"\)/.test(bt) && /TownZone\.uncovered\(\)/.test(bt),
+          'a beat takes the feet through the town\'s own cover, and hands them back through uncovered()',
+          'without uncovered() the press that ends a beat opens whatever you are standing in');
+        ok(/if _lines\.is_empty\(\) or u == null or u\.is_talking\(\):\s*\n\t\t_finish\(\)/.test(bt),
+          '⚠⚠ an unwritten row, a missing box and an open menu all END the beat instead of covering a dead screen',
+          'TownUI.say() refuses while a menu is open — a beat started there narrates nothing, forever');
+        ok(/const DWELL := 0\.4/.test(bt) && /if _dwell > 0\.0/.test(bt),
+          '⚠ and the press that FIRED the beat cannot also dismiss its first line');
+        ok(/InputEventScreenTouch/.test(bt) && /pad\.take_accept\(\)/.test(bt)
+          && /is_action_pressed\("ui_accept"\)/.test(bt),
+          'a key, a tap and the pad\'s own button all advance it  [[hover-is-three-inputs]]');
+
+        /* ⚠ THE RUNNER. Two live moments plus the room it loads in — anything else waits. */
+        ok(/GameState\.dogs_discovered\.connect\(_story\)/.test(znS)
+          && /GameState\.army_changed\.connect\(func\(_n: int\) -> void: _story\(\)\)/.test(znS)
+          && /dogs_discovered\.emit\(\)/.test(gsS),
+          'a beat can come due in the room you are standing in, not only on the next load');
+        ok(/_ui\.is_talking\(\)/.test(fnGd(znS, '_story')),
+          '⚠ …and it never starts over a conversation');
+
+        /* ⭐ EARNED, SO IT UNIONS. The five places. */
+        ok(/var told: Dictionary = \{\}/.test(gsS) && /"told": told/.test(fnGd(gsS, 'save_state'))
+          && /told = d\.get\("told", \{\}\)/.test(fnGd(gsS, 'load_state'))
+          && /"told": told/.test(fnGd(gsS, 'push_to_site'))
+          && /for k in \(d\.get\("told", \{\}\) as Dictionary\)/.test(fnGd(gsS, 'merge_in'))
+          && /local\.told = union\(local\.told, remote\.told\)/.test(PROF),
+          '⭐ a beat that has played is EARNED — saved, loaded, pushed, merged, and unioned on the site',
+          'the cold open would otherwise open a second time on the second device');
+
+        /* ⛑⛑ THE SAY BOX GROWS TO ITS LINE. Narration is longer than anything that had come
+           through this box, and on a 320-wide render the fourth wrapped row sat off the
+           bottom of the screen. MEASURED both ways: the Label wanted 289 where
+           get_multiline_string_size() said 210 — that call counts font_size per row and
+           carries neither the font's line height nor line_spacing. */
+        {
+          const ui = rd('town_ui.gd'), lay = fnGd(ui, '_layout');
+          ok(/_line\.size\.y = 0\.0\s*\n\s*var grow: float = maxf\(0\.0, _line\.size\.y - line_h\)/.test(lay)
+            && /h = minf\(h \+ grow, vp\.y - 24\.0 \* k\)/.test(lay) && /line_h \+= grow/.test(lay),
+            '⛑⛑ the say box is sized by the LABEL, which clamps up to its own wrapped content',
+            'a typed height put the last row of a four-line beat below the bottom of the screen');
+          /* ⚠ the comment above the fix NAMES the call it replaced — strip comments first. */
+          ok(!/get_multiline_string_size/.test(ui.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n')),
+            '⚠⚠ …and never by get_multiline_string_size()  (it came back 79 units short and the row was still off-screen)');
+          ok(/var grow: float = maxf\(0\.0,/.test(lay),
+            '⚠ GROWTH ONLY — every line that already fit is laid out at exactly the numbers it had');
+        }
+
+        /* ⚠⚠ CANON, RULED 2026-08-14: nobody tells her and nobody knows. The beat lines are
+           the easiest place in the project to break it, because they are narration. */
+        ok(!/tilt|planet|\bBill\b|queen/i.test(st.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n')),
+          '⚠⚠ no beat explains what Princess is doing  [[private/_pjcc/notes.md — WHO KNOWS]]');
+      }
       }
     } else {
       ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
