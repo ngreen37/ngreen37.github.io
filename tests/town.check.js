@@ -3367,7 +3367,10 @@ const server = http.createServer((req, res) => {
           '\u2026while a dog with no haunts is the dog she has always been',
           'nothing outdoors sets them');
         /* ⚠⚠ THE BOB IS PACED BY DISTANCE. */
-        ok(/_gait \+= step/.test(dogG) && /_bob = sin\(_gait \/ [\d.]+\) \* 2\.0/.test(dogG)
+        /* ⚠ SINCE 2026-09-26 it is the distance she actually COVERED, not the step she asked
+           for — a trunk can now stop her mid-stride and she must not trot on the spot. */
+        ok(/_gait \+= \(global_position - was\)\.length\(\)/.test(dogG)
+           && /_bob = sin\(_gait \/ [\d.]+\) \* 2\.0/.test(dogG)
            && !/_bob = sin\(_t \*/.test(dogG),
           '\u2026and her gait is paced by DISTANCE, so a slow walk looks slow');
       }
@@ -3944,6 +3947,58 @@ const server = http.createServer((req, res) => {
           /* ⭐ THE PLAYER IS NOT THROTTLED. He is the one you look at. */
           ok(/UPDATE_ALWAYS/.test(rd('player.gd')),
             '⭐ …and YOUR own model still renders every frame  (six background figures is the cost, not the lead)');
+        }
+
+        /* ══ 42 · TRUNKS ARE SOLID, AND SO IS THE DOG'S WORLD (2026-09-26) ════════════════
+           His: *"make it so I can't walk through trees, and that princess can't walk through
+           water or trees or houses either"*. */
+        {
+          const twnT = rd('town.gd'), dogT = rd('dog.gd'), seaT = rd('season_art.gd');
+          /* ⚠⚠ THE TRUNK, NOT THE CROWN. The note that used to sit here said a solid tree is a
+             fence — true of the 34*k canopy, false of a 12*k trunk. */
+          ok(/const TRUNK_R := 9\.0/.test(twnT) && /c\.radius = TRUNK_R \* k/.test(twnT)
+            && /func _scale\(\) -> float:/.test(twnT),
+            '⛑ a tree is solid at its TRUNK, off the same seed its drawing uses',
+            'two copies of that hash would drift and the collider would stop matching the bark');
+          ok(!/var k := 0\.84 \+ float\(h % 42\) \* 0\.008/.test(twnT),
+            '⚠⚠ …and the scale is NOT computed twice  (one seed, two readers)');
+          ok(/c\.radius = 11\.0/.test(seaT) && /StaticBody2D\.new\(\)/.test(seaT),
+            '…and December\'s fir has one too');
+          /* ⭐⭐ THE OLD WORRY, MEASURED. A trunk you cannot pass is fine; a ROW of them is a
+             fence. Every pair has to leave more room than a player plus two trunks. */
+          {
+            const blk = twnT.slice(twnT.indexOf('func _furnish_trees'), twnT.indexOf('# ══ A TREE'));
+            const pts = [...blk.matchAll(/Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+              .map((m) => [parseFloat(m[1]), parseFloat(m[2])]);
+            let worst = Infinity, pair = '';
+            for (let i = 0; i < pts.length; i++) {
+              for (let j = i + 1; j < pts.length; j++) {
+                const dx = pts[i][0] - pts[j][0], dy = pts[i][1] - pts[j][1];
+                const d = Math.hypot(dx, dy);
+                if (d < worst) { worst = d; pair = pts[i] + ' / ' + pts[j]; }
+              }
+            }
+            /* player radius 15 + two trunks at 9*1.18 worst case = ~36 of hard clearance. */
+            ok(pts.length >= 16 && worst > 60,
+              '⭐⭐ …and no two trunks stand close enough to fence anything',
+              pts.length + ' trees, tightest pair ' + worst.toFixed(0) + ' apart  [' + pair + ']');
+          }
+          /* ⛑⛑ SHE IS AN Area2D AND MOVES BY ASSIGNMENT — there is no move_and_slide in dog.gd,
+             so the step is tested against the space before it is taken. */
+          ok(/func _blocked\(at: Vector2\) -> bool:/.test(dogT)
+            && /func _step_toward\(want: Vector2\) -> void:/.test(dogT)
+            && /_step_toward\(global_position \+ to \/ d \* step\)/.test(fnGd(dogT, '_walk_to')),
+            '⛑ Princess tests every step against the physics space  (water, trunks, houses, fences)');
+          ok(/q\.exclude = \[\(_body\.get_parent\(\) as StaticBody2D\)\.get_rid\(\)\]/.test(dogT),
+            '⛑⛑ …and a SOLID dog excludes its own body, or every query hits itself and the check does nothing',
+            'Crockett and Argus carry a StaticBody2D; Princess does not');
+          ok(/if _blocked\(global_position\):\s*\n\t\tglobal_position = want/.test(dogT),
+            '⚠⚠ …and a dog already inside something can still walk out  [[down-never-stuck]]');
+          ok(/var ax := Vector2\(want\.x, global_position\.y\)/.test(dogT)
+            && /var ay := Vector2\(global_position\.x, want\.y\)/.test(dogT),
+            '⚠ …and she SLIDES round a trunk rather than stopping dead against it');
+          ok(/_gait \+= \(global_position - was\)\.length\(\)/.test(fnGd(dogT, '_walk_to')),
+            '⚠ …and her bob counts what she MOVED, so a pinned dog does not trot on the spot');
         }
 
         /* ⚠⚠ CANON, RULED 2026-08-14: nobody tells her and nobody knows. The beat lines are
