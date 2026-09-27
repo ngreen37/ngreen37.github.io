@@ -3926,27 +3926,50 @@ const server = http.createServer((req, res) => {
            ⚠⚠ THE MEDIAN IS 16.70 IN EVERY ARM. "Is it 60fps?" answers YES on a game that
            judders, so a FEEL complaint is read off p95/p99 and never off the average. */
         {
-          const npcG = rd('npc.gd'), pm2 = rd('player_model.gd');
+          const npcG = rd('npc.gd'), pm2 = rd('player_model.gd'), sheet = rd('people_sheet.gd');
+          const plr = rd('player.gd');
           const proc = fnGd(npcG, '_process');
-          ok(/_vpf \+ _vpoff\) % 3 == 0/.test(proc)
-            && /SubViewport\.UPDATE_WHEN_VISIBLE/.test(proc)
-            && /SubViewport\.UPDATE_DISABLED/.test(proc),
-            '⛑⛑ each person re-renders their 3D model ONE FRAME IN THREE, and they take turns',
-            'every 2nd frame was measured and is NOT enough — p99 stayed at 33.30');
-          ok(/static var _vpn: int = 0/.test(npcG) && /_vpoff = _vpn/.test(npcG),
-            '⚠ …offset by arrival order, or all seven land on the same frame and nothing is saved');
-          ok(/_model\.render_target_update_mode = SubViewport\.UPDATE_DISABLED\n\t\t\tadd_child/.test(npcG),
-            '⚠ …and they start OFF, so nobody renders on the frame they are built as well as on their own');
-          ok(/UPDATE_WHEN_VISIBLE/.test(proc),
-            '⚠ still WHEN_VISIBLE on the frames it does render — somebody off screen costs zero');
+          const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+          /* ⭐⭐ THE ANSWER WAS NOT A THROTTLE. Rendering each person one frame in three fixed
+             the numbers and spoilt the walk — his: "the characters look a bit off now". So the
+             3D left the NPCs entirely: one rig, photographed once, then freed.
+             Re-measured on his GPU with the sheet in: p95 16.80  p99 16.80  60 fps,
+             viewports_total=1 — the ceiling, and the 1 is the player. */
+          ok(!/SubViewport/.test(bare(npcG)),
+            '⛑⛑ an NPC carries NO SubViewport at all — they draw off TownPeople\'s baked sheet',
+            'seven live render passes was the whole defect; making each one cheaper measured at nothing');
+          ok(/const FACINGS := 16/.test(sheet),
+            '⚠ sixteen facings — eight was rendered at 79px and the 0-to-45 jump is plainly stepped');
+          ok(/const IDLES := 4/.test(sheet) && /walking: bool = slot >= IDLES/.test(sheet),
+            '⚠⚠ …and the idle is its own bank, because frame 0 of a WALK clip is mid-stride');
+          ok(/_filled \+= 1/.test(sheet) && /return _filled > 0/.test(fnGd(sheet, 'ready_to_draw')),
+            '⛑⛑ "ready" counts cells that EXIST, not the array size',
+            'resize() fills with nulls, so the sheet would report ready and draw bare shadows');
+          ok(/_rig\.queue_free\(\)/.test(sheet) && /_rig = null/.test(sheet),
+            '⭐ the rig is freed once it has been photographed — nothing 3D is left but the player');
+          ok(/static var _cells: Array = \[\]/.test(sheet),
+            '⚠ the cells are STATIC, so the town bakes once a SESSION and not once a room');
+          ok(/queue_redraw\(\)/.test(sheet) && /_filled == 1/.test(sheet),
+            '⚠⚠ …and the first cell repaints everybody, because nothing repaints a CanvasItem on its own');
+          ok(/var now := TownPeople\.cell_id\(_facing, _phase01, _walking\)/.test(proc)
+            && /if now != _cell_was:/.test(proc),
+            '⚠ a person repaints only when their CELL changes, not every frame  (npc.gd is explicit about that cost)');
+          /* ⛑⛑ THE ONE THING THAT BREAKS A SHARED SHEET. */
+          {
+            const tinters = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+              .filter((f) => /\.apply_tint\(/.test(bare(rd(f))));
+            ok(tinters.length === 1 && tinters[0] === 'player.gd',
+              '⛑⛑ NOBODY BUT THE PLAYER IS TINTED — one painted NPC and a shared sheet is wrong for everyone',
+              tinters.join(' ') || 'nobody');
+          }
           /* ⚠⚠ THE TWO DIALS THAT LOOK LIKE THE FIX AND ARE NOT. Both measured at NO CHANGE:
              it is the NUMBER of render passes, not the cost of one. Do not "optimize" these. */
           ok(/msaa_3d = Viewport\.MSAA_4X/.test(pm2) && /const SUPERSAMPLE := 3\.0/.test(pm2),
             '⚠⚠ …and HIS look dials are untouched — MSAA off and supersample 2.0 both measured at NO change',
             'making each viewport cheaper does nothing; rendering fewer of them is the whole fix');
-          /* ⭐ THE PLAYER IS NOT THROTTLED. He is the one you look at. */
-          ok(/UPDATE_ALWAYS/.test(rd('player.gd')),
-            '⭐ …and YOUR own model still renders every frame  (six background figures is the cost, not the lead)');
+          /* ⭐ THE PLAYER KEEPS HIS OWN LIVE RIG. He is tinted and he is the one you look at. */
+          ok(/UPDATE_ALWAYS/.test(plr) && /TownPlayerModel\.make\(\)/.test(plr),
+            '⭐ …and YOUR own model is still live at 60  (his checker runs one and measured clean)');
         }
 
         /* ══ 42 · TRUNKS ARE SOLID, AND SO IS THE DOG'S WORLD (2026-09-26) ════════════════
