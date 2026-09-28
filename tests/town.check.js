@@ -360,8 +360,11 @@ const server = http.createServer((req, res) => {
       const player = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
       const door = fs.readFileSync(path.join(GD, 'door.gd'), 'utf8');
       const town = fs.readFileSync(path.join(GD, 'town.gd'), 'utf8');
-      ok(/world_bounds/.test(zone) && /world_bounds = GROUND_RECT/.test(town),
-        'the map has an edge, and it is the same rect the ground is drawn from');
+      /* ⛑ THE EDGE IS THE WINDOW'S NOW (2026-09-27), not the whole map's — but it is still
+         ONE rect shared by the walls and the paint, which is what this always guarded. */
+      ok(/world_bounds/.test(zone) && /world_bounds = region_rect\(region\)/.test(town)
+        && /return region_rect\(region\)\.grow\(/.test(town),
+        'the map has an edge, and it is the same rect the window paints from');
       ok(/limit_smoothed = true/.test(player) && /func _keep_inside\(/.test(player),
         '…the camera stops at it and so do the feet  (⚠ smoothing overshoots without it)');
       ok(/const GROUND_RECT/.test(town) && !/Rect2\(-1120\.0, -560\.0, 2240\.0, 1780\.0\), GROUND\)/.test(town),
@@ -1230,8 +1233,10 @@ const server = http.createServer((req, res) => {
       const walled = Object.keys(named).filter((k) => fenced.some((f) => inR(f, named[k][0], named[k][1])));
       ok(walled.length === 0, '…and not one of them is standing on a place',
         walled.join(', ') || Object.keys(named).length + ' places checked, all outside');
-      ok(/func _draw_fences\(\) -> void:/.test(town2) && /_draw_fences\(\)/.test(fnGd(town2, '_draw')),
-        '…and the fence is DRAWN, because an invisible wall is a bug you cannot report');
+      ok(/func _draw_fences\(pr: Rect2\) -> void:/.test(town2)
+        && /_draw_fences\(pr\)/.test(fnGd(town2, '_draw')),
+        '…and the fence is DRAWN, because an invisible wall is a bug you cannot report',
+        '⚠ it takes the window rect now — a corner nobody can reach is not drawn');
       /* ⛑⛑ AND NOTHING STANDS ON THE LINE IT DRAWS — 2026-09-24. The check above asks whether a
          place is INSIDE a fenced rect; this asks whether anything is ON its edge, which is where
          the rails and the posts actually go. A lot at (-700, 760) had its bottom at y 823 and the
@@ -1561,7 +1566,8 @@ const server = http.createServer((req, res) => {
       ok(gRect && gateX && +gateX[1] - 120 > +gRect[1],
         '…and the map reaches past it, so the gate is not standing in the edge',
         gateX && ('gate at ' + gateX[1] + ', edge at ' + gRect[1]));
-      ok(/while x <= GROUND_RECT\.end\.x:/.test(town2) && !/while x <= 1120\.0:/.test(town2),
+      ok(/while x <= box\.end\.x:/.test(town2) && !/while x <= 1120\.0:/.test(town2)
+        && /GROUND_RECT\.intersection\(pr\)/.test(town2),
         '…and the grid is drawn off the RECT, not off four typed corners',
         '⛑ it had -1120 in it and would have stopped 280 units short of the new edge');
 
@@ -1993,8 +1999,10 @@ const server = http.createServer((req, res) => {
         /* ⭐ AssemblyShack JOINED 2026-09-22. */
         /* his: "more of a shack than a house" */
         /* ⛑ TheaterFront LEFT and TableGrove ARRIVED, both 2026-09-23 and both his. */
+        /* ⛑ TownSeam JOINED 2026-09-27 — the end of a road, and the ONLY TownDoor subclass
+           that is not a building: it draws nothing and changes the window. */
         const want = ['ArcadeFront', 'AssemblyShack', 'CheckerHome', 'CityGate', 'Rowboat',
-                      'TableGrove'];
+                      'TableGrove', 'TownSeam'];
         ok(subs.join(' ') === want.join(' '),
           '…and the bespoke buildings are exactly the ones we chose',
           subs.join(' ') || 'none');
@@ -2778,9 +2786,11 @@ const server = http.createServer((req, res) => {
         ok(twn.indexOf('func _draw(') < twn.indexOf('class '),
           '⛑⛑ town.gd\'s OWN _draw() comes before its first inner class',
           'six checks reach the ground through fnGd(twn, \'_draw\') and it takes the first match');
+        /* ⛑ THE CAPTURE MOVED INTO _furnish() ON 2026-09-27 — it has to run BEFORE the window
+           cull or the journal draws one fifth of the town. Same call, earlier. */
         ok(/for r in _roads\(\):/.test(fnGd(twn, '_draw_roads')) && !/Rect2\(/.test(fnGd(twn, '_draw_roads'))
           && /TownMap\.capture\(self, GROUND_RECT, \[/.test(twn)
-          && /_roads\(\), GROUND\)/.test(fnGd(twn, '_after_ready'))
+          && /_roads\(\), GROUND\)/.test(fnGd(twn, '_furnish'))
           && /SAND_RECT/.test(fnGd(twn, '_draw')) && /SAND_RECT/.test(fnGd(twn, '_region')),
           '…drawn from the same rects the ground is painted from');
         /* ⛑⛑ AND IN THE SAME COLORS. journal.gd had "22301f" typed into it. */
@@ -2789,8 +2799,9 @@ const server = http.createServer((req, res) => {
           && /ground_tint = tint/.test(cap),
           '⛑⛑ the minimap asks the town what color its ground is instead of remembering it');
         /* ⚠⚠ EVERY PATCH THAT IS NOT THE GROUND HAS TO BE IN THE AREA LIST. */
+        /* ⛑ THE LIST MOVED INTO _furnish() WITH THE CAPTURE (2026-09-27), ahead of the cull. */
         for (const a of ['LAWN', 'SHORE', 'SAND_RECT', 'YARD', 'WATER_RECT'])
-          ok(new RegExp('\\{ "rect": ' + a + ', "color": ').test(fnGd(twn, '_after_ready')),
+          ok(new RegExp('\\{ "rect": ' + a + ', "color": ').test(fnGd(twn, '_furnish')),
             '   …and ' + a + ' is on it');
         ok(/if t\.intersects\(box\):/.test(fnGd(jr9, '_paint_map')),
           '…and on a phone a name that would land on another name is left off');
@@ -4022,6 +4033,84 @@ const server = http.createServer((req, res) => {
             '⚠ …and she SLIDES round a trunk rather than stopping dead against it');
           ok(/_gait \+= \(global_position - was\)\.length\(\)/.test(fnGd(dogT, '_walk_to')),
             '⚠ …and her bob counts what she MOVED, so a pinned dog does not trot on the spot');
+        }
+
+        /* ══ 43 · THE MAP IS FIVE WINDOWS (2026-09-27) ═══════════════════════════════════
+           His: *"let's have the road cut to a new window… Like the way Pokemon works… We need
+           to improve performance significantly if we are going to add MORE things."*
+           `town.gd` is ONE CanvasItem so Godot culls nothing it draws — measured 3,262 render
+           objects for the whole map. Per window now: square 2,320 · north 1,347 · east 1,309 ·
+           south 1,508 · west 662. */
+        {
+          const twn = rd('town.gd');
+          const num = (re, src) => { const m = re.exec(src); return m ? m.slice(1).map(Number) : null; };
+          /* Pull the rects straight out of region_rect() and rebuild the partition here. */
+          const rects = {};
+          for (const key of ['north', 'west', 'east', 'south']) {
+            const m = new RegExp('"' + key + '":\\s*\\n\\s*return Rect2\\(([-\\d.]+), ([-\\d.]+), ([-\\d.]+), ([-\\d.]+)\\)').exec(twn);
+            if (m) rects[key] = m.slice(1, 5).map(Number);
+          }
+          /* ⚠ THE SQUARE IS THE FALL-THROUGH: the LAST `return Rect2` in region_rect(), after
+             the match block. Sliced from the function, never grepped out of the whole file. */
+          {
+            const fn = fnGd(twn, 'region_rect');
+            const all = [...fn.matchAll(/return Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/g)];
+            const last = all[all.length - 1];
+            if (last) rects.square = last.slice(1, 5).map(Number);
+          }
+          ok(Object.keys(rects).length === 5, 'five windows, read out of region_rect()',
+            Object.keys(rects).join(' '));
+          const inR = (r, p) => r && p[0] >= r[0] && p[0] <= r[0] + r[2] && p[1] >= r[1] && p[1] <= r[1] + r[3];
+          const regionOf = (p) => ['north', 'west', 'east', 'south'].find((k) => inR(rects[k], p)) || 'square';
+
+          /* ⛑⛑ THE ORPHAN. Written first as three standalone y/x tests, which filed the house
+             at (-700, 690) "south" and left it outside the south rect — in no window at all. */
+          const marks = {};
+          for (const m of twn.matchAll(/^const ([A-Z_]+_AT) := Vector2\((-?[\d.]+), (-?[\d.]+)\)/gm)) {
+            marks[m[1]] = [Number(m[2]), Number(m[3])];
+          }
+          const lost = Object.keys(marks).filter((k) => !inR(rects[regionOf(marks[k])], marks[k]));
+          ok(Object.keys(marks).length >= 8 && lost.length === 0,
+            '⛑⛑ every landmark is filed in a window whose rect actually CONTAINS it',
+            lost.length ? 'UNREACHABLE: ' + lost.join(' ')
+                        : Object.keys(marks).length + ' landmarks, none orphaned');
+
+          /* ⚠⚠ A SEAM HAS TO STAND IN BOTH WINDOWS IT JOINS, or you cross at a wall. */
+          {
+            const blk = twn.slice(twn.indexOf('const SEAMS :='), twn.indexOf('func _furnish_seams'));
+            let bad = [], n = 0;
+            let cur = null;
+            for (const line of blk.split('\n')) {
+              const h = /^\t"([a-z]+)": \[/.exec(line);
+              if (h) { cur = h[1]; continue; }
+              /* ⚠ NON-GREEDY, AND OFF THE KEY NAMES. `.*Vector2\(` swallowed as far as it could
+                 and captured the "size" as the bar's position — every seam then read as being
+                 outside both windows, which looked exactly like a real partition bug. */
+              const m = /"to": "([a-z]+)", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\).*?"land": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(line);
+              if (!m || !cur) continue;
+              n++;
+              const bar = [Number(m[2]), Number(m[3])], land = [Number(m[4]), Number(m[5])];
+              if (!inR(rects[cur], bar) || !inR(rects[m[1]], bar)) bad.push(cur + '->' + m[1] + ' bar');
+              if (!inR(rects[m[1]], land)) bad.push(cur + '->' + m[1] + ' landing');
+            }
+            ok(n >= 8 && bad.length === 0,
+              '⚠⚠ …and every seam stands in BOTH windows, and lands inside the one it opens',
+              bad.length ? bad.join(', ') : n + ' seams checked');
+          }
+          /* ⛑⛑ THE BUG THAT MADE THE FIRST SEAM DO NOTHING AT ALL. */
+          ok(/scene_path = "res:\/\/town\.tscn"/.test(twn.slice(twn.indexOf('class TownSeam'))),
+            '⛑⛑ a seam carries a scene_path even though interact() ignores it',
+            'TownDoor._physics_process early-returns on an empty one, so it never arms or fires');
+          ok(/GameState\.reentry\.erase\("res:\/\/town\.tscn"\)/.test(twn),
+            '⚠⚠ …and it erases the door note, because all five windows are ONE scene file');
+          /* ⚠⚠ ORDER: capture the minimap, then cull, then add the seams. */
+          const fur = fnGd(twn, '_furnish');
+          ok(fur.indexOf('TownMap.capture') < fur.indexOf('_cull_to_region()')
+            && fur.indexOf('_cull_to_region()') < fur.indexOf('_furnish_seams()'),
+            '⛑⛑ the journal map is captured BEFORE the cull, and the seams are added AFTER it',
+            'captured after, the map loses three quarters of the town; culled after, every seam is thrown away');
+          ok(/world_bounds = region_rect\(region\)/.test(twn),
+            '⚠ the walls are the window\'s, not the whole map\'s');
         }
 
         /* ⚠⚠ CANON, RULED 2026-08-14: nobody tells her and nobody knows. The beat lines are
