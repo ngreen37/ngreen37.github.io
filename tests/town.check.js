@@ -4019,17 +4019,21 @@ const server = http.createServer((req, res) => {
           }
           /* ⛑⛑ SHE IS AN Area2D AND MOVES BY ASSIGNMENT — there is no move_and_slide in dog.gd,
              so the step is tested against the space before it is taken. */
-          ok(/func _blocked\(at: Vector2\) -> bool:/.test(dogT)
-            && /func _step_toward\(want: Vector2\) -> void:/.test(dogT)
+          /* ⛑⛑ THE CHECK MOVED TO npc.gd ON 2026-09-28 and these four assertions moved with it.
+             It was written here for Princess, which is exactly why the PEOPLE walked through
+             trunks for two days. Section 44 owns the move; this still owns HER use of it. */
+          const npcT = rd('npc.gd');
+          ok(/func _blocked\(at: Vector2\) -> bool:/.test(npcT)
+            && /func _step_toward\(want: Vector2\) -> Vector2:/.test(npcT)
             && /_step_toward\(global_position \+ to \/ d \* step\)/.test(fnGd(dogT, '_walk_to')),
             '⛑ Princess tests every step against the physics space  (water, trunks, houses, fences)');
-          ok(/q\.exclude = \[\(_body\.get_parent\(\) as StaticBody2D\)\.get_rid\(\)\]/.test(dogT),
-            '⛑⛑ …and a SOLID dog excludes its own body, or every query hits itself and the check does nothing',
-            'Crockett and Argus carry a StaticBody2D; Princess does not');
-          ok(/if _blocked\(global_position\):\s*\n\t\tglobal_position = want/.test(dogT),
-            '⚠⚠ …and a dog already inside something can still walk out  [[down-never-stuck]]');
-          ok(/var ax := Vector2\(want\.x, global_position\.y\)/.test(dogT)
-            && /var ay := Vector2\(global_position\.x, want\.y\)/.test(dogT),
+          ok(/q\.exclude = \[\(_body\.get_parent\(\) as StaticBody2D\)\.get_rid\(\)\]/.test(npcT),
+            '⛑⛑ …and a SOLID walker excludes its own body, or every query hits itself and the check does nothing',
+            'Crockett, Argus and every solid person carry a StaticBody2D; Princess does not');
+          ok(/if _blocked\(global_position\):\s*\n\t\tglobal_position = want/.test(npcT),
+            '⚠⚠ …and anybody already inside something can still walk out  [[down-never-stuck]]');
+          ok(/var ax := Vector2\(want\.x, global_position\.y\)/.test(npcT)
+            && /var ay := Vector2\(global_position\.x, want\.y\)/.test(npcT),
             '⚠ …and she SLIDES round a trunk rather than stopping dead against it');
           ok(/_gait \+= \(global_position - was\)\.length\(\)/.test(fnGd(dogT, '_walk_to')),
             '⚠ …and her bob counts what she MOVED, so a pinned dog does not trot on the spot');
@@ -4111,6 +4115,130 @@ const server = http.createServer((req, res) => {
             'captured after, the map loses three quarters of the town; culled after, every seam is thrown away');
           ok(/world_bounds = region_rect\(region\)/.test(twn),
             '⚠ the walls are the window\'s, not the whole map\'s');
+        }
+
+        /* ══ 44. NOBODY WALKS THROUGH BARK ══════════════════════════════════════════════════
+           2026-09-28. The trunks went solid on 09-26 but only the PLAYER and Princess were ever
+           stopped by them: a person's `patrol` and Crockett's `_pace` both moved by assigning a
+           position outright, and the check they needed was sitting on TownDog three functions
+           away from one of them. It lives on TownNPC now and a walker inherits it by walking.
+           Verified in the engine, square window, 16 assertions: a person and a dog each driven
+           into real geometry for 900 frames, 0 frames left standing inside anything, both still
+           able to slide round it. Five mutants armed, five killed — including one that shrank
+           the walker's own probe circle, which SURVIVED until the probe stopped asking the code
+           under test to mark its own homework. */
+        {
+          const npcW = rd('npc.gd'), dogW = rd('dog.gd');
+          const bareW = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+          ok(/func _blocked\(at: Vector2\) -> bool:/.test(npcW)
+            && /func _step_toward\(want: Vector2\) -> Vector2:/.test(npcW),
+            '⛑⛑ TownNPC owns the collision check, so every walker in town inherits it',
+            'it used to live on TownDog, which is why the people walked through trees');
+          ok(!/func _blocked\(/.test(bareW(dogW)) && !/func _step_toward\(/.test(bareW(dogW)),
+            '…and TownDog no longer carries a second copy of it  [[one-fix-every-instance]]');
+          /* ⚠⚠ THE PROBE IS NOT THE BODY. A dog fits through gaps a person does not. */
+          ok(/func _foot_r\(\) -> float:\s*\n\s*return FOOT_R/.test(npcW),
+            '⚠ a person probes with their own footprint');
+          ok(/func _foot_r\(\) -> float:\s*\n\s*return PAW_R/.test(dogW)
+            && /const PAW_R := 9\.0/.test(dogW),
+            '…and a dog overrides it narrower  (9 against 14), so she is not a short human');
+          /* ⛑⛑ THE TWO GAITS THAT DID NOT CALL IT. Both are a position assignment away from
+             being the bug again, and neither has a test that would notice by looking. */
+          const patW = fnGd(npcW, '_process');
+          ok(/_step_toward\(_base \+ patrol/.test(patW)
+            && !/position = _base \+ patrol/.test(bareW(patW)),
+            '⛑⛑ a person\'s patrol STEPS, it does not assign a position',
+            'assigning it walks them through trunks, fences, houses and each other');
+          const paceW = fnGd(dogW, '_pace');
+          ok(/_gait \+= _step_toward\(/.test(paceW)
+            && !/global_position = _to|global_position = to/.test(bareW(paceW)),
+            '⛑⛑ …and Crockett\'s pace does too — the one gait in dog.gd that never checked');
+          /* ⚠⚠ A GAIT PACED OFF THE STEP REQUESTED skates on the spot against a wall. */
+          ok(/-> Vector2:/.test(fnGd(npcW, '_step_toward'))
+            && /return global_position - was/.test(fnGd(npcW, '_step_toward')),
+            '⚠⚠ _step_toward returns how far they ACTUALLY got, not how far they asked',
+            'paced off the request, the legs run while the body is against a tree');
+          ok(/_gait \+= \(global_position - was\)\.length\(\)/.test(fnGd(dogW, '_walk_to')),
+            '…and _walk_to still measures the same way it always did');
+        }
+
+        /* ══ 45. A CROSSING LOOKS LIKE ONE ══════════════════════════════════════════════════
+           2026-09-28. The five windows landed working and arrived HARD — you walked onto a seam
+           and the town was instantly a different town, which reads as a stutter rather than a
+           journey. fade.gd is the quarter second that fixes it: the window you leave fades to
+           black and dies black, the one you arrive in is born black and clears.
+           ⚠⚠ IT IS TWO NODES BECAUSE change_scene_to_file FREES THE SCENE. Nothing can live
+           across the swap, so both ends are opaque at the hand-over and the seam is invisible. */
+        {
+          const fd = rd('fade.gd'), twF = rd('town.gd');
+          ok(/class_name TownFade/.test(fd) && /extends CanvasLayer/.test(fd),
+            '⭐ a seam crossing goes dark first  (fade.gd)');
+          ok(/const OVER_ALL := 200/.test(fd),
+            '⚠⚠ …on a layer above everything  (the highest else in the game is photo.gd at 108)');
+          /* ⛑⛑ A SEAM FIRES EVERY PHYSICS FRAME YOU STAND ON IT, and change_scene_to_file does
+             not swap until idle — so the ~10 ticks inside the fade would each queue another. */
+          ok(/static func busy\(\) -> bool:/.test(fd) && /if busy\(\):\s*\n\s*return/.test(fd),
+            '⛑⛑ …and a second crossing cannot start while one is running');
+          ok(/_busy_us/.test(fd) && /Time\.get_ticks_usec\(\) - _busy_us < BUSY_US/.test(fd),
+            '⚠ …a TIMESTAMP not a flag, so a fade that never hands over unblocks itself',
+            'a stuck bool would wedge every future crossing shut  [[down-never-stuck]]');
+          ok(/then\.call\(\)/.test(fnGd(fd, 'cross')),
+            '⚠⚠ …and it still crosses if it cannot fade  (a transition may not eat the journey)');
+          ok(/add_to_group\("town_cover"\)/.test(fd),
+            '⚠ the feet stop while it goes dark, through the town\'s existing cover');
+          /* ⚠⚠ uncovered() STARTS A 150ms WINDOW IN WHICH covered() IS STILL TRUE. The fade IN
+             never covered anybody, so ringing it there freezes the feet on arrival. */
+          /* ⚠ COMMENTS STRIPPED FIRST. The note explaining why this call must NOT be here says
+             its name, and a regex reading the raw function cannot tell a warning from a bug. */
+          const doneF = fnGd(fd, '_done').split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+          ok(!/TownZone\.uncovered\(\)/.test(doneF),
+            '⛑⛑ …and the fade IN never calls uncovered(), which would freeze the feet it frees');
+          ok(/TownFade\.landing\(self\)/.test(fnGd(twF, '_after_ready')),
+            '…and the window you arrive in clears from black');
+          ok(/if not _landed/.test(fnGd(fd, 'landing')),
+            '⚠ …only when a SEAM put you there — a save or a house door opens on the town');
+          /* ⚠⚠ NOTHING IS DECIDED UNTIL THE SCREEN IS BLACK. Setting the region up front would
+             leave the statics describing a window that is not on screen for a fifth of a second. */
+          const seamF = twF.slice(twF.indexOf('class TownSeam'));
+          ok(/TownFade\.cross\(self, func\(\) -> void:/.test(seamF)
+            && seamF.indexOf('TownFade.cross') < seamF.indexOf('CheckerTown.region = to_region'),
+            '⛑⛑ the seam decides nothing until the fade has finished',
+            'region set before the swap describes a window nobody is looking at yet');
+        }
+
+        /* ══ 46. THE TOWNSFOLK SHIP AS A PICTURE ════════════════════════════════════════════
+           2026-09-28. Baking the idle bank at load cost 64 GPU readbacks and kept a whole rig
+           alive while they happened. MEASURED, desktop GPU, same scene both ways:
+             baking (as shipped 09-27)   first cell frame 9, all 64 at frame 513  (8.5 seconds)
+             loading the atlas           first cell frame 1, all 64 at frame 1
+           For 8.5 seconds every NPC was falling back to a cell of the wrong facing. The atlas
+           costs 245 KB of PNG (2048x512, 19.7% of it figure) and +229 KB on a 977 KB pck —
+           about 2% of what a player actually downloads, against a 37.7 MB engine.
+           ⚠⚠ THE BAKE IS THE FALLBACK, NOT DEAD CODE. Proved by deleting the atlas: the town
+           still fills with people, off ImageTextures instead of AtlasTextures. */
+        {
+          const sh = rd('people_sheet.gd');
+          ok(/const SHEET := "res:\/\/people_idle\.png"/.test(sh)
+            && fs.existsSync(path.join(GD, 'people_idle.png')),
+            '⭐ the idle bank ships as one atlas instead of 64 readbacks at load');
+          ok(fs.existsSync(path.join(GD, 'people_idle.png.import')),
+            '⚠ …and its .import rides along, or the export has a PNG nothing can load');
+          const rdy = fnGd(sh, '_ready');
+          ok(/if _load_sheet\(\):\s*\n\s*return/.test(rdy) && /_bake_all\(\)/.test(rdy),
+            '⛑⛑ …and a missing or stale atlas BAKES instead, rather than emptying the town',
+            'generated art must never be the only way to have a body  [[down-never-stuck]]');
+          /* ⚠⚠ THE LAYOUT IS A CONTRACT SHARED WITH THE GENERATOR. Slice it differently from
+             the way it was baked and everybody has a body, a shadow and the wrong face. */
+          const ld = fnGd(sh, '_load_sheet');
+          ok(/var slot := f \* IDLES \+ i/.test(ld),
+            '⚠⚠ …sliced with the same arithmetic it was baked with  (slot = facing * IDLES + idle)');
+          ok(/tex\.get_width\(\) != want_w \|\| tex\.get_height\(\) != want_h/.test(ld)
+            || /tex\.get_width\(\) != want_w or tex\.get_height\(\) != want_h/.test(ld),
+            '⚠ …and a sheet of the wrong SIZE is refused, not sliced into garbage');
+          ok(/AtlasTexture/.test(ld) && /at\.atlas = tex/.test(ld),
+            '⭐ …as 64 AtlasTextures into ONE image, so there is one texture in memory');
+          ok(/static func filled\(\) -> int:/.test(sh),
+            '⚠ filled() counts CELLS, not the array\'s size  (resize fills it with nulls)');
         }
 
         /* ⚠⚠ CANON, RULED 2026-08-14: nobody tells her and nobody knows. The beat lines are
