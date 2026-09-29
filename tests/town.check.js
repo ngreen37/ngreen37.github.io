@@ -1030,8 +1030,10 @@ const server = http.createServer((req, res) => {
         .map((m) => +m[1] - +m[2] / 2);
       const pFeet = /const SEAT_FEET := (-?[\d.]+)/.exec(park);
       const pTall = /const TALL := ([\d.]+)/.exec(fs.readFileSync(path.join(GD, 'player_model.gd'), 'utf8'));
-      ok(pFeet && pTall && /_model\.draw_on\(self, Vector2\(0\.0, SEAT_FEET\)\)/.test(park),
-        'the seated player is measured too, off the model\'s own height');
+      ok(pFeet && pTall && /TownPeople\.draw_person\(self, Vector2\(0\.0, SEAT_FEET\)/.test(park)
+         && /SEAT_FEET - TownPlayerModel\.TALL/.test(park),
+        'the seated player is measured too, off the model\'s own height',
+        'drawn off the BAKED SHEET since 2026-09-29 \u2014 same feet, same height, no live rig');
       if (pFeet && pTall) pSeats.push(+pFeet[1] - +pTall[1]);
       /* …and a DOG at a table, drawn sitting, not a model: her crown is DOG_SEAT − SIT_TALL × scale. */
       const pDog = /const DOG_SEAT := (-?[\d.]+)/.exec(park), pDogS = /const DOG_SCALE := ([\d.]+)/.exec(park);
@@ -1039,6 +1041,22 @@ const server = http.createServer((req, res) => {
       ok(pDog && pDogS && pSit && /TownDog\.paint_sitting\(self, who, Vector2\(0\.0, DOG_SEAT\), DOG_SCALE/.test(park),
         'a dog at a Pavilion table is measured too');
       if (pDog && pDogS && pSit) pSeats.push(+pDog[1] - +pSit[1] * +pDogS[1]);
+      /* \u26d1\u26d1\u26d1 ONLY THE PLAYER MAY WEAR A LIVE RIG. A TownPlayerModel is a SubViewport with
+         its own World3D, and the cost of this town has twice been the NUMBER of them rather
+         than the price of one: seven in the town (fixed 09-26 by people_sheet.gd) and then
+         seven more at the Pavilion's tables, which nobody carried the fix into. Measured in
+         Chrome on his GPU, both arms twice: park 43.2fps / p95 33.40 / 760 dropped frames in
+         45s, against the town's 60.1 / 16.80 / 0. After: 60.1 / 16.80 / 0.
+         \u26a0 people_sheet.gd is the OTHER legal caller \u2014 it builds one rig to photograph the
+         sheet and frees it again. Anyone else draws from the sheet. */
+      {
+        const rigs = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+          .filter((f) => /TownPlayerModel\.make\(/.test(fs.readFileSync(path.join(GD, f), 'utf8')));
+        ok(rigs.length === 2 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd'),
+          '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture',
+          rigs.length ? 'builds one: ' + rigs.join(', ') : 'nobody builds one at all');
+      }
+
       ok(pRoom && pRung && pSeats.length >= 3,
         'the pavilion\'s frame is readable from source', pSeats.length + ' heads measured');
       if (pRoom && pRung && pSeats.length) {
@@ -2033,9 +2051,13 @@ const server = http.createServer((req, res) => {
           hexes.join(' '));
         ok(/bool\(cab\.get\("half", false\)\) and not GameState\.assembly_half\(\)/.test(front),
           '\u26a0 the locked machine is dark in the window, on the same gate the cabinet reads');
-        ok(/int\(_t \* 8\.0\) % BULBS/.test(front),
-          '\u26a0 the bulbs chase at 8 frames a second, not 60',
-          'sixty redraws a second to move six circles is a bill with nothing on it [[ambient-layer-cost]]');
+        /* \u26d1 2026-09-29, his: *"I meant the OUTSIDE blinking lights of the arcade"*. The
+           marquee burns whole and the machines in the window burn steady. \u26a0\u26a0 ALL ON, NOT
+           FROZEN MID-CHASE: the chase lit one bulb in three, so stopping the clock would leave
+           two thirds of them dead, which reads as broken rather than as still. */
+        ok(!/_process/.test(front) && !/_step/.test(front),
+          '\u26d1 the arcade\'s outside lights do not chase, and the front has no per-frame work',
+          'a chasing bulb was this building\'s only reason to run code every frame');
         ok(/func retime\(\) -> void:/.test(front) && /TownClock\.is_dark\(\)/.test(front),
           '…and it is asked by the same minute tick as every other lit thing on the map');
         ok(/_spill\.energy = 0\.85 if TownClock\.is_dark\(\) else 0\.0/.test(front),
