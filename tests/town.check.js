@@ -3033,9 +3033,15 @@ const server = http.createServer((req, res) => {
         ok(/_board_line\(\) if not board_lines\.is_empty\(\) else _line_for\(hearts\)/.test(npcG)
           && /maxwell\.board_lines = \[/.test(townG) && /GameState\.army_count\(\)/.test(fnGd(npcG, '_board_line')),
           '⭐ Maxwell’s greeting reads how far your board has got');
+        /* ⚠⚠ THE DOCK IS STILL HERS, IT IS JUST WINDOW-GATED NOW (2026-09-28). She waits at the
+           Assembly, which is in the NORTH, and the dock is in the SOUTH — so in that window she
+           is given no water and the night never fires. See section 47: unguarded she walked 893
+           units off the painted map to reach it. The behavior is intact and dormant, not cut,
+           and it comes back on its own the day her post and the dock share a window. */
         ok(/posmod\(hash\("water\|%d" % d\), 100\)/.test(dogG) && /not TownClock\.is_dark\(\)/.test(fnGd(dogG, '_water_night'))
-          && /dog\.water = LOOKOUT_AT/.test(townG),
-          '⭐ some nights Princess goes to the water, and only after dark');
+          && /var wet := LOOKOUT_AT \+ Vector2\(66\.0, 6\.0\)/.test(townG)
+          && /dog\.water = wet/.test(townG),
+          '⭐ some nights Princess goes to the water, and only after dark  (where she can reach it)');
         const told = strs(dogG).concat(strs(pb)).filter((s) => /tilt|planet|bill|queen|manifest|imagin|pray/i.test(s));
         ok(told.length === 0 && /deg_to_rad\(-20\.0\) if tilt/.test(dogG),
           '⚠⚠ …the tilt is DRAWN, twenty degrees, and not one string explains it',
@@ -4239,6 +4245,51 @@ const server = http.createServer((req, res) => {
             '⭐ …as 64 AtlasTextures into ONE image, so there is one texture in memory');
           ok(/static func filled\(\) -> int:/.test(sh),
             '⚠ filled() counts CELLS, not the array\'s size  (resize fills it with nulls)');
+        }
+
+        /* ══ 47. PRINCESS WAITS OUTSIDE THE ASSEMBLY ════════════════════════════════════════
+           2026-09-28, his: *"can you have her wait outside the assembly for me?"* — chosen over
+           making her a fixture and over teaching a follower to cross a seam. She is a NORTH
+           character now: she stands at her post until you come up the road, heels while you are
+           there, and is back at the post next time you climb it. Nothing about her was deleted.
+
+           ⛑⛑ THE BUG THIS CLOSES IS A DOG WALKING OFF THE PAINTED MAP. A dog has no seam to
+           walk through, and both of her destinations are in other windows — the home door is in
+           the square, the dock is in the south. Measured with the guard reverted: at curfew she
+           walks 893 units OUTSIDE the north window and ends on HOME_AT at (-246, 433), in full
+           view, across a thousand units of unfurnished sand.
+           ⚠⚠ NOTHING IN dog.gd CHANGED. Vector2.ZERO already meant exactly this in both places:
+           an empty door_home skips the walk and steps her out where she stands, and an empty
+           `water` is the first thing _water_night() tests. The fix is withholding a destination
+           she cannot reach, not teaching her a new behavior.
+           Verified in the engine over a full day of the clock: 14 assertions, midday through
+           curfew and back to morning, sampling her position EVERY frame — 0 units outside the
+           window at any point. Mutant armed and killed. */
+        {
+          const twP = rd('town.gd');
+          const gk = fnGd(twP, '_furnish_gatekeepers');
+          ok(/dog\.position = HALL_AT \+ Vector2\(210\.0, 120\.0\)/.test(gk),
+            '⭐ Princess waits outside the Assembly  (his pick, 2026-09-28)');
+          /* ⚠⚠ ASKED PER WINDOW, NOT HARD-CODED TO THE NORTH — move her and the door returns. */
+          ok(/if region_of\(wet\) == region:\s*\n\s*dog\.water = wet/.test(gk),
+            '⛑⛑ …and the dock is only given to her if it is in THIS window',
+            'the dock is in the south: unguarded she walks out of the north to reach it');
+          ok(/if region_of\(HOME_AT\) == region:\s*\n\s*dog\.door_home = HOME_AT/.test(gk),
+            '⛑⛑ …and so is the home door  (it is in the square)',
+            'measured unguarded: 893 units outside the window, ending on HOME_AT');
+          /* ⚠ THE SENTINELS town.gd IS RELYING ON. If either stops meaning "nowhere", the
+             guard above silently becomes a dog with no home and no water instead of a dog
+             who stays put — and both read the same from the outside on a quiet afternoon. */
+          const dogP = rd('dog.gd');
+          ok(/if water == Vector2\.ZERO or not TownClock\.is_dark\(\):/.test(fnGd(dogP, '_water_night')),
+            '⚠⚠ …and an empty `water` still means no water night');
+          ok(/door_home != Vector2\.ZERO and not _walk_to\(door_home/.test(fnGd(dogP, '_process')),
+            '⚠⚠ …and an empty door_home still means "step out where you stand"');
+          ok(/if not at_home and door_home != Vector2\.ZERO:/.test(fnGd(dogP, '_step_in')),
+            '⚠ …and coming back on duty does not teleport her to a door in another window');
+          /* ⚠ SHE IS STILL THE COMPANION. The whole point of his pick over the other two. */
+          ok(/"companion": true/.test(dogP),
+            '⭐ …and she is still a companion — she heels while you are up there');
         }
 
         /* ⚠⚠ CANON, RULED 2026-08-14: nobody tells her and nobody knows. The beat lines are
