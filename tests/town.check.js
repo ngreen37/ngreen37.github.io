@@ -4090,22 +4090,52 @@ const server = http.createServer((req, res) => {
             const blk = twn.slice(twn.indexOf('const SEAMS :='), twn.indexOf('func _furnish_seams'));
             let bad = [], n = 0;
             let cur = null;
+            const seams = [];
             for (const line of blk.split('\n')) {
               const h = /^\t"([a-z]+)": \[/.exec(line);
               if (h) { cur = h[1]; continue; }
               /* ⚠ NON-GREEDY, AND OFF THE KEY NAMES. `.*Vector2\(` swallowed as far as it could
                  and captured the "size" as the bar's position — every seam then read as being
                  outside both windows, which looked exactly like a real partition bug. */
-              const m = /"to": "([a-z]+)", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\).*?"land": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(line);
+              const m = /"to": "([a-z]+)", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\), "size": Vector2\((-?[\d.]+), (-?[\d.]+)\), "land": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(line);
               if (!m || !cur) continue;
               n++;
-              const bar = [Number(m[2]), Number(m[3])], land = [Number(m[4]), Number(m[5])];
+              const bar = [Number(m[2]), Number(m[3])], land = [Number(m[6]), Number(m[7])];
+              seams.push({ from: cur, to: m[1], at: bar, size: [Number(m[4]), Number(m[5])] });
               if (!inR(rects[cur], bar) || !inR(rects[m[1]], bar)) bad.push(cur + '->' + m[1] + ' bar');
               if (!inR(rects[m[1]], land)) bad.push(cur + '->' + m[1] + ' landing');
             }
             ok(n >= 8 && bad.length === 0,
               '⚠⚠ …and every seam stands in BOTH windows, and lands inside the one it opens',
               bad.length ? bad.join(', ') : n + ' seams checked');
+
+            /* ⛑⛑ AND IT HAS TO BE REACHABLE FROM THE CLAMP — 2026-09-28, his: *"I can't access
+               the next frame south"*. Standing in both windows says the door is in the wall; this
+               says it OPENS. `_keep_inside` stops a body `radius + 2` inside world_bounds, and
+               TownDoor fires while a body of `radius` reaches the mat shrunk by ARM_INSET — so the
+               mouth spans `at ± (size/2 - 9 + 15)` and the clamp line has to land inside it.
+               ⚠⚠ MEASURED, NOT READ: the south seam sat 140 units short of its own wall and he
+               walked out of his front door, straight down, and stopped against nothing. West and
+               east were 4 units short of the same thing and nobody had found them. */
+            const REACH = 15 + 2, MOUTH = 15 - 9;
+            const shut = [];
+            for (const s of seams) {
+              const r = rects[s.from], a = s.at, z = s.size;
+              const d = [[a[0] - r[0], 'L'], [r[0] + r[2] - a[0], 'R'],
+                         [a[1] - r[1], 'T'], [r[1] + r[3] - a[1], 'B']];
+              d.sort((x, y) => x[0] - y[0]);
+              const side = d[0][1], vert = side === 'L' || side === 'R';
+              const wall = side === 'L' ? r[0] : side === 'R' ? r[0] + r[2]
+                         : side === 'T' ? r[1] : r[1] + r[3];
+              const clamp = wall + ((side === 'L' || side === 'T') ? REACH : -REACH);
+              const half = (vert ? z[0] : z[1]) / 2 + MOUTH;
+              const off = Math.abs(clamp - (vert ? a[0] : a[1]));
+              if (off > half) shut.push(s.from + '->' + s.to + ' short by ' + (off - half).toFixed(0));
+            }
+            ok(seams.length >= 8 && shut.length === 0,
+              '⛑⛑ …and a body pressed against the wall is STILL on the seam\'s mat',
+              shut.length ? 'CANNOT CROSS: ' + shut.join(', ')
+                          : seams.length + ' seams, every mouth reaches the clamp');
           }
           /* ⛑⛑ THE BUG THAT MADE THE FIRST SEAM DO NOTHING AT ALL. */
           ok(/scene_path = "res:\/\/town\.tscn"/.test(twn.slice(twn.indexOf('class TownSeam'))),
@@ -4121,6 +4151,14 @@ const server = http.createServer((req, res) => {
             'captured after, the map loses three quarters of the town; culled after, every seam is thrown away');
           ok(/world_bounds = region_rect\(region\)/.test(twn),
             '⚠ the walls are the window\'s, not the whole map\'s');
+          /* ⛑⛑ AND THE SOLID THINGS ARE NOT THE WINDOW'S. One positionless StaticBody2D carries
+             every water rect and every fenced corner, so `_cull_to_region` filed the lot by (0,0)
+             — the square, where not one of them can be reached — and deleted them in the windows
+             that DRAW them. Measured 2026-09-28 with a shape query: the sea was walkable in the
+             south window and both fenced corners were open in the north. */
+          ok(/func _furnish_walls[\s\S]{0,600}?add_to_group\("town_everywhere"\)/.test(twn),
+            '⛑⛑ …and the water and the fences opt OUT of it, because a wall is the MAP\'s',
+            'filed by position they all land in the square and the sea becomes walkable');
         }
 
         /* ══ 44. NOBODY WALKS THROUGH BARK ══════════════════════════════════════════════════
