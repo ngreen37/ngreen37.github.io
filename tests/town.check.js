@@ -3407,6 +3407,23 @@ const server = http.createServer((req, res) => {
           '⭐ "walk2" wins the walk slot — the word list is a PREFERENCE, so it loops outside the clips',
           'clips-outside, the first clip matching ANY word won and "Walk" beat "walk2"');
 
+        /* ⛑⛑ THE TOWNSFOLK ARE A PHOTOGRAPH OF THE PLAYER'S MODEL, so a new nate.glb makes
+           people_idle.png a picture of somebody who no longer exists — every NPC quietly stays
+           the OLD Nate while the player is the new one, and people_sheet.gd's only guard is the
+           atlas SIZE, which does not change. Nearly shipped that way on 2026-09-29 when Nate_1.5
+           landed. Both files are generated into this folder, so the bake must not predate the
+           export. ⚠ Re-bake with the sheet probe, then `npm run gen:checkertown`. */
+        {
+          const glb = path.join(GD, 'nate.glb'), png = path.join(GD, 'people_idle.png');
+          const hasBoth = fs.existsSync(glb) && fs.existsSync(png);
+          const gm = hasBoth ? fs.statSync(glb).mtimeMs : 0;
+          const pmt = hasBoth ? fs.statSync(png).mtimeMs : 0;
+          ok(hasBoth && pmt >= gm,
+            '⛑⛑ the baked townsfolk are a picture of the CURRENT nate.glb, not an older one',
+            !hasBoth ? 'one of nate.glb / people_idle.png is missing'
+                     : 'sheet baked ' + Math.round((pmt - gm) / 1000) + 's after the model was exported');
+        }
+
         /* doors: a step in, and only where a step is safe. */
         const pp = fnGd(dr, '_physics_process');
         ok(/scene_path == ""/.test(pp) && /url != ""/.test(pp) && /energy_cost > 0/.test(pp)

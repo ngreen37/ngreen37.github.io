@@ -13,6 +13,30 @@ if palette is not None:
     for ob in list(palette.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
 
+# ⛑⛑ A STASHED STRIP WITH NO ACTION SLOT TAKES DOWN THE WHOLE EXPORT (2026-09-29, Nate_1.5).
+# Blender 5 gives every action SLOTS; his `_TPose` has none, so an NLA strip holding it has
+# `action_slot = None`, and io_scene_gltf2 reads `strip.action_slot.target_id_type` without
+# checking. ONE stashed pose on the MESH killed a model carrying five good clips, and the
+# error named a line inside Blender rather than anything he did.
+# ⚠ NOTHING IS LOST: a strip the exporter cannot read is a strip that was never going to ship.
+# ⚠⚠ DROPPED HERE, NOT IN HIS FILE. He stashes and cannot delete actions ("I couldn't figure
+# out how to delete actions" — 2026-09-21); the pipeline absorbs that, or every future save is
+# a support call. -b never writes the .blend back.
+dropped = []
+for _ob in bpy.data.objects:
+    _ad = _ob.animation_data
+    if _ad is None:
+        continue
+    for _tr in list(_ad.nla_tracks):
+        for _st in list(_tr.strips):
+            if getattr(_st, "action_slot", None) is None:
+                dropped.append("%s/%s" % (_ob.name, _st.name))
+                _tr.strips.remove(_st)
+        if not _tr.strips:
+            _ad.nla_tracks.remove(_tr)
+if dropped:
+    print("DROPPED-STRIPS", ", ".join(dropped))
+
 bpy.ops.export_scene.gltf(
     filepath=out,
     export_format='GLB',
