@@ -933,6 +933,27 @@ const server = http.createServer((req, res) => {
         '…and there is only ONE of that texture, not one per room that wanted one');
       ok(/if not inner\.encloses\(Rect2\(at, Vector2\(cell, cell\)\)\):/.test(arc),
         '…and the carpet stops at the wall  (⚠ ceil() overruns and there is no clip rect)');
+      /* ⛑⛑ 2026-09-29, his: "inside the arcade ... it's still laggy". The Compatibility renderer
+         runs every light whose rect touches an item on every pixel of that item, so a floor drawn
+         as ONE item paid all seven lights everywhere, and two hidden full-room layers under it
+         paid them too. Uncapped at 1880x1000: 10.0 ms a frame vs 4.5 lights-off; tiled, the
+         lights cost ~1.3 ms. Pixel-identical on a render, 6 and 7 lit, top and bottom of the room. */
+      {
+        const arcCode = arc.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const tile = /const TILE := ([\d.]+)/.exec(arcCode);
+        ok(/class FloorTile extends Node2D:/.test(arcCode) && /\t_light_the_room\(\)\n\t_lay_floor\(\)/.test(arcCode)
+          && /t\.show_behind_parent = true/.test(arcCode) && /Arcade\.paint_floor\(self, cut\)/.test(arcCode),
+          '⛑ the arcade floor is TILES, each paying only for the lights that reach it',
+          '⚠ show_behind_parent, or the wall band and the walls end up under the carpet');
+        ok(!/draw_rect\(ROOM, BACK\)/.test(arcCode) && !/draw_rect\(area, FLOOR_B\)/.test(arcCode)
+          && /_fill\(c, cut, inner, FLOOR_A\)/.test(arcCode),
+          '…and nothing is painted under the carpet  (⚠ a hidden layer still runs every light: 2.9 ms)');
+        ok(tile && +tile[1] % 64 === 0 && /var xs := _cuts\(ROOM\.position\.x, ROOM\.end\.x, inner\.position\.x\)/.test(arcCode)
+          && /var ys := _cuts\(ROOM\.position\.y, ROOM\.end\.y, inner\.position\.y\)/.test(arcCode)
+          && /if not cut\.has_point\(at\):\s*\n\s*continue/.test(arcCode),
+          '…and a tile edge runs along a carpet cell edge, so no diamond is split between two tiles',
+          'TILE ' + (tile ? tile[1] : '?') + ' against a 64-unit cell, anchored on the carpet');
+      }
       ok(/const SPEED := 525\.0/.test(player) && /@export var speed: float = SPEED/.test(player),
         'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',
         '⚠ a const, not just an export default — TownDog.TROT reads it, see §36b');
@@ -1465,7 +1486,9 @@ const server = http.createServer((req, res) => {
         '…and the cabinet asks it rather than doing the arithmetic again');
       ok(/"half": true/.test(arc) && /cab\.half = bool\(d\.get\("half", false\)\)/.test(arc),
         '…on exactly one machine, off a field  (⚠ not an `if slug ==`)');
-      ok(/_light\.energy = 0\.0 if _dark/.test(arc)
+      /* ⚠⚠ OFF, NOT ENERGY 0 (2026-09-29): a light at energy 0 still runs on every pixel it
+         touches — 6 lit + 1 at zero measured exactly what 7 lit did. */
+      ok(/_light\.enabled = not _dark/.test(arc) && !/_light\.energy = 0\.0 if _dark/.test(arc)
         && /if _dark:\s*\n\s*return[^\n]*\n\s*var m: float = r\.size\.y/.test(arc),
         '…and a locked machine is genuinely dark: no light, no attract frame');
       ok(/dark until half the Assembly is lit  \(%d of %d\)/.test(arc),
