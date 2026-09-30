@@ -954,6 +954,38 @@ const server = http.createServer((req, res) => {
           '…and a tile edge runs along a carpet cell edge, so no diamond is split between two tiles',
           'TILE ' + (tile ? tile[1] : '?') + ' against a 64-unit cell, anchored on the carpet');
       }
+      /* ⭐ 2026-09-30, his: "Make a very basic portal in each chess board - there's one in my home,
+         there's one in sand mines. It just goes to a basic chessboard ... Character just spins a
+         couple times and goes into the portal". Driven end to end by a probe: both trips out and
+         back, two turns each, his feet on the ring with an arrow key held down. */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const has = (f) => fs.existsSync(path.join(GD, f));
+        const por = has('portal.gd') ? rdc('portal.gd') : '';
+        const cb = has('chessboard.gd') ? rdc('chessboard.gd') : '';
+        const tw = rdc('town.gd'), hm = rdc('home.gd'), pl = rdc('player.gd');
+        const hbx = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
+        ok(/class_name TownPortal\s*\nextends TownDoor/.test(por) && /const BOARD := "res:\/\/chessboard\.tscn"/.test(por)
+          && has('chessboard.tscn') && /path="res:\/\/chessboard\.gd"/.test(fs.readFileSync(path.join(GD, 'chessboard.tscn'), 'utf8')),
+          '⭐ a portal is a door onto the board room, and the room exists');
+        ok(/walk_in = false/.test(fnGd(por, '_init')),
+          '…pressed, never walked into  (⚠ the camp\'s board is on the path through the camp)');
+        ok(/_draw_board\(CAMP_BOARD,/.test(tw) && /portal\.position = CAMP_BOARD/.test(tw)
+          && /portal\.scene_path = TownPortal\.BOARD/.test(tw),
+          '…one sits on the Sand Mine camp\'s board, off the same number the board is drawn at');
+        ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
+          && /_portal\.scene_path = TownPortal\.BOARD/.test(hbx)
+          && (hbx.match(/"id": "portal"/g) || []).length === 2 && /if id == "portal":/.test(fnGd(hbx, '_on_chose')),
+          '…and one in his home board, reached from its menu with or without Princess — never a second prompt on the table');
+        ok(/back\.scene_path = GameState\.portal_from if GameState\.portal_from != "" else "res:\/\/home\.tscn"/.test(cb)
+          && /if scene_path == BOARD and here != null:\s*\n\s*GameState\.portal_from/.test(por),
+          '…and the board\'s own portal goes back where you came in, home if nothing says');
+        ok(/TownFade\.landing\(self\)/.test(fnGd(cb, '_after_ready')) && /TownFade\.landing\(self\)/.test(fnGd(hm, '_after_ready')),
+          '…and both rooms it lands in fade up out of the black it left in');
+        ok(/const SPIN_TURNS := 2\.0/.test(pl) && /if _warp >= 0\.0:\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*return/.test(fnGd(pl, '_physics_process')),
+          '…he spins twice going in, and no key moves him while he does');
+      }
       ok(/const SPEED := 525\.0/.test(player) && /@export var speed: float = SPEED/.test(player),
         'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',
         '⚠ a const, not just an export default — TownDog.TROT reads it, see §36b');
