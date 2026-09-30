@@ -974,6 +974,9 @@ const server = http.createServer((req, res) => {
         ok(/_draw_board\(CAMP_BOARD,/.test(tw) && /portal\.position = CAMP_BOARD/.test(tw)
           && /portal\.scene_path = TownPortal\.BOARD/.test(tw),
           '…one sits on the Sand Mine camp\'s board, off the same number the board is drawn at');
+        ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.position = SEA_BOARD/.test(tw)
+          && (tw.match(/portal\.scene_path = TownPortal\.BOARD/g) || []).length === 2,
+          '…and one on the dock\'s board by the sea  (his: "one more chessboard ... down by the sea")');
         ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
           && /_portal\.scene_path = TownPortal\.BOARD/.test(hbx)
           && (hbx.match(/"id": "portal"/g) || []).length === 2 && /if id == "portal":/.test(fnGd(hbx, '_on_chose')),
