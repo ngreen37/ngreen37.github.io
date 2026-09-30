@@ -1818,7 +1818,7 @@ if (RUN_UI) (function(){
   function carryToTown(){
     try {
       localStorage.setItem(TOWN_LAST_KEY, JSON.stringify({
-        bot: TOWN_CEO, result: '1-0', won: true, pos: '', clean: true, at: Date.now()
+        bot: TOWN_CEO, result: '1-0', won: true, pos: '', clean: true, took: meTook(), at: Date.now()
       }));
       var b = document.getElementById('tr-carry');
       b.disabled = true; b.textContent = '✓ Carried to Checker Town';
@@ -1826,6 +1826,15 @@ if (RUN_UI) (function(){
     } catch(e){ return false; }
   }
   function onlyKings(b){ for(var i=0;i<64;i++){ if(b[i] && b[i].toLowerCase()!=='k') return false; } return true; }
+  /* ⭐ WHAT YOU TOOK OFF THE CEO'S SIDE — Park Tables' `took` (2026-09-30); Checker Town pays ore
+     for it. You are White, so it is Black's 39 less what Black has left. ⚠ 0 on any failure. */
+  function meTook(){
+    try {
+      var W = { p: 1, n: 3, b: 3, r: 5, q: 9 }, left = 0, i, c;
+      for (i = 0; i < 64; i++) { c = ME && ME.b[i]; if (c && c === c.toLowerCase() && W[c]) left += W[c]; }
+      return Math.max(0, 39 - left);
+    } catch (e) { return 0; }
+  }
   function winMindsEye(byTime){
     endReveal(); setMeStatus((byTime?'Flag fall — ':'CHECKMATE — ')+'you beat '+TIER_LABEL[meTier]+' blind!','good');
     var firstTime = !st.trophy; st.trophy=true; st.eye=true; save();

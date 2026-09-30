@@ -180,6 +180,69 @@ const server = http.createServer((req, res) => {
       'crockett=' + ((M.m.scouted || {}).crockett));
     ok(M.m.scouted && M.m.scouted.argus === 2, '…and a key only the other device knows is kept');
 
+    /* ══ MONEY on the site's side (2026-09-30, his picks 1 5 9 and the synced half of 3 4 7) ══ */
+    const MO = await page.evaluate(() => {
+      const out = {};
+      const set = (o) => localStorage.setItem('pjcc.pt.last.v1', JSON.stringify(o));
+      set({ bot: 'maxwell', result: '1-0', won: true, pos: '', took: 17, at: 5000 * 1000 });
+      out.took = PJCC.townTook('maxwell', 0);
+      out.wrongKey = PJCC.townTook('nate', 0);
+      set({ bot: 'maxwell', result: '0-1', won: false, pos: '', took: 17, at: 5000 * 1000 });
+      out.loss = PJCC.townTook('maxwell', 0);
+      set({ bot: 'maxwell', result: '1-0', won: true, pos: '', took: 999, at: 5000 * 1000 });
+      out.capped = PJCC.townTook('maxwell', 0);
+      set({ bot: 'maxwell', result: '1-0', won: true, pos: '', at: 5000 * 1000 });
+      out.legacy = PJCC.townTook('maxwell', 0);
+      out.credits = PJCC.townCredits();
+      out.trade = PJCC.townExchange(1);
+      out.result = PJCC.townExchangeResult();
+      localStorage.removeItem('pjcc.town.v1');
+      PJCC.mergeTown({ rent_on: '2026-09-30', bounty_done: { '2026-09-30:beat': 1 },
+        favors: { Maxwell: 2 }, lessons_used: { Maxwell: 1 }, packs: { first: 1 } });
+      out.m = PJCC.mergeTown({ rent_on: '2026-09-01', bounty_done: { '2026-09-29:mine': 1 },
+        favors: { Maxwell: 1, Nate: 1 }, lessons_used: { Maxwell: 0 }, packs: {} });
+      return out;
+    });
+    ok(MO.took === 17 && MO.wrongKey === 0 && MO.loss === 0,
+      '⭐ townTook: the material you took, on a win against that person only', JSON.stringify(MO));
+    ok(MO.capped === 39 && MO.legacy === 0,
+      '…capped at a whole army (39), and 0 for a record from before the stamp — never a guess');
+    ok(MO.credits === -1 && MO.trade === 'signed-out' && MO.result === '',
+      '⭐ the exchange is shut signed out: no credits to show, and no trade starts');
+    ok(MO.m.rent_on === '2026-09-30' && MO.m.bounty_done['2026-09-30:beat'] && MO.m.bounty_done['2026-09-29:mine']
+      && MO.m.favors.Maxwell === 2 && MO.m.favors.Nate === 1 && MO.m.lessons_used.Maxwell === 1 && MO.m.packs.first,
+      '⭐ mergeTown money: rent date LATER wins, bounties and packs UNION, favors and lessons MAX',
+      JSON.stringify(MO.m).slice(0, 200));
+
+    /* ⭐ materialTaken, lifted out of the Park Tables page and run against real games. */
+    {
+      const C = require('../assets/js/pjcc-chess.js');
+      const pt = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8').replace(/\r\n/g, '\n');
+      const src = (/function materialTaken\(st\)\{[\s\S]*?\n  \}\n/.exec(pt) || [''])[0];
+      const replay = (st) => {
+        let S = C.parseFEN(st.fen0 || C.START_FEN);
+        for (const u of (st.moves || '').trim().split(/\s+/).filter(Boolean)) {
+          const m = C.findMove(S, C.sqFromName(u.slice(0, 2)), C.sqFromName(u.slice(2, 4)), u[4] || null);
+          if (!m) return { S: S, valid: false };
+          S = C.makeMove(S, m);
+        }
+        return { S: S, valid: true };
+      };
+      const side = (st) => (st && st.pc === 'b') ? 'b' : 'w';
+      let took = null;
+      try { took = new Function('C', 'botGame', 'sidePlayed', src + '\nreturn materialTaken;')(C, replay, side); } catch (e) {}
+      const t = (moves, pc) => took ? took({ moves: moves, pc: pc }) : NaN;
+      ok(src !== '' && /took: materialTaken\(st\)/.test(pt),
+        '⭐ Park Tables stamps the material you took on every result');
+      ok(t('e2e4 d7d5 e4d5 d8d5', 'w') === 1 && t('e2e4 d7d5 e4d5 d8d5', 'b') === 1,
+        '…a pawn each way is 1 for whichever side you played');
+      ok(t('e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6', 'b') === 3 && t('e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6', 'w') === 3,
+        '…a bishop for a knight is 3 and 3');
+      ok(t('e2e4 e7e5 d1h5 b8c6 f1c4 g8f6 h5f7', 'w') === 1 && t('e2e4 e7e5 d1h5 b8c6 f1c4 g8f6 h5f7', 'b') === 0,
+        '…the scholar\'s mate took one pawn, and Black took nothing');
+      ok(t('e2e4 zz99', 'w') === 0, '…and a record it cannot replay pays 0, never a guess');
+    }
+
     /* ══ 2b · the way BACK into the game ══ */
     const S = await page.evaluate(() => {
       localStorage.removeItem('pjcc.town.v1');
@@ -988,6 +1051,34 @@ const server = http.createServer((req, res) => {
           '…and both rooms it lands in fade up out of the black it left in');
         ok(/const SPIN_TURNS := 2\.0/.test(pl) && /if _warp >= 0\.0:\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*return/.test(fnGd(pl, '_physics_process')),
           '…he spins twice going in, and no key moves him while he does');
+      }
+      /* ══ MONEY (2026-09-30, his picks 1 2 3 4 5 7 8 9 10) ══ Driven end to end by a probe
+         (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60
+         mornings, save/load and merge). These hold the rules that make it not a money printer. */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const g = rdc('game_state.gd'), ch = rdc('challenger.gd'), mo = rdc('money.gd'), po = rdc('portal.gd');
+        ok(/if rent_on == today\(\)/.test(fnGd(g, 'collect_rent')) && !/\bday\b/.test(fnGd(g, 'collect_rent'))
+          && /var d := today\(\)/.test(fnGd(g, 'bounties_today')) && /morning\(\)/.test(fnGd(g, 'sleep')),
+          '⛑ rent and bounties are keyed to the CALENDAR, not `day`  (the bed has no limit: per-nap money)');
+        const rates = ((/const BOOTH_RATES := \[([^\]]*)\]/.exec(g) || [])[1] || '').split(',').map(Number).filter((x) => !isNaN(x));
+        ok(rates.length > 0 && rates.every((r) => r < 1),
+          '⭐ the booth ALWAYS pays back less than you left  (every rate under 1)', rates.join(' '));
+        const xo = +((/const EXCHANGE_OUT := (\d+)/.exec(g) || [])[1] || 0), xi = +((/const EXCHANGE_IN := (\d+)/.exec(g) || [])[1] || 0);
+        ok(xo > xi && /const EXCHANGE_CAP := \d+/.test(g) && /GameState\.exchange_left\("out"\)/.test(mo)
+          && /GameState\.exchange_left\("in"\)/.test(mo),
+          '⛑ the exchange takes a cut both ways and is capped each way each day  (ore has no ceiling)',
+          xo + ' ore out for a credit, ' + xi + ' back');
+        ok(!/SCOUT_ORE|buy_scout/.test(ch) && /GameState\.take_lesson\(who, key\)/.test(ch)
+          && !/add_ore|spend_ore|ore -=/.test(fnGd(g, 'finish_favor')) && /_bump\(who, FAVOR_HEARTS\)/.test(fnGd(g, 'finish_favor')),
+          '⭐ people never take ore: a lesson is repaid for a favor, and a favor pays hearts, not ore');
+        ok(!/"ore"/.test((/const PACKS := \[[\s\S]*?\n\]/.exec(g) || [''])[0]) && /GameState\.pack_open\(pack\)/.test(po),
+          '⭐ board worlds are free or bought on the site — never ore — and the portal asks');
+        ok(/_took\(\) if n == 2 and str\(pending\.get\("pos", ""\)\) == ""/.test(g),
+          '…captures pay only on a CLEAN game, never on a study');
+        ok(['rent_on', 'bounty_done', 'favors', 'lessons_used', 'packs'].every((k) => new RegExp('d\\.get\\("' + k + '"').test(fnGd(g, 'merge_in'))),
+          '…and every synced money field is merged coming back, not only sent');
       }
       ok(/const SPEED := 525\.0/.test(player) && /@export var speed: float = SPEED/.test(player),
         'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',

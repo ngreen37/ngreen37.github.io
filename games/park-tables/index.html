@@ -2411,8 +2411,31 @@ body_class: theme-hall
         /* ⚠ CLEAN = THE FULL STAR, the same test the bench already uses: no takeback
            (usedMul) and no analysis board (usedAn). Checker Town's named squares cost a
            clean win, so this is the difference between a piece and "go again". */
-        clean: tierEarned(st) === 'full', at: Date.now() }));
+        clean: tierEarned(st) === 'full', took: materialTaken(st), at: Date.now() }));
     } catch (e) {}
+  }
+
+  /* ⭐ WHAT YOU TOOK OFF THE BOARD (2026-09-30): the opponent's material at the start minus what
+     they have left, in pawns (1/3/3/5/9). Checker Town pays ore for it on a clean win.
+     ⚠ FROM THE GAME'S OWN START, so a study that begins with half a board counts from there.
+     ⚠ 0 ON ANY FAILURE — a wrong number here is ore from nowhere. */
+  function materialTaken(st){
+    try {
+      var W = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+      var theirs = sidePlayed(st) === 'w' ? 'b' : 'w';
+      var worth = function(fen){
+        var sum = 0, board = String(fen).split(' ')[0], i, ch;
+        for (i = 0; i < board.length; i++) {
+          ch = board[i];
+          if (!/[pnbrqPNBRQ]/.test(ch)) continue;
+          if ((ch === ch.toLowerCase() ? 'b' : 'w') === theirs) sum += W[ch.toLowerCase()];
+        }
+        return sum;
+      };
+      var g = botGame(st);
+      if (!g || !g.valid) return 0;
+      return Math.max(0, worth(st.fen0 || C.START_FEN) - worth(C.toFEN(g.S)));
+    } catch (e) { return 0; }
   }
 
   // The opening's name, shown live as a game follows known theory (Nate 2026-07-17:

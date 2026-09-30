@@ -716,6 +716,14 @@
        fuller of the two wins, which is the device that has won more squares. */
     if (Array.isArray(remote.board) &&
         remote.board.length >= ((local.board && local.board.length) || 0)) local.board = remote.board;
+    /* ⭐ MONEY (2026-09-30). Rent's date is a stamp — the later wins, or a second device pays it
+       again. Bounties done, favors done, lessons taken and packs owned only ever go up. The open
+       favor, today's deeds, the exchange's daily count and the booth stay on the device. */
+    if (String(remote.rent_on || '') > String(local.rent_on || '')) local.rent_on = String(remote.rent_on);
+    local.bounty_done = union(local.bounty_done, remote.bounty_done);
+    local.favors = maxPerKey(local.favors, remote.favors);
+    local.lessons_used = maxPerKey(local.lessons_used, remote.lessons_used);
+    local.packs = union(local.packs, remote.packs);
     try { localStorage.setItem(TOWN_KEY, JSON.stringify(local)); } catch (e) {}
     return local;
   }
@@ -1287,6 +1295,42 @@
   PJCC.townResult = function (key, since, pos) {
     var r = townLast(key, since, pos);
     return r ? !!r.won : null;
+  };
+
+  /* ⭐ THE MATERIAL YOU TOOK in that game, as Park Tables stamped it (2026-09-30) — the town pays
+     ore for it on a clean win. ⚠ 0 FOR A RECORD WRITTEN BEFORE THE STAMP EXISTED, never a guess. */
+  PJCC.townTook = function (key, since) {
+    var r = townLast(key, since, '');
+    return (r && r.won) ? Math.max(0, Math.min(39, +r.took || 0)) : 0;
+  };
+
+  /* ⭐ THE EXCHANGE AT THE WEST GATE (2026-09-30): the town's ore for these credits.
+     ⚠⚠ ASYNC BEHIND A SYNCHRONOUS DOOR, like townPost: the town starts a trade, then polls
+     townExchangeResult() for 'ok' / 'error'. One trade in flight at a time, one credit each.
+     ⚠ -1 CREDITS = SIGNED OUT, and the booth stays shut rather than trading into nothing. */
+  var townX = { busy: false, last: '' };
+  PJCC.townCredits = function () {
+    return (sb && PJCC.currentUser() && profile && typeof profile.credits === 'number') ? profile.credits : -1;
+  };
+  PJCC.townExchange = function (credits) {
+    credits = Math.trunc(+credits || 0);
+    if (!sb || !PJCC.currentUser() || !profile) return 'signed-out';
+    if (townX.busy) return 'busy';
+    if (credits !== 1 && credits !== -1) return 'bad';
+    if (credits < 0 && profile.credits < 1) return 'poor';
+    townX.busy = true;
+    townX.last = '';
+    sb.rpc('add_credits', { amount: credits }).then(function (r) {
+      if (r && !r.error && typeof r.data === 'number') { profile.credits = r.data; townX.last = 'ok'; emit(); }
+      else townX.last = 'error';
+      townX.busy = false;
+    }, function () { townX.last = 'error'; townX.busy = false; });
+    return 'started';
+  };
+  PJCC.townExchangeResult = function () {
+    var v = townX.last;
+    if (v) townX.last = '';
+    return v;
   };
 
   /* ⭐ THE GAME THAT WON A SQUARE (2026-09-04). Tap a filled square in the Assembly and the
