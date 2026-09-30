@@ -1666,10 +1666,15 @@ const server = http.createServer((req, res) => {
 
       /* ══ 24 · THE STALL, AND THE BOARD YOU LEAVE A MOVE ON ══ */
       /* his: "7 (just use ore as currency for now)" */
-      ok(/const HATS := \[/.test(gs) && /"ore":/.test(gs),
-        'ore buys something now  (it had exactly one use and the mine paid into a number)');
+      /* ⛑ THE STALL IS PARKED 2026-09-30, his: "Remove the hat shop for now". The shop left the
+         square; the hats you own stay saved and synced, so it can come back with nothing lost. */
+      ok(!/class Stall extends Interactable:/.test(town2) && !/Stall\.new\(\)/.test(town2)
+        && !/"a": "Hats"/.test(fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8')),
+        '⛑ the hat stall is parked: gone from the square, and the journal stops counting hats you cannot get');
+      ok(/const HATS := \[/.test(gs) && /GameState\.SCOUT_ORE/.test(fs.readFileSync(path.join(GD, 'market.gd'), 'utf8')),
+        '…the hats stay on the books, and ore still buys something (the Scorebooks)');
       /* ⚠ THE JOURNAL IS NOT ON THIS LIST AND MUST NOT BE ADDED TO IT. */
-      const wearers = ['player.gd', 'town.gd'];
+      const wearers = ['player.gd'];
       const readsHat = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
         .filter((f) => !wearers.includes(f) && f !== 'game_state.gd')
         .filter((f) => /GameState\.hat\b/.test(fs.readFileSync(path.join(GD, f), 'utf8')));
@@ -1682,11 +1687,6 @@ const server = http.createServer((req, res) => {
         && /if hat == "" and str\(d\.get\("hat", ""\)\) != ""/.test(gs),
         '…and they SYNC differently: owning is a union, wearing is a preference',
         '⚠⚠ a union on the worn hat puts it back on every time you take it off');
-      ok(/TownPlayer\.draw_hat\(self, str\(_row\(\)\["id"\]\)/.test(town2)
-        && /TownPlayer\.draw_hat\(self, GameState\.hat/.test(player),
-        '⭐ the stall draws its stock with the function that draws it on your head');
-      ok(/func _row\(\) -> Dictionary:/.test(town2) && /"id": "next", "text": "Show me another\."/.test(town2),
-        '…one hat on the counter at a time, because the box has room for four rows');
       /* ⛑ THE BOARD BY THE ROAD CAME OFF 2026-09-23. */
       /* his: "Remove the Board by the Road, since we have actual park tables now" */
       ok(!/PostBoard/.test(town2),
