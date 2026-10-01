@@ -940,6 +940,12 @@ const server = http.createServer((req, res) => {
         '⚠ the timer alone is not a guarantee — you can talk within two seconds of arriving');
       ok(/if f == null or _place < 0 or _place_left <= 0\.0:/.test(town2),
         '…and draws nothing at all the rest of the time');
+      const townProc = (() => { const m = /^func _process\(/m.exec(town2);
+        return m ? fnGd(town2.slice(m.index), '_process') : ''; })();
+      ok(/_namer\.queue_redraw\(\)/.test(townProc) && !/^\tqueue_redraw\(\)/m.test(townProc)
+        && /move_child\(_namer, 0\)/.test(town2) && !/^\t_draw_place_names\(/m.test(fnGd(town2, '_draw')),
+        '…and the fade repaints the NAME, never the town  (first child, so it still sits under everything)',
+        '⛑ a town redraw is the whole window, every frame for 2.6 s (2026-10-01)');
 
       /* ══ 13 · THE ARCADE ══ */
       /* his: "take a different building and really go big on it." */
@@ -1548,11 +1554,11 @@ const server = http.createServer((req, res) => {
         && /_draw_fringe\(area, Pavilion\.GRASS_A, seed_\)/.test(town2),
         '…and every patch that is not the ground ends in the same ragged edge',
         'the camp, the Assembly\'s pad and both green places, from one function');
-      /* ⚠ NOTHING ON THIS GROUND IS RANDOM: it redraws whenever a place name fades. */
+      /* ⚠ NOTHING ON THIS GROUND IS RANDOM: it redraws on every resize. */
       const ground = town2.slice(town2.indexOf('func _draw() -> void:'),
         town2.indexOf('func _draw_board'));
       ok(!/randf|randi|RandomNumberGenerator/.test(bare(ground)),
-        '…and not one grain of it is random  (the ground redraws when a place name fades)');
+        '…and not one grain of it is random  (the ground redraws on every resize)');
 
       /* ══ 16d · THE DOGS LIVE BY THE CHECKERS ══ */
       /* his: "Move Crockett and Argus to be around the checker houses." */
@@ -1595,7 +1601,7 @@ const server = http.createServer((req, res) => {
         town2.indexOf('func _draw_board'));
       for (const [name, src] of [['the shack', shack], ['the yard', yardSrc]]) {
         ok(!/randf|randi|RandomNumberGenerator/.test(bare(src)),
-          '…nothing in ' + name + ' is random  (it redraws whenever a place name fades)');
+          '…nothing in ' + name + ' is random  (it redraws on every resize)');
       }
       /* ⚠⚠ THE YARD IS AN AREA, NOT A ROAD. */
       ok(/{ "rect": YARD, "color": SAND }/.test(town2),
@@ -1622,7 +1628,7 @@ const server = http.createServer((req, res) => {
         secretNames.join(' · '));
       ok(/player\.add_child\(lamp\)/.test(stair) && /CanvasModulate\.new\(\)/.test(stair),
         '⭐ you carry the light up a dark stairwell — the lighting IS the fog of war');
-      ok(/energy = 0\.85 if i < _cleared else 0\.0/.test(stair),
+      ok(/\.enabled = i < _cleared/.test(stair),
         '…and a landing is lit only if you have cleared it');
       ok(/_known = idx <= got or \(_slot >= 0 and idx \+ 1 == _need\)/.test(stair),
         '…so a floor you have not reached has no NAME on it either');
@@ -1731,8 +1737,21 @@ const server = http.createServer((req, res) => {
       ok(/func retime\(\) -> void:/.test(town2) && /n\.call\("retime"\)/.test(town2),
         '…and ONE function tells everything that cares',
         '⚠ three listeners on three timers is three chances to be in a different hour');
-      ok(/_light\.energy = 0\.5 if dark(?: and not _broken\(\))? else 0\.0/.test(town2),
+      ok(/_light\.enabled = dark(?: and not _broken\(\))?\n/.test(town2),
         'a street lamp is a REAL light after dark and dark in the day');
+      /* ⛑⛑ ENABLED, NEVER ENERGY 0 (2026-10-01): six lights sat enabled at energy 0. Outside, under a
+         half-GPU load: 455 doubled frames a minute, 47 with them disabled. */
+      const noComments = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+      const parked = fs.readdirSync(GD).filter((f) => f.endsWith('.gd')).filter((f) =>
+        /\.energy = (?:0(?:\.0)?\s*(?:#|$|if\b)|[^\n#]*\belse 0(?:\.0)?\b)/m
+          .test(noComments(fs.readFileSync(path.join(GD, f), 'utf8'))));
+      ok(parked.length === 0, '…and no light anywhere is parked at energy 0: a dark light is DISABLED',
+        parked.join(' · ') || 'every .gd scanned');
+      const retimeFn = fnGd(town2, '_retime');
+      ok(/var flip := dark != _dark_was or day != _day_was/.test(retimeFn)
+        && /elif flip and n is CanvasItem:/.test(retimeFn) && !/elif n is CanvasItem:/.test(retimeFn),
+        '…and the minute tick repaints the map only when dusk, dawn or the day turns over',
+        '⛑ every child each minute was a 40 ms frame (2026-10-01)');
       ok(/func _draw_lit\(/.test(door) && /if board_face or not TownClock\.is_dark\(\)/.test(door),
         '…and a building shows a light on — but never the Assembly',
         '⚠ that face already wears sixteen windows that MEAN something');
@@ -2278,7 +2297,7 @@ const server = http.createServer((req, res) => {
           'a chasing bulb was this building\'s only reason to run code every frame');
         ok(/func retime\(\) -> void:/.test(front) && /TownClock\.is_dark\(\)/.test(front),
           '…and it is asked by the same minute tick as every other lit thing on the map');
-        ok(/_spill\.energy = 0\.85 if TownClock\.is_dark\(\) else 0\.0/.test(front),
+        ok(/_spill\.enabled = TownClock\.is_dark\(\)/.test(front),
           '\u26a0 the light on the pavement is night-only');
         /* ⚠ FOUR-SIDED PIECES, NOT ONE STRIPED SHAPE. draw_colored_polygon renders a concave polygon wrong and silently, and an awning is exactly the shape that tempts you. */
         const poly = front.slice(front.indexOf('func _draw_entrance'));
