@@ -1038,14 +1038,15 @@ const server = http.createServer((req, res) => {
           && /portal\.scene_path = TownPortal\.BOARD/.test(tw),
           '…one sits on the Sand Mine camp\'s board, off the same number the board is drawn at');
         ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.position = SEA_BOARD/.test(tw)
-          && (tw.match(/portal\.scene_path = TownPortal\.BOARD/g) || []).length === 2,
-          '…and one on the dock\'s board by the sea  (his: "one more chessboard ... down by the sea")');
+          && /portal\.pack = "sea"\s*\n\s*portal\.scene_path = GameState\.pack_scene\("sea"\)/.test(tw),
+          '…and one on the dock\'s board by the sea, opening the SEA board  (his: "one more chessboard ... down by the sea")');
         ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
           && /_portal\.scene_path = TownPortal\.BOARD/.test(hbx)
           && (hbx.match(/"id": "portal"/g) || []).length === 2 && /if id == "portal":/.test(fnGd(hbx, '_on_chose')),
           '…and one in his home board, reached from its menu with or without Princess — never a second prompt on the table');
         ok(/back\.scene_path = GameState\.portal_from if GameState\.portal_from != "" else "res:\/\/home\.tscn"/.test(cb)
-          && /if scene_path == BOARD and here != null:\s*\n\s*GameState\.portal_from/.test(por),
+          && /var into_world := GameState\.is_world\(scene_path\)/.test(por)
+          && /if into_world and here != null:\s*\n\s*GameState\.portal_from/.test(por),
           '…and the board\'s own portal goes back where you came in, home if nothing says');
         ok(/TownFade\.landing\(self\)/.test(fnGd(cb, '_after_ready')) && /TownFade\.landing\(self\)/.test(fnGd(hm, '_after_ready')),
           '…and both rooms it lands in fade up out of the black it left in');
@@ -1079,6 +1080,74 @@ const server = http.createServer((req, res) => {
           '…captures pay only on a CLEAN game, never on a study');
         ok(['rent_on', 'bounty_done', 'favors', 'lessons_used', 'packs'].every((k) => new RegExp('d\\.get\\("' + k + '"').test(fnGd(g, 'merge_in'))),
           '…and every synced money field is merged coming back, not only sent');
+      }
+      /* ══ THE SEA BOARD (2026-09-30, his: "some pieces turn invisible for a few rounds, in the
+         portal game by the sea"). His picks: the site's engine, both sides vanish, footprints, a
+         bot at your level. Driven in Chrome against the real referee + Stockfish: 35 checks. ══ */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const sb = fs.existsSync(path.join(GD, 'sea_board.gd')) ? rdc('sea_board.gd') : '';
+        const g = rdc('game_state.gd');
+        ok(/"id": "sea",\s+"name": "[^"]+",\s+"scene": "res:\/\/sea_board\.tscn",\s+"free": true/.test(g)
+          && fs.existsSync(path.join(GD, 'sea_board.tscn')),
+          '⭐ the sea board is its own world behind the dock\'s portal, and free');
+        ok(sb !== '' && /PJCCTownChess/.test(sb) && /_call\("state\(\)"\)/.test(sb) && /_call\("start\(\)"\)/.test(sb)
+          && /_call\("move\(%d, %d\)"/.test(sb)
+          && !/func (legal|attack|is_attacked|gen_moves|in_check|can_move)/.test(sb) && !/castle|en.?passant/i.test(fnGd(sb, 'use')),
+          '⛑ NO CHESS IN GODOT: the page referees and plays; the sea board only draws and carries',
+          '⚠ a second rulebook is a game that lies about chess');
+        ok(/if c == "" or c\.to_lower\(\) == "k" or _hidden\.has\(i\):/.test(fnGd(sb, '_end_round'))
+          && /const VANISH_EVERY := \d+/.test(sb) && /const HIDE_ROUNDS := \d+/.test(sb)
+          && /for white in \[true, false\]:/.test(fnGd(sb, '_end_round')),
+          '⭐ every few rounds one piece on EACH side goes missing — never a king');
+        ok(/_prints\[s\] = PRINT_SECS/.test(fnGd(sb, '_carry')) && /_prints\[int\(moved\[s\]\)\] = PRINT_SECS/.test(fnGd(sb, '_carry')),
+          '⭐ a hidden piece that moves leaves footprints at BOTH ends');
+        ok(/if res != "" and GameState\.sea_paid != _gid:/.test(fnGd(sb, '_refresh'))
+          && /GameState\.pay_captures\(int\(st\.get\("took", 0\)\)\)/.test(fnGd(sb, '_refresh')),
+          '…a win pays its captures in ore, once per game');
+        ok(/return "Reach into %s" % square_name\(sq\)/.test(fnGd(sb, 'prompt_for_player'))
+          && /_table\.say\("Nothing of yours there\."/.test(fnGd(sb, 'use')),
+          '…and the prompt never gives a hidden piece away  (yours, theirs or nothing read the same)');
+        /* the page has to actually load what the town calls — and the referee before the door */
+        const ctp = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
+        const order = ['pjcc-chess.js', 'pjcc-chess-ai.js', 'pjcc-gauntlet-engine.js', 'pjcc-adapt.js', 'pjcc-townchess.js']
+          .map((f) => ctp.indexOf("/assets/js/" + f + "'"));
+        ok(order.every((i) => i > 0) && order.every((i, k) => k === 0 || i > order[k - 1]),
+          '⭐ the Checker Town page loads the referee, the engine, the dial and the door — in that order',
+          order.join(' '));
+        /* ⭐ THE DOOR ITSELF, run in node against a scripted opponent: fool's mate, and pacing. */
+        const W = { _s: {} };
+        const sandbox = { localStorage: { getItem: (k) => W._s[k] || null, setItem: (k, v) => { W._s[k] = String(v); } },
+          Date: Date, setTimeout: setTimeout, JSON: JSON, Math: Math, String: String };
+        sandbox.window = sandbox;
+        sandbox.PJCCChess = require('../assets/js/pjcc-chess.js');
+        const replies = ['e7e5', 'd8h4'];
+        sandbox.PJCCGauntletEngine = {
+          personaForElo: () => ({}), warmup: () => {},
+          move: (S) => { const u = replies.shift(); const C = sandbox.PJCCChess;
+            return Promise.resolve(C.findMove(S, C.sqFromName(u.slice(0, 2)), C.sqFromName(u.slice(2, 4)), null)); } };
+        new Function('window', fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-townchess.js'), 'utf8'))(sandbox);
+        const T = sandbox.PJCCTownChess, sq = (n) => sandbox.PJCCChess.sqFromName(n);
+        const st = () => JSON.parse(T.state());
+        const s0 = st();
+        const illegal = T.move(sq('e2'), sq('e5'));
+        const t0 = Date.now();
+        const m1 = T.move(sq('f2'), sq('f3'));
+        const thinking = st().thinking, early = T.move(sq('g2'), sq('g4'));
+        await new Promise((r) => { const w = () => (st().ply === 2 ? r() : setTimeout(w, 20)); w(); });
+        const took1 = Date.now() - t0;
+        T.move(sq('g2'), sq('g4'));
+        await new Promise((r) => { const w = () => (st().result ? r() : setTimeout(w, 20)); w(); });
+        const end = st();
+        ok(s0.ply === 0 && s0.turn === 'w' && s0.b.length === 64 && illegal === 'illegal' && m1 === 'ok',
+          '⭐ PJCCTownChess: a fresh game, an illegal move refused, a legal one taken');
+        ok(thinking === true && early === 'wait' && took1 >= 600,
+          '…the bot thinks, you cannot move over it, and it never answers inside 650ms', took1 + 'ms');
+        ok(end.result === '0-1' && end.why === 'checkmate' && end.last && end.last.to === sq('h4'),
+          '…and fool\'s mate is checkmate, 0-1, with the queen\'s move as the last one');
+        ok(T.move(sq('a2'), sq('a3')) === 'over' && T.start() === 'ok' && st().ply === 0 && st().gid !== end.gid,
+          '…a finished game takes no moves, and start() sets up a new one');
       }
       ok(/const SPEED := 525\.0/.test(player) && /@export var speed: float = SPEED/.test(player),
         'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',

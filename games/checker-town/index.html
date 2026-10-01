@@ -159,6 +159,14 @@ no_sky: true
 <script src="{{ '/assets/js/pjcc-systems.js' | relative_url }}"></script>
 {%- comment -%} The mailbox names a game the way the games hall does (PJCC.townPost reads it). {%- endcomment -%}
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}" defer></script>
+{%- comment -%} The sea board's game (2026-09-30): the referee, the engine bridge, the adaptive
+     dial, and the door the town calls. Godot draws; these play. Stockfish itself only loads when
+     the bot first thinks. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/pjcc-adapt.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/pjcc-townchess.js' | relative_url }}" defer></script>
 <script id="ct-facts-data" type="application/json">
   [{%- for r in site.data.regulars -%}
      {"key":{{ r.key | jsonify }},"name":{{ r.name | jsonify }},"elo":{{ r.elo | default: 0 }},
