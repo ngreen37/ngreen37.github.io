@@ -4043,6 +4043,22 @@ const server = http.createServer((req, res) => {
           '⭐ there is a fridge in Nate\'s checker, and you walk round it',
           '⚠ the disc audit above already holds it inside the round wall, off FRIDGE_AT');
 
+        /* ══ his fridge and rug, from Blender — 2026-09-30 ══ */
+        /* his: "I made a fridge and a rug for my checker home in blender - can you add them in please?" */
+        {
+          const gmSrc = fs.readFileSync(path.join(ROOT, 'tests/gen-models.js'), 'utf8');
+          const gone = ['fridge', 'rug'].filter((n) => !fs.existsSync(path.join(GD, n + '.glb')));
+          ok(/\{ name: 'Fridge', godot: 'fridge\.glb' \}/.test(gmSrc) && /\{ name: 'Rug', godot: 'rug\.glb' \}/.test(gmSrc)
+             && gone.length === 0,
+            '⭐ his fridge and rug ride gen:models into the game  (game only — no `out`, nothing on the site)',
+            gone.length ? 'missing from the mirror: ' + gone.join(', ') + '.glb — npm run gen:models -- Fridge Rug' : 'both .glb in the mirror');
+          ok(/TownProp\.make\("res:\/\/fridge\.glb", TownPlayerModel\.TILT,/.test(hm)
+             && /TownProp\.make\("res:\/\/rug\.glb", rad_to_deg\(asin\(RY \/ RX\)\),/.test(hm)
+             && /_rug\.draw_on\(self, Rect2\(RUG_AT - d \* 0\.5, d\)\)/.test(hm),
+            '…the fridge stood at the PEOPLE\'S angle, the rug lying at the FLOOR\'S',
+            'a rug at 14° is a sliver; a fridge at the floor\'s 34° shows its roof');
+        }
+
         /* ══ a Blender prop BAKES and throws its viewport away — 2026-09-24 ══ */
         /* his: "yes, go for the bake. We're going grand-scale so we'll want to keep as many MB's available as possible." */
         const pr2 = code(rd('prop_model.gd'));
@@ -4069,6 +4085,15 @@ const server = http.createServer((req, res) => {
         ok(/func draw_swayed\(ci: CanvasItem, r: Rect2, lean: float\)/.test(pr2)
            && /ci\.draw_polygon\(/.test(fnGd(pr2, 'draw_swayed')),
           '⭐ …and a baked prop can still sway, because a sway is a shear');
+        /* ⚠ ACROSS IS X ALONE (2026-09-30). Framed on max(x, z), his rug — deeper than wide —
+           baked with a third of its picture empty either side (284 of 440 px used). */
+        ok(/var wide := maxf\(box\.size\.x, 0\.001\)/.test(fnGd(pr2, '_build'))
+           && !/maxf\(maxf\(box\.size\.x, box\.size\.z\)/.test(pr2),
+          '⚠ …and a prop is framed across on its width alone, not its depth',
+          'measured: the rug went from 284 to 540 of 560 px wide');
+        /* ⚠ A yaw on the GLB root is never framed — _aabb() stops at the root. */
+        ok(/root\.add_child\(model\)/.test(fnGd(pr2, 'make')) && /prop\._build\(root,/.test(pr2),
+          '…and a prop turned on the spot is turned inside a holder the framing can see');
 
         /* ══ the Academy takes you in any order ══ */
         const acad = rd('academy.gd');

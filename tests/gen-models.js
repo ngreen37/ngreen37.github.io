@@ -3,6 +3,7 @@
  * BLEND_DIR (default ~/Desktop/Blender_Laptop) and exports it to GLB through headless Blender.
  * A row with `godot` drops the same GLB into the Checker Town project as well — Godot imports
  * it unchanged, so one export serves the web page and the game.
+ * Names after the command export only those rows:  npm run gen:models -- Fridge Rug
  * Overrides: BLEND_DIR=…  BLENDER=path/to/blender.exe  CHECKERTOWN_PROJECT=… */
 'use strict';
 const fs = require('fs');
@@ -20,6 +21,9 @@ const MODELS = [
   { name: 'Altar', out: 'assets/models/gambit-altar.glb' },
   { name: 'Checker', out: 'assets/models/checker.glb', godot: 'checker.glb' },
   { name: 'Nate', out: 'assets/models/nate.glb', godot: 'nate.glb' },
+  // ⭐ NO `out`: furniture for his checker, and nothing on the site shows it.
+  { name: 'Fridge', godot: 'fridge.glb' },
+  { name: 'Rug', godot: 'rug.glb' },
 ];
 
 const CT_PROJECT = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
@@ -72,12 +76,19 @@ function toGodot(out, rel) {
   return notes.join('  ');
 }
 
+// ⚠⚠ A FULL RUN REWRITES nate.glb, and test:town then fails until people_idle.png is re-baked —
+// so a new prop is exported by name.
+const only = process.argv.slice(2).map(a => a.toLowerCase());
+const unknown = only.filter(a => !MODELS.some(m => m.name.toLowerCase() === a));
+if (unknown.length) { console.error(`✗ no row named ${unknown.join(', ')}`); process.exit(1); }
+
 const blender = findBlender();
 let failed = 0;
 for (const m of MODELS) {
+  if (only.length && !only.includes(m.name.toLowerCase())) continue;
   const src = newestSave(m.name);
   if (!src) { console.error(`✗ ${m.name}: no ${m.name}_N.blend in ${BLEND_DIR}`); failed++; continue; }
-  const out = path.join(ROOT, m.out);
+  const out = m.out ? path.join(ROOT, m.out) : path.join(os.tmpdir(), 'gen-models-' + m.godot);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const log = execFileSync(blender, ['-b', src, '--factory-startup', '--python',
     path.join(__dirname, 'blender-export.py'), '--', out], { encoding: 'utf8' });
@@ -85,6 +96,6 @@ for (const m of MODELS) {
   // a bad export still exits 0 — Blender only prints the traceback
   if (!line || !fs.existsSync(out)) { console.error(`✗ ${m.name}: export failed\n${log.slice(-1500)}`); failed++; continue; }
   const also = m.godot ? '\n    ' + toGodot(out, m.godot) : '';
-  console.log(`✓ ${path.basename(src)} → ${m.out} (${(fs.statSync(out).size / 1024).toFixed(1)} KB) ${line.split(' ').slice(2).join(' ')}${also}`);
+  console.log(`✓ ${path.basename(src)} → ${m.out || 'the game only'} (${(fs.statSync(out).size / 1024).toFixed(1)} KB) ${line.split(' ').slice(2).join(' ')}${also}`);
 }
 process.exit(failed ? 1 : 0);
