@@ -1059,6 +1059,32 @@ const server = http.createServer((req, res) => {
         ok(/const SPIN_TURNS := 2\.0/.test(pl) && /if _warp >= 0\.0:\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*return/.test(fnGd(pl, '_physics_process')),
           '…he spins twice going in, and no key moves him while he does');
       }
+      /* ══ CHESS ZOMBIES (2026-10-01, his: "pieces come in from the opposite side of the board and
+         attack slowly in their patterns, and my gun upgrades over time"). Driven by a probe: 32
+         checks, 7 mutations. Soaked: standing still dies in 56-104s, a reacting player 166-495s. */
+      {
+        const cb = fs.readFileSync(path.join(GD, 'chessboard.gd'), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        ok(/var sq := Vector2i\(f, 0\)/.test(fnGd(cb, '_spawn')) && /z\.at = open\[/.test(fnGd(cb, '_spawn')),
+          '⭐ chess zombies rise on the FAR rank  (his: "from the opposite side of the board")');
+        const pawn = (/"p":\n([\s\S]*?)\n\t\t"n", "k":/.exec(fnGd(cb, 'moves')) || ['', ''])[1];
+        ok(/if from \+ Vector2i\(dx, 1\) == you:\s*\n\s*out\.append\(\[you\]\)/.test(pawn)
+          && /not taken\.has\(ahead\) and ahead != you/.test(pawn) && !/Vector2i\([^)]*, -1\)/.test(pawn),
+          '⭐ a pawn takes on the diagonal, never straight ahead, and never walks back');
+        ok(/z\.code != "n" or u > 0\.8/.test(fnGd(cb, '_step')) && /center\(z\.dest\(\)\) if z\.code == "n" else _pos\(z\)/.test(fnGd(cb, '_step')),
+          '…a knight jumps: only its landing square hits, and only as it lands');
+        ok(/if _over or player\.warping\(\) or TownZone\.covered\(get_tree\(\)\) or _ui\.is_talking\(\):\s*\n\s*return/.test(fnGd(cb, '_process')),
+          '⛑ the journal, a menu and the portal spin all stop the pieces  (or you die reading)');
+        const guns = [];
+        const gre = /"every": ([\d.]+), "dmg": ([\d.]+), "shots": (\d+), "fan": [\d.]+,\s+"pierce": (\d+)/g;
+        for (let m; (m = gre.exec((/const GUN := \[[\s\S]*?\n\]/.exec(cb) || [''])[0]));) guns.push({ dps: +m[3] * +m[2] / +m[1], pierce: +m[4] });
+        ok(guns.length >= 5 && guns.every((g, i) => i === 0 || (g.dps >= guns[i - 1].dps && g.pierce >= guns[i - 1].pierce))
+          && /int\(_t \/ UPGRADE_SECS\)/.test(fnGd(cb, '_process')),
+          '⭐ the gun upgrades on the clock, and no level is a downgrade  (damage per second and pierce only climb)',
+          guns.map((g) => g.dps.toFixed(1)).join(' '));
+        ok(!/func (legal|is_attacked|in_check|gen_moves)/.test(cb) && !/castl|en.?passant|checkmate|stalemate/i.test(cb),
+          '⛑ enemy movement, not a referee: no check, no castling, no result  (real chess stays on the site)');
+      }
       /* ══ MONEY (2026-09-30, his picks 1 2 3 4 5 7 8 9 10) ══ Driven end to end by a probe
          (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60
          mornings, save/load and merge). These hold the rules that make it not a money printer. */
