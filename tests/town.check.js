@@ -1085,6 +1085,58 @@ const server = http.createServer((req, res) => {
         ok(!/func (legal|is_attacked|in_check|gen_moves)/.test(cb) && !/castl|en.?passant|checkmate|stalemate/i.test(cb),
           '⛑ enemy movement, not a referee: no check, no castling, no result  (real chess stays on the site)');
       }
+      /* ══ THE DREAM AND THE NIGHTMARE (2026-10-01, his: "Murphy's down there trashing me about wanting
+         to go to chess city - there's a dream option and a nightmare option ... the user can choose
+         either one. Think Happy Gilmore and his happy place for the dream option"). Driven by probes
+         at four window shapes: 80 checks, 15 mutations. Standing still, sixteen come home in 60-76s. */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const has = (f) => fs.existsSync(path.join(GD, f));
+        const cb = rdc('chessboard.gd'), por = rdc('portal.gd'), g = rdc('game_state.gd'), hm = rdc('home.gd');
+        const dr = has('dream.gd') ? rdc('dream.gd') : '';
+        const hbx = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
+        const first = (/\{ "id": "first",[\s\S]*?\}/.exec(g) || [''])[0];
+        ok(/"scene": "res:\/\/chessboard\.tscn"/.test(first) && /"dream": "res:\/\/dream\.tscn"/.test(first)
+          && has('dream.tscn') && /path="res:\/\/dream\.gd"/.test(fs.readFileSync(path.join(GD, 'dream.tscn'), 'utf8'))
+          && /class_name DreamBoard\s*\nextends PortalBoard/.test(dr),
+          '⭐ the first board has two sides: the nightmare, and a dream built on the same board');
+        ok(/str\(row\.get\("dream", ""\)\) == path/.test(fnGd(g, 'is_world')),
+          '…and the dream counts as a board world, so its ring knows the way back');
+        ok(/if two_sided\(\):\s*\n\s*open_talk\("The portal", ASK, TownPortal\.ways\(\)\)/.test(fnGd(por, 'interact'))
+          && ['dream', 'nightmare', 'stay'].every((id) => fnGd(por, 'ways').includes('"id": "' + id + '"'))
+          && /if id == "dream":\s*\n\s*scene_path = GameState\.pack_dream\(pack\)/.test(fnGd(por, 'take')),
+          '⭐ a ring with two sides asks which: the dream, the nightmare, or not now  (his: "the user can choose either one")');
+        ok(/if _portal\.two_sided\(\):\s*\n\s*open_talk\("The portal", TownPortal\.ASK, TownPortal\.ways\(\)\)/.test(fnGd(hbx, '_on_chose'))
+          && /_portal\.take\(id, /.test(fnGd(hbx, '_on_chose')),
+          '…and at home the table\'s own menu asks, never a second speaker  (who would blank the table\'s prompt)');
+        ok(dr !== '' && !/take_hit|_bite\(|_fire\(|Heckler|_heckle\(/.test(dr)
+          && /func _caught\(z: PortalBoard\.Zombie\) -> void:\s*\n\s*_join\(z\)/.test(dr)
+          && !/super\(/.test(fnGd(dr, '_after_ready')) && !/super\(/.test(fnGd(dr, '_process')),
+          '⛑ nothing in the dream can hurt you: no gun, no bite, no Murphy — a piece that reaches you joins you');
+        const set = (/const SET := "([a-z]+)"/.exec(dr) || [])[1] || '';
+        const cnt = (c) => set.split(c).length - 1;
+        ok(set.length === 16 && +((/const FULL := (\d+)/.exec(dr) || [])[1]) === 16 && cnt('p') === 8 && cnt('n') === 2
+          && cnt('b') === 2 && cnt('r') === 2 && cnt('q') === 1 && cnt('k') === 1,
+          '⭐ the dream deals one side of a chessboard, and sixteen is full', set);
+        const reach = +((/const REACH := ([\d.]+)/.exec(dr) || [])[1]);
+        ok(reach > 1 && reach < 1.41 && /distance_to\(player\.global_position\) < CELL \* REACH/.test(fnGd(dr, '_meet')),
+          '⛑ a piece on the next square falls in  (a pawn straight ahead and an off-color bishop can never LAND on you: the deal stalled at 14)',
+          'REACH ' + reach + ' squares: the four beside you, not the diagonals');
+        const granted = (/const GRANTED := "([^"]+)"/.exec(dr) || [])[1] || '';
+        ok(granted !== '' && fs.readFileSync(path.join(ROOT, '_locations/chess-city.md'), 'utf8').includes(granted),
+          '⭐ the gate\'s line is HIS, verbatim off the Chess City page', granted);
+        ok(dr !== '' && !/\.who = |open_talk\(|\.say\(|show_over\(/.test(dr),
+          '⚠ nobody speaks in the dream and no person is in it  (what is in his happy place is his)');
+        const over = (/"over": \["([^"]+)"\]/.exec(cb) || [])[1] || '';
+        ok(over !== '' && fs.readFileSync(path.join(ROOT, '_characters/murphy.md'), 'utf8').includes(over)
+          && /_heckle\("over", true\)/.test(fnGd(cb, '_on_hit')),
+          '⭐ the last word in the nightmare is Murphy\'s own catchphrase, and it is never held back', over);
+        ok(!/show_over\(/.test(cb) && /words\.size\.x = room\.size\.x\s*\n\s*words\.text = line\s*\n\s*words\.size\.y = 0\.0/.test(cb),
+          '⛑ his line is a Label of his own, measured width-first  (a Speech bubble is 380 wide and screen-clamped: it landed on the board)');
+        ok(/if _lit:\s*\n\s*set_highlight\(false\)/.test(fnGd(rdc('interactable.gd'), '_on_body_exited')),
+          '⛑ only the LIT interactable puts the prompt down when you leave it  (Princess trotting off blanked the table\'s)');
+      }
       /* ══ MONEY (2026-09-30, his picks 1 2 3 4 5 7 8 9 10) ══ Driven end to end by a probe
          (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60
          mornings, save/load and merge). These hold the rules that make it not a money printer. */
