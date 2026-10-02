@@ -1068,9 +1068,9 @@ const server = http.createServer((req, res) => {
         ok(/var sq := Vector2i\(f, 0\)/.test(fnGd(cb, '_spawn')) && /z\.at = open\[/.test(fnGd(cb, '_spawn')),
           '⭐ chess zombies rise on the FAR rank  (his: "from the opposite side of the board")');
         const pawn = (/"p":\n([\s\S]*?)\n\t\t"n", "k":/.exec(fnGd(cb, 'moves')) || ['', ''])[1];
-        ok(/if from \+ Vector2i\(dx, 1\) == you:\s*\n\s*out\.append\(\[you\]\)/.test(pawn)
-          && /not taken\.has\(ahead\) and ahead != you/.test(pawn) && !/Vector2i\([^)]*, -1\)/.test(pawn),
-          '⭐ a pawn takes on the diagonal, never straight ahead, and never walks back');
+        ok(/var take := from \+ Vector2i\(dx, 1\)\s*\n\s*if \(take == you or men\.has\(take\)\) and not taken\.has\(take\):\s*\n\s*out\.append\(\[take\]\)/.test(pawn)
+          && /not taken\.has\(ahead\) and not men\.has\(ahead\) and ahead != you/.test(pawn) && !/Vector2i\([^)]*, -1\)/.test(pawn),
+          '⭐ a pawn takes on the diagonal (him or one of his), never straight ahead, and never walks back');
         ok(/z\.code != "n" or u > 0\.8/.test(fnGd(cb, '_step')) && /center\(z\.dest\(\)\) if z\.code == "n" else _pos\(z\)/.test(fnGd(cb, '_step')),
           '…a knight jumps: only its landing square hits, and only as it lands');
         ok(/if _over or player\.warping\(\) or TownZone\.covered\(get_tree\(\)\) or _ui\.is_talking\(\):\s*\n\s*return/.test(fnGd(cb, '_process')),
@@ -1136,6 +1136,52 @@ const server = http.createServer((req, res) => {
           '⛑ his line is a Label of his own, measured width-first  (a Speech bubble is 380 wide and screen-clamped: it landed on the board)');
         ok(/if _lit:\s*\n\s*set_highlight\(false\)/.test(fnGd(rdc('interactable.gd'), '_on_body_exited')),
           '⛑ only the LIT interactable puts the prompt down when you leave it  (Princess trotting off blanked the table\'s)');
+      }
+      /* ══ THE NIGHTMARE OPENS AS A STANDARD GAME (2026-10-02, his: "the nightmare starts off as
+         starting moves in a standard game but your pieces don't move and you just slowly get
+         attacked"). Driven by a probe (20 checks) and in Chrome (10). Soaked: standing still dies in
+         35-53s, a reacting player 129-457s. ══ */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const cb = rdc('chessboard.gd'), hl = rdc('hall.gd'), pm = rdc('player_model.gd'), pl = rdc('player.gd');
+        const C = require('../assets/js/pjcc-chess.js');
+        const name = (c, r) => 'hgfedcba'[c] + (r + 1);             /* column 0 is the h-file, row 0 their back rank */
+        const book = ((/const BOOK := \[([\s\S]*?)\n\]/.exec(cb) || ['', ''])[1]).split('\n').filter((l) => /Vector2i/.test(l))
+          .map((l) => [...l.matchAll(/Vector2i\((\d), (\d)\), Vector2i\((\d), (\d)\)/g)].map((m) => [name(+m[1], +m[2]), name(+m[3], +m[4])]));
+        let S = C.parseFEN(C.START_FEN);
+        const san = [];
+        let legal = book.length === 10;
+        for (const row of book) {
+          const m = C.findMove(S, C.sqFromName(row[0][0]), C.sqFromName(row[0][1]));
+          if (!m) { legal = false; san.push('ILLEGAL ' + row[0].join('-')); break; }
+          san.push(C.toSAN(S, m));
+          S = C.makeMove(S, m);
+          if (row.length === 2 && !(S.b[C.sqFromName(row[1][1])] === 'R' && S.b[C.sqFromName(row[1][0])] === '')) legal = false;
+          S.turn = 'w';                                               /* his side never answers */
+          S.ep = -1;
+        }
+        ok(legal, '⭐ it opens with ten real moves: every one legal for White on the site\'s referee while Black stands still',
+          san.join(' '));
+        const back = (/const BACK := "([a-z]{8})"/.exec(cb) || [])[1] || '';
+        const theirs = ((/const THEIR_BACK := \[([^\]]*)\]/.exec(hl) || ['', ''])[1].match(/[a-z]/g) || []);
+        ok(back.length === 8 && theirs.length === 8 && back.split('').every((p, c) => p === theirs[7 - c])
+          && /const KING_AT := Vector2i\(3, 7\)/.test(cb) && back[3] === 'k',
+          '…on a board laid out the Assembly\'s way round  (column 0 is the h-file), and he stands on his own king\'s square', back);
+        const outside = cb.replace(fnGd(cb, '_set_up'), '');
+        ok(!/_men\[[^\]]+\] = /.test(outside) && /_men\.erase\(sq\)/.test(fnGd(cb, '_take')),
+          '⭐ his pieces never move: they are set up, and after that only ever taken');
+        ok(/if _book >= 0:\s*\n\s*_open\(delta\)\s*\n\s*else:[\s\S]*?_t \+= delta/.test(fnGd(cb, '_process')),
+          '…while they play, the run\'s clock waits  (every dial was soaked on that clock)');
+        ok(/z\.phase != RISE and not z\.asleep/.test(fnGd(cb, '_fire')) && /z\.asleep or hit\.has\(z\)/.test(fnGd(cb, '_fly'))
+          && /if not z\.asleep and \(z\.phase == REST/.test(fnGd(cb, '_bite')) && /if not z\.asleep and z\.t >= z\.wait:/.test(fnGd(cb, '_step')),
+          '…a piece still asleep is not in play: not shot, no bite, no move of its own');
+        ok(/var z := _sleeper\(code\)\s*\n\s*if z != null:/.test(fnGd(cb, '_spawn')),
+          '⭐ the arrivals wake what is standing there before anything rises  (so the soaked pace did not move)');
+        ok(/_clip_hit = _match_clip\(\[/.test(pm) && /_clip_down = _match_clip\(\[/.test(pm)
+          && /_model\.fall\(\)/.test(fnGd(pl, 'take_hit')) && /_model\.flinch\(\)/.test(fnGd(pl, 'take_hit'))
+          && /_model\.stand\(\)/.test(fnGd(pl, 'heal_full')),
+          '⭐ his clips have slots waiting: a hit, and going down on the last heart  (an action named for one plays, no code)');
       }
       /* ══ MONEY (2026-09-30, his picks 1 2 3 4 5 7 8 9 10) ══ Driven end to end by a probe
          (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60
