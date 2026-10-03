@@ -730,8 +730,10 @@ const server = http.createServer((req, res) => {
       const park = fs.readFileSync(path.join(GD, 'park.gd'), 'utf8');
       const pit = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
       const stair = fs.readFileSync(path.join(GD, 'stairwell.gd'), 'utf8');
+      /* ⭐ THE RINGS OPEN SITE GAMES SINCE 2026-10-03; the parked Arcade opens nothing. */
+      const rings = fs.readFileSync(path.join(GD, 'portal.gd'), 'utf8');
       /* ⛑⛑ AND THE SPELLINGS CHANGED UNDER IT, 2026-09-04. */
-      const doors = [...(isl + town2 + arc + park + pit + stair + gs)
+      const doors = [...(isl + town2 + rings + park + pit + stair + gs)
         .matchAll(/(?:\burl = |"url": |\b[A-Z_]*URL :?= )"(\/[^"]+)"/g)]
         .map((m) => m[1].split('?')[0]);
       ok(doors.length >= 5, 'the town opens real site pages', doors.length + ' doors read from source');
@@ -876,8 +878,8 @@ const server = http.createServer((req, res) => {
         'there is ONE wall, and both interiors draw it');
       ok(/TownZone\.draw_walls\(self, ROOM/.test(hall)
         && /TownZone\.draw_walls\(self, Rect2\(-W/.test(acad)
-        && /TownZone\.draw_walls\(self, ROOM/.test(arc),
-        '…the Assembly, the Academy and the Arcade');
+        && /TownZone\.draw_walls\(self, ROOM/.test(pit),
+        '…the Assembly, the Academy and the pit head');
       ok(/^class_name TownExit$/m.test(xit) && /func _arch\(/.test(xit),
         'the way out is a DOORWAY, not a cottage with a pitched roof');
       ok(/var out := TownExit\.new\(\)/.test(hall) && /var out := TownExit\.new\(\)/.test(acad),
@@ -947,82 +949,25 @@ const server = http.createServer((req, res) => {
         '…and the fade repaints the NAME, never the town  (first child, so it still sits under everything)',
         '⛑ a town redraw is the whole window, every frame for 2.6 s (2026-10-01)');
 
-      /* ══ 13 · THE ARCADE ══ */
-      /* his: "take a different building and really go big on it." */
-      ok(/scene_path = "res:\/\/arcade\.tscn"/.test(town2) && !/_add_door\("Arcade"/.test(town2),
-        'the Arcade is a ROOM, not a link that opens a hall page in a new tab');
-      ok(fs.existsSync(path.join(GD, 'arcade.tscn')), '…and the scene exists');
-      /* ⭐⭐ THE STRONGEST CHECK IN THIS FILE. */
-      /* his: "put the campaign on the workbench" */
+      /* ══ 13 · THE ARCADE CAME OFF THE MAP (2026-10-03, his: "Let's put Campaign in one of them -
+         take the arcade completely away. Make the sky run be the portal game for the near-the-Sea
+         chessboard"). Two of its games went behind rings; arcade.gd is PARKED. Driven by a probe. ══ */
+      const bareGd = (src) => src.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+      ok(!/arcade\.tscn/.test(town2) && !/ArcadeFront|ARCADE_AT|_furnish_arcade/.test(bareGd(town2)),
+        'nothing on the map opens the Arcade, and its front and its lot went with it');
+      ok(fs.existsSync(path.join(GD, 'arcade.tscn')) && /PARKED, NOT DELETED/.test(arc),
+        '…and the room is PARKED, not deleted — and its own first line says so');
+      ok(!/Arcade\.CABS/.test(bareGd(fs.readFileSync(path.join(GD, 'paper.gd'), 'utf8')) + bareGd(town2)),
+        '…and nothing on the map still reads its machine list');
       const REG = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
-      const inArcade = [...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'[^\n]*cat:'arcade'/gm)]
-        .map((m) => m[1]).sort();
       const live = new Set([...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'(?![^\n]*cat:'terminated')/gm)]
         .map((m) => m[1]));
-      const cabs = [...arc.matchAll(/"slug": "([a-z-]+)"/g)].map((m) => m[1]).sort();
-      /* Campaign: cat:'dev' on the site since 2026-09-07, a machine in this room since 09-04. */
-      const OFF_HALL = ['marchland'];
-      ok(inArcade.length >= 3, 'the site has an arcade to be in', inArcade.join(' '));
-      const ghosts = cabs.filter((s) => !live.has(s));
-      ok(ghosts.length === 0,
-        '…and every cabinet is a game the site still has',
-        ghosts.length ? 'nothing to play: ' + ghosts.join(' ') : cabs.join(' '));
-      const missing = inArcade.filter((s) => !cabs.includes(s));
-      ok(missing.length === 0,
-        '…and every game in the site\'s arcade has a machine',
-        missing.length ? 'no cabinet: ' + missing.join(' ') : inArcade.join(' '));
-      const extra = cabs.filter((s) => !inArcade.includes(s));
-      ok(JSON.stringify(extra) === JSON.stringify(OFF_HALL.slice().sort()),
-        '…and the machines that are not the site\'s arcade are the ones named here',
-        'extra: ' + (extra.join(' ') || '(none)') + '  |  named: ' + OFF_HALL.join(' '));
+      const ringGames = [...rings.matchAll(/^\t"([a-z-]+)": \{ "name": /gm)].map((m) => m[1]);
+      ok(ringGames.length >= 2 && ringGames.every((g) => live.has(g)),
+        '⭐ every game behind a ring is a game the site still has', ringGames.join(' '));
       ok(/func slot_for_game\(game: String\) -> int:/.test(gs)
         && /func unlock_need\(slot: int\) -> int:/.test(gs),
-        'a machine can ask the ROSTER which square its score buys, and for how much');
-      ok(/GameState\.unlock_need\(_slot\)/.test(arc) && !/300|500|"un":/.test(arc),
-        '…and carries no threshold of its own',
-        '⚠ two copies of a price is a machine promising a piece it cannot give');
-      ok(/draw_set_transform\(r\.position, 0\.0, Vector2\(m, m\)\)/.test(arc)
-        && /draw_set_transform\(Vector2\.ZERO, 0\.0, Vector2\.ONE\)/.test(arc),
-        'the attract screens are drawn in unit space, and the transform is RESET after');
-      ok(/draw_set_transform\(Vector2\.ZERO, 0\.0, Vector2\.ONE\)\s*\n\s*_attract_over\(r\)/.test(arc),
-        '…and anything with a STROKE is drawn after the reset',
-        '⚠⚠ a 3px outline under a scale of 80 arrives 240px thick — it covered a whole cabinet');
-      /* ⚠ THE SKY CLOUDS WENT (2026-09-14, the Daily demo); the siege walkers still scroll. */
-      ok(/func _box\(aspect: float, r: Rect2\) -> Rect2:/.test(arc)
-        && /_box\(aspect, Rect2\(x, y - 0\.17/.test(arc)
-        && /if y < 0\.05 or y > 0\.95:\s*\n\s*continue/.test(fnGd(arc, '_sky_live')),
-        '…and a sprite that scrolls off a screen is clipped, not painted on the next cabinet');
-      /* ⚠⚠ `.new()`, NOT THE BARE CLASS NAME. */
-      /* ⛑ THE TEXTURE MOVED TO TownZone ON 2026-09-04, when the third room wanted it. */
-      ok(/static var _glow: Texture2D/.test(zone) && /GradientTexture2D\.new\(\)/.test(zone)
-        && /TownZone\.glow\(\)/.test(arc)
-        && /PointLight2D\.new\(\)/.test(arc) && /CanvasModulate\.new\(\)/.test(arc),
-        'the room is dark and the machines light it — real 2D lights, one shared texture');
-      ok(!/static func glow\(\)/.test(arc),
-        '…and there is only ONE of that texture, not one per room that wanted one');
-      ok(/if not inner\.encloses\(Rect2\(at, Vector2\(cell, cell\)\)\):/.test(arc),
-        '…and the carpet stops at the wall  (⚠ ceil() overruns and there is no clip rect)');
-      /* ⛑⛑ 2026-09-29, his: "inside the arcade ... it's still laggy". The Compatibility renderer
-         runs every light whose rect touches an item on every pixel of that item, so a floor drawn
-         as ONE item paid all seven lights everywhere, and two hidden full-room layers under it
-         paid them too. Uncapped at 1880x1000: 10.0 ms a frame vs 4.5 lights-off; tiled, the
-         lights cost ~1.3 ms. Pixel-identical on a render, 6 and 7 lit, top and bottom of the room. */
-      {
-        const arcCode = arc.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-        const tile = /const TILE := ([\d.]+)/.exec(arcCode);
-        ok(/class FloorTile extends Node2D:/.test(arcCode) && /\t_light_the_room\(\)\n\t_lay_floor\(\)/.test(arcCode)
-          && /t\.show_behind_parent = true/.test(arcCode) && /Arcade\.paint_floor\(self, cut\)/.test(arcCode),
-          '⛑ the arcade floor is TILES, each paying only for the lights that reach it',
-          '⚠ show_behind_parent, or the wall band and the walls end up under the carpet');
-        ok(!/draw_rect\(ROOM, BACK\)/.test(arcCode) && !/draw_rect\(area, FLOOR_B\)/.test(arcCode)
-          && /_fill\(c, cut, inner, FLOOR_A\)/.test(arcCode),
-          '…and nothing is painted under the carpet  (⚠ a hidden layer still runs every light: 2.9 ms)');
-        ok(tile && +tile[1] % 64 === 0 && /var xs := _cuts\(ROOM\.position\.x, ROOM\.end\.x, inner\.position\.x\)/.test(arcCode)
-          && /var ys := _cuts\(ROOM\.position\.y, ROOM\.end\.y, inner\.position\.y\)/.test(arcCode)
-          && /if not cut\.has_point\(at\):\s*\n\s*continue/.test(arcCode),
-          '…and a tile edge runs along a carpet cell edge, so no diamond is split between two tiles',
-          'TILE ' + (tile ? tile[1] : '?') + ' against a 64-unit cell, anchored on the carpet');
-      }
+        'a room can ask the ROSTER which square a score buys, and for how much');
       /* ⭐ 2026-09-30, his: "Make a very basic portal in each chess board - there's one in my home,
          there's one in sand mines. It just goes to a basic chessboard ... Character just spins a
          couple times and goes into the portal". Driven end to end by a probe: both trips out and
@@ -1035,21 +980,28 @@ const server = http.createServer((req, res) => {
         const cb = has('chessboard.gd') ? rdc('chessboard.gd') : '';
         const tw = rdc('town.gd'), hm = rdc('home.gd'), pl = rdc('player.gd');
         const hbx = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
-        ok(/class_name TownPortal\s*\nextends TownDoor/.test(por) && /const BOARD := "res:\/\/chessboard\.tscn"/.test(por)
-          && has('chessboard.tscn') && /path="res:\/\/chessboard\.gd"/.test(fs.readFileSync(path.join(GD, 'chessboard.tscn'), 'utf8')),
-          '⭐ a portal is a door onto the board room, and the room exists');
+        ok(/class_name TownPortal\s*\nextends TownDoor/.test(por) && !/const BOARD :=/.test(por),
+          '⭐ a portal is a door underneath, and no ring opens the dream\'s board any more');
         ok(/walk_in = false/.test(fnGd(por, '_init')),
           '…pressed, never walked into  (⚠ the camp\'s board is on the path through the camp)');
-        ok(/_draw_board\(CAMP_BOARD,/.test(tw) && /portal\.position = CAMP_BOARD/.test(tw)
-          && /portal\.scene_path = TownPortal\.BOARD/.test(tw),
-          '…one sits on the Sand Mine camp\'s board, off the same number the board is drawn at');
-        ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.position = SEA_BOARD/.test(tw)
-          && /portal\.pack = "sea"\s*\n\s*portal\.scene_path = GameState\.pack_scene\("sea"\)/.test(tw),
-          '…and one on the dock\'s board by the sea, opening the SEA board  (his: "one more chessboard ... down by the sea")');
+        /* ⭐ EACH RING ITS OWN GAME (2026-10-03, his: "for the chessboards themselves, each three should
+           have a different mini-game theme"). Driven by a probe: 24 checks on the two site rings. */
+        ok(/_draw_board\(CAMP_BOARD,/.test(tw) && /portal\.game = "marchland"\s*\n\s*portal\.position = CAMP_BOARD/.test(tw),
+          '…the camp\'s ring opens CAMPAIGN, off the same number the board is drawn at  (his: "Let\'s put Campaign in one of them")');
+        ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.game = "sky-run"\s*\n\s*portal\.position = SEA_BOARD/.test(tw),
+          '…the dock\'s ring opens SKY RUN  (his: "Make the sky run be the portal game for the near-the-Sea chessboard")');
         ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
-          && /_portal\.scene_path = TownPortal\.BOARD/.test(hbx)
+          && /_portal\.pack = "sea"\s*\n\s*_portal\.scene_path = GameState\.pack_scene\("sea"\)/.test(hbx)
           && (hbx.match(/"id": "portal"/g) || []).length === 2 && /if id == "portal":/.test(fnGd(hbx, '_on_chose')),
-          '…and one in his home board, reached from its menu with or without Princess — never a second prompt on the table');
+          '…and the ring at home opens the SEA board until he picks its own game, from its menu with or without Princess');
+        ok(/url = str\(GAMES\[game\]\["url"\]\) \+ "\?town=1"/.test(fnGd(por, '_ready_extra'))
+          && /if game != "":\s*\n\s*super\.interact\(you\)\s*\n\s*you\.rise\(\)/.test(fnGd(por, '_enter'))
+          && fnGd(por, '_enter').indexOf('await you.swallowed') < fnGd(por, '_enter').indexOf('super.interact(you)'),
+          '⭐ a site game opens in a tab at the BOTTOM of the spin, carrying ?town=1, and he climbs back out of the ring',
+          '⚠ there is no scene to change: without rise() he is left shrunk to nothing on the board');
+        ok(/_climb\(delta\)/.test(fnGd(pl, '_process')) && /if _rising >= SINK_SECS:\s*\n\s*_rising = -1\.0\s*\n\s*_warp = -1\.0/.test(fnGd(pl, '_climb'))
+          && !/_warp = -1/.test(fnGd(pl, 'rise')),
+          '…and no key moves him until he is whole  (_warp clears at the top of the climb, never the bottom)');
         ok(/back\.scene_path = GameState\.portal_from if GameState\.portal_from != "" else "res:\/\/home\.tscn"/.test(cb)
           && /var into_world := GameState\.is_world\(scene_path\)/.test(por)
           && /if into_world and here != null:\s*\n\s*GameState\.portal_from/.test(por),
@@ -1103,13 +1055,31 @@ const server = http.createServer((req, res) => {
           '⭐ the first board has two sides: the nightmare, and a dream built on the same board');
         ok(/str\(row\.get\("dream", ""\)\) == path/.test(fnGd(g, 'is_world')),
           '…and the dream counts as a board world, so its ring knows the way back');
-        ok(/if two_sided\(\):\s*\n\s*open_talk\("The portal", ASK, TownPortal\.ways\(\)\)/.test(fnGd(por, 'interact'))
-          && ['dream', 'nightmare', 'stay'].every((id) => fnGd(por, 'ways').includes('"id": "' + id + '"'))
-          && /if id == "dream":\s*\n\s*scene_path = GameState\.pack_dream\(pack\)/.test(fnGd(por, 'take')),
-          '⭐ a ring with two sides asks which: the dream, the nightmare, or not now  (his: "the user can choose either one")');
-        ok(/if _portal\.two_sided\(\):\s*\n\s*open_talk\("The portal", TownPortal\.ASK, TownPortal\.ways\(\)\)/.test(fnGd(hbx, '_on_chose'))
-          && /_portal\.take\(id, /.test(fnGd(hbx, '_on_chose')),
-          '…and at home the table\'s own menu asks, never a second speaker  (who would blank the table\'s prompt)');
+        /* ⭐ THE BED ASKS NOW (2026-10-03, his: "Let's make the dream/nightmare thing only for when you
+           go to bed, eventually making it so there's only a percentage [that a] dream or nightmare shows
+           up at all"). Driven by a probe: 27 checks, the dial run at 1.0 and 0.3, 16 mutations. */
+        const bd = rdc('bed.gd'), tw = rdc('town.gd');
+        ok(/open_talk\("The bed", ASK, \[/.test(fnGd(bd, 'interact')) && /const ASK := "Which way down\?"/.test(bd)
+          && ['dream', 'nightmare', 'sleep'].every((id) => fnGd(bd, 'interact').includes('"id": "' + id + '"'))
+          && /GameState\.pack_dream\("first"\) if id == "dream" else GameState\.pack_scene\("first"\)/.test(fnGd(bd, '_on_chose')),
+          '⭐ the bed asks which way down: the dream, the nightmare, or just sleep  (his: "the user can choose either one")');
+        ok(/prompt_text = "Go to bed, dick\."/.test(bd) && /say\("Day %d\." % GameState\.day\)/.test(bd),
+          '…and his prompt and his morning line are untouched');
+        ok(!/_sleep\(\)/.test(fnGd(bd, 'interact').split('open_talk(')[0].replace(/if not TownBed\.dreams[\s\S]*?return/, ''))
+          && /end_talk\(\)\s*\n\s*_sleep\(\)/.test(fnGd(bd, '_on_chose')),
+          '⚠ the day turns over on the PICK, not the press  (Escape out of the question and you never went to bed)');
+        const dial = +((/const DREAM_CHANCE := ([\d.]+)/.exec(bd) || [])[1]);
+        ok(dial > 0 && dial <= 1 && /if not TownBed\.dreams\(GameState\.day\):\s*\n\s*_sleep\(\)\s*\n\s*_morning\(\)\s*\n\s*return/.test(fnGd(bd, 'interact'))
+          && /absi\(hash\("dream:%d" % night\)\) % 100 < int\(round\(DREAM_CHANCE \* 100\.0\)\)/.test(fnGd(bd, 'dreams'))
+          && !/rand/.test(fnGd(bd, 'dreams')),
+          '⭐ HIS DIAL: the share of nights that offer one at all, salted on the night  (a randf roll is re-rolled by reloading)',
+          'DREAM_CHANCE ' + dial);
+        ok(/GameState\.portal_from = here\.scene_file_path/.test(fnGd(bd, '_on_chose'))
+          && /GameState\.reentry\[here\.scene_file_path\] = global_position \+ WAKE_AT/.test(fnGd(bd, '_on_chose'))
+          && /_waking = true/.test(fnGd(bd, '_on_chose')) && /if _waking:\s*\n\s*_waking = false/.test(fnGd(bd, '_ready_extra')),
+          '…and "Wake up" lands you beside the bed, where it says the morning  (once)');
+        ok(!/pack_dream|chessboard\.tscn|dream\.tscn/.test(tw + hm + por) && !/"dream"|"nightmare"/.test(hbx),
+          '⛑ no ring and no table opens the dream or the nightmare any more — only the bed');
         ok(dr !== '' && !/take_hit|_bite\(|_fire\(|Heckler|_heckle\(/.test(dr)
           && /func _caught\(z: PortalBoard\.Zombie\) -> void:\s*\n\s*_join\(z\)/.test(dr)
           && !/super\(/.test(fnGd(dr, '_after_ready')) && !/super\(/.test(fnGd(dr, '_process')),
@@ -1221,7 +1191,7 @@ const server = http.createServer((req, res) => {
         const g = rdc('game_state.gd');
         ok(/"id": "sea",\s+"name": "[^"]+",\s+"scene": "res:\/\/sea_board\.tscn",\s+"free": true/.test(g)
           && fs.existsSync(path.join(GD, 'sea_board.tscn')),
-          '⭐ the sea board is its own world behind the dock\'s portal, and free');
+          '⭐ the sea board is its own world, behind the ring at home since 10-03, and free');
         ok(sb !== '' && /PJCCTownChess/.test(sb) && /_call\("state\(\)"\)/.test(sb) && /_call\("start\(\)"\)/.test(sb)
           && /_call\("move\(%d, %d\)"/.test(sb)
           && !/func (legal|attack|is_attacked|gen_moves|in_check|can_move)/.test(sb) && !/castle|en.?passant/i.test(fnGd(sb, 'use')),
@@ -1470,9 +1440,10 @@ const server = http.createServer((req, res) => {
         '…and the room is still legible with the lights off  [[down-never-stuck]]');
       /* ⭐ the sentence neither the mine nor the site can say. */
       ok(/GameState\.slot_for_game\("sand-mine-depths"\)/.test(pit)
-        && /GameState\.unlock_need\(_slot\)/.test(pit) && !/\b300\b/.test(pit),
-        '⭐ the Martyr\'s stone says his square is bought in the ARCADE, and asks the roster how much',
-        '⚠ two mines share a name: the shaft pays ore, the machine pays the g-pawn');
+        && /GameState\.unlock_need\(_slot\)/.test(pit) && !/\b300\b/.test(pit)
+        && /Sand Mine Depths pays it/.test(pit) && !/machine is in the Arcade/.test(pit),
+        '⭐ the Martyr\'s stone says Sand Mine Depths pays his square, and asks the roster how much',
+        '⚠ two mines share a name: the shaft pays ore, the site\'s game pays the g-pawn — and the Arcade is gone (10-03)');
       /* the run has to come back where you came in. */
       ok(/var mine_return: String/.test(gs)
         && /GameState\.mine_return = "res:\/\/depths\.tscn"/.test(pit),
@@ -1507,17 +1478,12 @@ const server = http.createServer((req, res) => {
       for (const n of ['-58.0, -30.0, 116.0, 16.0', '-62.0, -104.0, 124.0, 78.0', '-17.0, -18.0, 34.0, 12.0'])
         ok(grove.includes(n) && park.includes(n),
           '   …and its ' + n.split(',')[2].trim() + '-wide piece is the one the room draws');
-      /* ⚠⚠ THE ARCADE CANNOT STAND ON THE HAUL ROAD. */
-      const ax = /const ARCADE_AT := Vector2\((-?[\d.]+),/.exec(town2);
+      /* ⛑ THE ARCADE'S LOT IS EMPTY SINCE 2026-10-03; the Academy still has to clear the grove. */
       const cx = /const ACADEMY_AT := Vector2\((-?[\d.]+),/.exec(town2);
-      const tx = /const TRAIL_X := ([\d.]+)/.exec(town2);
       const gw = /d\.size = Vector2\(([\d.]+), [\d.]+\)\s*\n\s*d\.position = TABLES_AT/.exec(town2);
-      ok(ax && cx && gw && +ax[1] - +gw[1] / 2 >= 380 && -(+cx[1]) - +gw[1] / 2 >= 380,
-        '…and both buildings stand clear of the grove on either side',
-        ax && cx && gw ? 'academy ' + cx[1] + ', grove ' + gw[1] + ' wide, arcade ' + ax[1] : '?');
-      ok(ax && tx && Math.abs(+ax[1] - +tx[1]) > 114 + 26 + 30,
-        '…and the Arcade is not standing on the haul road',
-        ax && tx ? 'arcade at ' + ax[1] + ', trail at ' + tx[1] : '?');
+      ok(cx && gw && -(+cx[1]) - +gw[1] / 2 >= 380,
+        '…and the Academy stands clear of the grove',
+        cx && gw ? 'academy ' + cx[1] + ', grove ' + gw[1] + ' wide' : '?');
       /* ⚠ EVERYTHING IN THE ACADEMY'S YARD IS OFF ACADEMY_AT. */
       ok((town2.match(/ACADEMY_AT \+ Vector2\(/g) || []).length >= 4
         && /Rect2\(ACADEMY_AT\.x - 140\.0, -130\.0/.test(town2),
@@ -1625,10 +1591,11 @@ const server = http.createServer((req, res) => {
         straddle.map((p) => p.join(',')).join(' · ') || lotsF.length + ' lots against '
           + lines.length + ' fence lines, all clear');
 
-      /* ══ 16h · THERE IS A WAY BACK FROM THE ARCADE'S MACHINES ══ */
+      /* ══ 16h · THERE IS A WAY BACK FROM THE GAMES THE TOWN OPENS ══ */
       /* his: "Make it so sky run and mine depths, you have the option to return to Game like we did with the puzzles." */
-      ok(/cab\.url = str\(d\["url"\]\) \+ \("&" if "\?" in str\(d\["url"\]\) else "\?"\) \+ "town=1"/.test(arc),
-        'every cabinet tells the page where you came from');
+      /* ⛑ The Arcade's cabinets carried the flag until 2026-10-03; the rings carry it now. */
+      ok(/url = str\(GAMES\[game\]\["url"\]\) \+ "\?town=1"/.test(rings),
+        'every ring tells the page where you came from');
       for (const [slug, file] of [['sky-run', 'pjcc_sky_run.html'],
                                   ['sand-mine-depths', 'pjcc_sandmine.html']]) {
         const wrap = fs.readFileSync(path.join(ROOT, 'games', slug, 'index.html'), 'utf8');
@@ -1642,8 +1609,10 @@ const server = http.createServer((req, res) => {
           '   …and the end card grows a TOWN button, hidden unless you came from there');
         ok(/w\.location\.href = '\/games\/checker-town\/'/.test(page),
           '   …which walks back when no script is allowed to close the tab');
-        ok(/const CABS := \[[\s\S]*?"slug": "' + slug + '"/.test(arc) || arc.includes('"slug": "' + slug + '"'),
-          '   …and a cabinet in the Arcade opens it');
+        /* ⚠ Sand Mine Depths lost its town door with the Arcade; its page keeps the button. */
+        if (slug === 'sky-run')
+          ok(new RegExp('^\\t"' + slug + '": \\{ "name": ', 'm').test(rings),
+            '   …and the dock\'s ring opens it');
       }
 
       /* ══ 16c · THE LANDSCAPE IS SAND, AND GREEN MEANS SOMETHING ══ */
@@ -1690,7 +1659,7 @@ const server = http.createServer((req, res) => {
         && !/_add_challenger\("(Crockett|Argus)", "[a-z]+", \d+, "[a-z]", CAMP_AT/.test(town2),
         'Crockett and Argus are off the Sand Mine camp');
       const dogs = town2.slice(town2.indexOf('func _furnish_dogs'),
-        town2.indexOf('func _furnish_arcade'));
+        town2.indexOf('func _furnish_tables'));
       ok(/MAX_HOME_AT \+/.test(dogs) && /HOME_AT \+/.test(dogs),
         '…and both are placed off the two checkers, so moving a house moves its dog');
       /* ⚠ A DOG STANDING ON THE LANE IS A DOG IN THE ONLY ROAD TO TWO FRONT DOORS. */
@@ -1703,7 +1672,7 @@ const server = http.createServer((req, res) => {
       /* his: "[it] should be more of a shack than a house — something that members of checker town, which is mostly sand … could conceivably build with basic construction tools, maybe ONE crane." */
       ok(/class AssemblyShack extends TownDoor/.test(town2)
         && /var hall := AssemblyShack\.new\(\)/.test(town2),
-        'the Assembly is a shack — its own subclass, like the Arcade and the Theater',
+        'the Assembly is a shack — its own subclass, like the other bespoke fronts',
         '⚠ a wider TownDoor would have repainted every cottage on the map');
       /* ⚠⚠ THE ONE THING THE REPAINT MUST NOT TOUCH. */
       const shack = town2.slice(town2.indexOf('class AssemblyShack'),
@@ -1795,45 +1764,35 @@ const server = http.createServer((req, res) => {
         '…so the h-rook is reachable: the roster asks for a floor inside the public ten',
         need && ('floor ' + need[1] + ' of ' + publicFloors.length));
 
-      /* ══ 18 · THE CAMPAIGN CABINET ══ */
+      /* ══ 18 · CAMPAIGN IS THE CAMP'S RING ══ */
       /* his: "move Campaign into Arcade, but locked until half the assembly is lit up." */
       /* ⛑ 2026-09-07:. */
       /* his: "put the campaign on the workbench" */
+      /* ⛑ 2026-10-03, his: "Let's put Campaign in one of them - take the arcade completely away". */
       ok(/slug:'marchland'[^\n]*cat:'dev'[^\n]*gate:'nrun'/.test(REG),
         'Campaign files under the WORKBENCH on the site now, behind its own earned gate',
-        '⚠ §13 is what keeps its cabinet in here from becoming a link to nothing');
+        '⚠ §13 is what keeps its ring here from becoming a link to nothing');
       ok(/func assembly_half\(\) -> bool:\s*\n\s*return army_count\(\) \* 2 >= ROSTER\.size\(\)/.test(gs),
         '⭐ "half the Assembly" is ONE function');
       ok(!/claimable/.test(/func assembly_half[\s\S]{0,200}/.exec(gs)[0]),
         '…counted off the WHOLE roster',
         '⚠ tying it to what is currently winnable makes the lock cheaper every time a character lands');
-      ok(/GameState\.assembly_half\(\)/.test(arc) && !/army_count\(\) \* 2/.test(arc),
-        '…and the cabinet asks it rather than doing the arithmetic again');
-      ok(/"half": true/.test(arc) && /cab\.half = bool\(d\.get\("half", false\)\)/.test(arc),
-        '…on exactly one machine, off a field  (⚠ not an `if slug ==`)');
-      /* ⚠⚠ OFF, NOT ENERGY 0 (2026-09-29): a light at energy 0 still runs on every pixel it
-         touches — 6 lit + 1 at zero measured exactly what 7 lit did. */
-      ok(/_light\.enabled = not _dark/.test(arc) && !/_light\.energy = 0\.0 if _dark/.test(arc)
-        && /if _dark:\s*\n\s*return[^\n]*\n\s*var m: float = r\.size\.y/.test(arc),
-        '…and a locked machine is genuinely dark: no light, no attract frame');
-      ok(/dark until half the Assembly is lit  \(%d of %d\)/.test(arc),
-        '…but it says its own price AND how far you have got',
-        '⚠ "Locked" alone is a door refusing to say what it wants');
-      ok(/Color\("8a82b4"\) if _dark else/.test(arc),
-        '…and you can still read its NAME  (⛑ the first render had a nameless black cabinet)');
-      /* ⛑ THE ARITHMETIC AGAIN: a fifth cabinet standing inside the west wall is red here rather than on a render. */
-      const aRoom = /const ROOM := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(arc);
-      const aSpread = /const SPREAD := ([\d.]+)/.exec(arc);
-      const aWall = /const WALL_T := ([\d.]+)/.exec(arc);
-      const aSize = /size = Vector2\(([\d.]+), [\d.]+\)\s*\n\n\tfunc _ready_extra/.exec(arc);
-      ok(aRoom && aSpread && aWall && aSize, 'the Arcade\'s frame is readable from source');
-      if (aRoom && aSpread && aWall && aSize) {
-        const n = cabs.length;
-        const half = +aRoom[3] / 2;
-        const reach = +aSpread[1] * (n - 1) + (+aSize[1]) / 2 + (+aWall[1]);
-        ok(reach <= half,
-          'the Arcade is wide enough for every cabinet in it',
-          n + ' machines reach ' + reach + ', the wall is at ' + half);
+      {
+        const ringCode = bareGd(rings);
+        ok(/return _half\(\) and not GameState\.assembly_half\(\)/.test(fnGd(ringCode, 'dark')) && !/army_count\(\) \* 2/.test(ringCode),
+          '…and the ring asks it rather than doing the arithmetic again');
+        ok(/^\t"marchland": \{[^\n]*"half": true/m.test(ringCode) && (ringCode.match(/"half": true/g) || []).length === 1
+          && /bool\(GAMES\[game\]\.get\("half", false\)\)/.test(fnGd(ringCode, '_half')),
+          '…on exactly one ring, off a field  (⚠ not an `if game ==`)');
+        ok(/dark until half the Assembly is lit  \(%d of %d\)/.test(fnGd(ringCode, '_line'))
+          && /if dark\(\):\s*\n\s*say\(/.test(fnGd(ringCode, 'interact')),
+          '…and a shut ring says its own price AND how far you have got, and a press only says so',
+          '⚠ "Locked" alone is a door refusing to say what it wants');
+        ok(/TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\)\)/.test(ringCode)
+          && /RING_DARK if shut else RING/.test(fnGd(ringCode, 'paint')),
+          '…and is painted dark until it opens');
+        ok(/GameState\.army_changed\.connect\(/.test(fnGd(ringCode, '_ready_extra')),
+          '⚠ it lights while you stand at it: a square can fill from another tab');
       }
 
       /* ══ 19 · NIGHT ══ */
@@ -2366,9 +2325,8 @@ const server = http.createServer((req, res) => {
 
       /* ══ 31 · THE FRONT OF THE ARCADE ══ */
       /* his: "build out the outside of the arcade building. Make it look nice." */
-      ok(/class ArcadeFront extends TownDoor:/.test(town2)
-        && /var arc := ArcadeFront\.new\(\)/.test(town2),
-        'the Arcade has a front of its own');
+      /* ⛑ CAME OFF THE MAP WITH THE ROOM, 2026-10-03 (his: "take the arcade completely away"). */
+      ok(!/ArcadeFront/.test(town2), 'the Arcade\'s front went with it');
       {
         /* …and only the ones we chose do. */
         const subs = [...town2.matchAll(/class (\w+) extends TownDoor:/g)]
@@ -2380,7 +2338,8 @@ const server = http.createServer((req, res) => {
         /* ⛑ TheaterFront LEFT and TableGrove ARRIVED, both 2026-09-23 and both his. */
         /* ⛑ TownSeam JOINED 2026-09-27 — the end of a road, and the ONLY TownDoor subclass
            that is not a building: it draws nothing and changes the window. */
-        const want = ['ArcadeFront', 'AssemblyShack', 'CheckerHome', 'CityGate', 'Rowboat',
+        /* ⛑ ArcadeFront LEFT 2026-10-03 (his). */
+        const want = ['AssemblyShack', 'CheckerHome', 'CityGate', 'Rowboat',
                       'TableGrove', 'TownSeam'];
         ok(subs.join(' ') === want.join(' '),
           '…and the bespoke buildings are exactly the ones we chose',
@@ -2397,37 +2356,6 @@ const server = http.createServer((req, res) => {
         'nothing on the map opens the Replay Theater, and its lot went with it');
       ok(fs.existsSync(path.join(GD, 'theater.tscn')) && /PARKED, NOT DELETED/.test(theater),
         '…and the room is PARKED, not deleted — and its own first line says so');
-      ok(/sign_text = ""/.test(town2.slice(town2.indexOf('class ArcadeFront'))),
-        '\u26a0 the marquee IS the sign, so the name is not also floating over the roof');
-      {
-        /* ⛑ TO THE NEXT BANNER, WHICHEVER IT IS (2026-09-22). */
-        const front = town2.slice(town2.indexOf('class ArcadeFront')).split(/\n# ══/)[0];
-        ok(/var cabs: Array = Arcade\.CABS/.test(front),
-          '\u2b50\u2b50 what you see through the glass is read off the ROOM\u2019S OWN cabinet list',
-          'a fifth machine puts itself in the window; nothing here can advertise a machine that is not in there');
-        /* ⚠⚠ AND NOT A COPY OF IT. */
-        const hexes = [...arc.matchAll(/"hex": "([0-9a-f]{6})"/g)].map((m) => m[1]);
-        ok(hexes.length >= 4 && !hexes.some((h) => front.includes(h)),
-          '…and not one of their colors is typed into the front',
-          hexes.join(' '));
-        ok(/bool\(cab\.get\("half", false\)\) and not GameState\.assembly_half\(\)/.test(front),
-          '\u26a0 the locked machine is dark in the window, on the same gate the cabinet reads');
-        /* \u26d1 2026-09-29, his: *"I meant the OUTSIDE blinking lights of the arcade"*. The
-           marquee burns whole and the machines in the window burn steady. \u26a0\u26a0 ALL ON, NOT
-           FROZEN MID-CHASE: the chase lit one bulb in three, so stopping the clock would leave
-           two thirds of them dead, which reads as broken rather than as still. */
-        ok(!/_process/.test(front) && !/_step/.test(front),
-          '\u26d1 the arcade\'s outside lights do not chase, and the front has no per-frame work',
-          'a chasing bulb was this building\'s only reason to run code every frame');
-        ok(/func retime\(\) -> void:/.test(front) && /TownClock\.is_dark\(\)/.test(front),
-          '…and it is asked by the same minute tick as every other lit thing on the map');
-        ok(/_spill\.enabled = TownClock\.is_dark\(\)/.test(front),
-          '\u26a0 the light on the pavement is night-only');
-        /* ⚠ FOUR-SIDED PIECES, NOT ONE STRIPED SHAPE. draw_colored_polygon renders a concave polygon wrong and silently, and an awning is exactly the shape that tempts you. */
-        const poly = front.slice(front.indexOf('func _draw_entrance'));
-        ok(/for i in 5:/.test(poly) && (poly.match(/PackedVector2Array\(\[/g) || []).length === 1,
-          '\u26a0\u26a0 the awning is built from convex quads in a loop, never one concave polygon');
-      }
 
       /* ══ 32 · THE RHYTHM ══ */
       ok(/const ENERGY_CAP := 100/.test(gs) && /const GAME_COST := 10/.test(gs),
@@ -3014,9 +2942,10 @@ const server = http.createServer((req, res) => {
           '⚠⚠ the Enter that closes the paper cannot reopen it: a closed cover counts for 150ms');
         ok(/while fs > 10 and _column_height/.test(fnGd(pap, '_paint')),
           '…and the paper fits by bringing the type down — nothing in this town scrolls');
-        ok(/GameState\.paper_was\(\)/.test(fnGd(pap, '_lead')) && /npc\.away_days\.has\(wd\)/.test(fnGd(pap, '_around'))
-          && /if slot < 0 or GameState\.has_slot\(slot\):/.test(fnGd(pap, '_arcade')) && /if best <= 0:/.test(fnGd(pap, '_arcade')),
-          '⭐ every line is read off the save, the calendar or a banked score — never a guess');
+        ok(/GameState\.paper_was\(\)/.test(fnGd(pap, '_lead')) && /npc\.away_days\.has\(wd\)/.test(fnGd(pap, '_around')),
+          '⭐ every line is read off the save or the calendar — never a guess');
+        ok(!/Arcade|THE ARCADE/.test(pap),
+          '⛑ and it prints nothing about the Arcade, which came off the map on 2026-10-03  (a paper that reports what is not there is a town lying in print)');
         ok(/TownClock\.lamps_on\(\)/.test(pap) && /TownClock\.lamps_on\(\)/.test(mkt) && !/opens at \d/.test(pap + mkt),
           '…and the paper and the market read the same hour off the clock');
         ok(/TownPaper\.Stand\.new\(\)/.test(twn), '…sold from a stand in the town');

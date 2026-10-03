@@ -64,7 +64,8 @@ window.PJCC_GAMES = [
      the card on the hub at all; `cat:'dev'` files it in the workbench ROW, not the grid.
      ⚠⚠ THE DOOR IS STILL SHUT: `gate:'nrun'` is EARNED, and by his instruction nothing on the
      site says what earns it — padlock, no sentence.
-     ⚠ It keeps its cabinet in Checker Town's Arcade; `test:town` §13 names that exception. */
+     ⚠ Checker Town opens it from the Sand Mine camp's portal (the Arcade came off the map
+     2026-10-03); `test:town` checks every game behind a ring is still on this list. */
   { slug:'marchland',         name:'ChessWild: Campaign',cryptic:'Ten holdings and a border that moves',  icon:'⚄', accent:'#c9a7ff', cat:'dev', gate:'nrun' },
   // Duel Mode — the same soft-gated shape; the page is at games/duel/index.html.
   { slug:'duel',              name:'Duel Mode',          cryptic:'Say something about the position',       icon:'⚔', accent:'#9fe8ff', cat:'dev', playable:false },
