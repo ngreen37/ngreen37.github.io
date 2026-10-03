@@ -1057,17 +1057,17 @@ const server = http.createServer((req, res) => {
           '…and the dream counts as a board world, so its ring knows the way back');
         /* ⭐ THE BED ASKS NOW (2026-10-03, his: "Let's make the dream/nightmare thing only for when you
            go to bed, eventually making it so there's only a percentage [that a] dream or nightmare shows
-           up at all"). Driven by a probe: 27 checks, the dial run at 1.0 and 0.3, 16 mutations. */
+           up at all"). Driven by a probe: 28 checks, the dial run at 1.0 and 0.3, 17 mutations. */
         const bd = rdc('bed.gd'), tw = rdc('town.gd');
         ok(/open_talk\("The bed", ASK, \[/.test(fnGd(bd, 'interact')) && /const ASK := "Which way down\?"/.test(bd)
-          && ['dream', 'nightmare', 'sleep'].every((id) => fnGd(bd, 'interact').includes('"id": "' + id + '"'))
+          && ['dream', 'nightmare', 'sleep', 'stay'].every((id) => fnGd(bd, 'interact').includes('"id": "' + id + '"'))
           && /GameState\.pack_dream\("first"\) if id == "dream" else GameState\.pack_scene\("first"\)/.test(fnGd(bd, '_on_chose')),
-          '⭐ the bed asks which way down: the dream, the nightmare, or just sleep  (his: "the user can choose either one")');
+          '⭐ the bed asks which way down: the dream, the nightmare, just sleep, or not now  (his: "the user can choose either one")');
         ok(/prompt_text = "Go to bed, dick\."/.test(bd) && /say\("Day %d\." % GameState\.day\)/.test(bd),
           '…and his prompt and his morning line are untouched');
         ok(!/_sleep\(\)/.test(fnGd(bd, 'interact').split('open_talk(')[0].replace(/if not TownBed\.dreams[\s\S]*?return/, ''))
-          && /end_talk\(\)\s*\n\s*_sleep\(\)/.test(fnGd(bd, '_on_chose')),
-          '⚠ the day turns over on the PICK, not the press  (Escape out of the question and you never went to bed)');
+          && /end_talk\(\)\s*\n\s*if id == "stay":\s*\n\s*return\s*\n\s*_sleep\(\)/.test(fnGd(bd, '_on_chose')),
+          '⚠ the day turns over on the PICK, not the press, and "Not now." leaves it alone  (a phone has no Escape: without the row a stray tap costs a day)');
         const dial = +((/const DREAM_CHANCE := ([\d.]+)/.exec(bd) || [])[1]);
         ok(dial > 0 && dial <= 1 && /if not TownBed\.dreams\(GameState\.day\):\s*\n\s*_sleep\(\)\s*\n\s*_morning\(\)\s*\n\s*return/.test(fnGd(bd, 'interact'))
           && /absi\(hash\("dream:%d" % night\)\) % 100 < int\(round\(DREAM_CHANCE \* 100\.0\)\)/.test(fnGd(bd, 'dreams'))
