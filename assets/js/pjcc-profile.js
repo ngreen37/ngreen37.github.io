@@ -641,7 +641,8 @@
   function townMerge(remote) {
     if (!remote || typeof remote !== 'object') return null;
     var local = townLocal();
-    local.day = Math.max(+local.day || 0, +remote.day || 0);
+    /* ⛑ NO `day` SINCE 2026-10-03: the town counts no days, it reads the real date. An old copy's
+       `day` stays in storage untouched; nothing reads it. */
     local.ore = Math.max(+local.ore || 0, +remote.ore || 0);
     /* ⛑⛑ `hearts` IS A DICTIONARY OF PERSON → COUNT, NOT A NUMBER, and until 2026-09-05 this
        line read `Math.max(+local.hearts || 0, +remote.hearts || 0)`. `+{"Auston":4}` is NaN,

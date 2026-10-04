@@ -40,6 +40,9 @@
     box-shadow:0 4px 0 rgba(0,0,0,0.35); transition:transform .08s; font-family:inherit; }
   .btn:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
   .btn-gold { background:#F5C518; color:#1a0f3d; } .btn-gold:hover { background:#ffd740; }
+  /* the way back to Checker Town, shown only when the town opened this page */
+  .btn-ghost { background:transparent; color:#cdbcf2; border:1px solid #6b5fa0; box-shadow:none; }
+  .btn.hidden { display:none; }
   .row { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
   .legend { font-size:11px; color:#b9a8e6; line-height:1.7; max-width:380px; margin-top:6px; }
   .legend .k { color:#6bffb8; } .legend .t { color:#ff6b8a; }
@@ -87,6 +90,7 @@
     <p class="legend" id="over-ghost"></p>
     <div class="row">
       <button class="btn btn-gold" id="again-btn">Crawl Again</button>
+      <button class="btn btn-ghost hidden" id="town-btn">⌂ TOWN</button>
     </div>
   </div>
 </div>
@@ -94,6 +98,33 @@
 <script>
 (function () {
   'use strict';
+
+  /* ══ BACK TO CHECKER TOWN — 2026-10-03 ══════════════════════════════════════
+     The ring in his checker opens this page with `?town=1` and the end card grows a door home —
+     the shape Sky Run's has. ⚠⚠ THE FLAG ARRIVES ON THE WRAPPER: /games/dungeon/ FRAMES this file,
+     so location.search here is empty and only window.parent's has it. ⚠ Closing fails on a tab no
+     script opened, so the fallback walks back rather than leaving a button that does nothing. */
+  function fromTown() {
+    var hit = function (q) { return /[?&]town=1/.test(q || ''); };
+    if (hit(location.search)) return true;
+    try { if (window.parent && window.parent !== window && hit(window.parent.location.search)) return true; } catch (e) {}
+    return false;
+  }
+  function backToTown() {
+    var w = window.top || window;
+    try { w.close(); } catch (e) {}
+    setTimeout(function () {
+      try { w.location.href = '/games/checker-town/'; } catch (e) { location.href = '/games/checker-town/'; }
+    }, 180);
+  }
+  function wireTownButton(id) {
+    var b = document.getElementById(id);
+    if (!b) return;
+    if (!fromTown()) return;                    // ⚠ hidden by default: this page has its own life
+    b.classList.remove('hidden');
+    b.addEventListener('click', backToTown);
+  }
+  wireTownButton('town-btn');
 
   // ---- canvas / layout ------------------------------------------------------
   var cv = document.getElementById('cv');

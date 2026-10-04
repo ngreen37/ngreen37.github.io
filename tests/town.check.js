@@ -160,10 +160,11 @@ const server = http.createServer((req, res) => {
                                       scouted: { crockett: 1, argus: 2 } });
       return { first: first, m: merged, stored: JSON.parse(localStorage.getItem('pjcc.town.v1')) };
     });
-    ok(M.first && M.first.day === 4, 'mergeTown: writes pjcc.town.v1');
+    ok(M.first && M.first.ore === 10, 'mergeTown: writes pjcc.town.v1');
     ok(JSON.stringify(M.m.army) === JSON.stringify([0, 5, 11]),
       'mergeTown: army is a UNION of slot indices, deduped and sorted', JSON.stringify(M.m.army));
-    ok(M.m.day === 4, 'mergeTown: day takes the MAX — a stale row cannot rewind the calendar');
+    /* ⛑ 2026-10-03, his: "we shouldn't count days in the game". There is no day to merge. */
+    ok(!('day' in M.m), 'mergeTown: no day is merged any more — the town reads the real date', JSON.stringify(M.m.day));
     ok(M.m.ore === 40, 'mergeTown: ore takes the MAX');
     /* ⛑⛑ THIS CHECK USED TO ASSERT THE BUG, AND IT PASSED FOR THREE BATCHES. */
     ok(M.m.hearts && M.m.hearts.Auston === 4 && M.m.hearts.Crockett === 2,
@@ -251,9 +252,9 @@ const server = http.createServer((req, res) => {
       return { empty: empty, after: PJCC.townState() };
     });
     ok(S.empty === null, 'townState: null before anything is known — not an empty object');
-    ok(S.after && S.after.day === 9 && S.after.army.length === 3,
+    ok(S.after && S.after.ore === 42 && S.after.army.length === 3,
       'townState: hands back the merged copy for the town to read at boot',
-      'day ' + (S.after || {}).day);
+      'ore ' + (S.after || {}).ore);
 
     /* ══ 2c · the scouting facts, and whether they can be TRUE ══ */
     const PAGE_SRC = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
@@ -702,8 +703,8 @@ const server = http.createServer((req, res) => {
         '…counted on the SAME 2s tick, not a second timer');
       ok(/if typeof\(got\) != TYPE_ARRAY:/.test(gs),
         '…reading an ARRAY of results, or two puzzles inside one tick lose one  (⚠ the streak would never finish)');
-      ok(/puz = \{ "failed_day": day \}/.test(gs),
-        '…and one wrong answer ends it until tomorrow');
+      ok(/puz = \{ "failed_day": day_no\(\) \}/.test(gs) && /!= day_no\(\)/.test(fnGd(gs, 'puzzle_ready')),
+        '…and one wrong answer ends it until tomorrow  (the real tomorrow since 2026-10-03)');
       ok(/func puzzle_more\(/.test(gs) && /NOT puzzle_begin/.test(gs),
         '…while "set me another" mid-run does NOT reset the count to zero');
       const pMore = fnGd(gs, 'puzzle_more');
@@ -991,11 +992,11 @@ const server = http.createServer((req, res) => {
         ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.game = "sky-run"\s*\n\s*portal\.position = SEA_BOARD/.test(tw),
           '…the dock\'s ring opens SKY RUN  (his: "Make the sky run be the portal game for the near-the-Sea chessboard")');
         ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
-          && /_portal\.pack = "sea"\s*\n\s*_portal\.scene_path = GameState\.pack_scene\("sea"\)/.test(hbx)
+          && /_portal\.game = "dungeon"/.test(hbx)
           && (hbx.match(/"id": "portal"/g) || []).length === 2 && /if id == "portal":/.test(fnGd(hbx, '_on_chose')),
-          '…and the ring at home opens the SEA board until he picks its own game, from its menu with or without Princess');
+          '…and the ring at home opens PRINCESS DUNGEON, from its menu with or without Princess  (his: "Princess Dungeon and Pawn Crossing sounds awesome. Let\'s do both.")');
         ok(/url = str\(GAMES\[game\]\["url"\]\) \+ "\?town=1"/.test(fnGd(por, '_ready_extra'))
-          && /if game != "":\s*\n\s*super\.interact\(you\)\s*\n\s*you\.rise\(\)/.test(fnGd(por, '_enter'))
+          && /if game != "":\s*\n\s*super\.interact\(you\)\s*\n\s*if return_at\.is_finite\(\):\s*\n\s*you\.global_position = return_at\s*\n\s*you\.rise\(\)/.test(fnGd(por, '_enter'))
           && fnGd(por, '_enter').indexOf('await you.swallowed') < fnGd(por, '_enter').indexOf('super.interact(you)'),
           '⭐ a site game opens in a tab at the BOTTOM of the spin, carrying ?town=1, and he climbs back out of the ring',
           '⚠ there is no scene to change: without rise() he is left shrunk to nothing on the board');
@@ -1060,24 +1061,29 @@ const server = http.createServer((req, res) => {
            up at all"). Driven by a probe: 28 checks, the dial run at 1.0 and 0.3, 17 mutations. */
         const bd = rdc('bed.gd'), tw = rdc('town.gd');
         ok(/open_talk\("The bed", ASK, \[/.test(fnGd(bd, 'interact')) && /const ASK := "Which way down\?"/.test(bd)
-          && ['dream', 'nightmare', 'sleep', 'stay'].every((id) => fnGd(bd, 'interact').includes('"id": "' + id + '"'))
+          && ['dream', 'nightmare', 'stay'].every((id) => fnGd(bd, 'interact').includes('"id": "' + id + '"'))
           && /GameState\.pack_dream\("first"\) if id == "dream" else GameState\.pack_scene\("first"\)/.test(fnGd(bd, '_on_chose')),
-          '⭐ the bed asks which way down: the dream, the nightmare, just sleep, or not now  (his: "the user can choose either one")');
-        ok(/prompt_text = "Go to bed, dick\."/.test(bd) && /say\("Day %d\." % GameState\.day\)/.test(bd),
-          '…and his prompt and his morning line are untouched');
-        ok(!/_sleep\(\)/.test(fnGd(bd, 'interact').split('open_talk(')[0].replace(/if not TownBed\.dreams[\s\S]*?return/, ''))
-          && /end_talk\(\)\s*\n\s*if id == "stay":\s*\n\s*return\s*\n\s*_sleep\(\)/.test(fnGd(bd, '_on_chose')),
-          '⚠ the day turns over on the PICK, not the press, and "Not now." leaves it alone  (a phone has no Escape: without the row a stray tap costs a day)');
+          '⭐ the bed asks which way down: the dream, the nightmare, or not now  (his: "the user can choose either one")');
+        /* ⛑ 2026-10-03, his: "we shouldn't count days in the game and instead just use the real time the
+           user is in". His "Day %d." had no day left to say; you wake to the time. */
+        ok(/prompt_text = "Go to bed, dick\."/.test(bd) && /say\("%s\." % TownClock\.time_text\(\)\)/.test(fnGd(bd, '_morning')),
+          '…his prompt untouched, and you wake to the real time');
+        ok(!/sleep\(\)|GameState\.day\b/.test(bd) && !/func sleep\(/.test(g)
+          && /if id != "dream" and id != "nightmare":\s*\n\s*return/.test(fnGd(bd, '_on_chose')),
+          '⚠ going to bed turns no day over, and "Not now." leaves it  (a phone has no Escape)');
         const dial = +((/const DREAM_CHANCE := ([\d.]+)/.exec(bd) || [])[1]);
-        ok(dial > 0 && dial <= 1 && /if not TownBed\.dreams\(GameState\.day\):\s*\n\s*_sleep\(\)\s*\n\s*_morning\(\)\s*\n\s*return/.test(fnGd(bd, 'interact'))
+        ok(dial > 0 && dial <= 1 && /if not TownBed\.dreams\(TownBed\.tonight\(\)\):\s*\n\s*say\(/.test(fnGd(bd, 'interact'))
           && /absi\(hash\("dream:%d" % night\)\) % 100 < int\(round\(DREAM_CHANCE \* 100\.0\)\)/.test(fnGd(bd, 'dreams'))
           && !/rand/.test(fnGd(bd, 'dreams')),
           '⭐ HIS DIAL: the share of nights that offer one at all, salted on the night  (a randf roll is re-rolled by reloading)',
           'DREAM_CHANCE ' + dial);
+        ok(/Time\.get_datetime_dict_from_system\(false\)/.test(fnGd(bd, 'tonight')) && /n - 1 if int\(d\["hour"\]\) < 12 else n/.test(fnGd(bd, 'tonight'))
+          && !/TownClock/.test(fnGd(bd, 'tonight')),
+          '…the night is the DEVICE\'s, by the date of its evening  (a moved time zone must not re-roll it)');
         ok(/GameState\.portal_from = here\.scene_file_path/.test(fnGd(bd, '_on_chose'))
           && /GameState\.reentry\[here\.scene_file_path\] = global_position \+ WAKE_AT/.test(fnGd(bd, '_on_chose'))
           && /_waking = true/.test(fnGd(bd, '_on_chose')) && /if _waking:\s*\n\s*_waking = false/.test(fnGd(bd, '_ready_extra')),
-          '…and "Wake up" lands you beside the bed, where it says the morning  (once)');
+          '…and "Wake up" lands you beside the bed, where it says the time  (once)');
         ok(!/pack_dream|chessboard\.tscn|dream\.tscn/.test(tw + hm + por) && !/"dream"|"nightmare"/.test(hbx),
           '⛑ no ring and no table opens the dream or the nightmare any more — only the bed');
         ok(dr !== '' && !/take_hit|_bite\(|_fire\(|Heckler|_heckle\(/.test(dr)
@@ -1153,6 +1159,95 @@ const server = http.createServer((req, res) => {
           && /_model\.stand\(\)/.test(fnGd(pl, 'heal_full')),
           '⭐ his clips have slots waiting: a hit, and going down on the last heart  (an action named for one plays, no code)');
       }
+      /* ══ THE REAL DAY AND A MOVABLE CLOCK (2026-10-03, his: "we shouldn't count days in the game and
+         instead just use the real time the user is in ... We can add a change time zone function as well,
+         since some things will only be open during the day"). Driven by a probe: 17 checks. ══ */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const g = rdc('game_state.gd'), clk = rdc('clock.gd'), zn = rdc('zone.gd'), jr = rdc('journal.gd'), pap = rdc('paper.gd');
+        const readers = ['bed.gd', 'dog.gd', 'npc.gd', 'zone.gd', 'journal.gd', 'paper.gd', 'town.gd', 'home.gd', 'door.gd']
+          .map(rdc).join('\n');
+        ok(!/^var day\b/m.test(g) && !/\bday \+= 1/.test(g) && !/func sleep\(/.test(g) && !/GameState\.day\b/.test(readers),
+          '⭐ there is no day counter: nothing adds to one and nothing reads one');
+        ok(/var d := today\(\)\s*\n\s*if energy_on >= d:\s*\n\s*return/.test(fnGd(g, '_new_day'))
+          && /energy = energy_cap/.test(fnGd(g, '_new_day'))
+          && /_new_day\(\)/.test(fnGd(g, 'morning')) && /_new_day\(\)/.test(fnGd(g, '_tick')),
+          '⭐ the bar fills when the real calendar turns — asked on every room and every 2s tick, so midnight lands while you stand still',
+          '⚠ >=, not !=: a device clock set back a day must not fill it twice');
+        ok(/return Time\.get_date_string_from_system\(false\)/.test(fnGd(g, 'today'))
+          && /Time\.get_date_dict_from_system\(false\)/.test(fnGd(g, 'day_no'))
+          && !/TownClock/.test(fnGd(g, 'today') + fnGd(g, 'day_no') + fnGd(g, '_new_day')),
+          '⚠⚠ the calendar that pays is the DEVICE\'s: a moved time zone cannot buy a second morning, rent or exchange cap');
+        ok(/== day_no\(\)/.test(fnGd(g, 'beaten_today')) && /= day_no\(\)/.test(fnGd(g, 'retire_for_today')),
+          '…and the once-a-day stamp is the real day  (still a number, still MAX-merged)');
+        const save = fnGd(g, 'save_state');
+        const pushed = g.slice(g.indexOf('var payload := JSON.stringify({'), g.indexOf('JavaScriptBridge.eval', g.indexOf('func push_to_site')));
+        ok(/"clock_shift": clock_shift/.test(save) && /"energy_on": energy_on/.test(save) && !/"day":/.test(save)
+          && !/clock_shift|energy_on|"day":/.test(pushed),
+          '⚠ the time zone is a DEVICE preference like the mute: saved, never pushed — and no day goes anywhere');
+        ok(!/local\.day\s*=/.test(fn(PROF, 'townMerge')), '…and the site merges no day either');
+        ok(/static var shift_hours: int = 0/.test(clk) && /shift_hours \* 3600/.test(fnGd(clk, '_now'))
+          && /_now\(\)/.test(fnGd(clk, 'weekday')) && !/GameState/.test(clk),
+          '⭐ the clock reads a shift in hours, and everything that lights or opens reads the clock  (which still sees no GameState)');
+        ok(/TownClock\.shift_hours = clock_shift/.test(fnGd(g, 'set_clock_shift'))
+          && /TownClock\.shift_hours = clock_shift/.test(fnGd(g, 'load_state')) && /wrapi\(h, -12, 13\)/.test(fnGd(g, 'set_clock_shift')),
+          '…set from the save, up to twelve hours either way');
+        ok(/_move_clock\(GameState\.clock_shift - 1\)/.test(jr) && /_move_clock\(GameState\.clock_shift \+ 1\)/.test(jr)
+          && /_move_clock\(0\)/.test(jr) && /\["_retime", "_tick_clock"\]/.test(fnGd(jr, '_move_clock'))
+          && /var town: bool = _tab == TOWN_TAB/.test(fnGd(jr, '_layout')) && /- bar\)/.test(fnGd(jr, '_layout')),
+          '⭐ the journal\'s town tab moves the time zone an hour at a time, the sky turns at once, and the rows shrink to fit over the buttons');
+        ok(/"a": "Time zone", "b": TownClock\.shift_text\(\)/.test(jr) && !/"a": "Day"/.test(jr),
+          '…and says which time zone you are in, where the day count used to be');
+        ok(!/Day %d|GameState\.day/.test(fnGd(zn, '_paint_hud') + fnGd(zn, '_greet')) && !/Day %d/.test(pap),
+          '…and the HUD, the greeting and the paper count no days');
+      }
+      /* ══ PAWN CROSSING (2026-10-03, his pick of ten: "Princess Dungeon and Pawn Crossing sounds awesome.
+         Let's do both."). Frogger on a chessboard. Driven by a probe: 33 rules checks, soaked with a
+         careful, a reckless and a still bot. ══ */
+      {
+        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+          .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+        const has = (f) => fs.existsSync(path.join(GD, f));
+        const cr = has('crossing.gd') ? rdc('crossing.gd') : '';
+        const tw = rdc('town.gd'), g = rdc('game_state.gd'), por = rdc('portal.gd');
+        ok(/"id": "crossing", "name": "Pawn Crossing", "scene": "res:\/\/crossing\.tscn", "free": true/.test(g)
+          && has('crossing.tscn') && /path="res:\/\/crossing\.gd"/.test(fs.readFileSync(path.join(GD, 'crossing.tscn'), 'utf8'))
+          && /class_name PawnCrossing\s*\nextends TownZone/.test(cr),
+          '⭐ Pawn Crossing is a board world of its own, and free');
+        ok(/portal\.pack = "crossing"\s*\n\s*portal\.scene_path = GameState\.pack_scene\("crossing"\)\s*\n\s*portal\.position = SQUARE_BOARD/.test(tw)
+          && /_draw_board\(SQUARE_BOARD,/.test(tw),
+          '…behind a ring on a board in the square, on the Arcade\'s old lot, off the one number the board is drawn at');
+        ok(/"Step into the portal  ·  %s" % GameState\.pack_name\(pack\)/.test(fnGd(por, '_ready_extra')),
+          '…and the ring says which game it opens');
+        ok(!/func (is_attacked|in_check|gen_moves)/.test(cr) && !/castl|en.?passant|checkmate|stalemate/i.test(cr),
+          '⛑ piece geometry, not a referee: no check, no castling, no result');
+        const legalP = (/"p":\n([\s\S]*?)\n\t\t"n":/.exec(fnGd(cr, 'legal')) || ['', ''])[1];
+        ok(/_at \+ Vector2i\(0, -1\)/.test(legalP) && /_at\.y == START_ROW and foe_on\(b\) == null/.test(legalP)
+          && /if PortalBoard\.on_board\(t\) and foe_on\(t\) != null:/.test(legalP),
+          '⭐ a pawn steps one, or two from its own rank, and takes only on the diagonal');
+        ok((fnGd(cr, 'moves_of').match(/t\.y <= FOE_ROWS/g) || []).length === 2 && /const FOE_ROWS := 5/.test(cr)
+          && /_rng\.randi_range\(0, FOE_ROWS\)/.test(fnGd(cr, '_free_square')),
+          '⭐ no piece lands on the two ranks you start from: the start is safe, and the clock is the pressure');
+        ok(/if f\.phase == MOVE and pos\(f\)\.distance_to\(feet\) < CELL \* 0\.42:/.test(fnGd(cr, '_bite')) && !/_grace/.test(cr)
+          && /\(player as Crosser\)\.steady\(\)/.test(fnGd(cr, '_hurt')),
+          '⛑ only a sliding piece bites, and there is no grace after a hit  (a knight crossed under it untouched, measured)');
+        ok(/if _hop >= 0\.0 or owed\(\) or not legal\(\)\.has\(sq\):/.test(fnGd(cr, 'go')),
+          '⛑ no hop while a choice is owed  (a queen stepping along the far rank counted a crossing a step, measured)');
+        ok(/if owed\(\):\s*\n\s*if not _ui\.is_talking\(\)/.test(fnGd(cr, '_process')),
+          '⚠ a promotion or game-over menu closed with Escape comes back  (a pawn on the far rank cannot move)');
+        ok(/const PROMOTE := \["q", "r", "b", "n"\]/.test(cr) && /_wave\(_crossed\)/.test(fnGd(cr, '_on_menu')),
+          '⭐ the far rank promotes — queen, rook, bishop or knight — and the next crossing moves like it');
+        const warnFloor = +((/const WARN_FLOOR := ([\d.]+)/.exec(cr) || [])[1]);
+        ok(/MAX_FOES/.test(fnGd(cr, '_wave')) && /CLOCK_FLOOR/.test(fnGd(cr, 'clock_for')) && /REST_FLOOR/.test(fnGd(cr, '_rest_for'))
+          && /WARN_FLOOR/.test(fnGd(cr, 'warn_for')) && /if f\.t >= warn_for\(\):/.test(fnGd(cr, '_step')),
+          '⛑ it ramps until every run ends: more pieces, shorter rests, a shorter clock, a shorter warning  (soaked: every run ends)');
+        ok(warnFloor >= 0.5,
+          '⚠ …but a slide is always lit long enough to see and step away from  (0.4s to react, 0.14s to hop)', 'WARN_FLOOR ' + warnFloor);
+        ok(/func _input\(event: InputEvent\)/.test(cr) && /Time\.get_ticks_msec\(\) - _touch_ms < 400/.test(fnGd(cr, '_input')),
+          '⚠ a tap on a dot is taken in _input, ahead of the touch pad — and Godot\'s mouse copy of that tap is not a second hop');
+        ok(!/save_state|add_ore|spend/.test(cr), '⚠ nothing is saved or paid: the best lasts the session');
+      }
       /* ══ MONEY (2026-09-30, his picks 1 2 3 4 5 7 8 9 10) ══ Driven end to end by a probe
          (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60
          mornings, save/load and merge). These hold the rules that make it not a money printer. */
@@ -1161,8 +1256,8 @@ const server = http.createServer((req, res) => {
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const g = rdc('game_state.gd'), ch = rdc('challenger.gd'), mo = rdc('money.gd'), po = rdc('portal.gd');
         ok(/if rent_on == today\(\)/.test(fnGd(g, 'collect_rent')) && !/\bday\b/.test(fnGd(g, 'collect_rent'))
-          && /var d := today\(\)/.test(fnGd(g, 'bounties_today')) && /morning\(\)/.test(fnGd(g, 'sleep')),
-          '⛑ rent and bounties are keyed to the CALENDAR, not `day`  (the bed has no limit: per-nap money)');
+          && /var d := today\(\)/.test(fnGd(g, 'bounties_today')) && /_new_day\(\)/.test(fnGd(g, 'morning')),
+          '⛑ rent and bounties are keyed to the CALENDAR  (the day is the real one since 2026-10-03)');
         const rates = ((/const BOOTH_RATES := \[([^\]]*)\]/.exec(g) || [])[1] || '').split(',').map(Number).filter((x) => !isNaN(x));
         ok(rates.length > 0 && rates.every((r) => r < 1),
           '⭐ the booth ALWAYS pays back less than you left  (every rate under 1)', rates.join(' '));
@@ -1191,7 +1286,7 @@ const server = http.createServer((req, res) => {
         const g = rdc('game_state.gd');
         ok(/"id": "sea",\s+"name": "[^"]+",\s+"scene": "res:\/\/sea_board\.tscn",\s+"free": true/.test(g)
           && fs.existsSync(path.join(GD, 'sea_board.tscn')),
-          '⭐ the sea board is its own world, behind the ring at home since 10-03, and free');
+          '⭐ the sea board is its own world, kept whole and free  (no ring opens it since 10-03)');
         ok(sb !== '' && /PJCCTownChess/.test(sb) && /_call\("state\(\)"\)/.test(sb) && /_call\("start\(\)"\)/.test(sb)
           && /_call\("move\(%d, %d\)"/.test(sb)
           && !/func (legal|attack|is_attacked|gen_moves|in_check|can_move)/.test(sb) && !/castle|en.?passant/i.test(fnGd(sb, 'use')),
@@ -1597,7 +1692,8 @@ const server = http.createServer((req, res) => {
       ok(/url = str\(GAMES\[game\]\["url"\]\) \+ "\?town=1"/.test(rings),
         'every ring tells the page where you came from');
       for (const [slug, file] of [['sky-run', 'pjcc_sky_run.html'],
-                                  ['sand-mine-depths', 'pjcc_sandmine.html']]) {
+                                  ['sand-mine-depths', 'pjcc_sandmine.html'],
+                                  ['dungeon', 'pjcc_princess_dungeon.html']]) {
         const wrap = fs.readFileSync(path.join(ROOT, 'games', slug, 'index.html'), 'utf8');
         ok(new RegExp('src="[^"]*' + file).test(wrap),
           '   /games/' + slug + '/ frames ' + file);
@@ -1610,9 +1706,9 @@ const server = http.createServer((req, res) => {
         ok(/w\.location\.href = '\/games\/checker-town\/'/.test(page),
           '   …which walks back when no script is allowed to close the tab');
         /* ⚠ Sand Mine Depths lost its town door with the Arcade; its page keeps the button. */
-        if (slug === 'sky-run')
+        if (slug !== 'sand-mine-depths')
           ok(new RegExp('^\\t"' + slug + '": \\{ "name": ', 'm').test(rings),
-            '   …and the dock\'s ring opens it');
+            '   …and a ring in the town opens it');
       }
 
       /* ══ 16c · THE LANDSCAPE IS SAND, AND GREEN MEANS SOMETHING ══ */
@@ -3828,8 +3924,8 @@ const server = http.createServer((req, res) => {
         ok(/player_start = HOME_AT \+ Vector2\(CheckerHome\.WIDE \* 0\.5 \+ 44\.0, 0\.0\)/.test(tw),
           '⭐ the town\'s default arrival is your own front door, not the middle of the square',
           'his: "each day start and end inside the checker home"');
-        ok(/var bed := TownBed\.new\(\)/.test(hm) && /GameState\.sleep\(\)/.test(rd('bed.gd')),
-          '…and the only bed in the game is in that house, so a day can only end there');
+        ok(/var bed := TownBed\.new\(\)/.test(hm) && !/GameState\.sleep|func sleep\(/.test(rd('bed.gd') + rd('game_state.gd')),
+          '…and the only bed in the game is in that house — the dreams are there; the day itself turns at midnight  (his, 2026-10-03)');
         /* ⭐ THE MIRROR CARRIES project.godot SINCE 2026-09-22. */
         /* his: "add the boot check to private" */
         const mirror = /run\/main_scene="([^"]+)"/.exec(rd('project.godot'));
