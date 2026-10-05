@@ -180,6 +180,19 @@ const server = http.createServer((req, res) => {
       'mergeTown: scouted is MAX PER KEY too — a tendency you learned stays learned',
       'crockett=' + ((M.m.scouted || {}).crockett));
     ok(M.m.scouted && M.m.scouted.argus === 2, '…and a key only the other device knows is kept');
+    /* ⭐ 2026-10-04: Pawn Crossing's best run joined the sync. Earned, so the max — tested BOTH ways,
+       because a merge that only ever keeps its own copy passes a one-way test. */
+    const XB = await page.evaluate(() => {
+      localStorage.removeItem('pjcc.town.v1');
+      PJCC.mergeTown({ crossing_best: 12 });
+      const a = PJCC.mergeTown({ crossing_best: 7 }).crossing_best;
+      localStorage.removeItem('pjcc.town.v1');
+      PJCC.mergeTown({ crossing_best: 7 });
+      const b = PJCC.mergeTown({ crossing_best: 12 }).crossing_best;
+      return { a: a, b: b };
+    });
+    ok(XB.a === 12 && XB.b === 12, 'mergeTown: Pawn Crossing\'s best is the MAX both ways — no device rewinds it',
+      JSON.stringify(XB));
 
     /* ══ MONEY on the site's side (2026-09-30, his picks 1 5 9 and the synced half of 3 4 7) ══ */
     const MO = await page.evaluate(() => {
@@ -1203,8 +1216,9 @@ const server = http.createServer((req, res) => {
           '…and the HUD, the greeting and the paper count no days');
       }
       /* ══ PAWN CROSSING (2026-10-03, his pick of ten: "Princess Dungeon and Pawn Crossing sounds awesome.
-         Let's do both."). Frogger on a chessboard. Driven by a probe: 33 rules checks, soaked with a
-         careful, a reckless and a still bot. ══ */
+         Let's do both."). Frogger on a chessboard. 2026-10-04, his "yes great do one, two, and three":
+         SET THE BOARD, REAL MOVES, YOUR HAND. Driven by a probe: 70 rules checks, a dash-and-slide run at
+         12, 30 and 60 fps, soaked with a careful, a reckless and a still bot. ══ */
       {
         const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -1222,22 +1236,55 @@ const server = http.createServer((req, res) => {
           '…and the ring says which game it opens');
         ok(!/func (is_attacked|in_check|gen_moves)/.test(cr) && !/castl|en.?passant|checkmate|stalemate/i.test(cr),
           '⛑ piece geometry, not a referee: no check, no castling, no result');
-        const legalP = (/"p":\n([\s\S]*?)\n\t\t"n":/.exec(fnGd(cr, 'legal')) || ['', ''])[1];
-        ok(/_at \+ Vector2i\(0, -1\)/.test(legalP) && /_at\.y == START_ROW and foe_on\(b\) == null/.test(legalP)
+        const legalP = (/"p":\n([\s\S]*?)\n\t\t"n", "k":/.exec(fnGd(cr, 'legal')) || ['', ''])[1];
+        ok(/_at \+ Vector2i\(0, -1\)/.test(legalP) && /_at\.y == START_ROW and _open\(b\)/.test(legalP)
           && /if PortalBoard\.on_board\(t\) and foe_on\(t\) != null:/.test(legalP),
           '⭐ a pawn steps one, or two from its own rank, and takes only on the diagonal');
         ok((fnGd(cr, 'moves_of').match(/t\.y <= FOE_ROWS/g) || []).length === 2 && /const FOE_ROWS := 5/.test(cr)
           && /_rng\.randi_range\(0, FOE_ROWS\)/.test(fnGd(cr, '_free_square')),
           '⭐ no piece lands on the two ranks you start from: the start is safe, and the clock is the pressure');
-        ok(/if f\.phase == MOVE and pos\(f\)\.distance_to\(feet\) < CELL \* 0\.42:/.test(fnGd(cr, '_bite')) && !/_grace/.test(cr)
-          && /\(player as Crosser\)\.steady\(\)/.test(fnGd(cr, '_hurt')),
+        ok(/if \(f\.phase == MOVE or q != p\) and _nearest\(was, feet, q, p\) < CELL \* 0\.42:/.test(fnGd(cr, '_bite'))
+          && !/_grace/.test(cr) && /\(player as Crosser\)\.steady\(\)/.test(fnGd(cr, '_hurt')),
           '⛑ only a sliding piece bites, and there is no grace after a hit  (a knight crossed under it untouched, measured)');
-        ok(/if _hop >= 0\.0 or owed\(\) or not legal\(\)\.has\(sq\):/.test(fnGd(cr, 'go')),
-          '⛑ no hop while a choice is owed  (a queen stepping along the far rank counted a crossing a step, measured)');
+        ok(/_feet_was = feet/.test(fnGd(cr, '_bite')) && /f\.seen = p/.test(fnGd(cr, '_bite'))
+          && /clampf\(-d0\.dot\(v\) \/ vv, 0\.0, 1\.0\)/.test(fnGd(cr, '_nearest'))
+          && /_feet_was = Vector2\.INF/.test(fnGd(cr, '_to_start')),
+          '⛑ …and the bite is SWEPT between frames, not sampled at them',
+          'the same dash-and-slide crossings: at 30 fps a sampled bite caught 2 of 12 and a swept one 6; at 12 fps, 0 and 8');
+        ok(/if _hop >= 0\.0 or not live\(\) or not legal\(\)\.has\(sq\):/.test(fnGd(cr, 'go'))
+          && /_seating <= 0\.0/.test(fnGd(cr, 'live')),
+          '⛑ no step while a piece sits down  (a queen stepping along the far rank counted a crossing a step, measured)');
         ok(/if owed\(\):\s*\n\s*if not _ui\.is_talking\(\)/.test(fnGd(cr, '_process')),
-          '⚠ a promotion or game-over menu closed with Escape comes back  (a pawn on the far rank cannot move)');
-        ok(/const PROMOTE := \["q", "r", "b", "n"\]/.test(cr) && /_wave\(_crossed\)/.test(fnGd(cr, '_on_menu')),
-          '⭐ the far rank promotes — queen, rook, bishop or knight — and the next crossing moves like it');
+          '⚠ the game-over menu, closed with Escape, comes back');
+        const crossFn = fnGd(cr, '_cross');
+        ok(/const HOME := "rnbqkbnr"/.test(cr) && /_seats\[_at\.x\] = true/.test(crossFn)
+          && /_piece = HOME\[_at\.x\]/.test(crossFn) && !/PROMOTE/.test(cr),
+          '⭐ SET THE BOARD: land on an open seat of r n b q k b n r, its piece sits down there, and you move like it next — no menu');
+        ok(/bool\(_seats\[sq\.x\]\)/.test(fnGd(cr, 'mine')) && /_walls\.has\(sq\)/.test(fnGd(cr, 'mine'))
+          && /if mine\(sq\)/.test(fnGd(cr, '_claimed')),
+          '…a seat that is sat in, and a piece you dropped, are closed to you AND to them');
+        ok(/if not _seats\.has\(false\):\s*\n\s*_sets \+= 1\s*\n\s*_seats\.fill\(false\)\s*\n\s*_piece = "p"/.test(fnGd(cr, '_next')),
+          '…and a full rank is a set: it clears, and you are a pawn again');
+        ok(/\(int\(c\) \+ BACK_ROW\) % 2 == x % 2/.test(fnGd(cr, '_start_for'))
+          && /_start_col = _start_for\(_piece\)/.test(fnGd(cr, '_next')),
+          '⛑ a bishop starts on the color of an open seat  (it never changes color: started wrong, it could never cross)');
+        ok(/while PortalBoard\.on_board\(t\) and not mine\(t\):\s*\n\s*out\.append\(t\)\s*\n\s*if foe_on\(t\) != null:\s*\n\s*break/.test(fnGd(cr, 'legal'))
+          && /HOP_SECS \+ DASH_SECS \* float\(maxi\(absi\(d\.x\), absi\(d\.y\)\) - 1\)/.test(fnGd(cr, 'hop_time'))
+          && /_hop_len = hop_time\(sq - _at\)/.test(fnGd(cr, 'go')),
+          '⭐ REAL MOVES: a rook, bishop or queen takes the whole line, onto the first of theirs, and a long move takes longer');
+        ok(/_take\(_prey\)/.test(fnGd(cr, '_hop_step')) && /_foes\.append\(_prey\)/.test(fnGd(cr, '_hurt')),
+          '…a piece is taken on landing, so a dash bitten on the way takes nothing');
+        ok(/const HAND_MAX := 3/.test(cr) && /if _hand\.size\(\) >= HAND_MAX:/.test(fnGd(cr, '_take'))
+          && /_hand\.append\(f\.code\)/.test(fnGd(cr, '_take')),
+          '⭐ YOUR HAND: a piece you take is kept to drop, three at most');
+        ok(/sq\.y < 1 or sq\.y > FOE_ROWS/.test(fnGd(cr, 'can_drop')) && /f\.phase == MOVE and f\.path\.has\(sq\)/.test(fnGd(cr, 'can_drop')),
+          '…dropped in the lanes only, and never into a slide already going');
+        ok(/if f\.phase == WARN and f\.path\.has\(sq\):\s*\n\s*f\.path = f\.path\.slice\(0, f\.path\.find\(sq\)\)/.test(fnGd(cr, 'drop')),
+          '⭐ …and a lit line through it stops short of it: stepping into a slide\'s way is what a hand is for');
+        ok(/_walls\.clear\(\)/.test(fnGd(cr, '_hurt')) && /_walls\.clear\(\)/.test(fnGd(cr, '_next')),
+          '⛑ your dropped pieces go with a heart and with the crossing  (one in front of a pawn would hold it there)');
+        ok(/if _pick >= 0:\s*\n\s*if not drop\(_pick, PortalBoard\.square_of\(w\)\):\s*\n\s*_pick = -1\s*\n\s*get_viewport\(\)\.set_input_as_handled\(\)\s*\n\s*return/.test(fnGd(cr, '_input')),
+          '⚠ with a piece picked up, a tap on the board drops it or puts it back — never a hop by accident');
         const warnFloor = +((/const WARN_FLOOR := ([\d.]+)/.exec(cr) || [])[1]);
         ok(/MAX_FOES/.test(fnGd(cr, '_wave')) && /CLOCK_FLOOR/.test(fnGd(cr, 'clock_for')) && /REST_FLOOR/.test(fnGd(cr, '_rest_for'))
           && /WARN_FLOOR/.test(fnGd(cr, 'warn_for')) && /if f\.t >= warn_for\(\):/.test(fnGd(cr, '_step')),
@@ -1246,7 +1293,11 @@ const server = http.createServer((req, res) => {
           '⚠ …but a slide is always lit long enough to see and step away from  (0.4s to react, 0.14s to hop)', 'WARN_FLOOR ' + warnFloor);
         ok(/func _input\(event: InputEvent\)/.test(cr) && /Time\.get_ticks_msec\(\) - _touch_ms < 400/.test(fnGd(cr, '_input')),
           '⚠ a tap on a dot is taken in _input, ahead of the touch pad — and Godot\'s mouse copy of that tap is not a second hop');
-        ok(!/save_state|add_ore|spend/.test(cr), '⚠ nothing is saved or paid: the best lasts the session');
+        ok(/if _crossed > GameState\.crossing_best:\s*\n\s*GameState\.crossing_best = _crossed\s*\n\s*GameState\.save_state\(\)/.test(crossFn)
+          && /if int\(d\.get\("crossing_best", 0\)\) > crossing_best:/.test(fnGd(g, 'merge_in'))
+          && /local\.crossing_best = Math\.max\(\+local\.crossing_best \|\| 0, \+remote\.crossing_best \|\| 0\)/.test(fn(PROF, 'townMerge'))
+          && !/add_ore|spend/.test(cr),
+          '⭐ the best is saved the moment it is beaten and syncs as a max — and nothing is paid');
       }
       /* ══ MONEY (2026-09-30, his picks 1 2 3 4 5 7 8 9 10) ══ Driven end to end by a probe
          (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60

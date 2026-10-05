@@ -659,6 +659,8 @@
        Princess shows you on the board in your own house; Crockett and Argus are locked until
        she has. [[everything-earned-syncs]] */
     local.dogs_play = !!(local.dogs_play || remote.dogs_play);
+    /* ⭐ PAWN CROSSING'S BEST RUN (2026-10-04): earned, so the max. */
+    local.crossing_best = Math.max(+local.crossing_best || 0, +remote.crossing_best || 0);
     /* the army is SLOT INDICES, so a union needs no arithmetic and two devices that filled
        different squares keep both */
     var army = {}, i;
