@@ -1217,8 +1217,10 @@ const server = http.createServer((req, res) => {
       }
       /* ══ PAWN CROSSING (2026-10-03, his pick of ten: "Princess Dungeon and Pawn Crossing sounds awesome.
          Let's do both."). Frogger on a chessboard. 2026-10-04, his "yes great do one, two, and three":
-         SET THE BOARD, REAL MOVES, YOUR HAND. Driven by a probe: 70 rules checks, a dash-and-slide run at
-         12, 30 and 60 fps, soaked with a careful, a reckless and a still bot. ══ */
+         SET THE BOARD, REAL MOVES, YOUR HAND. 2026-10-05, his "do numbers 4, 5, 6, 7, and 8": SCORE BY THE
+         PIECE, NIGHT CROSSING, TACTIC CROSSINGS, BLACK PAWNS, ESCORT. Driven by a probe: 109 rules checks,
+         a dash-and-slide run at 12, 30 and 60 fps, every piece soaked alone, the whole game soaked with a
+         careful, a reckless, a dropping and a still bot, at noon and at rush hour. ══ */
       {
         const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
@@ -1234,16 +1236,16 @@ const server = http.createServer((req, res) => {
           '…behind a ring on a board in the square, on the Arcade\'s old lot, off the one number the board is drawn at');
         ok(/"Step into the portal  ·  %s" % GameState\.pack_name\(pack\)/.test(fnGd(por, '_ready_extra')),
           '…and the ring says which game it opens');
-        ok(!/func (is_attacked|in_check|gen_moves)/.test(cr) && !/castl|en.?passant|checkmate|stalemate/i.test(cr),
-          '⛑ piece geometry, not a referee: no check, no castling, no result');
+        ok(!/func (is_attacked|in_check|gen_moves)/.test(cr) && !/castl|checkmate|stalemate/i.test(cr),
+          '⛑ piece geometry, not a referee: no check, no castling, no result  (taking in passing is geometry, his 10-05 pick)');
         const legalP = (/"p":\n([\s\S]*?)\n\t\t"n", "k":/.exec(fnGd(cr, 'legal')) || ['', ''])[1];
         ok(/_at \+ Vector2i\(0, -1\)/.test(legalP) && /_at\.y == START_ROW and _open\(b\)/.test(legalP)
-          && /if PortalBoard\.on_board\(t\) and foe_on\(t\) != null:/.test(legalP),
+          && /if PortalBoard\.on_board\(t\) and \(foe_on\(t\) != null or \(_open\(t\) and _passer\(t\) != null\)\):/.test(legalP),
           '⭐ a pawn steps one, or two from its own rank, and takes only on the diagonal');
         ok((fnGd(cr, 'moves_of').match(/t\.y <= FOE_ROWS/g) || []).length === 2 && /const FOE_ROWS := 5/.test(cr)
           && /_rng\.randi_range\(0, FOE_ROWS\)/.test(fnGd(cr, '_free_square')),
           '⭐ no piece lands on the two ranks you start from: the start is safe, and the clock is the pressure');
-        ok(/if \(f\.phase == MOVE or q != p\) and _nearest\(was, feet, q, p\) < CELL \* 0\.42:/.test(fnGd(cr, '_bite'))
+        ok(/if f\.phase != MOVE and q == p:\s*\n\s*continue\s*\n\s*if _nearest\(was, feet, q, p\) < CELL \* 0\.42:/.test(fnGd(cr, '_bite'))
           && !/_grace/.test(cr) && /\(player as Crosser\)\.steady\(\)/.test(fnGd(cr, '_hurt')),
           '⛑ only a sliding piece bites, and there is no grace after a hit  (a knight crossed under it untouched, measured)');
         ok(/_feet_was = feet/.test(fnGd(cr, '_bite')) && /f\.seen = p/.test(fnGd(cr, '_bite'))
@@ -1268,9 +1270,9 @@ const server = http.createServer((req, res) => {
         ok(/\(int\(c\) \+ BACK_ROW\) % 2 == x % 2/.test(fnGd(cr, '_start_for'))
           && /_start_col = _start_for\(_piece\)/.test(fnGd(cr, '_next')),
           '⛑ a bishop starts on the color of an open seat  (it never changes color: started wrong, it could never cross)');
-        ok(/while PortalBoard\.on_board\(t\) and not mine\(t\):\s*\n\s*out\.append\(t\)\s*\n\s*if foe_on\(t\) != null:\s*\n\s*break/.test(fnGd(cr, 'legal'))
+        ok(/while PortalBoard\.on_board\(t\) and not mine\(t\):\s*\n\s*out\.append\(t\)\s*\n\s*if foe_on\(t\) != null or t == _stranded\(\):\s*\n\s*break/.test(fnGd(cr, 'legal'))
           && /HOP_SECS \+ DASH_SECS \* float\(maxi\(absi\(d\.x\), absi\(d\.y\)\) - 1\)/.test(fnGd(cr, 'hop_time'))
-          && /_hop_len = hop_time\(sq - _at\)/.test(fnGd(cr, 'go')),
+          && /var d := sq - _at/.test(fnGd(cr, 'go')) && /_hop_len = hop_time\(d\)/.test(fnGd(cr, 'go')),
           '⭐ REAL MOVES: a rook, bishop or queen takes the whole line, onto the first of theirs, and a long move takes longer');
         ok(/_take\(_prey\)/.test(fnGd(cr, '_hop_step')) && /_foes\.append\(_prey\)/.test(fnGd(cr, '_hurt')),
           '…a piece is taken on landing, so a dash bitten on the way takes nothing');
@@ -1285,6 +1287,46 @@ const server = http.createServer((req, res) => {
           '⛑ your dropped pieces go with a heart and with the crossing  (one in front of a pawn would hold it there)');
         ok(/if _pick >= 0:\s*\n\s*if not drop\(_pick, PortalBoard\.square_of\(w\)\):\s*\n\s*_pick = -1\s*\n\s*get_viewport\(\)\.set_input_as_handled\(\)\s*\n\s*return/.test(fnGd(cr, '_input')),
           '⚠ with a piece picked up, a tap on the board drops it or puts it back — never a hop by accident');
+        /* ⭐ 2026-10-05, his "do numbers 4, 5, 6, 7, and 8". */
+        ok(/const VALUE := \{ "k": 1, "q": 2, "r": 2, "b": 2, "n": 4, "p": 6 \}/.test(cr)
+          && /var was := _piece\s*\n\s*_seats\[_at\.x\] = true\s*\n\s*_piece = HOME\[_at\.x\]/.test(crossFn)
+          && /var pts: int = VALUE\[was\]/.test(crossFn) && /_score \+= pts/.test(crossFn),
+          '⭐ SCORE BY THE PIECE: a crossing pays what the piece you crossed AS is worth',
+          'soaked one piece at a time: king 56.5 crossings, queen 26.5, rook 24, bishop 23, knight 12, pawn 8');
+        ok(/_dark = TownClock\.is_dark\(\)/.test(fnGd(cr, '_wave'))
+          && /return not _dark or f\.phase != REST or pos\(f\)\.distance_to\(_feet\(\)\) < LANTERN/.test(fnGd(cr, 'shows'))
+          && /if g\.shows\(f\):\s*\n\s*ChessArt\.draw_piece\(self, f\.code/.test(cr),
+          '⭐ NIGHT CROSSING: after dark on the town\'s clock a resting piece shows only by your lantern; a lit one always');
+        ok(/var cut := hole\.intersection\(area\)/.test(fnGd(cr, '_night')) && /\(band as Rect2\)\.intersection\(area\)/.test(fnGd(cr, '_night')),
+          '⚠ …and the dark is cut to the board by hand  (no clip rect in _draw: it would fall on the ring and the hand)');
+        ok(/\(m >= 450 and m < 570\) or \(m >= 990 and m < 1110\)/.test(fnGd(cr, 'traffic')) && /var busy := traffic\(\)/.test(fnGd(cr, '_wave')),
+          '⭐ rush hour on the town\'s clock brings more pieces, the small hours fewer');
+        ok(/if \(n \+ 1\) % TACTIC_EVERY != 0:/.test(fnGd(cr, 'tactic_of')) && /const TACTICS := \["discovered", "battery", "xray"\]/.test(cr)
+          && /_set_piece\(_tactic, lanes\)/.test(fnGd(cr, '_wave')),
+          '⭐ TACTIC CROSSINGS: every fifth crossing is a set piece — a discovered attack, a battery, an x-ray, in turn');
+        ok(/if _foes\.has\(f\.leader\) and f\.leader\.at == f\.leader_at:\s*\n\s*return/.test(fnGd(cr, '_step'))
+          && /_light\(f, _line\(f, f\.aim\)\)/.test(fnGd(cr, '_step')),
+          '…a piece behind another waits until that one leaves its square (or is taken), then its line is lit at once');
+        ok(/f\.phase = WARN/.test(fnGd(cr, '_light')) && !/MOVE/.test(fnGd(cr, '_light')),
+          '⚠ …lit, never sprung: a set piece still waits the whole warning');
+        ok(/var over := not f\.xray/.test(fnGd(cr, 'moves_of')) && /if over:\s*\n\s*break/.test(fnGd(cr, 'moves_of')),
+          '…and an x-ray slides over one piece in its way — yours too');
+        ok(/if c == _at and c\.y <= FOE_ROWS and not _claimed\(c, f\):/.test(fnGd(cr, '_pawn_moves'))
+          && /if one\.y <= FOE_ROWS and one != _at and not _claimed\(one, f\):/.test(fnGd(cr, '_pawn_moves'))
+          && /if f\.code == "p" and not _pawn_ok\(f\):/.test(fnGd(cr, '_step')),
+          '⭐ BLACK PAWNS take only on the diagonal and only him, walk only onto nobody, and never onto the start ranks');
+        ok(/if f\.at\.y >= FOE_ROWS:\s*\n\s*f\.code = "q"/.test(fnGd(cr, '_step')),
+          '…and one that reaches the last rank it may, queens');
+        ok(/if stepped\.size\(\) == 2:\s*\n\s*f\.ep = stepped\[0\]/.test(fnGd(cr, '_step'))
+          && /f\.code == "p" and f\.phase == REST and f\.ep_t > 0\.0 and f\.ep == t and f\.at == t \+ Vector2i\(0, 1\)/.test(fnGd(cr, '_passer')),
+          '…a double step beside your pawn can be taken on the square it passed, just after');
+        ok(/sq == _stranded\(\)/.test(fnGd(cr, '_claimed')) && /if \(n \+ 1\) % ESCORT_EVERY == 0:/.test(fnGd(cr, '_wave'))
+          && /_ward_on = true/.test(fnGd(cr, '_hop_step')),
+          '⭐ ESCORT: one of yours stranded every third crossing — safe where it waits — and it follows once reached');
+        ok(/if _ward_on and _nearest\(ww, wp, q, p\) < CELL \* 0\.42:\s*\n\s*lost = true/.test(fnGd(cr, '_bite')),
+          '…a slide across it takes it, and not a heart');
+        ok(/var seat := _seat_for\(_ward, _at\.x\)/.test(crossFn) && /pts \*= 2/.test(crossFn),
+          '…brought across, it sits down in its own seat, or the crossing pays double');
         const warnFloor = +((/const WARN_FLOOR := ([\d.]+)/.exec(cr) || [])[1]);
         ok(/MAX_FOES/.test(fnGd(cr, '_wave')) && /CLOCK_FLOOR/.test(fnGd(cr, 'clock_for')) && /REST_FLOOR/.test(fnGd(cr, '_rest_for'))
           && /WARN_FLOOR/.test(fnGd(cr, 'warn_for')) && /if f\.t >= warn_for\(\):/.test(fnGd(cr, '_step')),
@@ -1293,7 +1335,7 @@ const server = http.createServer((req, res) => {
           '⚠ …but a slide is always lit long enough to see and step away from  (0.4s to react, 0.14s to hop)', 'WARN_FLOOR ' + warnFloor);
         ok(/func _input\(event: InputEvent\)/.test(cr) && /Time\.get_ticks_msec\(\) - _touch_ms < 400/.test(fnGd(cr, '_input')),
           '⚠ a tap on a dot is taken in _input, ahead of the touch pad — and Godot\'s mouse copy of that tap is not a second hop');
-        ok(/if _crossed > GameState\.crossing_best:\s*\n\s*GameState\.crossing_best = _crossed\s*\n\s*GameState\.save_state\(\)/.test(crossFn)
+        ok(/if _score > GameState\.crossing_best:\s*\n\s*GameState\.crossing_best = _score\s*\n\s*GameState\.save_state\(\)/.test(crossFn)
           && /if int\(d\.get\("crossing_best", 0\)\) > crossing_best:/.test(fnGd(g, 'merge_in'))
           && /local\.crossing_best = Math\.max\(\+local\.crossing_best \|\| 0, \+remote\.crossing_best \|\| 0\)/.test(fn(PROF, 'townMerge'))
           && !/add_ore|spend/.test(cr),
