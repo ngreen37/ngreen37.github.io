@@ -3352,7 +3352,11 @@ const server = http.createServer((req, res) => {
         ok(/if not _opts\[i\]\.disabled:/.test(fnGd(tuiG, '_step_row')), '…and skips a row you cannot take');
         ok(/_closed_us = Time\.get_ticks_usec\(\)/.test(fnGd(tuiG, 'close')) && /_closed_us = Time\.get_ticks_usec\(\)/.test(fnGd(tuiG, 'close_saying')),
           '…both ways out of a conversation stamp the close');
-        ok(/not \(u != null and u\.just_closed\(\)\)/.test(fnGd(plG, '_process')), '…and the press that closed it cannot reopen it');
+        /* ⚠ 2026-10-10: one `shut` for both ways in — the press, and a tap on the glass. */
+        ok(/var shut: bool = u != null and u\.just_closed\(\)/.test(fnGd(plG, '_process'))
+           && /if used and _active != null and not shut:/.test(fnGd(plG, '_process'))
+           && /if tap\.is_finite\(\) and not shut:/.test(fnGd(plG, '_process')),
+          '…and the press that closed it cannot reopen it  (nor can a tap)');
         const sv = fnGd(gst, 'save_state'), ld = fnGd(gst, 'load_state');
         ok(/FileAccess\.open\(SAVE_TMP, FileAccess\.WRITE\)/.test(sv) && /rename_absolute\(SAVE_TMP, SAVE_PATH\)/.test(sv),
           'a save is written aside and swapped in');
@@ -3927,8 +3931,10 @@ const server = http.createServer((req, res) => {
 
         /* doors: a step in, and only where a step is safe. */
         const pp = fnGd(dr, '_physics_process');
-        ok(/scene_path == ""/.test(pp) && /url != ""/.test(pp) && /energy_cost > 0/.test(pp)
-           && /interact\(_you\)/.test(pp),
+        /* ⚠ 2026-10-10: the test moved into walks_in(), which the tap asks as well. */
+        const wi = fnGd(dr, 'walks_in');
+        ok(/if not live or not walks_in\(\):\s*\n\s*return/.test(pp) && /\bwalk_in and scene_path != ""/.test(wi)
+           && /url == ""/.test(wi) && /energy_cost <= 0/.test(wi) && /interact\(_you\)/.test(pp),
           '⭐ you WALK into a door — a scene door only',
           '⚠⚠ a url door from a footstep is a blocked popup, and open_url then navigates the town away');
         ok(/_armed = true/.test(pp) && /if not _armed/.test(pp) && /\.dot\(way\.normalized\(\)\) < aim/.test(pp),
@@ -4499,6 +4505,146 @@ const server = http.createServer((req, res) => {
           const pf = fnGd(dg, 'paint_front');
           ok(/ci\.draw_set_transform\(at, 0\.0, Vector2\(s, s\)\)/.test(pf) && !/deg_to_rad|tilt/.test(pf),
             '⚠⚠ a dog across the board is never drawn with the head tilt  (the 20° is paint_sitting\'s, and canon)');
+        }
+
+        /* ══ a tap on the glass walks him there · a mark over what is new — 2026-10-10 ══ */
+        /* his: "Let's work on how to engage someone easier on the mobile - it's a little hard to do.  Then, I'll want things to exclaim or glow when they have a new action to take, or if something has changed, like a letter in the mailbox or the at-home chess board." */
+        {
+          const padG = code(rd('touch_pad.gd')), ply = code(rd('player.gd')), itr = code(rd('interactable.gd'));
+          const ntc = fs.existsSync(path.join(GD, 'notice.gd')) ? code(rd('notice.gd')) : '';
+          const znN = code(rd('zone.gd')), npcN = code(rd('npc.gd')), chN = code(rd('challenger.gd'));
+          const mbN = code(rd('mailbox.gd')), papN = code(rd('paper.gd')), gsN = code(rd('game_state.gd'));
+          const crsN = code(rd('crossing.gd')), mineN = code(rd('mine.gd')), spN = code(rd('speech.gd'));
+          const fnIn2 = (src, name) => {
+            const a = src.indexOf('\tfunc ' + name + '(');
+            if (a < 0) return '';
+            const rest = src.slice(a + 1);
+            const b = rest.search(/\n\t(?:static )?func |\n\S/);
+            return b < 0 ? rest : rest.slice(0, b);
+          };
+
+          /* ── the tap ── */
+          const tapCss = num(padG, 'TAP_CSS'), tapMs = num(padG, 'TAP_MS'), keeps = num(padG, 'TAP_KEEPS_MS');
+          ok(/if _slid <= TAP_CSS \* css\(\) and Time\.get_ticks_msec\(\) - _down_ms <= TAP_MS:\s*\n\s*_tap = t\.position/.test(fnGd(padG, '_unhandled_input'))
+             && /_slid = maxf\(_slid, d\.position\.distance_to\(_origin\)\)/.test(padG)
+             && tapCss >= 6 && tapCss <= 20 && tapMs >= 150 && tapMs <= 500,
+            '⭐ a finger that lifts where it landed is a TAP; one that slid, or stayed, is still the stick',
+            tapCss + ' CSS px · ' + tapMs + ' ms');
+          ok(/return at if Time\.get_ticks_msec\(\) - _tap_ms <= TAP_KEEPS_MS else Vector2\.INF/.test(fnGd(padG, 'take_tap'))
+             && /_tap = Vector2\.INF/.test(fnGd(padG, 'take_tap')) && keeps > 0 && keeps <= 400,
+            '⚠ …taken once, and dropped if nobody takes it',
+            'a tap made under a menu must not fire when the menu shuts');
+          ok(/return u\.css_unit\(\) if u != null else k\(\)/.test(fnGd(padG, 'css')),
+            '⚠ …and measured in CSS pixels, the unit a finger comes in  (k() holds TEXT a constant size)');
+          const onTap = fnGd(ply, '_on_tap');
+          const reachCss = num(ply, 'TAP_CSS');
+          ok(/if it == null or not it\.is_visible_in_tree\(\) or not it\.monitoring:\s*\n\s*continue/.test(onTap)
+             && /var r := it\.tap_rect\(\)\s*\n\s*if not r\.has_area\(\):\s*\n\s*continue/.test(onTap)
+             && /var slop: float = TAP_CSS \* \(pad\.css\(\) if pad != null else 1\.0\) \/ maxf\(zoom, 0\.01\)/.test(onTap)
+             && /if out > slop:\s*\n\s*continue/.test(onTap) && reachCss >= 18 && reachCss <= 36,
+            '⭐ the tap means the thing under the finger, or the nearest within a fingertip of it',
+            reachCss + ' CSS px — never somebody who is out today, never a thing with no picture');
+          ok(/if _near\.has\(best\):\s*\n\s*_pin = best\s*\n\s*_refresh_target\(\)\s*\n\s*best\.interact\(self\)\s*\n\s*return\s*\n\s*_goal = best\s*\n\s*_way = best\.approach\(\)/.test(onTap),
+            '…in reach it is a press; out of reach he walks to it');
+          const phys = fnGd(ply, '_physics_process');
+          ok(/if is_instance_valid\(_goal\):\s*\n\s*if dir\.length_squared\(\) > 0\.001:\s*\n\s*_goal = null\s*\n\s*else:\s*\n\s*dir = _toward_goal\(_delta\)/.test(phys)
+             && /if _in_talk\(\):\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*_goal = null/.test(phys),
+            '⚠ his own hand ends the walk: a key, the stick, or a conversation that opened first');
+          const tg = fnGd(ply, '_toward_goal');
+          const stall = num(ply, 'STALL_SECS'), goalS = num(ply, 'GOAL_SECS');
+          ok(/if global_position\.distance_to\(_stall_at\) < STALL_UNITS:\s*\n\s*_goal = null/.test(tg)
+             && /if _goal_t > GOAL_SECS or not _goal\.is_visible_in_tree\(\) or not _goal\.monitoring:\s*\n\s*_goal = null/.test(tg)
+             && !/^\s*while\b/m.test(tg) && stall > 0 && stall <= 1 && goalS > 1 && goalS <= 10,
+            '⚠⚠ …and the walk gives up: against a wall, after a thing that left, after ' + goalS + ' seconds',
+            'a walk that never ends is a player nobody can steer');
+          ok(/if _near\.has\(it\):\s*\n\s*_pin = it\s*\n\s*_refresh_target\(\)\s*\n\s*if it\.tap_uses\(\):\s*\n\s*used = true/.test(fnGd(ply, '_process'))
+             && /func tap_uses\(\) -> bool:\s*\n\s*return url == "" and not walks_in\(\)/.test(dr),
+            '⛑⛑ a ring or a door that opens a PAGE is never used on arrival: he walks up, and the press is the next one',
+            'a browser opens a tab only on a fresh press; seconds after the tap it navigates the town away instead');
+          ok(/func walks_in\(\) -> bool:\s*\n\s*return walk_in and scene_path != "" and url == "" and energy_cost <= 0/.test(dr)
+             && /if not live or not walks_in\(\):\s*\n\s*return/.test(fnGd(dr, '_physics_process'))
+             && /return \[to_global\(Vector2\(m\.get_center\(\)\.x, m\.end\.y \+ [\d.]+\)\), to_global\(door_into\(\)\)\]/.test(fnGd(dr, 'approach'))
+             && /func stops_in_reach\(\) -> bool:\s*\n\s*return not walks_in\(\)/.test(dr),
+            '⚠ a door you walk into is WALKED into: to the front of its mat, then in',
+            'one walks_in() answers for the door\'s own trigger and for the tap');
+          const seamAt = tw.indexOf('class TownSeam extends TownDoor:');
+          const seamEnd = tw.indexOf('\nclass ', seamAt + 10);
+          ok(seamAt > 0 && /\tfunc tap_rect\(\) -> Rect2:\s*\n\s*return Rect2\(\)/.test(tw.slice(seamAt, seamEnd)),
+            '⚠ the edge of a window is drawn as nothing, so it is not a thing to tap',
+            'a tap near the edge of the screen would walk him out of the window');
+          ok(/func _ready\(\) -> void:\s*\n\s*add_to_group\("town_use"\)/.test(itr),
+            '…and everything you can use is in one group, which is all a tap looks through');
+          ok(/var live: bool = p != null and p\.use_ready\(\)\s*\n\s*if live != _ready_was:/.test(fnGd(padG, '_process'))
+             && /func use_ready\(\) -> bool:\s*\n\s*return use_always or is_instance_valid\(_active\)/.test(ply)
+             && /p\.use_always = true/.test(fnGd(crsN, '_make_player')) && /_over = true\s*\n\s*player\.use_always = true/.test(mineN),
+            '⭐ USE is lit when a press will do something, and only then',
+            'the crossing (it pauses) and the end of a mine run (the way out) are always live');
+
+          /* ── the marks ── */
+          ok(ntc !== '' && /^class_name TownNotice\s*\nextends CanvasLayer$/m.test(ntc)
+             && /add_child\(TownNotice\.new\(\)\)[^\n]*\n\s*_build_hud\(\)/.test(fnGd(znN, '_ready'))
+             && /\n\tlayer = 1\n/.test(fnGd(ntc, '_ready')) && !/CanvasModulate/.test(ntc),
+            '⭐ a mark hangs over anything with something new — on a layer of its own, under the HUD',
+            '⚠ a layer, not the room: the night darkens everything drawn in the world');
+          const shows = fnGd(ntc, 'shows');
+          ok(/return \(u != null and u\.is_talking\(\)\) or TownZone\.covered\(get_tree\(\)\)/.test(fnGd(ntc, '_down'))
+             && /if _down\(\) or not is_instance_valid\(it\) or not _marks\.has\(it\) or not it\.is_visible_in_tree\(\):\s*\n\s*return false/.test(shows)
+             && /if p != null and p\.target\(\) == it:\s*\n\s*return false/.test(shows)
+             && /return sp == null or not sp\.speaking\(it\)/.test(shows)
+             && /if _down\(\):\s*\n\s*return/.test(fnGd(ntc, '_paint')) && /if not is_instance_valid\(n\) or not shows\(n\):/.test(fnGd(ntc, '_paint')),
+            '⚠⚠ …and comes down for a conversation, a cover, the thing you are standing at, and whoever is speaking',
+            'the 09-03 rule: the name and the line own the space over a head');
+          const poll = num(ntc, 'POLL');
+          ok(poll >= 0.25 && poll <= 2 && /if _left <= 0\.0:\s*\n\s*_left = POLL/.test(fnGd(ntc, '_process'))
+             && /if busy or _drew:\s*\n\s*_art\.queue_redraw\(\)/.test(fnGd(ntc, '_process')) && !/^\s*while\b/m.test(ntc),
+            '⚠ news is asked ' + (1 / poll).toFixed(0) + ' times a second, never every frame, and nothing is redrawn while nothing is marked',
+            'news() can cross to the page');
+          ok(/xf \* \(it\.global_position \+ it\.notice_at\(\)\)/.test(fnGd(ntc, '_paint')) && !/to_global\(it\.notice_at\(\)\)/.test(ntc),
+            '⚠ a mark\'s place is an offset in the world, like speech_top()',
+            'the board at home is scaled: through to_global() its mark hung off the top of the room');
+          /* ⚠⚠ WHO CAN BE MARKED IS A LIST ON PURPOSE: a mark that never clears is furniture. */
+          const marked = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && /\n\t*func news\(\) -> String:/.test(code(rd(f)))).sort();
+          ok(marked.join(' ') === 'challenger.gd home.gd interactable.gd mailbox.gd npc.gd paper.gd',
+            '⚠⚠ what can be marked is these and nothing else: the post, the board at home, people, the paper',
+            marked.join(' '));
+          ok(/func news\(\) -> String:\s*\n\s*return ""/.test(itr), '…and by default a thing has nothing new');
+          ok(/func _peek\(\) -> void:\s*\n\s*_up = GameState\.post_unread\(\) > 0 or not GameState\.garrett_due\(\)\.is_empty\(\)/.test(mbN)
+             && /func news\(\) -> String:\s*\n\s*return "post" if _up else ""/.test(mbN)
+             && !/post_unread|garrett_due/.test(fnGd(mbN, '_draw')) && /if _up:/.test(fnGd(mbN, '_draw'))
+             && /_left = 5\.0\s*\n\s*_peek\(\)/.test(fnGd(mbN, '_process'))
+             && /GameState\.read_post\(\)\s*\n\s*_peek\(\)/.test(fnGd(mbN, '_show')),
+            '⭐ a letter in the box: the flag and the mark read ONE answer, asked every five seconds and when you read',
+            'post_unread() crosses to the page');
+          const hbN = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
+          const bnews = fnIn2(hbN, 'news');
+          ok(/if NateHome\.mess_by != "":\s*\n\s*return "mess"/.test(bnews)
+             && /return "lesson" if _lesson and not GameState\.dogs_play and _princess\(\) != null else ""/.test(bnews)
+             && /_asked = 5\.0\s*\n\s*_lesson = not GameState\.dogs_play and GameState\.academy_stage\(\) >= PLAYS_AT/.test(fnIn2(hbN, '_process')),
+            '⭐ the board at home: the pieces on the floor; and, until the secret is out, a lesson she has not been shown',
+            '⚠ never after — "show her" is then a row that is always there');
+          const nnews = fnGd(npcN, 'news');
+          ok(/gift_day == TownClock\.weekday\(\) and GameState\.gift_waiting\(\)/.test(nnews)
+             && /GameState\.hearts_for\(who\) >= GameState\.BOAT_HEARTS/.test(nnews) && /not GameState\.has_part\(/.test(nnews)
+             && /if key_at\(i\) != "" and facts_left\(key_at\(i\)\) > 0:\s*\n\s*return true/.test(fnGd(gsN, 'gift_waiting'))
+             && /if not gift_ready\(\):\s*\n\s*return false/.test(fnGd(gsN, 'gift_waiting')),
+            '⭐ a person: her gift on her day when there is one to give, a part of the boat they would hand over now',
+            '⚠ gift_ready() alone is true all day on the desktop, where nothing can be given');
+          const cnews = fnGd(chN, 'news');
+          ok(/if str\(f\.get\("who", ""\)\) == who and met:\s*\n\s*return "favor"/.test(cnews)
+             && /str\(f\.get\("target_who", ""\)\) == who and not met:\s*\n\s*return "word"/.test(cnews)
+             && /GameState\.lessons_owed\(who\) > 0 and GameState\.facts_left\(key\) > 0:\s*\n\s*return "lesson"/.test(cnews)
+             && /return super\(\)/.test(cnews) && !/can_ask|study_offered|beaten_today/.test(cnews),
+            '…a favor of theirs you have done, word you are carrying to them, a lesson they owe you',
+            '⚠ NOT "Need a hand?" and not a study: those stand for weeks');
+          ok(/func notice_up\(\) -> bool:\s*\n\s*return false/.test(npcN)
+             && /return Vector2\(24\.0 if animal else 22\.0, _top\(\) - 6\.0\)/.test(fnGd(npcN, 'notice_at')),
+            '⚠⚠ a person\'s mark hangs DOWN beside the head from under the name, never over it',
+            'standing up from the shoulder it covered the name on his phone');
+          ok(/return "paper" if GameState\.paper_fresh\(\) else ""/.test(papN), '…and today\'s paper, until you open it');
+          ok(/func _renotice\(\) -> void:/.test(itr) && (itr.match(/_talking = false\s*\n\s*_renotice\(\)/g) || []).length === 2,
+            '…and a mark goes as the box shuts, not half a second later');
+          ok(/if is_instance_valid\(b\.who\):\s*\n\s*_poke\(b\.who\)/.test(fnGd(spN, '_drop')),
+            '⚠ a speaker freed mid-line is checked before it is handed on  (found by a probe, 10-10)');
         }
 
         /* ══ a Blender prop BAKES and throws its viewport away — 2026-09-24 ══ */
