@@ -4320,6 +4320,187 @@ const server = http.createServer((req, res) => {
             'a rug at 14° is a sliver; a fridge at the floor\'s 34° shows its roof');
         }
 
+        /* ══ light through the window · the board up close · the other two dogs · his gear — 2026-10-09 ══ */
+        /* his: "Can we make some light shine in to my checker house?  And let's have a way to zoom in to my board in the house so we can teach the dogs.   I can try and teach the other dogs but they fail hilariously (come back in to the room and instead of a piece moved properly, the pieces are on the floor).  Add some weightlifting equipment, running shoes, and rollerblades" */
+        {
+          const bv = fs.existsSync(path.join(GD, 'board_view.gd')) ? code(rd('board_view.gd')) : '';
+          const gs2 = code(rd('game_state.gd')), ui2 = code(rd('town_ui.gd'));
+          const hb2 = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
+          const day = cr.slice(cr.indexOf('class Daylight extends Node2D:'));
+          /* a method of an INNER class — fnGd() runs on to the next column-0 line. */
+          const fnIn = (src, name) => {
+            const a = src.indexOf('\tfunc ' + name + '(');
+            if (a < 0) return '';
+            const rest = src.slice(a + 1);
+            const b = rest.search(/\n\t(?:static )?func |\n\S/);
+            return b < 0 ? rest : rest.slice(0, b);
+          };
+          const v2 = (src, n) => {
+            const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
+            return m ? { x: +m[1], y: +m[2] } : null;
+          };
+          const strs2 = (s) => [...s.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+
+          /* ── the light ── */
+          ok(/class Daylight extends Node2D:/.test(cr) && /\n\tadd_child\(Daylight\.new\(\)\)/.test(fnGd(cr, '_furnish'))
+             && !/CanvasModulate/.test(cr) && !/CanvasModulate/.test(hm) && !/CanvasModulate/.test(mx),
+            '⭐ light comes in at the checker window — in the shell both checkers are built from',
+            '⚠ ADDED, never a CanvasModulate: if a renderer drops 2D lights the room is the room it was');
+          ok(/\tl\.enabled = on/.test(day) && /_spill\.enabled = on/.test(day) && /var on := _power > 0\.02/.test(day),
+            '⚠ …and a light with nothing to give is switched OFF, not left at energy 0',
+            'energy 0 still runs on every pixel the light touches');
+          const touch = num(day, 'TOUCH');
+          ok(/light_mask = Daylight\.SCENERY/.test(cr) && /if c is CanvasItem and not \(c is TownNPC\):/.test(cr)
+             && /_touch = _lamp\(pane\(\), LIVING\)/.test(day) && /_touch\.energy = _power \* TOUCH/.test(day)
+             && touch > 0 && touch <= 0.5,
+            '⚠⚠ the floor and the furniture take the whole patch, the dogs and you a fraction of it',
+            'a 2D light multiplies what it lands on: at full strength a pink dog in the sun is a white dog');
+          ok(/static func window\(\) -> Rect2:/.test(cr) && /static func sky\(\) -> Vector3:/.test(cr)
+             && /var win := CheckerRoom\.window\(\)/.test(day) && /CheckerRoom\.sky\(\)/.test(day)
+             && /\nfunc _draw\(\) -> void:[\s\S]*?var win := CheckerRoom\.window\(\)\s*\n\s*var sky := CheckerRoom\.sky\(\)/.test(cr),
+            '…and the pane and the patch read ONE window and ONE sky');
+          /* ⚠⚠ RE-DERIVED: every minute of four days, on both clocks. */
+          const TH = v2(day, 'THROW'), SD = v2(day, 'SIDE');
+          const LAT = num(clk, 'LATITUDE'), NOON = num(clk, 'SOLAR_NOON');
+          let worstLit = 0, minutes = 0;
+          if (TH && SD && M) {
+            const wm = num(cr, 'WIN_X') + num(cr, 'WIN_W') / 2;
+            const foot = { x: wm, y: M.y - RY * Math.sqrt(Math.max(0, 1 - Math.pow((wm - M.x) / RX, 2))) };
+            for (const doy of [80, 172, 266, 355]) {
+              for (const dst of [0, 1]) {
+                const decl = 23.44 * Math.PI / 180 * Math.sin(2 * Math.PI * (doy - 81) / 365);
+                const half = Math.acos(Math.min(1, Math.max(-1, -Math.tan(LAT * Math.PI / 180) * Math.tan(decl)))) * 180 / Math.PI / 15;
+                const up = (NOON + dst - half) * 60, down = (NOON + dst + half) * 60;
+                for (let m = 0; m < 1440; m++) {
+                  const f = (m >= up && m < down) ? (m - up) / Math.max(down - up, 1)
+                    : ((((m - down) % 1440) + 1440) % 1440) / Math.max(1440 - (down - up), 1);
+                  const high = Math.sin(Math.PI * f);
+                  const at = { x: foot.x + (2 * f - 1) * (SD.y + (SD.x - SD.y) * high), y: foot.y + TH.y + (TH.x - TH.y) * high };
+                  worstLit = Math.max(worstLit, ell(at.x, at.y));
+                  minutes++;
+                }
+              }
+            }
+          }
+          ok(minutes === 11520 && worstLit < 0.97,
+            '⚠⚠ …and on no minute of the year does the patch leave the round floor',
+            'worst ' + worstLit.toFixed(3) + ' of the way to the wall, over ' + minutes + ' minutes');
+
+          /* ── his gear ── */
+          ok(/class Rack extends Node2D:/.test(hm) && /class FloorWeights extends Node2D:/.test(hm)
+             && /class Shoes extends Node2D:/.test(hm) && /class Blades extends Node2D:/.test(hm)
+             && /rack\.position = RACK_AT/.test(hm) && /_solid\(rack, Rect2\(/.test(hm)
+             && /\[FloorWeights\.new\(\), MAT_AT\], \[Shoes\.new\(\), SHOES_AT\], \[Blades\.new\(\), BLADES_AT\]/.test(hm),
+            '⭐ a bench and a bar, weights on a mat, his running shoes and his rollerblades are in the checker',
+            '⚠ scenery like the fridge: no prompt until he writes one; only the rack is solid');
+          const gear = ['RACK_AT', 'MAT_AT', 'SHOES_AT', 'BLADES_AT'].map((n) => [n, v2(hm, n)]);
+          const offFloor = gear.filter(([, p]) => !p || ell(p.x, p.y) > 0.93).map(([n]) => n);
+          ok(offFloor.length === 0, '…every one of them on the floor  (the rack\'s box is in the disc audit above)',
+            offFloor.join(' ') || gear.map(([n, p]) => n + ' ' + ell(p.x, p.y).toFixed(2)).join(' · '));
+
+          /* ── the board, up close ── */
+          ok(bv !== '' && /^class_name BoardView\s*\nextends CanvasLayer$/m.test(bv)
+             && /add_to_group\("town_cover"\)/.test(bv)
+             && /remove_from_group\("town_cover"\)\s*\n\s*TownZone\.uncovered\(\)\s*\n\s*closed\.emit\(\)/.test(bv),
+            '⭐ the board in the house has a close-up, and it holds your feet the way the paper does',
+            '⚠ uncovered() on the way out, or the press that closed it opens the board again');
+          /* ⛑⛑ 2026-10-09: `while y < s.y` with a step of zero ran Godot out of memory, four launches running. */
+          ok(!/^\s*while\b/m.test(bv) && /_cell = maxf\(floorf\(/.test(bv) && num(bv, 'MIN_CELL') >= 8
+             && /var plank: float = maxf\(c, MIN_CELL\)/.test(bv) && /var band_h: float = minf\(/.test(bv),
+            '⛑⛑ …with no open-ended loop in its painter, a floor under the square and a cap on the caption',
+            'a caption measured one letter to a line made the square negative and a plank loop endless');
+          ok(/_cap\.size\.x = [^\n]+\n\s*_cap\.text = ""\s*\n\s*_cap\.text = str\(scene\.get\("line", ""\)\)\s*\n\s*_cap\.size\.y = 0\.0/.test(bv),
+            '⚠⚠ …and its caption is measured WIDTH, then TEXT, then height',
+            'a new Label is nothing wide: text first comes back taller than the screen');
+          ok(/TownUI\.FINGER_CSS \* \(ui\.css_unit\(\)/.test(bv) && /func css_unit\(\) -> float:/.test(ui2),
+            '⚠ its buttons are a thumb tall in CSS pixels  (44 * k is 38px on his phone)');
+          ok(/if _out >= 0\.0 or _t < DWELL or running\(\) or/.test(fnGd(bv, '_press'))
+             && /elif running\(\):\s*\n\s*if accept:\s*\n\s*_lt = DONE/.test(fnGd(bv, '_unhandled_input')),
+            '⚠ while a piece is moving a press finishes the move and nothing else',
+            'a hurried Enter must not skip the lesson and teach the next dog in one go');
+          ok(!/func (legal|attack|is_attacked|gen_moves|in_check|can_move|moves_for)/.test(bv) && /const LESSON := \{/.test(bv),
+            '⛑ NO CHESS IN GODOT: what moves on that board is DATA');
+          const sysj2 = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-systems.js'), 'utf8');
+          const pirc6 = ((sysj2.match(/pircb:[\s\S]{0,400}?'\*':\s*\[([^\]]+)\]/) || [])[1] || '')
+            .split(',').map((x) => x.trim().replace(/'/g, '')).filter(Boolean).slice(0, 6);
+          const lessons = {};
+          for (const m of bv.matchAll(/"(\w+)": \{ "piece": "(\w)", "white": (true|false), "path": \[([^\]]+)\] \}/g)) {
+            const squares = m[4].split(',').map((s) => s.trim().replace(/"/g, ''));
+            lessons[m[1]] = { piece: m[2], white: m[3] === 'true', from: squares[0], move: squares[0] + squares[squares.length - 1] };
+          }
+          const kn = lessons.knight || {}, pw = lessons.pawn || {}, wt = lessons.watch || {};
+          ok(pirc6.length === 6 && pirc6.includes(kn.move) && pirc6.includes(pw.move) && kn.white === false && pw.white === false,
+            '⭐⭐ the knight and the pawn Princess moves ARE the Academy\'s Pirc',
+            kn.move + ' ' + pw.move + '  in  ' + pirc6.join(' '));
+          const hop = (mv) => {
+            if (!mv) return false;
+            const df = Math.abs(mv.charCodeAt(0) - mv.charCodeAt(2)), dr = Math.abs(+mv[1] - +mv[3]);
+            return (df === 1 && dr === 2) || (df === 2 && dr === 1);
+          };
+          ok(wt.white === true && wt.piece === 'n' && wt.from === 'g1' && hop(wt.move) && hop(kn.move),
+            '…and the move you show the other two is a knight\'s, from where a knight starts', wt.move || 'none');
+
+          /* ── the other two ── */
+          const rowsFn = fnIn(hb2, '_rows');
+          ok(/"id": "look", "text": "Look closer\."/.test(rowsFn) && !/OTHERS|Crockett|Argus/.test(rowsFn)
+             && /for other in OTHERS:\s*\n\s*out\.append\(\{ "id": other, "text": "Teach %s" % other \}\)/.test(fnIn(hb2, '_pupils')),
+            '⭐ the board\'s menu gains ONE row, and who to teach is asked in the close-up',
+            'three more rows made that menu seven tall — most of his phone');
+          const others = strs2((/const OTHERS := \[([^\]]*)\]/.exec(hb2) || [0, ''])[1]);
+          ok(others.join(' ') === 'Crockett Argus' && others.every((o) => new RegExp('"' + o + '":\\s+\\[Color').test(dg)),
+            '…the other two are the lane\'s two dogs and nobody else', others.join(' '));
+          const left = (/const LEFT := "([^"]*)"/.exec(hb2) || [0, ''])[1];
+          const floored = [...((/const FLOORED := \{([\s\S]*?)\n\t\}/.exec(hb2) || [0, ''])[1]).matchAll(/"(\w+)": "([^"]*)"/g)]
+            .map((m) => [m[1], m[2]]);
+          const spoil = /\b(plays?|played|knows?|knew|learn(s|ed|ing)?|understands?|chess)\b/i;
+          ok(/^You /.test(left) && /%s/.test(left) && !spoil.test(left) && floored.length === 2
+             && floored.every(([who, line]) => line.startsWith(who + ' ') && !spoil.test(line) && others.includes(who)),
+            '⛑ ONLY HUMANS TALK: what you do, then what the dog did, starting with its name',
+            '⚠ and neither line may say a dog can play — that is Princess\'s to give away');
+          ok(/if lesson_for != "":\s*\n\s*mess_by = lesson_for\s*\n\s*lesson_for = ""/.test(fnGd(hm, '_furnish_room'))
+             && /static var lesson_for: String = ""/.test(hm) && /static var mess_by: String = ""/.test(hm)
+             && !/lesson_for|mess_by/.test(gs2),
+            '⭐ you leave the lesson out, and the room you come back into is what became of it',
+            '⚠ static, never saved or pushed: it outlives the walk outside and nothing else');
+          ok(/if NateHome\.mess_by != "":\s*\n\s*open_talk\("The chessboard", FLOORED\[NateHome\.mess_by\]/.test(fnIn(hb2, 'interact'))
+             && /if NateHome\.mess_by != "":\s*\n\s*return out/.test(fnIn(hb2, '_pupils'))
+             && /if id == "tidy":\s*\n\s*NateHome\.mess_by = ""/.test(fnIn(hb2, '_on_chose')),
+            '…and the mess comes first: nobody is taught anything until the pieces are picked up');
+          const sh = fnIn(hb2, 'show_her');
+          ok(sh.indexOf('_open(') > 0 && sh.indexOf('_open(') < sh.indexOf('GameState.discover_dogs_play()')
+             && /get_first_node_in_group\("town_cover"\) != null or TownJournal\.is_open\(get_tree\(\)\)/.test(fnGd(zn, '_story'))
+             && /board\.stood_up\.connect\(_story\)/.test(hm),
+            '⚠⚠ the secret is given away with the close-up already up, and its story beat waits until you look up',
+            'a beat started under a cover narrates behind it and eats its key presses');
+          /* ⚠ RE-DERIVED: in the disc, and inside no furniture's floor box. */
+          const boardAt = v2(hm, 'BOARD_AT'), argusAt = v2(hm, 'ARGUS_BED_AT');
+          const boxes = [];
+          for (const m of hm.matchAll(/_solid\((\w+), Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/g)) {
+            const want = new RegExp(m[1] + '\\.position = ([A-Z_]+)').exec(hm);
+            const at = want && v2(hm, want[1]);
+            const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(hm) || [0, 1])[1];
+            if (at) boxes.push({ x: at.x + +m[2] * sc, y: at.y + +m[3] * sc, w: +m[4] * sc, h: +m[5] * sc });
+          }
+          const scat = boardAt ? [...((/const SCATTER := \[([\s\S]*?)\n\]/.exec(hm) || [0, ''])[1])
+            .matchAll(/\[(-?[\d.]+), (-?[\d.]+), "\w", (?:true|false), -?[\d.]+\]/g)]
+            .map((m) => ({ x: boardAt.x + +m[1], y: boardAt.y + +m[2] })) : [];
+          const hidden = scat.filter((p) => ell(p.x, p.y) > 0.92
+            || boxes.some((b) => p.x > b.x && p.x < b.x + b.w && p.y > b.y && p.y < b.y + b.h));
+          ok(boxes.length >= 4 && scat.length >= 10 && hidden.length === 0,
+            '…Crockett\'s scatter lies on open floor: inside the disc and under no furniture',
+            hidden.length ? hidden.map((p) => p.x + ',' + p.y).join(' ') : scat.length + ' pieces against ' + boxes.length + ' boxes');
+          const rowM = /_floor_piece\(ARGUS_BED_AT \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
+          const rowN = ((/const ROW := "(\w+)"/.exec(hm) || [0, ''])[1]).length;
+          const rowEnds = rowM && argusAt
+            ? [0, rowN - 1].map((i) => ({ x: argusAt.x + +rowM[1] + +rowM[2] * i, y: argusAt.y + +rowM[3] })) : [];
+          ok(rowEnds.length === 2 && rowN >= 6 && rowEnds.every((p) => ell(p.x, p.y) < 0.92) && +rowM[3] <= -60,
+            '…and Argus\'s row stands along the back of his own cushion, clear of his nameplate',
+            rowEnds.map((p) => p.x + ',' + p.y).join(' → ') || 'no row');
+          const pf = fnGd(dg, 'paint_front');
+          ok(/ci\.draw_set_transform\(at, 0\.0, Vector2\(s, s\)\)/.test(pf) && !/deg_to_rad|tilt/.test(pf),
+            '⚠⚠ a dog across the board is never drawn with the head tilt  (the 20° is paint_sitting\'s, and canon)');
+        }
+
         /* ══ a Blender prop BAKES and throws its viewport away — 2026-09-24 ══ */
         /* his: "yes, go for the bake. We're going grand-scale so we'll want to keep as many MB's available as possible." */
         const pr2 = code(rd('prop_model.gd'));
