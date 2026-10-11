@@ -1236,8 +1236,11 @@ const server = http.createServer((req, res) => {
           '…behind a ring on a board in the square, on the Arcade\'s old lot, off the one number the board is drawn at');
         ok(/"Step into the portal  ·  %s" % GameState\.pack_name\(pack\)/.test(fnGd(por, '_ready_extra')),
           '…and the ring says which game it opens');
-        ok(!/func (is_attacked|in_check|gen_moves)/.test(cr) && !/castl|checkmate|stalemate/i.test(cr),
-          '⛑ piece geometry, not a referee: no check, no castling, no result  (taking in passing is geometry, his 10-05 pick)');
+        /* ⚠ 2026-10-10: "Castle" is now an ability's NAME, and a castle in one of their openings is two rows
+           of a table. What stays out is the RULE: nothing here decides whether anybody may castle. */
+        ok(!/func (is_attacked|in_check|gen_moves)/.test(cr) && !/checkmate|stalemate|castling_rights|can_castle|KQkq/i.test(cr)
+          && !/func \w*castl\w*\(/i.test(cr),
+          '⛑ piece geometry, not a referee: no check, no castling RULE, no result  (taking in passing is geometry, his 10-05 pick)');
         const legalP = (/"p":\n([\s\S]*?)\n\t\t"n", "k":/.exec(fnGd(cr, 'legal')) || ['', ''])[1];
         ok(/_at \+ Vector2i\(0, -1\)/.test(legalP) && /_at\.y == START_ROW and _open\(b\)/.test(legalP)
           && /if PortalBoard\.on_board\(t\) and \(foe_on\(t\) != null or \(_open\(t\) and _passer\(t\) != null\)\):/.test(legalP),
@@ -1299,10 +1302,10 @@ const server = http.createServer((req, res) => {
           '⭐ NIGHT CROSSING: after dark on the town\'s clock a resting piece shows only by your lantern; a lit one always');
         ok(/var cut := hole\.intersection\(area\)/.test(fnGd(cr, '_night')) && /\(band as Rect2\)\.intersection\(area\)/.test(fnGd(cr, '_night')),
           '⚠ …and the dark is cut to the board by hand  (no clip rect in _draw: it would fall on the ring and the hand)');
-        ok(/\(m >= 450 and m < 570\) or \(m >= 990 and m < 1110\)/.test(fnGd(cr, 'traffic')) && /var busy := traffic\(\)/.test(fnGd(cr, '_wave')),
+        ok(/\(m >= 450 and m < 570\) or \(m >= 990 and m < 1110\)/.test(fnGd(cr, 'traffic')) && /var busy := traffic\(\)/.test(fnGd(cr, '_set_traffic')),
           '⭐ rush hour on the town\'s clock brings more pieces, the small hours fewer');
         ok(/if \(n \+ 1\) % TACTIC_EVERY != 0:/.test(fnGd(cr, 'tactic_of')) && /const TACTICS := \["discovered", "battery", "xray"\]/.test(cr)
-          && /_set_piece\(_tactic, lanes\)/.test(fnGd(cr, '_wave')),
+          && /_set_piece\(_tactic, lanes\)/.test(fnGd(cr, '_set_traffic')),
           '⭐ TACTIC CROSSINGS: every fifth crossing is a set piece — a discovered attack, a battery, an x-ray, in turn');
         ok(/if _foes\.has\(f\.leader\) and f\.leader\.at == f\.leader_at:\s*\n\s*return/.test(fnGd(cr, '_step'))
           && /_light\(f, _line\(f, f\.aim\)\)/.test(fnGd(cr, '_step')),
@@ -1328,14 +1331,16 @@ const server = http.createServer((req, res) => {
         ok(/var seat := _seat_for\(_ward, _at\.x\)/.test(crossFn) && /pts \*= 2/.test(crossFn),
           '…brought across, it sits down in its own seat, or the crossing pays double');
         const warnFloor = +((/const WARN_FLOOR := ([\d.]+)/.exec(cr) || [])[1]);
-        ok(/MAX_FOES/.test(fnGd(cr, '_wave')) && /CLOCK_FLOOR/.test(fnGd(cr, 'clock_for')) && /REST_FLOOR/.test(fnGd(cr, '_rest_for'))
+        ok(/MAX_FOES/.test(fnGd(cr, '_set_traffic')) && /CLOCK_FLOOR/.test(fnGd(cr, 'clock_for')) && /REST_FLOOR/.test(fnGd(cr, '_rest_for'))
           && /WARN_FLOOR/.test(fnGd(cr, 'warn_for')) && /if f\.t >= warn_for\(\):/.test(fnGd(cr, '_step')),
           '⛑ it ramps until every run ends: more pieces, shorter rests, a shorter clock, a shorter warning  (soaked: every run ends)');
         ok(warnFloor >= 0.5,
           '⚠ …but a slide is always lit long enough to see and step away from  (0.4s to react, 0.14s to hop)', 'WARN_FLOOR ' + warnFloor);
         ok(/func _input\(event: InputEvent\)/.test(cr) && /Time\.get_ticks_msec\(\) - _touch_ms < 400/.test(fnGd(cr, '_input')),
           '⚠ a tap on a dot is taken in _input, ahead of the touch pad — and Godot\'s mouse copy of that tap is not a second hop');
-        ok(/if _score > GameState\.crossing_best:\s*\n\s*GameState\.crossing_best = _score\s*\n\s*GameState\.save_state\(\)/.test(crossFn)
+        /* ⚠ 2026-10-10: the keeping moved to _bank(), which a scoresheet picked up in the lanes calls too. */
+        ok(/var was := GameState\.crossing_best\s*\n\s*if _score <= was:\s*\n\s*return ""\s*\n\s*GameState\.crossing_best = _score\s*\n\s*GameState\.save_state\(\)/.test(fnGd(cr, '_bank'))
+          && /brought \+= _bank\(\)/.test(crossFn)
           && /if int\(d\.get\("crossing_best", 0\)\) > crossing_best:/.test(fnGd(g, 'merge_in'))
           && /local\.crossing_best = Math\.max\(\+local\.crossing_best \|\| 0, \+remote\.crossing_best \|\| 0\)/.test(fn(PROF, 'townMerge'))
           && !/add_ore|spend/.test(cr),
@@ -4645,6 +4650,157 @@ const server = http.createServer((req, res) => {
             '…and a mark goes as the box shuts, not half a second later');
           ok(/if is_instance_valid\(b\.who\):\s*\n\s*_poke\(b\.who\)/.test(fnGd(spN, '_drop')),
             '⚠ a speaker freed mid-line is checked before it is handed on  (found by a probe, 10-10)');
+        }
+
+        /* ══ Pawn Crossing: things in the lanes · abilities · their openings · the tide — 2026-10-10 ══ */
+        /* his: "For the Frogger game, I want special abilities to unlock, items, maybe the opponent comes at you in an opening style like the catalan.  Maybe we can incorporate the sea board." */
+        {
+          const xg = code(rd('crossing.gd')), gsX = code(rd('game_state.gd')), seaX = code(rd('sea_board.gd'));
+          const cbX = code(rd('chessboard.gd')), padX = code(rd('touch_pad.gd'));
+          const CX = require('../assets/js/pjcc-chess.js');
+          const SYSX = require('../assets/js/pjcc-systems.js');
+
+          /* ── their openings: the site's own systems, played on the site's referee ── */
+          const body = (/const OPENINGS := \[([\s\S]*?)\n\]/.exec(xg) || ['', ''])[1];
+          const ops = [...body.matchAll(/\{ "id": "(\w+)", "name": "([^"]+)",[^\n]*\n\s*"moves": \[([\s\S]*?)\n\s*\] \}/g)].map((m) => ({
+            id: m[1], name: m[2],
+            rows: m[3].split('\n').filter((l) => /Vector2i/.test(l)).map((l) =>
+              [...l.matchAll(/\[Vector2i\((\d), (\d)\), Vector2i\((\d), (\d)\)\]/g)].map((p) => [+p[1], +p[2], +p[3], +p[4]])),
+          }));
+          const sqName = (c, r) => 'hgfedcba'[c] + (r + 1);              /* column 0 is the h-file, row 0 their back rank */
+          const derive = (id) => {
+            const sys = SYSX.get(id);
+            if (!sys || sys.side !== 'w') return null;
+            let S = CX.parseFEN(CX.START_FEN);
+            const rows = [];
+            for (const uci of sys.moves) {
+              const from = uci.slice(0, 2), to = uci.slice(2, 4);
+              const mv = CX.findMove(S, CX.sqFromName(from), CX.sqFromName(to));
+              if (!mv) continue;                                           /* the list's alternates: what next() skips too */
+              const row = [from + to];
+              if (S.b[CX.sqFromName(from)].toLowerCase() === 'k' && Math.abs(from.charCodeAt(0) - to.charCodeAt(0)) === 2)
+                row.push(to[0] === 'g' ? 'h' + from[1] + 'f' + from[1] : 'a' + from[1] + 'd' + from[1]);
+              rows.push(row.join(' '));
+              S = CX.makeMove(S, mv);
+              S.turn = 'w';
+              S.ep = -1;
+            }
+            return { name: sys.name.replace(/’/g, "'"), rows };
+          };
+          const wrong = ops.filter((o) => {
+            const d = derive(o.id);
+            const mine = o.rows.map((r) => r.map((p) => sqName(p[0], p[1]) + sqName(p[2], p[3])).join(' '));
+            return !d || d.name !== o.name || d.rows.join('|') !== mine.join('|');
+          }).map((o) => o.id);
+          ok(ops.length >= 5 && wrong.length === 0,
+            '⭐⭐ every opening that comes at you in Pawn Crossing IS one of the Park Tables\' own: same name, same squares, same order',
+            wrong.length ? 'differs from pjcc-systems.js: ' + wrong.join(' ') : ops.map((o) => o.id).join(' ') + ' — replayed on the site\'s referee with nobody answering');
+          ok(ops.length > 0 && ops[0].id === 'catalan', '…and the Catalan is the first of them  (the one he asked for)', (ops[0] || {}).id);
+          const foeRows = num(xg, 'FOE_ROWS');
+          const outside = ops.filter((o) => o.rows.some((r) => r.some((p) => p[3] > foeRows)));
+          const homes = ops.filter((o) => {
+            const at = new Set();
+            return o.rows.some((r) => r.some((p) => {
+              const key = p[0] + ',' + p[1], bad = !at.has(key) && p[1] > 1;
+              at.delete(key); at.add(p[2] + ',' + p[3]);
+              return bad;
+            }));
+          });
+          ok(outside.length === 0 && homes.length === 0,
+            '…every one of their pieces starts on its own two ranks and no move leaves the lanes',
+            'a foe may never land on the two ranks you start on');
+          const tips = (/const OPENING_TIPS := \{([\s\S]*?)\n\}/.exec(xg) || ['', ''])[1];
+          ok(ops.every((o) => new RegExp('"' + o.id + '": "[^"]{12,}"').test(tips)),
+            '…and each has its one line  (⚠ PLACEHOLDER COPY, his to rewrite)');
+          ok(/if \(n \+ 1\) % OPENING_EVERY != 0 or tactic_of\(n\) != "":\s*\n\s*return -1/.test(fnGd(xg, 'opening_of'))
+             && /_opening = opening_of\(n\) if _piece != "p" else -1/.test(fnGd(xg, '_wave')),
+            '⚠ a set-piece crossing stays a set piece, and an opening is never met as a pawn',
+            'a pawn cannot go round one of theirs asleep on its file: the flag falls on every heart');
+          ok(/if f\.asleep:\s*\n\s*return/.test(fnGd(xg, '_step'))
+             && /if f == null or not f\.asleep:\s*\n\s*break/.test(fnGd(xg, '_play_book'))
+             && /_light\(f, _open_run\(f, _between\(row\[i\]\[0\], row\[i\]\[1\]\) if i == 0 else \[row\[i\]\[1\]\]\)\)/.test(fnGd(xg, '_play_book'))
+             && /if _claimed\(sq, f\):\s*\n\s*break/.test(fnGd(xg, '_open_run'))
+             && /if not taken\.has\(from\) and not mine\(from\):/.test(fnGd(xg, '_set_opening')),
+            '⚠ their pieces wait for the opening to be played, and it is played like any other move: lit, then slid, never through one of yours',
+            'no king (its square is a seat of yours) means no castle; a castling rook hops');
+          ok(!/func (legal_moves|is_attacked|in_check|gen_moves|make_move|is_legal)\b/.test(xg),
+            '⛑ and still NO CHESS IN GODOT: an opening is a table of squares');
+
+          /* ── things in the lanes ── */
+          const chance = num(xg, 'ITEM_CHANCE'), heartAt = num(xg, 'HEART_AT'), hpMax = num(xg, 'HP_MAX');
+          ok(chance > 0 && chance <= 1 && heartAt >= 1 && heartAt < hpMax
+             && /if player\.hp <= HEART_AT:\s*\n\s*kinds\.append\("heart"\)/.test(fnGd(xg, '_lay_item'))
+             && /Vector2i\(_rng\.randi_range\(0, 7\), _rng\.randi_range\(1, 4\)\)\s*\n\s*if not _claimed\(sq, null\):/.test(fnGd(xg, '_lay_item'))
+             && /if n > 0:\s*\n\s*_lay_item\(\)/.test(fnGd(xg, '_wave')),
+            '⭐ a clock, a scoresheet or a heart lies in the lanes — on nobody, never on the first crossing, a heart only on your last',
+            'soaked 10-10: with a heart laid whenever one was missing a careful player went from 16 crossings to 25');
+          const hop = fnGd(xg, '_hop_step');
+          ok(hop.indexOf('if u < 1.0:') > 0 && hop.indexOf('if _items.has(_at):') > hop.indexOf('if u < 1.0:')
+             && /if _items\.has\(_at\):\s*\n\s*_grab\(_at\)/.test(hop),
+            '⚠ a thing is taken by LANDING on it: a dash over it takes nothing, like a piece');
+
+          /* ── abilities ── */
+          const skills = [...((/const SKILLS := \[([\s\S]*?)\n\]/.exec(xg) || ['', ''])[1])
+            .matchAll(/\{ "id": "(\w+)", "name": "([^"]+)", "need": (\d+), "cool": (\d+) \}/g)].map((m) => ({ id: m[1], need: +m[3], cool: +m[4] }));
+          ok(skills.length === 3 && skills.map((s) => s.id).join(' ') === 'castle zugzwang promote'
+             && skills.every((s, i) => s.cool >= 1 && s.need > (i ? skills[i - 1].need : 0))
+             && /static func unlocked\(i: int\) -> bool:\s*\n\s*return GameState\.crossing_best >= int\(SKILLS\[i\]\["need"\]\)/.test(xg)
+             && [...gsX.matchAll(/\bcrossing_\w+/g)].every((m) => m[0] === 'crossing_best'),
+            '⭐ Castle, Zugzwang, Promotion: each unlocked for good by your best score, and by nothing else',
+            skills.map((s) => s.id + ' at ' + s.need).join(' · ') + ' — read off crossing_best, so there is nothing new to save, push or merge');
+          const use = fnGd(xg, 'use_skill');
+          ok(/if not can_use\(i\):\s*\n\s*return false/.test(use) && /_cool\[i\] = int\(SKILLS\[i\]\["cool"\]\)/.test(use)
+             && /or int\(_cool\[i\]\) > 0 or not live\(\) or _hop >= 0\.0:\s*\n\s*return false/.test(fnGd(xg, 'can_use'))
+             && /for i in _cool\.size\(\):\s*\n\s*_cool\[i\] = maxi\(0, int\(_cool\[i\]\) - 1\)/.test(fnGd(xg, '_cross'))
+             && /_cool = \[0, 0, 0\]/.test(fnGd(xg, 'again')),
+            '…a used one is gone for its crossings, comes back one crossing at a time, and a new run starts with all three');
+          ok(/"castle":[\s\S]*?_ward_on = false\s*\n\s*_to_start\(\)/.test(use)
+             && /if _frozen > 0\.0 and f\.phase != MOVE:\s*\n\s*return/.test(fnGd(xg, '_step'))
+             && /"promote":\s*\n\s*_piece = "q"/.test(use) && /var pts: int = VALUE\[was\]/.test(fnGd(xg, '_cross')),
+            '⚠ Castle leaves an escort where it stood, Zugzwang lets a slide already going land, and a promoted crossing pays what a queen pays',
+            'an escort castled along is a crossing for free; a slide stopped halfway bites for three seconds');
+
+          /* ── the tide ── */
+          const diveEvery = num(xg, 'DIVE_EVERY'), diveSecs = num(xg, 'DIVE_SECS');
+          ok(diveSecs > 0 && diveSecs < diveEvery && /if f\.under > 0\.0:\s*\n\s*return false/.test(fnGd(xg, 'shows'))
+             && /if f\.under > 0\.0:\s*\n\s*for sq in stepped:\s*\n\s*_prints\[sq\] = PRINT_SECS/.test(fnGd(xg, '_step'))
+             && /if _sea:\s*\n\s*_tide\(delta\)/.test(fnGd(xg, '_process')),
+            '⭐ every seventh crossing the tide is in: ONE of theirs at a time goes under, and what you see of its slide is prints',
+            'under for ' + diveSecs + 's of every ' + diveEvery + 's');
+          const seaC = ['LIGHT', 'DARK', 'WATER', 'PRINT'];
+          ok(seaC.every((c) => new RegExp('SeaBoardGame\\.' + c + '\\b').test(xg) && new RegExp('^const ' + c + ' := Color\\(', 'm').test(seaX)),
+            '…in the sea board\'s OWN colors, read from sea_board.gd  (a retint there carries over)');
+
+          /* ── a thumb reaches every slot, and none of them is under USE ── */
+          const SLOT = num(xg, 'SLOT'), GAP = num(xg, 'SLOT_GAP'), REACH = num(xg, 'REACH');
+          const CELL = num(cbX, 'CELL');
+          const rBtn = num(padX, 'R_BTN');
+          const mar = /const BTN_MARGIN := Vector2\(([\d.]+), ([\d.]+)\)/.exec(padX) || [0, 0, 0];
+          const vpW = 1152, phoneW = 352, phoneH = 560;
+          const vpH = vpW * phoneH / phoneW, k = vpH / 648;
+          const frameW = CELL * 8 + 64, zoom = vpW / frameW, frameH = vpH / zoom;
+          const rs = Math.min(2, Math.max(1, k / zoom));
+          const useAt = { x: frameW / 2 - (+mar[1]) * k / zoom, y: frameH / 2 - (+mar[2]) * k / zoom }, useR = rBtn * k / zoom;
+          const board = { x0: -CELL * 4, y0: -CELL * 4, x1: CELL * 4, y1: CELL * 4 };
+          const handY = board.y1 + 20 * rs + 6, skillY = -frameH / 2 + 16 * rs;
+          const rects = [];
+          for (let i = 0; i < 3; i++) {
+            rects.push({ x: board.x0 + i * (SLOT + GAP), y: handY, w: SLOT, h: SLOT, what: 'hand ' + i });
+            rects.push({ x: board.x0 + i * (SLOT + GAP), y: skillY, w: SLOT, h: SLOT, what: 'ability ' + i });
+          }
+          const underUse = rects.filter((r) => Math.hypot(Math.max(r.x, Math.min(useAt.x, r.x + r.w)) - useAt.x,
+            Math.max(r.y, Math.min(useAt.y, r.y + r.h)) - useAt.y) < useR).map((r) => r.what);
+          const offScreen = rects.filter((r) => r.y < -frameH / 2 || r.y + r.h > frameH / 2 || r.x < -frameW / 2 || r.x + r.w > frameW / 2).map((r) => r.what);
+          const thumb = (SLOT + 2 * REACH) * zoom / (vpW / phoneW);
+          ok(/return Rect2\(BOARD\.position\.x \+ float\(i\) \* step, y, SLOT, SLOT\)/.test(fnGd(xg, 'slot_rect'))
+             && /return Rect2\(BOARD\.end\.x \+ 24\.0, BOARD\.position\.y \+ float\(i\) \* step, SLOT, SLOT\)/.test(fnGd(xg, 'slot_rect'))
+             && /_frame\(\)\.position\.y \+ 16\.0 \* TownZone\.read_scale\(self\)/.test(fnGd(xg, 'skill_rect'))
+             && /back\.position = RING_AT\n/.test(xg) && underUse.length === 0 && offScreen.length === 0,
+            '⛑ on his phone no slot is under the pad\'s USE: the hand is the LEFT of the row, the abilities the corner over the scores',
+            underUse.concat(offScreen).join(', ') || 'USE at ' + useAt.x.toFixed(0) + ',' + useAt.y.toFixed(0) + ' r ' + useR.toFixed(0)
+              + ' · hand row y ' + handY.toFixed(0) + ' · re-derived at ' + phoneW + 'x' + phoneH);
+          ok(thumb >= 44 && /if r\.grow\(REACH\)\.has_point\(w\) and d < best_d:/.test(fnGd(xg, '_nearest_slot')),
+            '⚠ …and a slot answers a thumb 44 CSS px across, the nearest middle winning', thumb.toFixed(1) + ' CSS px');
         }
 
         /* ══ a Blender prop BAKES and throws its viewport away — 2026-09-24 ══ */
