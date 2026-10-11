@@ -168,6 +168,48 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
     'a character animates on the recorder\'s clock, not the engine\'s');
   ok(/--capture/.test(main) && /_thumbnail\(/.test(main) && /target_seconds/.test(main),
     'the board records from the command line, saves the biggest swing, and fits the clip to a length');
+
+  /* ══ the clock, and the hand that presses it — 2026-10-10 ══ */
+  /* his: "Pieces, board, players, clock.  It might be cool if the player hits the clock at the correct time." */
+  const lf = (f) => (fs.existsSync(path.join(TB, f)) ? fs.readFileSync(path.join(TB, f), 'utf8').replace(/\r\n/g, '\n') : '');
+  const clk = lf('game_clock.gd'), castN = lf('broadcast.gd'), seatN = lf('seat_model.gd'), mainN = lf('main.gd'), bview = lf('board_view.gd');
+  const numG = (src, n) => { const m = new RegExp('const ' + n + ' := (-?[\\d.]+)').exec(src); return m ? +m[1] : NaN; };
+  const lag = numG(clk, 'PRESS_LAG'), minHold = numG(clk, 'MIN_HOLD'), pressAt = numG(seatN, 'PRESS_AT');
+  ok(clk !== '' && /^class_name GameClock\s*\nextends RefCounted$/m.test(clk) && /func advance\(dt: float\) -> String:/.test(clk)
+     && !/Time\.get_ticks|create_tween|create_timer/.test(clk),
+    '⭐ there is a chess clock beside the board, and it runs on the recorder\'s clock like everything else on the stage');
+  ok(/cast\.cue_press\(str\(\(_moves\[_ply\] as Dictionary\)\.get\("side", "w"\)\), _move_secs\)/.test(mainN)
+     && /var hit_in := slide_secs \+ GameClock\.PRESS_LAG\s*\n\s*clock\.cue\(side, hit_in\)/.test(castN)
+     && /seat\.cue_press\(hit_in\)/.test(castN) && lag > 0 && lag <= 0.3,
+    '⭐ the mover\'s hand lands on the clock ' + lag + 's after the piece does, cued as the piece starts to slide',
+    'so a Press clip can begin early enough to arrive on time');
+  ok(/_cue_in = maxf\(0\.0, hit_in - _anim\.get_animation\(a\)\.length \* PRESS_AT\)/.test(seatN) && pressAt > 0 && pressAt < 1
+     && /_anim\.play\(_clip, 0\.0\)/.test(seatN),
+    '…and a player\'s "Press" clip starts so that its ' + (pressAt * 100) + '% frame IS that instant',
+    'no blend in: a cross-fade lands the hand late');
+  ok(/var hit := clock\.advance\(dt\)\s*\n\s*if hit != "" and not _ended:\s*\n\s*_to_move = GameClock\.other\(hit\)/.test(castN)
+     && !/_to_move = "b" if side == "w" else "w"/.test(castN),
+    '⚠ the turn changes when the clock is pressed, not when the piece lands');
+  ok(minHold >= lag + 0.02 && /var least: float = GameClock\.MIN_HOLD if cast\.clock\.on else 0\.12/.test(mainN)
+     && /if _cue_side != "":\s*\n\s*running = GameClock\.other\(_cue_side\)/.test(clk),
+    '⚠⚠ no press is ever lost: a move is held until the hand has landed, and one still in the air lands before the next is cued',
+    'a hold of ' + minHold + 's against a lag of ' + lag + 's');
+  ok(/clock\.set_time\(side, int\(_clock\[side\]\)\)/.test(castN)
+     && /float\(_clock\[them\]\) - float\(\(moves\[ply\] as Dictionary\)\["spent"\]\)/.test(castN)
+     && /if secs > 0\.0 and to >= 0\.0 and to < float\(_now\[side\]\) else 0\.0/.test(clk),
+    '⚠⚠ every time the clock rests on is the broadcast\'s own; between two it counts down the seconds really spent, and only down',
+    'a time control that adds time shows the new figure when the move lands, never a clock running backwards');
+  ok(/func _has_times\(\) -> bool:/.test(castN) && /clock\.reset\(start, _has_times\(\)\)/.test(castN)
+     && /if not clock\.on:\s*\n\s*return/.test(castN) && /if clock\.on:\s*\n\s*clock\.paint\(/.test(castN),
+    '…and a game with no clock times has no clock: nothing drawn, nobody pressing');
+  ok(/if clip in LOOPS:\s*\n\s*_rest = clip[\s\S]{0,220}?if _pressing:\s*\n\s*return/.test(seatN)
+     && /_pressing = false\s*\n\s*play\(_rest\)/.test(seatN),
+    '…a press is not cut short by the Think that follows it, and gives way to it once the hand is back');
+  ok(/@export_file\("\*\.png"\) var board_art: String = "res:\/\/board\/board\.png"/.test(bview)
+     && /if wood != null:[\s\S]*?if flipped:\s*\n\s*draw_set_transform\(Vector2\(side, side\), PI\)/.test(bview)
+     && /\telse:\s*\n[^\n]*\n\s*for r in 8:/.test(bview),
+    '⭐ his Blender board is one file dropped in (board/board.png); until then the squares are drawn',
+    'turned with the board when it flips');
 } else ok(false, 'the tournament board mirror is missing its new scripts');
 
 (async () => {
