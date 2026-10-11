@@ -1478,16 +1478,26 @@ const server = http.createServer((req, res) => {
         /\{ "key": "([a-z]+)",\s*"who": "([^"]+)",\s*"elo": (\d+),\s*"piece": "([a-z])"/g)];
       ok(rows.length === benchKeys.length,
         '…and every row was readable', rows.length + ' of ' + benchKeys.length);
+      /* ⚑ 2026-10-10 — THE TOWN IS AHEAD OF THE SITE BY ONE NAME (his: "Change that dog's name to Milo.").
+         GameState.RENAMED is the ONLY way a name here may differ from the bench's, and it is printed on
+         every run until the site's bench says the same. */
+      const renamedGd = Object.fromEntries([...((/const RENAMED := \{([^}]*)\}/.exec(gs) || [0, ''])[1])
+        .matchAll(/"([^"]+)": "([^"]+)"/g)].map((m) => [m[1], m[2]]));
+      const ahead = [];
       const wrong = rows.filter(([, k, who, elo, pc]) => {
         const r = ymlRows[k];
         /* ⚠ AUSTON'S 1200 IS THE DIAL'S INVISIBLE SEED, not a rating. */
         if (!r) return true;
-        if (r.name !== who) return true;
+        if (r.name !== who) {
+          if (renamedGd[r.name] !== who) return true;
+          ahead.push(r.name + ' is ' + who + ' in town');
+        }
         if (GLYPH[r.icon] !== pc) return true;
         return +elo !== r.elo && +elo !== 0;
       }).map((m) => m[1]);
-      ok(wrong.length === 0,
-        '…name, rating and PIECE all match the bench', wrong.join(' ') || rows.length + ' rows');
+      ok(wrong.length === 0 && ahead.length <= 1,
+        '…name, rating and PIECE all match the bench', wrong.join(' ') || rows.length + ' rows'
+          + (ahead.length ? '  ⚑ ' + ahead.join(', ') + '; the bench on the site has not been renamed' : ''));
       ok(/"key": "auston"/.test(park.slice(park.indexOf('const OFF')))
         && /"key": "brother"/.test(park.slice(park.indexOf('const OFF')))
         && /adaptive: true/.test(PT) && /offLadder: true/.test(PT),
@@ -1850,8 +1860,8 @@ const server = http.createServer((req, res) => {
       /* ══ 16d · THE DOGS LIVE BY THE CHECKERS ══ */
       /* his: "Move Crockett and Argus to be around the checker houses." */
       ok(/func _furnish_dogs\(\) -> void:/.test(town2)
-        && !/_add_challenger\("(Crockett|Argus)", "[a-z]+", \d+, "[a-z]", CAMP_AT/.test(town2),
-        'Crockett and Argus are off the Sand Mine camp');
+        && !/_add_challenger\("(Milo|Crockett|Argus)", "[a-z]+", \d+, "[a-z]", CAMP_AT/.test(town2),
+        'Milo and Argus are off the Sand Mine camp');
       const dogs = town2.slice(town2.indexOf('func _furnish_dogs'),
         town2.indexOf('func _furnish_tables'));
       ok(/MAX_HOME_AT \+/.test(dogs) && /HOME_AT \+/.test(dogs),
@@ -2958,7 +2968,7 @@ const server = http.createServer((req, res) => {
             document.head.appendChild(el);
           });
           const board = [{ p: 'r', who: 'Vince', f: 7, r: 7 },
-                         { p: 'p', who: 'Crockett', f: 0, r: 6 },
+                         { p: 'p', who: 'Milo', f: 0, r: 6 },
                          { p: 'q', who: 'Michael', f: 3, r: 3 }];
           function paint(rows) {
             const c = document.createElement('canvas');
@@ -2985,7 +2995,7 @@ const server = http.createServer((req, res) => {
           '\u2b50\u2b50 …and the renderer actually paints PIECES in a browser',
           shot.bare.colors + ' colors empty \u2192 ' + shot.full.colors + ' with three pieces, on ' +
           shot.full.w + '\u00d7' + shot.full.h);
-        ok(shot.label === 'Your Assembly board, 3 of 16: Vince on a8, Crockett on h7, Michael on e4.',
+        ok(shot.label === 'Your Assembly board, 3 of 16: Vince on a8, Milo on h7, Michael on e4.',
           '…and reads itself out in board squares for anybody who cannot see it',
           shot.label);
       }
@@ -3011,7 +3021,7 @@ const server = http.createServer((req, res) => {
         const hidden = /Alpine|Jenkins|53rd|Release Act|Convict|Subject|P&JCC|Pontiac|manifest|Robert|queen|Michael/i;
         const leaks = bureau.concat(townNews).filter((l) => hidden.test(l));
         ok(leaks.length === 0, '⚠⚠ …and nothing in it comes off a hidden page or a slow-rolled card', leaks.join(' | ') || 'clean');
-        ok(!/\b(barks?|woofs?|growls?)\b|Princess (said|says)|Crockett (said|says)|Argus (said|says)/i.test(bureau.concat(townNews).join(' ')),
+        ok(!/\b(barks?|woofs?|growls?)\b|Princess (said|says)|(Milo|Crockett) (said|says)|Argus (said|says)/i.test(bureau.concat(townNews).join(' ')),
           '…and no animal says a word in it  [ONLY HUMANS TALK]');
         ok(/TownPaper\.pick\(TOWN_NEWS, "town"\)/.test(fnGd(pap8, 'edition')) && /TownPaper\.pick\(BUREAU, "bureau"\)/.test(fnGd(pap8, 'edition'))
           && /SkyDaily\.hash_str\(TownSeason\.date_key\(\) \+ "#" \+ salt\)/.test(fnGd(pap8, 'pick')),
@@ -3385,7 +3395,7 @@ const server = http.createServer((req, res) => {
         /* ⛑⛑ ONLY HUMANS TALK (his rule, 2026-07-15). */
         const coats = /const COATS := \{([\s\S]*?)\n\}/.exec(dogG);
         const animals = coats ? [...coats[1].matchAll(/"([A-Za-z ]+)":/g)].map((m) => m[1]) : [];
-        ok(['Princess', 'Crockett', 'Argus'].every((a) => animals.includes(a)),
+        ok(['Princess', 'Milo', 'Argus'].every((a) => animals.includes(a)),
           '⛑⛑ the three dogs are in ONE table, and it is the list of animals', animals.join(' '));
         ok(/c\.animal = TownDog\.is_animal\(name_\)/.test(townG) && /_animal = TownDog\.is_animal\(who\)/.test(parkG)
           && /func wears_model\(\) -> bool:\s*\n\s*return not animal/.test(npcG),
@@ -3395,7 +3405,7 @@ const server = http.createServer((req, res) => {
         const spoken = [];
         if (!castM) spoken.push('TownDog.CAST: NOT FOUND');
         const cast = castM ? castM[1] : '';
-        for (const a of ['Princess', 'Crockett', 'Argus']) {
+        for (const a of ['Princess', 'Milo', 'Argus']) {
           const at = cast.indexOf('"' + a + '": {');
           if (at < 0) { spoken.push(a + ': NOT IN THE CAST'); continue; }
           const end = cast.indexOf('\n\t"', at + 4);
@@ -3406,13 +3416,13 @@ const server = http.createServer((req, res) => {
           });
         }
         const pb = cast;
-        for (const a of ['Princess', 'Crockett', 'Argus']) {
+        for (const a of ['Princess', 'Milo', 'Argus']) {
           const row = new RegExp('"who": "' + a + '"[^\\n]*\\n[^\\n]*"say": "([^"]*)"').exec(gsG);
           if (!row || !row[1].startsWith(a)) spoken.push(a + ' (Assembly): ' + (row ? row[1] : 'NOT FOUND'));
         }
         ok(spoken.length === 0,
           '⛑⛑ …and every line a dog has is what the dog DOES, never a sentence it says',
-          spoken.slice(0, 3).join(' | ') || 'Crockett, Argus, Princess — town, camp and Assembly');
+          spoken.slice(0, 3).join(' | ') || 'Milo, Argus, Princess — town, camp and Assembly');
         ok(/npc\.razz_line if npc\.animal else/.test(zoneG) && /if TownDog\.is_animal\(who\):/.test(zoneG),
           '…and a dog’s razz goes out without quotes, even from another room');
 
@@ -3729,7 +3739,7 @@ const server = http.createServer((req, res) => {
           && /play\["text"\] = "Sit down\. Let's play\. — %s" % shut/.test(chalG),
           '…off one hook on TownChallenger, so any seat can say why it is shut');
         ok(/if not GameState\.dogs_play:\s*\n\s*return "he is a dog"/.test(dogG),
-          '⛑ Crockett and Argus cannot be challenged until you know dogs play');
+          '⛑ Milo and Argus cannot be challenged until you know dogs play');
         /* ⚠⚠ THE REFUSAL MUST NOT GIVE THE SECRET AWAY. "he is a dog" is what you would think
            looking at him; "he can play, you just have not found out" is the game spoiling itself. */
         const shutLine = /return "([^"]*)"\s*\n\s*return ""/.exec(fnGd(dogG, 'locked_say'));
@@ -3785,7 +3795,7 @@ const server = http.createServer((req, res) => {
           '\u2026painted out of TownDog.COATS \u2014 whose bed it is can be SEEN, in coat and collar',
           'a hex typed in a room file is the shade that survives the next repaint of a dog');
         const bedsFor = [...homeG.matchAll(/\[([A-Z_]+_BED_AT), "(\w+)"\]/g)].map((m) => m[2]);
-        ok(bedsFor.join(' ') === 'Princess Crockett Argus',
+        ok(bedsFor.join(' ') === 'Princess Milo Argus',
           '\u2026and all three dogs have one in Nate\u2019s checker', bedsFor.join(', ') || 'none');
         /* ⚠⚠ MAXWELL'S IS A CUSHION, NOT A BED YOU SLEEP IN. */
         ok(/cushion\.who = "Princess"/.test(bedMax) && !/TownBed/.test(code(bedMax)),
@@ -3883,7 +3893,7 @@ const server = http.createServer((req, res) => {
         /* \u26a0\u26a0 "ONLY THEIR OWN" IS THE LIST, NOT A BRANCH. */
         const free = fnGd(dogG, '_free');
         ok(/var choosy := haunts\.size\(\) > 1/.test(am) && /d != self and d\.visible/.test(free)
-           && /_lodger\("Crockett", CROCKETT_BED_AT\)/.test(homeG)
+           && /_lodger\("Milo", MILO_BED_AT\)/.test(homeG)
            && /d\.haunts = PackedVector2Array\(\[at\]\)/.test(homeG),
           '\u2b50 she takes any cushion that is FREE, and the other two only ever their own',
           'the owner never yields: one haunt each, so there is nothing for them to check');
@@ -4215,14 +4225,14 @@ const server = http.createServer((req, res) => {
           '⚠⚠ except HER indoor copy, which is never off: walk in at three in the afternoon and she is there');
         ok(/_body\.set_deferred\("disabled", true\)/.test(fnGd(dg, '_step_out')),
           '⚠⚠ …and a dog that has gone indoors takes its body with it',
-          'Crockett is solid and stands beside the only road to two front doors — a hidden solid is a wall nobody can report');
+          'Milo is solid and stands beside the only road to two front doors — a hidden solid is a wall nobody can report');
         ok(/if visible and door_home != Vector2\.ZERO and not _walk_to\(door_home/.test(fnGd(dg, '_process'))
            && /dog\.door_home = HOME_AT/.test(tw) && /d\.door_home = HOME_AT/.test(tw),
           '⭐ she WALKS home at half nine, she does not blink out — and every lane dog uses the door with the cushions behind it');
-        /* ⛑ CROCKETT WAS A PLAIN CHALLENGER AND GOT TownNPC's PATROL FOR FREE. */
+        /* ⛑ MILO WAS A PLAIN CHALLENGER AND GOT TownNPC's PATROL FOR FREE. */
         ok(/elif patrol != Vector2\.ZERO:\s*\n\s*sit = _pace\(delta\)/.test(dg)
-           && /_lane_dog\("Crockett", HOME_AT \+ Vector2\(-60\.0, 130\.0\)\)\.patrol = Vector2\(90\.0, 0\.0\)/.test(tw),
-          '…and Crockett still paces the lane after becoming a dog');
+           && /_lane_dog\("Milo", HOME_AT \+ Vector2\(-60\.0, 130\.0\)\)\.patrol = Vector2\(90\.0, 0\.0\)/.test(tw),
+          '…and Milo still paces the lane after becoming a dog');
         ok(/d\.solid = false/.test(hm) && /dog\.solid = not dog\.companion/.test(dg),
           '⚠ the lane dogs stay solid and the room\'s do not  (a 1000-unit floor with two invisible-edged walls on it)');
 
@@ -4451,32 +4461,42 @@ const server = http.createServer((req, res) => {
           ok(wt.white === true && wt.piece === 'n' && wt.from === 'g1' && hop(wt.move) && hop(kn.move),
             '…and the move you show the other two is a knight\'s, from where a knight starts', wt.move || 'none');
 
-          /* ── the other two ── */
-          const rowsFn = fnIn(hb2, '_rows');
-          ok(/"id": "look", "text": "Look closer\."/.test(rowsFn) && !/OTHERS|Crockett|Argus/.test(rowsFn)
-             && /for other in OTHERS:\s*\n\s*out\.append\(\{ "id": other, "text": "Teach %s" % other \}\)/.test(fnIn(hb2, '_pupils')),
-            '⭐ the board\'s menu gains ONE row, and who to teach is asked in the close-up',
-            'three more rows made that menu seven tall — most of his phone');
-          const others = strs2((/const OTHERS := \[([^\]]*)\]/.exec(hb2) || [0, ''])[1]);
-          ok(others.join(' ') === 'Crockett Argus' && others.every((o) => new RegExp('"' + o + '":\\s+\\[Color').test(dg)),
-            '…the other two are the lane\'s two dogs and nobody else', others.join(' '));
+          /* ── the other two: each at his own board since 2026-10-10 ── */
+          const rowsFn = fnIn(hb2, '_rows'), theirs = fnIn(hb2, '_theirs');
+          const menus = [...theirs.matchAll(/open_talk\(prompt_text, [^\n]+\[\s*\n((?:\s*\{ "id": [^\n]+\n?)+)/g)]
+            .map((m) => (m[1].match(/"id": "(\w+)"/g) || []).join(' '));
+          ok(/"id": "look", "text": "Look closer\."/.test(rowsFn) && !/Milo|Argus|Teach/.test(rowsFn)
+             && menus.length === 2 && menus.every((m) => (m.match(/"id"/g) || []).length === 3)
+             && /"id": "tidy"/.test(menus[0]) && /"id": "teach"/.test(menus[1]) && menus.every((m) => /"look"/.test(m) && /"bye"/.test(m)),
+            '⭐ her menu is the one it was, and each of theirs is three rows',
+            'three more rows on one board made that menu seven tall — most of his phone');
+          const pupilsFn = fnIn(hb2, '_pupils');
+          ok(/if dog == "Princess" and _princess\(\) != null:\s*\n\s*return \[\{ "id": "Princess", "text": "Teach Princess" \}\]\s*\n\s*return \[\]/.test(pupilsFn),
+            '…and the close-up teaches Princess, at her own board, and nobody else from anywhere');
           const left = (/const LEFT := "([^"]*)"/.exec(hb2) || [0, ''])[1];
           const floored = [...((/const FLOORED := \{([\s\S]*?)\n\t\}/.exec(hb2) || [0, ''])[1]).matchAll(/"(\w+)": "([^"]*)"/g)]
             .map((m) => [m[1], m[2]]);
+          const setUp = (/const SET_UP := "([^"]*)"/.exec(hb2) || [0, ''])[1];
           const spoil = /\b(plays?|played|knows?|knew|learn(s|ed|ing)?|understands?|chess)\b/i;
-          ok(/^You /.test(left) && /%s/.test(left) && !spoil.test(left) && floored.length === 2
-             && floored.every(([who, line]) => line.startsWith(who + ' ') && !spoil.test(line) && others.includes(who)),
+          ok(/^You /.test(left) && /%s/.test(left) && !spoil.test(left) && floored.length === 2 && setUp !== '' && !spoil.test(setUp)
+             && floored.every(([who, line]) => line.startsWith(who + ' ') && !spoil.test(line))
+             && floored.map(([who]) => who).join(' ') === 'Milo Argus'
+             && floored.every(([who]) => new RegExp('"' + who + '":\\s+\\[Color').test(dg)),
             '⛑ ONLY HUMANS TALK: what you do, then what the dog did, starting with its name',
-            '⚠ and neither line may say a dog can play — that is Princess\'s to give away');
-          ok(/if lesson_for != "":\s*\n\s*mess_by = lesson_for\s*\n\s*lesson_for = ""/.test(fnGd(hm, '_furnish_room'))
-             && /static var lesson_for: String = ""/.test(hm) && /static var mess_by: String = ""/.test(hm)
-             && !/lesson_for|mess_by/.test(gs2),
+            '⚠ and no line at their boards may say a dog can play — that is Princess\'s to give away');
+          ok(/\n\tnow = turn\(\)\s*\n\s*for d in left_out:\s*\n\s*tidy\.erase\(d\)\s*\n\s*bump\[d\] = int\(bump\.get\(d, 0\)\) \+ 1\s*\n\s*left_out\.clear\(\)/.test(fnGd(hm, '_furnish_room'))
+             && /static var left_out: Dictionary = \{\}/.test(hm) && /static var tidy: Dictionary = \{\}/.test(hm)
+             && /static var bump: Dictionary = \{\}/.test(hm) && /static var seen: Dictionary = \{\}/.test(hm)
+             && /NateHome\.left_out\[dog\] = true/.test(fnIn(hb2, 'leave_out'))
+             && !/left_out|NateHome\.(now|tidy|bump|seen)\b/.test(gs2),
             '⭐ you leave the lesson out, and the room you come back into is what became of it',
             '⚠ static, never saved or pushed: it outlives the walk outside and nothing else');
-          ok(/if NateHome\.mess_by != "":\s*\n\s*open_talk\("The chessboard", FLOORED\[NateHome\.mess_by\]/.test(fnIn(hb2, 'interact'))
-             && /if NateHome\.mess_by != "":\s*\n\s*return out/.test(fnIn(hb2, '_pupils'))
-             && /if id == "tidy":\s*\n\s*NateHome\.mess_by = ""/.test(fnIn(hb2, '_on_chose')),
-            '…and the mess comes first: nobody is taught anything until the pieces are picked up');
+          ok(/if NateHome\.wrecked\(dog\):\s*\n\s*open_talk\(prompt_text, FLOORED\[dog\]/.test(theirs)
+             && theirs.indexOf('FLOORED[dog]') < theirs.indexOf('"id": "teach"')
+             && /if id == "tidy":\s*\n\s*NateHome\.tidy\[dog\] = NateHome\.now\s*\n\s*queue_redraw\(\)\s*\n\s*changed\.emit\(\)/.test(fnIn(hb2, '_on_chose'))
+             && /low\.changed\.connect\(queue_redraw\)/.test(hm),
+            '…and the mess comes first: nobody is taught anything until the pieces are picked up',
+            '⚠ and the FLOOR is the room\'s to repaint when you do');
           const sh = fnIn(hb2, 'show_her');
           ok(sh.indexOf('_open(') > 0 && sh.indexOf('_open(') < sh.indexOf('GameState.discover_dogs_play()')
              && /get_first_node_in_group\("town_cover"\) != null or TownJournal\.is_open\(get_tree\(\)\)/.test(fnGd(zn, '_story'))
@@ -4492,14 +4512,23 @@ const server = http.createServer((req, res) => {
             const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(hm) || [0, 1])[1];
             if (at) boxes.push({ x: at.x + +m[2] * sc, y: at.y + +m[3] * sc, w: +m[4] * sc, h: +m[5] * sc });
           }
-          const scat = boardAt ? [...((/const SCATTER := \[([\s\S]*?)\n\]/.exec(hm) || [0, ''])[1])
-            .matchAll(/\[(-?[\d.]+), (-?[\d.]+), "\w", (?:true|false), -?[\d.]+\]/g)]
-            .map((m) => ({ x: boardAt.x + +m[1], y: boardAt.y + +m[2] })) : [];
-          const hidden = scat.filter((p) => ell(p.x, p.y) > 0.92
-            || boxes.some((b) => p.x > b.x && p.x < b.x + b.w && p.y > b.y && p.y < b.y + b.h));
-          ok(boxes.length >= 4 && scat.length >= 10 && hidden.length === 0,
-            '…Crockett\'s scatter lies on open floor: inside the disc and under no furniture',
-            hidden.length ? hidden.map((p) => p.x + ',' + p.y).join(' ') : scat.length + ' pieces against ' + boxes.length + ' boxes');
+          /* ⚠ PRINCESS'S TABLE IS THE ONLY SOLID BOARD: the two on the floor are added as pictures, below. */
+          const miloAt = v2(hm, 'MILO_BOARD_AT'), argusBoardAt = v2(hm, 'ARGUS_BOARD_AT');
+          const lowS = +(/low\.scale = Vector2\(([\d.]+), ([\d.]+)\)/.exec(hm) || [0, 0])[1];
+          const pic = (p) => ({ x: p.x - 23 * lowS, y: p.y - 47 * lowS, w: 46 * lowS, h: 46 * lowS });
+          const cush = ['DOG_BED_AT', 'MILO_BED_AT', 'ARGUS_BED_AT'].map((n) => [n.replace('_BED_AT', ''), v2(hm, n)]);
+          const scat = miloAt ? [...((/const SCATTER := \[([\s\S]*?)\n\]/.exec(hm) || [0, ''])[1])
+            .matchAll(/Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
+            .map((m) => ({ x: miloAt.x + +m[1], y: miloAt.y + +m[2] })) : [];
+          const inBox = (p, bx) => p.x > bx.x && p.x < bx.x + bx.w && p.y > bx.y && p.y < bx.y + bx.h;
+          const covers = miloAt && argusBoardAt && lowS
+            ? boxes.concat([pic(miloAt), pic(argusBoardAt)], cush.map(([, c]) => ({ x: c.x - 40, y: c.y - 20, w: 80, h: 40 }))) : [];
+          const hidden = scat.filter((p) => ell(p.x, p.y) > 0.92 || covers.some((bx) => inBox(p, bx)));
+          const clumped = scat.filter((p, i) => scat.some((q, j) => j < i && Math.hypot(p.x - q.x, p.y - q.y) < 30));
+          ok(boxes.length >= 4 && covers.length === boxes.length + 5 && scat.length >= 10 && hidden.length === 0 && clumped.length === 0,
+            '…Milo\'s scatter lies on open floor: inside the disc, under no furniture, on no cushion and off both boards',
+            hidden.length || clumped.length ? hidden.concat(clumped).map((p) => p.x + ',' + p.y).join(' ')
+              : scat.length + ' spots against ' + covers.length + ' things, none within a piece of another');
           const rowM = /_floor_piece\(ARGUS_BED_AT \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
           const rowN = ((/const ROW := "(\w+)"/.exec(hm) || [0, ''])[1]).length;
           const rowEnds = rowM && argusAt
@@ -4622,11 +4651,14 @@ const server = http.createServer((req, res) => {
             'post_unread() crosses to the page');
           const hbN = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
           const bnews = fnIn2(hbN, 'news');
-          ok(/if NateHome\.mess_by != "":\s*\n\s*return "mess"/.test(bnews)
-             && /return "lesson" if _lesson and not GameState\.dogs_play and _princess\(\) != null else ""/.test(bnews)
-             && /_asked = 5\.0\s*\n\s*_lesson = not GameState\.dogs_play and GameState\.academy_stage\(\) >= PLAYS_AT/.test(fnIn2(hbN, '_process')),
-            '⭐ the board at home: the pieces on the floor; and, until the secret is out, a lesson she has not been shown',
-            '⚠ never after — "show her" is then a row that is always there');
+          ok(/var fresh: bool = int\(NateHome\.seen\.get\(dog, -1\)\) != NateHome\.stamp\(dog\)/.test(bnews)
+             && /return "mess" if fresh and NateHome\.wrecked\(dog\) else ""/.test(bnews)
+             && /if _lesson and not GameState\.dogs_play and _princess\(\) != null:\s*\n\s*return "lesson"/.test(bnews)
+             && /return "moved" if fresh and NateHome\.pirc_done\(\) > 0 else ""/.test(bnews)
+             && /NateHome\.seen\[dog\] = NateHome\.stamp\(dog\)/.test(fnIn2(hbN, 'interact'))
+             && /_asked = 5\.0\s*\n(?:\s*#[^\n]*\n)*\s*if dog == "Princess":\s*\n\s*_lesson = not GameState\.dogs_play and GameState\.academy_stage\(\) >= PLAYS_AT/.test(fnIn2(hbN, '_process')),
+            '⭐ the boards at home: what a dog did since you last LOOKED; and, until the secret is out, a lesson she has not been shown',
+            '⚠ a mark that never goes out is wallpaper — opening the board is what puts it out');
           const nnews = fnGd(npcN, 'news');
           ok(/gift_day == TownClock\.weekday\(\) and GameState\.gift_waiting\(\)/.test(nnews)
              && /GameState\.hearts_for\(who\) >= GameState\.BOAT_HEARTS/.test(nnews) && /not GameState\.has_part\(/.test(nnews)
@@ -4650,6 +4682,220 @@ const server = http.createServer((req, res) => {
             '…and a mark goes as the box shuts, not half a second later');
           ok(/if is_instance_valid\(b\.who\):\s*\n\s*_poke\(b\.who\)/.test(fnGd(spN, '_drop')),
             '⚠ a speaker freed mid-line is checked before it is handed on  (found by a probe, 10-10)');
+        }
+
+        /* ══ a board each · the pieces change when you check back in · Milo — 2026-10-10 ══ */
+        /* his: "please continue.  And then, when you check back in to checker town it would be cool if some of the pieces changed.  Make three boards, one for each dog.  Crockett's has pieces all over the place.  Change that dog's name to Milo.  Instead of one eye with black fur around it make it both. Keep the coat white with black spots." */
+        {
+          const gsM = code(rd('game_state.gd')), pkM = code(rd('park.gd')), bvM = code(rd('board_view.gd'));
+          const hbM = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
+          const CM = require('../assets/js/pjcc-chess.js');
+          const SYSM = require('../assets/js/pjcc-systems.js');
+          const fnInM = (src, name) => {
+            const a = src.indexOf('\tfunc ' + name + '(');
+            if (a < 0) return '';
+            const rest = src.slice(a + 1);
+            const b = rest.search(/\n\t(?:static )?func |\n\S/);
+            return b < 0 ? rest : rest.slice(0, b);
+          };
+          const v2M = (src, n) => {
+            const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
+            return m ? { x: +m[1], y: +m[2] } : null;
+          };
+
+          /* ── the name ── */
+          const stale = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+            .filter((f) => /"Crockett"/.test(code(rd(f)).replace(/const RENAMED := \{[^}]*\}/, '')));
+          ok(stale.length === 0 && /"Milo": \{ "key": "crockett", "elo": 750/.test(dg) && !/"key": "milo"/.test(dg + gsM + pkM),
+            '⛑ he is MILO: nothing the game can show says Crockett, and his bench key did not move',
+            stale.length ? 'still "Crockett" in: ' + stale.join(' ') : 'the site\'s seat, his square and every stamp are kept by `crockett`');
+          ok(/\{ "p": "p", "who": "Milo",\s+"key": "crockett",/.test(gsM) && /"say": "Milo stands on his square/.test(gsM)
+             && /\{ "key": "crockett", "who": "Milo", "elo": 750,\s+"piece": "n" \}/.test(pkM)
+             && /_lane_dog\("Milo", /.test(tw) && /_lodger\("Milo", MILO_BED_AT\)/.test(hm),
+            '…on his square, on his rung, on the lane and on his own cushion');
+          ok(/const RENAMED := \{ "Crockett": "Milo" \}/.test(gsM)
+             && /by_name\[now\] = maxi\(int\(by_name\.get\(now, 0\)\), int\(by_name\[was\]\)\)\s*\n\s*by_name\.erase\(was\)/.test(fnGd(gsM, '_renamed'))
+             && /hearts = d\.get\("hearts", \{\}\)\s*\n\s*_renamed\(hearts\)/.test(fnGd(gsM, 'load_state'))
+             && /var theirs: Dictionary = \(d\.get\("hearts", \{\}\) as Dictionary\)\.duplicate\(\)\s*\n\s*_renamed\(theirs\)\s*\n\s*for k in theirs:/.test(fnGd(gsM, 'merge_in')),
+            '⛑⛑ the hearts he had as Crockett are Milo\'s — from the file on this device AND from the account',
+            'hearts are kept by NAME; the account\'s copy still says Crockett, and is read, never rewritten in place');
+
+          /* ── his coat ── */
+          const coatM = /"Milo":\s+\[Color\("([0-9a-f]{6})"\), Color\("([0-9a-f]{6})"\), Color\("[0-9a-f]{6}"\), (true|false)\]/.exec(dg);
+          const lum = (hex) => (0.2126 * parseInt(hex.slice(0, 2), 16) + 0.7152 * parseInt(hex.slice(2, 4), 16)
+            + 0.0722 * parseInt(hex.slice(4, 6), 16)) / 255;
+          const pfM = fnGd(dg, 'paint_front'), pM = fnGd(dg, 'paint');
+          ok(coatM && lum(coatM[1]) > 0.85 && lum(coatM[2]) < 0.15 && coatM[3] === 'true'
+             && /12\.5, body\)[^\n]*\n\s*if c\[3\]:\s*\n(?:\s*ci\.draw_circle\(Vector2\(-?[\d.]+, -?[\d.]+\), [\d.]+, edge\)[^\n]*\n){2,}/.test(pfM),
+            '⭐ his coat is still white with black spots', coatM ? coatM[1] + ' with ' + coatM[2] : 'no coat');
+          const patch = /if c\[3\]:\s*\n\s*for sx in \[-1\.0, 1\.0\]:\s*\n\s*ci\.draw_circle\(Vector2\(sx \* ([\d.]+), (-?[\d.]+)\), ([\d.]+), edge\)/.exec(pfM);
+          const eyeM = /var eye := Vector2\(sx \* ([\d.]+), (-?[\d.]+)\)\s*\n\s*ci\.draw_circle\(eye, ([\d.]+), Color/.exec(pfM);
+          ok(patch && eyeM && patch[1] === eyeM[1] && patch[2] === eyeM[2] && +patch[3] >= +eyeM[3] + 1.5
+             && pfM.indexOf(patch[0]) < pfM.indexOf(eyeM[0]),
+            '⭐⭐ black fur round BOTH his eyes: a patch a side, where the eye is, wider than the eye and under it',
+            patch && eyeM ? 'r ' + patch[3] + ' round an eye of r ' + eyeM[3] : 'not found');
+          const dot = /ci\.draw_circle\(Vector2\(([\d.]+), (-?[\d.]+) \+ y\), ([\d.]+), edge\)/.exec(pM);
+          const prof = /if c\[3\]:\s*\n\s*for s in \[((?:Vector3\([^)]*\)(?:, )?)+)\]:\s*\n\s*ci\.draw_circle\(Vector2\(s\.x, s\.y \+ y\), s\.z, edge\)\s*\n\s*ci\.draw_circle\(Vector2\(([\d.]+), (-?[\d.]+) \+ y\), ([\d.]+), edge\)\s*\n\s*ci\.draw_circle\(Vector2\(([\d.]+), (-?[\d.]+) \+ y\), ([\d.]+), body\)/.exec(pM);
+          ok(prof && dot && prof[2] === dot[1] && prof[3] === dot[2] && +prof[4] > +dot[3] + 1
+             && prof[5] === dot[1] && prof[6] === dot[2] && +prof[7] < +dot[3] && (prof[1].match(/Vector3/g) || []).length >= 2,
+            '…in profile the patch goes round the one dot that is his eye at that size, with two spots still on his side',
+            'a patch of its own between the ear and that dot was one blot');
+          ok(/var eye: Color = edge\s*\n\s*if c\[3\]:\s*\n\s*ci\.draw_circle\(Vector2\(3\.0, -2\.0\), [\d.]+, edge\)\s*\n\s*eye = body/.test(fnGd(dg, 'paint_sitting'))
+             && /ci\.draw_circle\(Vector2\(3\.0, -2\.0\), 1\.4, eye\)/.test(fnGd(dg, 'paint_sitting'))
+             && /ci\.draw_arc\(Vector2\(-8\.5, 8\.5\), 2\.1, 0\.2, PI - 0\.2, 6, body if c\[3\] else edge, 1\.2\)/.test(fnGd(dg, 'paint_curled')),
+            '⚠ …and on a patch the eye is drawn LIGHT, sitting up and asleep',
+            'the coat\'s own dark eye on dark fur is no eye at all');
+
+          /* ── a board each ── */
+          const miloB = v2M(hm, 'MILO_BOARD_AT'), argusB = v2M(hm, 'ARGUS_BOARD_AT');
+          const lowSc = +(/low\.scale = Vector2\(([\d.]+), ([\d.]+)\)/.exec(hm) || [0, 0])[1];
+          const lowR = +(/low\.radius = ([\d.]+)/.exec(hm) || [0, 0])[1];
+          const beds = { Princess: v2M(hm, 'DOG_BED_AT'), Milo: v2M(hm, 'MILO_BED_AT'), Argus: v2M(hm, 'ARGUS_BED_AT') };
+          ok(/for spot in \[\[MILO_BOARD_AT, "Milo"\], \[ARGUS_BOARD_AT, "Argus"\]\]:\s*\n\s*var low := HomeBoard\.new\(\)\s*\n\s*low\.dog = spot\[1\]/.test(hm)
+             && /var dog := "Princess"/.test(hbM) && (hm.match(/HomeBoard\.new\(\)/g) || []).length === 2
+             && !/_solid\(low/.test(hm) && /prompt_text = "%s's board" % dog/.test(fnInM(hbM, '_ready_extra')),
+            '⭐ three boards, one for each dog: hers on the table, theirs on the floor and never a wall',
+            'in a room this size a solid thing you cannot see the edges of is a wall nobody can report');
+          ok(/\n\t\t\t_shape\.position = Vector2\(0\.0, -24\.0\)/.test(fnInM(hbM, '_ready_extra')) && lowR >= 23 * Math.SQRT2 && lowR <= 46,
+            '⚠ a floor board is used from any side: its reach is round the MIDDLE of it and takes in every corner',
+            'left at its foot, somebody standing on the far half of the board was out of reach of it');
+          const lows = miloB && argusB && lowSc && beds.Princess && beds.Milo && beds.Argus ? [['Milo', miloB], ['Argus', argusB]] : [];
+          const picM = (p) => ({ x: p.x - 23 * lowSc, y: p.y - 47 * lowSc, w: 46 * lowSc, h: 46 * lowSc });
+          const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+          const strays = lows.filter(([who, p]) => {
+            const mid = { x: p.x, y: p.y - 24 * lowSc };
+            const by = Object.keys(beds).sort((a, b) => Math.hypot(beds[a].x - mid.x, beds[a].y - mid.y)
+              - Math.hypot(beds[b].x - mid.x, beds[b].y - mid.y))[0];
+            const r = picM(p);
+            return by !== who || [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]].some(([x, y]) => ell(x, y) > 0.95);
+          }).map(([who]) => who);
+          ok(lows.length === 2 && strays.length === 0,
+            '…each by its own dog\'s cushion and nobody else\'s, every corner of it on the round floor', strays.join(' ') || 'Milo · Argus');
+          /* ⚠⚠ RE-DERIVED: the gold mark is R round, speech_top() above where the board stands. */
+          const topM = +(/func speech_top\(\) -> float:\s*\n\s*return (-?[\d.]+) \* scale\.y/.exec(hbM) || [0, 0])[1];
+          const markR = num(code(rd('notice.gd')), 'R');
+          const fp = num(hm, 'FLOOR_PIECE');
+          const rowM2 = /_floor_piece\(ARGUS_BED_AT \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
+          const rowN2 = ((/const ROW := "(\w+)"/.exec(hm) || [0, ''])[1]).length;
+          const rowBox = rowM2 && beds.Argus ? { x: beds.Argus.x + +rowM2[1] - fp / 2, y: beds.Argus.y + +rowM2[3] - fp / 2,
+            w: +rowM2[2] * (rowN2 - 1) + fp, h: fp } : null;
+          const solids = [];
+          for (const m of hm.matchAll(/_solid\((\w+), Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/g)) {
+            const want = new RegExp(m[1] + '\\.position = ([A-Z_]+)').exec(hm);
+            const at = want && v2M(hm, want[1]);
+            const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(hm) || [0, 1])[1];
+            if (at) solids.push({ x: at.x + +m[2] * sc, y: at.y + +m[3] * sc, w: +m[4] * sc, h: +m[5] * sc });
+          }
+          /* a cushion, and a dog sitting up on it */
+          const seats = Object.keys(beds).filter((k) => beds[k]).map((k) => ({ x: beds[k].x - 40, y: beds[k].y - 50, w: 80, h: 70 }));
+          const sat = lows.filter(([, p]) => {
+            const mark = { x: p.x - markR, y: p.y + topM * lowSc - markR, w: markR * 2, h: markR * 2 };
+            return seats.concat(solids, rowBox ? [rowBox] : []).some((bx) => hit(mark, bx) || hit(picM(p), bx));
+          }).map(([who]) => who);
+          ok(topM < 0 && markR > 0 && rowBox && solids.length >= 4 && lows.length === 2 && sat.length === 0 && !hit(picM(miloB), picM(argusB)),
+            '⚠⚠ …and neither board nor its gold mark lands on a cushion, a dog sitting on one, the furniture or Argus\'s row',
+            sat.length ? sat.join(' ') : 'straight below his cushion, Milo\'s mark was drawn on Milo: seen in the first screenshot');
+
+          /* ── what you walk in on ── */
+          const TM = num(hm, 'TURN_MINUTES');
+          ok(TM >= 30 && TM <= 360 && 1440 % TM === 0
+             && /return TownClock\.day_of_year\(\) \* \(1440 \/ TURN_MINUTES\) \+ TownClock\.minute_of_day\(\) \/ TURN_MINUTES/.test(fnGd(hm, 'turn'))
+             && /static var now: int = 0/.test(hm) && (hm.match(/\bturn\(\)/g) || []).length === 2
+             && /\n\tnow = turn\(\)\n/.test(fnGd(hm, '_furnish_room')),
+            '⭐ when you check back in the pieces have changed: a turn is ' + TM + ' minutes of the town\'s clock, read ONCE, at the door',
+            '⚠⚠ nothing else in the house asks the clock — pieces that jump in front of you are a glitch, not a dog');
+          ok(/return now \* 16 \+ int\(bump\.get\(dog, 0\)\)/.test(fnGd(hm, 'stamp'))
+             && /return dog != "Princess" and int\(tidy\.get\(dog, -1\)\) != now/.test(fnGd(hm, 'wrecked'))
+             && /rng\.seed = hash\("%s\|%d" % \[dog, stamp\(dog\)\]\)/.test(fnGd(hm, '_dice'))
+             && !/randomize\(\)/.test(hm) && !/(?<![.\w])rand[fi](?:_range)?\(/.test(hm) && !/^\s*while\b/m.test(hm),
+            '⚠⚠ what a dog left is worked out from that turn, never rolled: the same mess every time you look',
+            'home.gd throws no dice of its own — every one is rng.*, seeded by the stamp — and has no open-ended loop');
+
+          /* ── Milo's ── */
+          const spillFn = fnGd(hm, 'spill');
+          const side = (/const SIDE := "(\w+)"/.exec(hm) || [0, ''])[1];
+          const dealt = +(/for i in (\d+):\s*\n\s*all\.append\(\[SIDE\[i % 16\], i >= 16\]\)/.exec(spillFn) || [0, 0])[1];
+          ok(side.split('').sort().join('') === 'bbknnppppppppqrr' && dealt === 31 && side[dealt % 16] === 'p'
+             && /if act\(\) == "mess" and bool\(scene\.get\("happy", false\)\):\s*\n\s*_piece\("p", true,/.test(bvM),
+            '⭐ Milo\'s are all over the place, and they add up: 31 dealt between the floor and his board, the 32nd in his mouth',
+            'the one left out is white\'s last pawn — the pawn BoardView paints under his nose');
+          const nSpots = (((/const SCATTER := \[([\s\S]*?)\n\]/.exec(hm) || [0, ''])[1]).match(/Vector2\(/g) || []).length;
+          const nR = /var n := rng\.randi_range\(SCATTER\.size\(\) - (\d+), SCATTER\.size\(\) - (\d+)\)/.exec(spillFn);
+          ok(nSpots >= 10 && nR && nSpots - +nR[1] >= 8 && +nR[2] >= 1
+             && /on_floor\[\(first \+ i\) % SCATTER\.size\(\)\] = \[all\[i\]\[0\], all\[i\]\[1\],/.test(spillFn)
+             && /for i in range\(n, all\.size\(\)\):/.test(spillFn)
+             && /var lot: Array = NateHome\.spill\(\)\[0\]/.test(fnGd(hm, '_draw_mess'))
+             && /mess\["pieces"\] = NateHome\.spill\(\)\[1\]/.test(fnInM(hbM, '_look')),
+            '…never fewer than eight on the floor and never every spot, so WHICH spots are bare changes as well',
+            nR ? (nSpots - +nR[1]) + ' to ' + (nSpots - +nR[2]) + ' of ' + nSpots + ' spots; the rest go to the close-up' : 'not found');
+          const ax = /float\(cell % 9\) - ([\d.]+) \+ rng\.randf_range\(([\d.]+), ([\d.]+)\)/.exec(spillFn);
+          const dn = /var down := float\(cell \/ 9\) \* ([\d.]+) \+ rng\.randf_range\(([\d.]+), ([\d.]+)\)/.exec(spillFn);
+          const lip = +(/var top := _board\.grow\(c \* ([\d.]+)\)/.exec(bvM) || [0, 0])[1];
+          const pieceH = +(/ChessArt\.draw_piece\(_art, code, at, _cell \* ([\d.]+), fill, line\)/.exec(bvM) || [0, 0])[1];
+          const below = num(bvM, 'HIGH') - num(bvM, 'HEAD') - 8;
+          const xs = ax ? [+ax[2] - +ax[1], 8 - +ax[1] + +ax[3]] : [NaN, NaN];
+          const ys = dn ? [+dn[2], 8 * +dn[1] + +dn[3]] : [NaN, NaN];
+          ok(ax && dn && lip > 0 && pieceH > 0 && xs[0] >= -lip && xs[1] <= 8 + lip && ys[0] > 0 && ys[1] + pieceH / 2 <= 8 + below + 1e-9
+             && 1 - (+ax[3] - +ax[2]) >= 0.3 && +dn[1] - (+dn[3] - +dn[2]) >= 0.3
+             && /for _try in 81:\s*\n\s*if not used\.has\(cell\):\s*\n\s*break\s*\n\s*cell = \(cell \+ 31\) % 81\s*\n\s*used\[cell\] = true/.test(spillFn),
+            '⚠ up close no piece hides another, none is past the table\'s lip, none is cut in half by the caption',
+            ax && dn ? 'across ' + xs[0].toFixed(2) + ' to ' + xs[1].toFixed(2) + ', down ' + ys[0].toFixed(2) + ' to ' + ys[1].toFixed(2)
+              + ' squares; a square each on a 9 × 9, found by a counted loop' : 'not found');
+          ok(/if scene\.has\("pieces"\):\s*\n\s*if act\(\) == "mess":\s*\n\s*_paint_prints\(\)\s*\n\s*for p in \(scene\["pieces"\] as Array\):\s*\n\s*_piece\(str\(p\[0\]\), bool\(p\[1\]\), _board\.position \+ Vector2\(float\(p\[2\]\), float\(p\[3\]\)\) \* c, float\(p\[4\]\)\)/.test(fnGd(bvM, '_paint'))
+             && /if bool\(scene\.get\("ring", true\)\):\s*\n\s*TownPortal\.paint\(/.test(fnGd(bvM, '_paint'))
+             && /scene\["ring"\] = dog == "Princess"/.test(fnInM(hbM, '_open')),
+            '⭐ the close-up paints whatever stands where home.gd says, and the portal\'s ring is in HER board only');
+
+          /* ── Argus's ── */
+          const rowFn = fnGd(hm, 'row');
+          ok(/var rng := _dice\("Argus"\)/.test(rowFn) && /var j := rng\.randi_range\(0, i\)\s*\n\s*var t: String = codes\[i\]\s*\n\s*codes\[i\] = codes\[j\]\s*\n\s*codes\[j\] = t/.test(rowFn)
+             && /var first := \(now \+ int\(bump\.get\("Argus", 0\)\)\) % 2/.test(rowFn) && /i % 2 == first/.test(rowFn)
+             && /if wrecked\("Argus"\):\s*\n\s*var order := NateHome\.row\(\)/.test(fnGd(hm, '_draw_mess'))
+             && /"act": "mess", "by": dog,/.test(fnInM(hbM, '_look')) && /var wild := dog == "Milo"/.test(fnInM(hbM, '_look')),
+            '⭐ Argus stands his by his bed in a new order each time — and light and dark swap ends every time, dice or no dice',
+            'the same row twice running is "nothing changed"');
+
+          /* ── hers: the site's own Pirc, on the site's referee ── */
+          const pircRows = [...((/const PIRC := \[(.*)\]\n/.exec(hm) || [0, ''])[1]).matchAll(/\[([^\]]*)\]/g)]
+            .map((m) => m[1].split(',').map((x) => x.trim().replace(/"/g, '')).filter(Boolean));
+          const sysP = SYSM.get('pircb');
+          let SP = CM.parseFEN(CM.START_FEN);
+          const mine = {};
+          SP.b.forEach((p, i) => { if (p) mine['abcdefgh'[i % 8] + (8 - Math.floor(i / 8))] = p; });
+          const wantP = [];
+          let drift = '';
+          (sysP ? sysP.vs['*'] : []).forEach((uci, n) => {
+            SP.turn = 'b';
+            SP.ep = -1;
+            const from = uci.slice(0, 2), to = uci.slice(2, 4);
+            const mv = CM.findMove(SP, CM.sqFromName(from), CM.sqFromName(to));
+            if (!mv) { drift = drift || uci + ' is not legal for Black with nobody answering'; return; }
+            const row = [from + to];
+            if (SP.b[CM.sqFromName(from)].toLowerCase() === 'k' && Math.abs(from.charCodeAt(0) - to.charCodeAt(0)) === 2)
+              row.push(to[0] === 'g' ? 'h' + from[1] + 'f' + from[1] : 'a' + from[1] + 'd' + from[1]);
+            wantP.push(row.join(' '));
+            SP = CM.makeMove(SP, mv);
+            /* ⚠ AND THE REPLAY home.gd DOES — a square in, a square out — lands on the referee's board. */
+            (pircRows[n] || []).forEach((hop) => { mine[hop.slice(2, 4)] = mine[hop.slice(0, 2)]; delete mine[hop.slice(0, 2)]; });
+            for (let i = 0; i < 64; i++) {
+              const sq = 'abcdefgh'[i % 8] + (8 - Math.floor(i / 8));
+              if ((SP.b[i] || '') !== (mine[sq] || '')) drift = drift || 'after ' + uci + ', ' + sq + ' is "' + (mine[sq] || '') + '" here and "' + (SP.b[i] || '') + '" on the referee';
+            }
+          });
+          ok(sysP && sysP.side === 'b' && wantP.length >= 6 && drift === ''
+             && pircRows.map((r) => r.join(' ')).join('|') === wantP.join('|'),
+            '⭐⭐ the moves that appear on Princess\'s board ARE the Academy\'s Pirc: same squares, same order, legal on the site\'s referee',
+            drift || wantP.join(' · '));
+          const doneFn = fnGd(hm, 'pirc_done');
+          ok(/return now % \(PIRC\.size\(\) \+ 1\) if GameState\.dogs_play else 0/.test(doneFn)
+             && /if _left\.is_empty\(\) and GameState\.dogs_play:\s*\n\s*var k := NateHome\.pirc_done\(\)\s*\n\s*scene\["pieces"\] = NateHome\.pirc_pieces\(k\)\s*\n\s*if k > 0:\s*\n\s*scene\["line"\] = MOVED/.test(fnInM(hbM, '_look'))
+             && /if GameState\.dogs_play:\s*\n\s*var out_at := 1 if NateHome\.pirc_done\(\) > 0 else -1/.test(fnInM(hbM, '_draw')),
+            '⛑⛑ one more of them each check-in, then she sets it up again — and NOT ONE before the secret is out',
+            'a piece moved properly while you were away IS the secret');
+          const movedLine = (/const MOVED := "([^"]*)"/.exec(hbM) || [0, ''])[1];
+          ok(movedLine.startsWith('Princess ') && !/\b(said|says|thinks?|told)\b/i.test(movedLine)
+             && !/func (legal|attack|is_attacked|gen_moves|in_check|can_move|moves_for)/.test(hm),
+            '⛑ ONLY HUMANS TALK, and NO CHESS IN GODOT: what she did, starting with her name; what moved is DATA', movedLine);
         }
 
         /* ══ Pawn Crossing: things in the lanes · abilities · their openings · the tide — 2026-10-10 ══ */
@@ -5061,7 +5307,7 @@ const server = http.createServer((req, res) => {
             '⛑ Princess tests every step against the physics space  (water, trunks, houses, fences)');
           ok(/q\.exclude = \[\(_body\.get_parent\(\) as StaticBody2D\)\.get_rid\(\)\]/.test(npcT),
             '⛑⛑ …and a SOLID walker excludes its own body, or every query hits itself and the check does nothing',
-            'Crockett, Argus and every solid person carry a StaticBody2D; Princess does not');
+            'Milo, Argus and every solid person carry a StaticBody2D; Princess does not');
           ok(/if _blocked\(global_position\):\s*\n\t\tglobal_position = want/.test(npcT),
             '⚠⚠ …and anybody already inside something can still walk out  [[down-never-stuck]]');
           ok(/var ax := Vector2\(want\.x, global_position\.y\)/.test(npcT)
@@ -5222,7 +5468,7 @@ const server = http.createServer((req, res) => {
           const paceW = fnGd(dogW, '_pace');
           ok(/_gait \+= _step_toward\(/.test(paceW)
             && !/global_position = _to|global_position = to/.test(bareW(paceW)),
-            '⛑⛑ …and Crockett\'s pace does too — the one gait in dog.gd that never checked');
+            '⛑⛑ …and Milo\'s pace does too — the one gait in dog.gd that never checked');
           /* ⚠⚠ A GAIT PACED OFF THE STEP REQUESTED skates on the spot against a wall. */
           ok(/-> Vector2:/.test(fnGd(npcW, '_step_toward'))
             && /return global_position - was/.test(fnGd(npcW, '_step_toward')),
