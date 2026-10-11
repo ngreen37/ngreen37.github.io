@@ -4684,6 +4684,161 @@ const server = http.createServer((req, res) => {
             '⚠ a speaker freed mid-line is checked before it is handed on  (found by a probe, 10-10)');
         }
 
+        /* ══ nobody in town is your twin — 2026-10-11 ══ */
+        /* his, 2026-09-20: "fine if everyone looks the same for now" · 2026-10-11: "play the skeptic on checker town, fix the worst thing you can find … This will be a game I'll eventually want to preview and sell on Steam, so think big." */
+        {
+          const ppl = code(rd('people_sheet.gd')), npcP = code(rd('npc.gd')), chP = code(rd('challenger.gd'));
+          const parkP = code(rd('park.gd')), cbP = code(rd('chessboard.gd')), plP = code(rd('player.gd'));
+          const zlib = require('zlib');
+          const tbl = (src, name) => Object.fromEntries([...((new RegExp('const ' + name + ' := \\{([\\s\\S]*?)\\}').exec(src) || [0, ''])[1])
+            .matchAll(/"([^"]+)": "([0-9a-fA-F]{6})"/g)].map((m) => [m[1], m[2].toLowerCase()]));
+          const AURA = tbl(ppl, 'AURA'), OWN = tbl(ppl, 'OWN');
+
+          /* ── a bench seat wears the color you win from it on the site ── */
+          const ptHtml = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
+          const prof = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+          const siteAura = Object.fromEntries([...ptHtml.matchAll(/^\s{4}(\w+):\s*\{ name: '[^']*',[^\n]*?aura: '(\w+)'/gm)].map((m) => [m[1], m[2]]));
+          const siteHex = Object.fromEntries([...((/var AURAS = \{([\s\S]*?)\};/.exec(prof) || [0, ''])[1])
+            .matchAll(/(\w+):\s*'#([0-9a-fA-F]{6})'/g)].map((m) => [m[1], m[2].toLowerCase()]));
+          const offSite = Object.keys(AURA).filter((k) => !siteAura[k] || siteHex[siteAura[k]] !== AURA[k]);
+          const benchPeople = [...parkP.matchAll(/\{ "key": "([a-z]+)",\s*"who": "([^"]+)"/g)].map((m) => [m[1], m[2]])
+            .filter(([, who]) => !new RegExp('"' + who + '":\\s+\\[Color').test(dg));
+          const bare = benchPeople.filter(([k]) => !AURA[k]).map(([k]) => k);
+          ok(Object.keys(AURA).length >= 7 && offSite.length === 0 && benchPeople.length >= 6 && bare.length === 0 && !!AURA.ceo,
+            '⭐ everybody with a seat on the bench wears the color you win from them on the site',
+            offSite.length || bare.length ? 'not the site\'s: ' + offSite.join(' ') + '  no row: ' + bare.join(' ')
+              : Object.keys(AURA).map((k) => k + ' ' + siteAura[k]).join(' · '));
+
+          /* ── RE-DERIVED: every look, worked out again here, and no two of them mixable ── */
+          const salt = (s) => { let h = 7; for (const ch of s) h = (h * 31 + ch.codePointAt(0)) % 100003; return h; };
+          const rgb = (hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+          const fromHsv = (h, s, v) => {
+            const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+            return [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][((i % 6) + 6) % 6];
+          };
+          const lookFn = fnGd(ppl, 'look_of');
+          const hueFn = /Color\.from_hsv\(float\(_salt\(who\) % 360\) \/ 360\.0, ([\d.]+), ([\d.]+)\)/.exec(lookFn);
+          const shirtOf = (who, key) => AURA[key] ? rgb(AURA[key]) : OWN[who] ? rgb(OWN[who])
+            : hueFn ? fromHsv((salt(who) % 360) / 360, +hueFn[1], +hueFn[2]) : [0, 0, 0];
+          const cast = benchPeople.map(([k, who]) => [who, k]).concat([['The CEO', 'ceo']], Object.keys(OWN).map((w) => [w, '']));
+          const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+          const NAVY = (/uniform vec3 shirt = vec3\(([\d.]+), ([\d.]+), ([\d.]+)\)/.exec(ppl) || []).slice(1).map(Number);
+          let closest = 9, pair = '';
+          const twins = [];
+          cast.forEach(([a, ka], i) => cast.slice(0, i).forEach(([b, kb]) => {
+            const d = dist(shirtOf(a, ka), shirtOf(b, kb));
+            if (d === 0) { twins.push(a + '=' + b); return; }
+            if (d < closest) { closest = d; pair = a + ' / ' + b; }
+          }));
+          const likeHim = cast.concat([['Somebody New', '']]).filter(([w, k]) => dist(shirtOf(w, k), NAVY) < 0.3).map(([w]) => w);
+          ok(cast.length >= 11 && hueFn && NAVY.length === 3 && closest >= 0.18 && likeHim.length === 0
+             && twins.join(' ') === 'Puzzle Champ=The CEO',
+            '⭐⭐ NOBODY IS YOUR TWIN: eleven named people, no two shirts you could mix up, and nobody\'s is his navy',
+            likeHim.length ? 'too like his: ' + likeHim.join(' ') : 'closest ' + closest.toFixed(2) + ' (' + pair + '); the CEO and the Champ share gold and never a room'
+              + (twins.length !== 1 ? '  ⚠ same shirt: ' + twins.join(' ') : ''));
+          ok(/\n\tif set\.has\("shirt"\):[^\n]*\n[^\n]*\n\telif AURA\.has\(key\):[^\n]*\n[^\n]*\n\telif OWN\.has\(who\):/.test(lookFn)
+             && /const LOOKS := \{/.test(ppl) && !/\bhash\(/.test(lookFn + fnGd(ppl, '_salt')) && !/rand/.test(lookFn),
+            '…and a look is worked out from the NAME: his own row first, then the bench, then their own color, then a hue of their own',
+            '⚠ never rolled and never hash(): Robert in the Academy is Robert at his table, and this file works it out again');
+
+          /* ── the shader's three bands, held to the pixels of the sheet it dresses ── */
+          const readPng = (file) => {
+            const b = fs.readFileSync(file);
+            let at = 8, w = 0, h = 0, type = -1, depth = 0, lace = 0;
+            const idat = [];
+            while (at < b.length) {
+              const len = b.readUInt32BE(at), name = b.toString('ascii', at + 4, at + 8);
+              if (name === 'IHDR') { w = b.readUInt32BE(at + 8); h = b.readUInt32BE(at + 12); depth = b[at + 16]; type = b[at + 17]; lace = b[at + 20]; }
+              if (name === 'IDAT') idat.push(b.subarray(at + 8, at + 8 + len));
+              at += 12 + len;
+            }
+            const bpp = type === 6 ? 4 : type === 2 ? 3 : 0;
+            if (!bpp || depth !== 8 || lace !== 0) return null;
+            const raw = zlib.inflateSync(Buffer.concat(idat)), line = w * bpp, out = Buffer.alloc(w * h * bpp);
+            for (let y = 0; y < h; y++) {
+              const f = raw[y * (line + 1)], src = y * (line + 1) + 1, dst = y * line;
+              for (let x = 0; x < line; x++) {
+                const a = x >= bpp ? out[dst + x - bpp] : 0, up = y ? out[dst + x - line] : 0, ul = y && x >= bpp ? out[dst + x - line - bpp] : 0;
+                const pa = Math.abs(up - ul), pb = Math.abs(a - ul), pc = Math.abs(a + up - 2 * ul);
+                const pred = f === 0 ? 0 : f === 1 ? a : f === 2 ? up : f === 3 ? (a + up) >> 1 : (pa <= pb && pa <= pc ? a : pb <= pc ? up : ul);
+                out[dst + x] = (raw[src + x] + pred) & 255;
+              }
+            }
+            return { w, h, bpp, px: out };
+          };
+          const dressSrc = (/const DRESS := """([\s\S]*?)"""/.exec(rd('people_sheet.gd')) || [0, ''])[1];
+          const band = [
+            /if \(k\.x > ([\d.]+) && k\.x < ([\d.]+) && k\.y > ([\d.]+)\) \{\s*\n\s*c = shirt \*/.exec(dressSrc),
+            /else if \(k\.x > ([\d.]+) && k\.x < ([\d.]+) && k\.y > ([\d.]+)\) \{\s*\n\s*c = hair \*/.exec(dressSrc),
+            /else if \(k\.y < ([\d.]+) && k\.z < ([\d.]+)\) \{\s*\n\s*c = cap \*/.exec(dressSrc),
+          ];
+          const sheetPng = fs.existsSync(path.join(GD, 'people_idle.png')) ? readPng(path.join(GD, 'people_idle.png')) : null;
+          const share = { shirt: 0, hair: 0, cap: 0, skin: 0, n: 0 };
+          if (sheetPng && sheetPng.bpp === 4 && band.every(Boolean)) {
+            const p = sheetPng.px;
+            for (let i = 0; i < p.length; i += 4) {
+              if (p[i + 3] < 128) continue;
+              share.n++;
+              const r = p[i] / 255, g = p[i + 1] / 255, bl = p[i + 2] / 255, v = Math.max(r, g, bl), d = v - Math.min(r, g, bl);
+              const s = v ? d / v : 0;
+              let hh = 0;
+              if (d) hh = (v === r ? ((g - bl) / d + 6) % 6 : v === g ? (bl - r) / d + 2 : (r - g) / d + 4) / 6;
+              if (hh > +band[0][1] && hh < +band[0][2] && s > +band[0][3]) share.shirt++;
+              else if (hh > +band[1][1] && hh < +band[1][2] && s > +band[1][3]) share.hair++;
+              else if (s < +band[2][1] && v < +band[2][2]) share.cap++;
+              else if ((hh < 0.10 || hh > 0.93) && v >= 0.34) share.skin++;
+            }
+          }
+          const pct = (k) => share.n ? 100 * share[k] / share.n : 0;
+          ok(sheetPng && share.n > 50000 && pct('shirt') >= 25 && pct('hair') >= 3 && pct('cap') >= 15 && pct('skin') >= 8,
+            '⚠⚠ DRESS finds his shirt, his hair and his cap in the sheet as it is baked today',
+            sheetPng ? 'shirt ' + pct('shirt').toFixed(1) + '% · hair ' + pct('hair').toFixed(1) + '% · cap and boots ' + pct('cap').toFixed(1)
+              + '% · skin left alone ' + pct('skin').toFixed(1) + '%   ⚠ repaint nate.glb and these three bands must be measured again'
+              : 'people_idle.png could not be read as an 8-bit RGBA PNG');
+          ok(!/texture\(\s*TEXTURE/.test(dressSrc) && /varying vec4 tint;/.test(dressSrc) && /void vertex\(\) \{\s*\n\s*tint = COLOR;/.test(dressSrc)
+             && /vec3 texel = COLOR\.rgb \/ max\(tint\.rgb, vec3\(0\.0001\)\);/.test(dressSrc) && /COLOR\.rgb = c \* tint\.rgb;/.test(dressSrc),
+            '⚠⚠ …and it reads the picture by dividing the modulate back out, never by sampling again',
+            'a name, a shadow or a table drawn by the same node is plain white to it, and is left alone');
+          const capM = /var cap := Color\.from_hsv\(shirt\.h, clampf\(shirt\.s \+ [\d.]+, [\d.]+, [\d.]+\), ([\d.]+)\)/.exec(lookFn);
+          const lightCaps = [...((/const LOOKS := \{([\s\S]*?)\n\}/.exec(ppl) || [0, ''])[1]).matchAll(/"cap": "([0-9a-fA-F]{6})"/g)]
+            .filter((m) => Math.max(...rgb(m[1])) > 0.5).map((m) => m[1]);
+          ok(capM && +capM[1] <= 0.5 && lightCaps.length === 0,
+            '⚠ every cap is a DEEP shade — the band that finds a cap finds an eye too, and a light cap is two light eyes',
+            lightCaps.join(' ') || 'value ' + (capM ? capM[1] : '?'));
+          const wideM = /const WIDE := Vector2\(([\d.]+), ([\d.]+)\)/.exec(ppl), tallM = /const TALL := Vector2\(([\d.]+), ([\d.]+)\)/.exec(ppl);
+          const spans = wideM && tallM ? [+wideM[1], +wideM[1] + 4 * +wideM[2], +tallM[1], +tallM[1] + 4 * +tallM[2]] : [];
+          ok(spans.length === 4 && spans.every((x) => x >= 0.93 && x <= 1.08) && spans[1] - spans[0] >= 0.08 && spans[3] - spans[2] >= 0.08
+             && /float\(b % 5\) \* WIDE\.y/.test(lookFn) && /float\(\(b \/ 7\) % 5\) \* TALL\.y/.test(lookFn),
+            '…and a build is within eight in a hundred of his, five steps wide and five tall',
+            spans.map((x) => x.toFixed(2)).join(' '));
+
+          /* ── everybody who wears the model is dressed, once, in one place ── */
+          ok(/\n\tif wears_model\(\):\s*\n\s*var look := TownPeople\.dress\(self, who, bench_key\(\)\)\s*\n\s*body_color = look\["shirt"\]\s*\n\s*_build = look\["build"\]/.test(fnGd(npcP, '_ready_extra'))
+             && /func bench_key\(\) -> String:\s*\n\s*return ""/.test(npcP) && /func bench_key\(\) -> String:\s*\n\s*return key/.test(chP)
+             && /TownPlayerModel\.TALL \* _build\.y\) if wears_model\(\)/.test(fnGd(npcP, '_top'))
+             && /TownPeople\.draw_person\(self, Vector2\(0\.0, TownPlayer\.FEET\), _facing, _phase01, _walking, 18\.75, _build\)/.test(npcP),
+            '⭐ a person is dressed as they arrive: their shirt is the color they speak in, and the nameplate sits over THEIR head');
+          ok(/if not _animal:\s*\n\s*_build = TownPeople\.dress\(self, who, key\)\["build"\]/.test(parkP)
+             && /TownPeople\.draw_person\(self, Vector2\(0\.0, SEAT_FEET\), Vector2\.DOWN, _phase01, false, 18\.75, _build\)/.test(parkP)
+             && /var look := TownPeople\.dress\(self, "Murphy", ""\)\s*\n\s*_build = look\["build"\]\s*\n\s*ink = look\["shirt"\]/.test(cbP)
+             && /TownPeople\.draw_person\(self, Vector2\.ZERO, _facing\(\), _phase, false, 18\.75, _build\)/.test(cbP),
+            '…the six at the tables and Murphy at the nightmare\'s board the same way, in the same clothes');
+          /* ⚠ A DOG'S IS ITS COAT (dog.gd), and that one assignment is the only other one there may be. */
+          const byHand = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && f !== 'npc.gd' && f !== 'dog.gd')
+            .filter((f) => /\.body_color = /.test(code(rd(f))));
+          ok(byHand.length === 0 && !/TownPeople\.dress/.test(plP + dg)
+             && (dg.match(/\.body_color = /g) || []).length === 1 && /dog\.body_color = coat\[0\]/.test(dg),
+            '⚠⚠ ONE SOURCE: nobody sets a person\'s color by hand, and neither you nor a dog is dressed by it',
+            byHand.join(' ') || 'six hand-set colors retired into TownPeople; a dog\'s is its coat');
+          const dressFn = fnGd(ppl, 'dress');
+          ok(/if not _worn\.has\(who\):/.test(dressFn) && /ci\.material = _worn\[who\]/.test(dressFn)
+             && /static var _worn: Dictionary = \{\}/.test(ppl) && !/modulate|apply_tint/.test(dressFn)
+             && /Rect2\(feet \+ \(r\.position - feet\) \* build, r\.size \* build\)/.test(fnGd(ppl, 'draw_person'))
+             && /Vector2\(build\.x, 0\.34\)/.test(fnGd(ppl, 'draw_person')),
+            '⭐ still ONE sheet: one material a person for the session, the figure and its shadow grown from the heels',
+            'not `modulate` and not apply_tint — white under the key light times a color is that color flat');
+        }
+
         /* ══ a board each · the pieces change when you check back in · Milo — 2026-10-10 ══ */
         /* his: "please continue.  And then, when you check back in to checker town it would be cool if some of the pieces changed.  Make three boards, one for each dog.  Crockett's has pieces all over the place.  Change that dog's name to Milo.  Instead of one eye with black fur around it make it both. Keep the coat white with black spots." */
         {
