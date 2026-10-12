@@ -4433,7 +4433,7 @@ const server = http.createServer((req, res) => {
           ok(/_cap\.size\.x = [^\n]+\n\s*_cap\.text = ""\s*\n\s*_cap\.text = str\(scene\.get\("line", ""\)\)\s*\n\s*_cap\.size\.y = 0\.0/.test(bv),
             '⚠⚠ …and its caption is measured WIDTH, then TEXT, then height',
             'a new Label is nothing wide: text first comes back taller than the screen');
-          ok(/TownUI\.FINGER_CSS \* \(ui\.css_unit\(\)/.test(bv) && /func css_unit\(\) -> float:/.test(ui2),
+          ok(/var bh: float = TownUI\.finger\(self\)/.test(bv) && /func css_unit\(\) -> float:/.test(ui2),
             '⚠ its buttons are a thumb tall in CSS pixels  (44 * k is 38px on his phone)');
           ok(/if _out >= 0\.0 or _t < DWELL or running\(\) or/.test(fnGd(bv, '_press'))
              && /elif running\(\):\s*\n\s*if accept:\s*\n\s*_lt = DONE/.test(fnGd(bv, '_unhandled_input')),
@@ -4682,6 +4682,168 @@ const server = http.createServer((req, res) => {
             '…and a mark goes as the box shuts, not half a second later');
           ok(/if is_instance_valid\(b\.who\):\s*\n\s*_poke\(b\.who\)/.test(fnGd(spN, '_drop')),
             '⚠ a speaker freed mid-line is checked before it is handed on  (found by a probe, 10-10)');
+        }
+
+        /* ══ a thumb · a name under the HUD · a line under USE · the map's names — 2026-10-12 ══ */
+        /* his: "Great please work through the Seen and Not Fixed" */
+        {
+          const uiS = code(rd('town_ui.gd')), znS = code(rd('zone.gd')), jrS = code(rd('journal.gd'));
+          const papS = code(rd('paper.gd')), phoS = code(rd('photo.gd')), lkS = code(rd('lookout.gd'));
+          const itS = code(rd('interactable.gd')), padS = code(rd('touch_pad.gd')), twS = code(rd('town.gd'));
+          const mapS = code(rd('map.gd')), ptlS = code(rd('portal.gd')), drS = code(rd('door.gd'));
+          const n1 = (re, src) => { const m = re.exec(src); return m ? +m[1] : NaN; };
+
+          /* ── 1 · every button is a thumb tall ── */
+          ok(/return maxf\(FINGER_CSS \* TownZone\.ui_scale\(n\), FINGER_CSS \* \(ui\.css_unit\(\) if ui != null else 1\.0\)\)/
+               .test(fnGd(uiS, 'finger')) && /static func finger\(n: Node\) -> float:/.test(uiS),
+            '⛑ ONE answer to "how tall is a button": 44 scaled units, and never under 44 CSS px on the glass',
+            '44 * ui_scale alone was 38 CSS px on his phone (352x560), on every button that used it');
+          {
+            /* every file that makes a Button, found, not listed */
+            const makers = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && /Button\.new\(\)/.test(code(rd(f))));
+            const flat = makers.filter((f) => /Vector2\([^()\n]*, 44\.0 \* _?k\)|= 44\.0 \* _?k\s*$/m.test(code(rd(f))));
+            const off = makers.filter((f) => f !== 'town_ui.gd' && !/TownUI\.finger\(self\)/.test(code(rd(f))));
+            ok(makers.length >= 7 && flat.length === 0 && off.length === 0,
+              '⛑ …and every file that makes a button asks it  (the Journal\'s nine, the corner tab, the paper, the telescope, the camera, the board)',
+              makers.length + ' files make buttons; still 44 * k: ' + (flat.join(' ') || 'none') + '; never ask: ' + (off.join(' ') || 'none'));
+          }
+          ok(/_btns\[i\]\.size = Vector2\(bw, bh\)/.test(jrS) && /_sound\.size = Vector2\(w2, bh\)/.test(jrS)
+             && /_btns\[TABS\.size\(\)\]\.size = Vector2\(w2, bh\)/.test(jrS) && /zb\.size = Vector2\(zw, bh\)/.test(jrS),
+            '   the Journal: its four tabs, Sound, Close and the three time-zone buttons');
+          {
+            /* ⚠ ON A DESKTOP NOTHING MOVES: a thumb there is 44, and each new sum is the old number. */
+            const row = n1(/var row2: float = 50\.0 \* k \+ \(\(bh \+ ([\d.]+) \* k\) if narrow else 0\.0\)/, jrS);
+            const top = n1(/_top = row2 \+ bh \+ ([\d.]+) \* k/, jrS);
+            const bar = n1(/var bar: float = \(bh \+ ([\d.]+) \* k\) if town else 0\.0/, jrS);
+            const zy = n1(/float\(i\) \* \(zw \+ 6\.0 \* k\), h - ([\d.]+) \* k - bh\)/, jrS);
+            const pc = n1(/_card\.size\.y - ([\d.]+) \* _k - _bh\)/, papS), pb = n1(/var bottom: float = h - ([\d.]+) \* k - _bh/, papS);
+            const fy = n1(/b\.position = Vector2\(x, s\.y - ([\d.]+) \* _k - _bh\)/, phoS);
+            const fh = n1(/s\.x - tw - 12\.0 \* _k, s\.y - ([\d.]+) \* _k - _bh\)/, phoS);
+            const ly = n1(/_close\.position = Vector2\(s\.x - 124\.0 \* k, s\.y - ([\d.]+) \* k - bh\)/, lkS);
+            const sums = [50 + 44 + row, 44 + top, 44 + bar, 44 + zy, 44 + pc, 44 + pb, 44 + fy, 44 + fh, 44 + ly];
+            ok(sums.join(' ') === '100 54 54 62 58 70 56 66 58',
+              '⚠ …each hung from the edge it was hung from, so on a desktop every one is where it was',
+              'old numbers 100 54 54 62 58 70 56 66 58, now ' + sums.join(' '));
+          }
+          {
+            const sh = fnGd(znS, '_scale_hud');
+            ok(/_tab\.offset_bottom = 12\.0 \* k \+ TownUI\.finger\(self\)/.test(sh)
+               && /_dial\.position = Vector2\(w - 110\.0 \* k, 62\.0 \* k\)\s*\n\s*_dial\.position\.y \+= TownUI\.finger\(self\) - 44\.0 \* k/.test(sh),
+              '   the corner tab too, and the clock goes down by exactly what the tab grew  (nothing, on a desktop)');
+          }
+          ok(/var under: bool = not _bar\.is_empty\(\) and _bar\[0\]\.position\.x < s\.x \* 0\.5 \+ 12\.0 \* k/.test(phoS)
+             && /\(s\.y - 40\.0 \* k - _bh\) if under else \(s\.y - 20\.0 \* k\)/.test(phoS),
+            '⚠ and the camera\'s "Saved" line is written over the buttons where they reach the left edge',
+            'on a phone the three buttons span the screen and are drawn on top of it: "Take it" answered with nothing');
+
+          /* ── 2 · a name in the world gets out of the HUD's way ── */
+          {
+            const sg = fnGd(itS, '_sign'), tk = fnGd(itS, '_sign_tick'), ho = fnGd(znS, 'hud_over');
+            ok(/_sign_box = Rect2\(at - Vector2\(0\.0, float\(fs\)\), wide\)/.test(sg) && /add_to_group\("town_sign"\)/.test(sg)
+               && /if not _sign_off:\s*\n\s*draw_string\(f, at, text,/.test(sg),
+              '⛑ a name over a door or a head is written by ONE function, which knows where it belongs');
+            ok(/func _sign\(f: Font, at: Vector2, text: String, fs: int, col: Color, below: Vector2 = Vector2\.INF\) -> void:/.test(itS)
+               && /_sign_low = Rect2\(below - Vector2\(0\.0, float\(fs\)\), wide\) if below\.is_finite\(\) else Rect2\(\)/.test(sg)
+               && /elif below\.is_finite\(\):\s*\n\s*draw_string\(f, below, text,/.test(sg),
+              '⛑ …and a DOOR gives it a second place, under the building, where it goes instead of nowhere',
+              'the Academy\'s room cannot scroll on a phone: a name that only hid left its three lessons with no names');
+            ok(/z\.hud_over\(get_global_transform_with_canvas\(\) \* _sign_box\)/.test(tk)
+               && /if off != _sign_off:\s*\n\s*_sign_off = off\s*\n\s*queue_redraw\(\)/.test(tk),
+              '⛑ …and it is not written while the HUD is standing on it  (asked on the SCREEN: the camera follows you)',
+              'the top band had eaten a name five times and every fix was an offset, right for one camera position');
+            ok(/if not is_instance_valid\(_hud\) or not _hud\.visible:\s*\n\s*return false/.test(ho)
+               && /r = r\.grow\(10\.0 \* TownZone\.ui_scale\(self\)\)/.test(ho)
+               && /_stat\.visible and r\.intersects\(Rect2\(_stat\.position, _stat\.get_minimum_size\(\)\)\)/.test(ho)
+               && /r\.intersects\(_tab\.get_global_rect\(\)\)/.test(ho) && /r\.intersects\(Rect2\(_dial\.position, _dial\.size\)\)/.test(ho),
+              '   the HUD is the stat row\'s TEXT, the Journal tab and the clock, and a little air round each',
+              '⚠ the Label is 760 wide whatever it says: its whole box would hide every name in the top band');
+            const watch = znS.slice(znS.indexOf('class SignWatch extends Node:'));
+            ok(/class SignWatch extends Node:/.test(znS) && /add_child\(SignWatch\.new\(\)\)/.test(fnGd(znS, '_build_hud'))
+               && /for n in get_tree\(\)\.get_nodes_in_group\("town_sign"\):\s*\n\s*\(n as Interactable\)\._sign_tick\(\)/.test(watch),
+              '⚠ one walk a frame over every name in the room  (a tick per class would have lost the dogs: they override _process)');
+            /* the six places a name floats, each through _sign() */
+            /* ⚠ FOUR OF THEM ARE DOORS WITH GROUND IN FRONT, and say where under themselves the name goes.
+               The way out stands on the bottom wall and a head has nowhere else: those two just step aside. */
+            const sites = [
+              ['door.gd', /_sign\(f, Vector2\(-w \* 0\.5, -half\.y - 62\.0\), sign_text, fs, Color\("f2e9ff"\),\s*\n\s*Vector2\(-w \* 0\.5, half\.y \+ 30\.0 \+ float\(fs\)\)\)/],
+              ['town.gd', /_sign\(f, Vector2\(-w \* 0\.5, -half\.y - 16\.0\), text, fs, Color\("f2e9ff"\) if open else Color\("9a94a8"\),\s*\n\s*Vector2\(-w \* 0\.5, 62\.0 \+ float\(fs\)\)\)/],
+              ['town.gd', /_sign\(f, Vector2\(-tw \* 0\.5, -size\.y - 38\.0\), t, 15, Color\("f2e9ff"\), Vector2\(-tw \* 0\.5, 34\.0\)\)/],
+              ['depths.gd', /_sign\(f, Vector2\(-tw \* 0\.5, -size\.y - 22\.0\), s, 15, PitHead\.AMBER, Vector2\(-tw \* 0\.5, 34\.0\)\)/],
+              ['exit_door.gd', /_sign\(f, Vector2\(-tw \* 0\.5, -h - 30\.0\), sign_text, fs, Color\("f2e9ff"\)\)/],
+              ['npc.gd', /_sign\(f, Vector2\(-w \* 0\.5, _top\(\) - 10\.0\), who, fs, Color\("f2e9ff"\)\)/]];
+            const lost = sites.filter((s) => !s[1].test(code(rd(s[0])))).map((s) => s[0]);
+            ok(lost.length === 0,
+              '⛑ …every one of them: a door, the grove, the west gate and the cage (each with its place below), the way out, and anybody\'s head',
+              lost.length ? 'not through _sign(), or its place below is gone: ' + lost.join(' ') : '6 of 6');
+          }
+
+          /* ── 3 · the box's line goes round USE ── */
+          {
+            const lay = fnGd(uiS, '_layout'), rnd = fnGd(uiS, '_round_use'), use = fnGd(padS, 'use_rect');
+            ok(/if not _seen_touch or _talking\(\):\s*\n\s*return Rect2\(\)/.test(use)
+               && /var r := \(R_BTN \+ 2\.0\) \* k\(\)\s*\n\s*return Rect2\(_btn_at\(\) - Vector2\(r, r\), Vector2\(r, r\) \* 2\.0\)/.test(use),
+              '⛑ the pad says where it is painting USE, and "nowhere" while it paints none');
+            ok(/if _use\.has_area\(\):/.test(rnd) && /_line\.get_character_bounds\(i\)/.test(rnd)
+               && /var rad: float = _use\.size\.x \* 0\.5 \+ GAP_CSS \* _css_unit\(\)/.test(rnd)
+               && /if c\.distance_squared_to\(near\) <= rad \* rad:/.test(rnd),
+              '⛑⛑ the box asks the LABEL where each letter landed, and measures it against the disc',
+              'a Pawn Crossing banner read "when that k[USE]ight jumps": the pad is a layer above the box');
+            ok(/var cut := t\.rfind\(" ", hit\) if hit > 0 else -1/.test(rnd) && /if cut <= 0 or cut < t\.rfind\("\\n", hit\):\s*\n\s*break/.test(rnd)
+               && /_line\.text = head \+ "\\n" \+ t\.substr\(cut \+ 1\)\.lstrip\(" "\)/.test(rnd) && /for _pass in 8:/.test(rnd),
+              '   …and breaks the line BEFORE the first word under it, again for each row beside the button',
+              'rows below the button keep the whole width; a word that already starts its row is left alone');
+            ok(/var top: float = at\.y \+ r\.position\.y \+ r\.size\.y \* 0\.2/.test(rnd),
+              '⚠ the INK, not the row: the top fifth of a row is air, and counting it narrows the row below USE');
+            ok(!/^\s*while\b/m.test(uiS), '⚠ and there is no open-ended loop anywhere in the box');
+            /* the line as it was said is kept apart from the broken copy */
+            const writes = (uiS.match(/_line\.text = /g) || []).length;
+            ok(writes === 4 && /func _put\(text: String\) -> void:\s*\n\s*_raw = text\s*\n\s*_line\.text = text/.test(uiS)
+               && /_put\(Speech\.no_break\(text\)\)/.test(fnGd(uiS, 'say')) && /_put\(Speech\.no_break\(line\)\)/.test(fnGd(uiS, 'talk'))
+               && /_put\(line\)/.test(fnGd(uiS, 'retell')) && /var was := _line\.text\s*\n\s*if was != _raw:\s*\n\s*_line\.text = _raw/.test(rnd),
+              '⛑ what was SAID is kept whole: every line comes in through _put(), and each layout breaks a fresh copy',
+              writes + ' places write the label (wanted 4: _put, the reset, and the two in _round_use)');
+            ok(/_use = _use_now\(\)\s*\n\s*_line\.add_theme_font_size_override\("font_size", int\(18\.0 \* k\)\)\s*\n\s*if _line\.text != _raw:\s*\n\s*_line\.text = _raw\s*\n\s*var pad := PAD \* k/.test(lay),
+              '⚠ …at full size and unbroken BEFORE anything is measured  (a say box measured off the idle line\'s small type is too short)');
+            ok(/if _mode != TALK and _use_now\(\) != _use:\s*\n\s*_layout\(\)/.test(fnGd(uiS, '_process')),
+              '⚠ and the box asks every frame: the pad shows USE on the first touch, long after the box was laid out');
+            ok(/line_h \+= grow\s*\n\s*for _pass in 5:\s*\n\s*if look != SAY or not _round_use\(Vector2\(x \+ pad, vp\.y - h - 12\.0 \* k \+ 14\.0 \* k\)\):\s*\n\s*break/.test(lay)
+               && /h = minf\(h \+ more, vp\.y - 24\.0 \* k\)\s*\n\s*line_h \+= more/.test(lay),
+              '⛑ a line SAID in the box goes round too, and the box grows for the row a break adds  (growth only)');
+            const step = n1(/int\(18\.0 \* k \* \(1\.0 - ([\d.]+) \* float\(step\)\)\)/, lay), steps = n1(/for step in (\d+):/, lay);
+            ok(/_raw = _prompt if _prompt != "" else _hint/.test(lay) && /_round_use\(_root\.position \+ _line\.position\)/.test(lay)
+               && /var fit: float = vp\.y - 8\.0 \* k - \(y \+ _line\.position\.y\)/.test(lay)
+               && /_line\.size\.y = 0\.0\s*\n\s*if _line\.size\.y <= fit:\s*\n\s*break/.test(lay)
+               && Math.abs(1 - step * (steps - 1) - 0.7) < 1e-9,
+              '⛑ the walking-around line ends above the bottom of the screen or its type comes down, to 70% and no further',
+              'nothing may push this bar UP: Pawn Crossing\'s hand sits on top of it on a phone  (' + steps + ' steps of ' + step + ')');
+          }
+
+          /* ── 4 · the map names places, not buttons ── */
+          {
+            ok(/^var map_name: String = ""$/m.test(drS) && /if d\.map_name != "":\s*\n\s*return d\.map_name\s*\n\s*var s := d\.sign_text\.strip_edges\(\)/.test(fnGd(mapS, 'short_name')),
+              '⛑ a door can tell the map its name, and the map asks that first');
+            const re = fnGd(ptlS, '_ready_extra');
+            ok(/map_name = GameState\.pack_name\(pack\)/.test(re) && /map_name = str\(GAMES\[game\]\["name"\]\)/.test(re)
+               && /home\.map_name = "Home"/.test(fnGd(twS, '_furnish_home')),
+              '⛑ …a ring by its game and your checker by the game\'s own word for it',
+              'all three rings read "Step into the portal", and inside your house the map said "You are inside: Go inside."');
+            /* ⚠ AND NOTHING ELSE ON THE MAP IS A VERB: map.gd's own rule, run over every door the town gives a scene. */
+            const short = (s) => {
+              for (const cut of [',', ' — ', ' - ']) if (s.includes(cut)) s = s.slice(0, s.indexOf(cut));
+              for (const pre of ['Enter the ', 'Enter ', 'Into the ', 'Play ']) if (s.startsWith(pre)) s = s.slice(pre.length);
+              return s.trim();
+            };
+            const verbs = [];
+            for (const m of twS.matchAll(/^\t(\w+)\.prompt_text = "([^"]+)"/gm)) {
+              const v = m[1];
+              if (!new RegExp('^\\t' + v + '\\.scene_path = ', 'm').test(twS)) continue;      /* not a door with a room behind it */
+              const sign = new RegExp('^\\t' + v + '\\.sign_text = "([^"]+)"', 'm').exec(twS);
+              const named = new RegExp('^\\t' + v + '\\.map_name = "([^"]+)"', 'm').exec(twS);
+              const name = named ? named[1] : short(sign ? sign[1] : m[2]);
+              if (/^(Go|Step|Read|Ride|Look|Walk|Open|Sit|Use)\b/.test(name)) verbs.push(v + ' = "' + name + '"');
+            }
+            ok(verbs.length === 0, '⚠ …and no door the town gives a room to reads as a verb on the map', verbs.join(' · ') || 'all nouns');
+          }
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
