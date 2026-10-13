@@ -546,8 +546,10 @@
       <button id="opt-fog" class="on" aria-pressed="true">Fog of War · On</button>
       <button id="opt-cards" class="on" aria-pressed="true">Event Cards · On</button>
     </div>
-    <button class="btn" id="resume" hidden>Continue the campaign</button>
-    <button class="btn" id="go">Begin the campaign</button>
+    <!-- ⚠ ONE GROUP, AND CONTINUE IS FIRST: from the town the first one SHOWING is pressed (the game
+         layout's town-start script), and Begin over a saved campaign would start it again. -->
+    <button class="btn" id="resume" data-town-start="1" hidden>Continue the campaign</button>
+    <button class="btn" id="go" data-town-start="1">Begin the campaign</button>
     <div class="modes">
       <button class="btn ghost slim" id="daily">Daily</button>
       <button class="btn ghost slim" id="two">Two players</button>

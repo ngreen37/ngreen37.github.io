@@ -2374,21 +2374,26 @@ body_class: theme-hall
   function showReplay(key){
     var rec = bankedGame(key);
     try { history.replaceState({}, '', location.pathname); } catch (e) {}
-    if (!rec) { toast('Nothing banked from that game yet.'); return; }
+    /* ⛑ THE TOWN ASKED FOR ONE GAME PLAYED BACK, AND WHEN THAT IS OVER YOU ARE BACK IN THE TOWN
+       (2026-10-12, his: "Exiting the review while it loads takes you to the park tables site - we
+       need to take that out"). The board opens over the lobby, and closing it left you in the lobby.
+       ⚠ ONLY FOR A VISIT THE TOWN STARTED: anybody else closing a review is where they meant to be. */
+    var home = function(){ if (window.PTTown && PTTown.from()) PTTown.back(); };
+    if (!rec) { toast('Nothing banked from that game yet.'); setTimeout(home, 1800); return; }
     var them = (BOTS[key] && BOTS[key].name) || key;
     var iAmWhite = rec.pc !== 'b';
     var meta = { whiteName: iAmWhite ? 'You' : them, blackName: iAmWhite ? them : 'You',
-                 result: rec.result, flip: !iAmWhite };
+                 result: rec.result, flip: !iAmWhite, onClose: home };
     // a beat, so the overlay opens over a painted lobby rather than an empty one
     setTimeout(function(){
       try {
         if (window.PJCCReview && PJCCReview.enabled() && PJCCReview.available()) {
           PJCCReview.open(rec.moves, meta);
         } else if (window.PJCCAnalysis && PJCCAnalysis.available()) {
-          PJCCAnalysis.open({ moves: rec.moves, flip: !iAmWhite,
+          PJCCAnalysis.open({ moves: rec.moves, flip: !iAmWhite, onClose: home,
             subtitle: meta.whiteName + ' vs ' + meta.blackName + ' · ' + (rec.result || '') });
-        } else { toast('No board here to play it back on.'); }
-      } catch (e) { toast('That game would not play back.'); }
+        } else { toast('No board here to play it back on.'); setTimeout(home, 1800); }
+      } catch (e) { toast('That game would not play back.'); setTimeout(home, 1800); }
     }, 60);
   }
 
@@ -2892,7 +2897,11 @@ body_class: theme-hall
     // board, you below it; the material chip rides after whichever name is ahead
     var prof = PJCC.getProfile();
     app.innerHTML =
-      '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
+      /* ⛑ FROM THE TOWN, THE WAY OUT OF A TABLE IS THE TOWN (2026-10-12, his: "any similar scenarios:
+         going to the website. It should feel like a game"). "← The park" walked a town visitor into
+         the park's lobby, which is a page of the website and no part of the errand. */
+      '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">' +
+        ((window.PTTown && PTTown.from()) ? '◂ Back to Checker Town' : '← The park') + '</button>' +
       /* ⛑ THE CHIP NAMES THE REAL CONTROL (2026-08-20). It read a hard-coded 'no clock'
          for as long as that was the only truth this room had; tcLabel() is now the one
          place the words 'Blitz 5+0' are built, shared with the bench strip. */
@@ -2959,6 +2968,8 @@ body_class: theme-hall
     //    which already resets botCur/botSeq and re-routes. Doing both would route twice.
     document.getElementById('pt-back').onclick = function(){
       clockLeave();
+      // ⚠ the clock is banked FIRST either way: the game is saved where it stands and waits for you
+      if (window.PTTown && PTTown.from()) { PTTown.back(); return; }
       if (leaveRoom()) return;
       botCur = null; botSeq++; safeRoute();
     };

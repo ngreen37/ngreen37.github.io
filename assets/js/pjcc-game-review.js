@@ -20,8 +20,9 @@
  *    enabled()                 -> boolean  (ENABLED || private preview)
  *    available()               -> boolean  (Stockfish can run in this browser)
  *    open(movesStr, meta)      -> opens the review overlay for a UCI move list
- *        meta: { whiteName, blackName, whiteRating, blackRating, result, flip }
+ *        meta: { whiteName, blackName, whiteRating, blackRating, result, flip, onClose }
  *              (all optional, for the header)
+ *              onClose  called once when the overlay goes away, however it was closed
  *              flip   true when the player sat on Black's side: the board, the bar and the
  *                     analysis board behind it are then drawn from there.
  *                     ⚠ OMITTED MEANS WHITE AT THE BOTTOM. Every door passes it (test:parktables counts them).
@@ -478,10 +479,25 @@
       '</div></div>';
     document.body.appendChild(ov);
     document.body.style.overflow = 'hidden';
-    function close() { try { ov.remove(); document.body.style.overflow = ''; } catch (e) {} }
+    /* ⚠ onClose IS TOLD ONCE, HOWEVER IT WAS CLOSED (the ✕, Escape, a click outside). The town's replay
+       door uses it to go home: the review opens over the park's lobby there, and closing it used to
+       leave you standing in the lobby of a room you never asked for. */
+    var told = false;
+    function close() {
+      try { ov.remove(); document.body.style.overflow = ''; } catch (e) {}
+      if (told || typeof meta.onClose !== 'function') return;
+      told = true;
+      try { meta.onClose(); } catch (e) {}
+    }
     ov.querySelector('.pgr-x').onclick = close;
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
-    document.addEventListener('keydown', function esc2(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc2); } });
+    document.addEventListener('keydown', function esc2(e) {
+      if (e.key !== 'Escape') return;
+      /* ⚠ ONE ESCAPE, ONE LAYER: with the analysis board open on top, that is what the key closes.
+         It used to take this down with it, and from the town's door that is the way home. */
+      if (document.querySelector('.pab-ov')) return;
+      close(); document.removeEventListener('keydown', esc2);
+    });
 
     if (!available()) {
       document.getElementById('pgr-body').innerHTML =

@@ -193,6 +193,23 @@ const server = http.createServer((req, res) => {
     });
     ok(XB.a === 12 && XB.b === 12, 'mergeTown: Pawn Crossing\'s best is the MAX both ways — no device rewinds it',
       JSON.stringify(XB));
+    /* ⭐ 2026-10-12: the rating and the booth's nights. Both only climb, so the max, both ways. */
+    const RB = await page.evaluate(() => {
+      const two = (k, hi, lo) => {
+        localStorage.removeItem('pjcc.town.v1');
+        PJCC.mergeTown({ [k]: hi });
+        const a = PJCC.mergeTown({ [k]: lo })[k];
+        localStorage.removeItem('pjcc.town.v1');
+        PJCC.mergeTown({ [k]: lo });
+        return [a, PJCC.mergeTown({ [k]: hi })[k]];
+      };
+      const out = { rating: two('rating', 1460, 520), nights: two('booth_nights', 3, 1) };
+      localStorage.removeItem('pjcc.town.v1');
+      return out;
+    });
+    ok(RB.rating.join() === '1460,1460' && RB.nights.join() === '3,3',
+      'mergeTown: your rating and the booth\'s nights are the MAX both ways — neither can be handed back',
+      JSON.stringify(RB));
 
     /* ══ MONEY on the site's side (2026-09-30, his picks 1 5 9 and the synced half of 3 4 7) ══ */
     const MO = await page.evaluate(() => {
@@ -1356,9 +1373,22 @@ const server = http.createServer((req, res) => {
         ok(/if rent_on == today\(\)/.test(fnGd(g, 'collect_rent')) && !/\bday\b/.test(fnGd(g, 'collect_rent'))
           && /var d := today\(\)/.test(fnGd(g, 'bounties_today')) && /_new_day\(\)/.test(fnGd(g, 'morning')),
           '⛑ rent and bounties are keyed to the CALENDAR  (the day is the real one since 2026-10-03)');
-        const rates = ((/const BOOTH_RATES := \[([^\]]*)\]/.exec(g) || [])[1] || '').split(',').map(Number).filter((x) => !isNaN(x));
-        ok(rates.length > 0 && rates.every((r) => r < 1),
-          '⭐ the booth ALWAYS pays back less than you left  (every rate under 1)', rates.join(' '));
+        /* ⛑ 2026-10-12, his: "pays out the first two times, then offers to quintuple your money and takes
+           it all and never comes back". It used to pay back less every night, forever.
+           ⚠ THE CHECK THIS REPLACES COULD NOT FAIL: with its constant gone it read "" as one rate of 0. */
+        const paysSrc = (/const BOOTH_PAYS := \[([^\]]*)\]/.exec(g) || [])[1];
+        const pays = paysSrc === undefined ? [] : paysSrc.split(',').map((x) => Number(x.trim()));
+        ok(pays.length === 2 && pays.every((r) => r > 1) && +(/const BOOTH_PROMISE := (\d+)/.exec(g) || [])[1] === 5,
+          '⭐ the booth pays out MORE than you left, twice, and the third night promises five times over',
+          'pays ' + pays.join(' and '));
+        const pay = fnGd(g, '_booth_payout');
+        ok(/if booth_nights >= BOOTH_PAYS\.size\(\):\s*booth_nights = BOOTH_PAYS\.size\(\) \+ 1\s*save_state\(\)\s*booth_gone\.emit\(n\)\s*booth_changed\.emit\(\)\s*return 0/.test(pay)
+           && /var back: int = ceili\(float\(n\) \* float\(BOOTH_PAYS\[booth_nights\]\)\)\s*booth_nights \+= 1\s*add_ore\(back\)/.test(pay)
+           && pay.indexOf('booth = {}') > 0 && pay.indexOf('booth = {}') < pay.indexOf('if booth_nights >= BOOTH_PAYS.size()'),
+          '⛑ …and that third night it hands back NOTHING, is gone for good, and says so once');
+        ok(/or not booth_open\(\):\s*return false/.test(fnGd(g, 'booth_leave'))
+           && /return booth_nights <= BOOTH_PAYS\.size\(\)/.test(fnGd(g, 'booth_open')),
+          '   a booth that has run takes nothing more');
         const xo = +((/const EXCHANGE_OUT := (\d+)/.exec(g) || [])[1] || 0), xi = +((/const EXCHANGE_IN := (\d+)/.exec(g) || [])[1] || 0);
         ok(xo > xi && /const EXCHANGE_CAP := \d+/.test(g) && /GameState\.exchange_left\("out"\)/.test(mo)
           && /GameState\.exchange_left\("in"\)/.test(mo),
@@ -3609,7 +3639,8 @@ const server = http.createServer((req, res) => {
 
         /* #1 — Maxwell and your ore fix the town, and every repair is somewhere you can see it. */
         const block = (src, head) => { const a = src.indexOf(head); return a < 0 ? '' : src.slice(a, src.indexOf('\n]', a)); };
-        const reps = [...block(gsG, 'const REPAIRS := [').matchAll(/\{ "id": "([a-z]+)",\s+"name": "[^"]+",\s+"ore": (\d+) \}/g)].map((m) => m[1]);
+        /* ⚑ 2026-10-12: every row also names who likes you more for it (the evening batch's block checks that). */
+        const reps = [...block(gsG, 'const REPAIRS := [').matchAll(/\{ "id": "([a-z]+)",\s+"name": "[^"]+",\s+"ore": (\d+),\s+"likes": \[[^\]]*\] \}/g)].map((m) => m[1]);
         const maxw = townG.slice(townG.indexOf('class Maxwell extends TownChallenger:'), townG.indexOf('class Fix extends Node2D:'));
         const placed = (id) => new RegExp('"' + id + '"\\]').test(townG) || new RegExp('fix_id = "' + id + '"').test(townG);
         const unplaced = reps.filter((id) => !placed(id) || !new RegExp('"' + id + '": "').test(maxw));
@@ -3672,31 +3703,17 @@ const server = http.createServer((req, res) => {
           '…he is not in the town (he is where you are going), and a letter read stays read everywhere');
 
         /* #10 — Murphy prices you off real numbers and invents none. */
-        /* ⛑ HE ROWED OUT 2026-09-24 (his: "move Murphy to Shogi Island"). The Underwriter class
-           went with him rather than staying an inner class of a file that no longer places him. */
-        const uw = islG.slice(islG.indexOf('class Underwriter extends TownNPC:'));
-        ok(/murphy\.who = "Murphy"/.test(islG) && !/murphy\.who = "Murphy"/.test(townG)
-          && /"who": "Murphy"/.test(gsG),
-          '⭐ Murphy’s nameplate is his square’s name, so talking to him is meeting that square',
-          '⛑ and he is on Shogi Island now, not on the road east');
-        /* ⚠⚠ ON THE SAND, NOT IN THE SEA. The island is an ellipse and its beach narrows with
-           the row — a position typed against the bounding box stands on open water. The room's
-           own sand_half() is the one answer; this is that arithmetic, not a second copy. */
-        const mAt = /murphy\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(islG);
-        const rx = num(islG, 'RX'), ry = num(islG, 'RY');
-        const midY = (/const MID := Vector2\(-?[\d.]+, (-?[\d.]+)\)/.exec(islG) || [0, 0])[1];
-        const reach = mAt ? rx * Math.sqrt(Math.max(0, 1 - Math.pow((+mAt[2] - +midY) / ry, 2))) : 0;
-        ok(mAt && Math.abs(+mAt[1]) + 40 < reach,
-          '…standing on sand: the beach is wider than he is at his own row',
-          mAt ? 'x ' + mAt[1] + ', sand reaches ' + Math.round(reach) + ' at y ' + mAt[2] : 'no position');
-        /* ⚠ AND CLEAR OF EVERY DOOR ON THE ISLAND. Three of the five things out here are doors,
-           and a person standing on a mat is a prompt fighting another prompt. */
-        const islSpots = [...islG.matchAll(/\.position = Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)]
-          .map((m) => [+m[1], +m[2]]).filter(([x, y]) => !(mAt && x === +mAt[1] && y === +mAt[2]));
-        const tooNear = mAt ? islSpots.filter(([x, y]) =>
-          Math.hypot(x - +mAt[1], y - +mAt[2]) < 150) : [];
-        ok(tooNear.length === 0, '…and clear of the dojo, the Reading Room, Matsu and the sign',
-          tooNear.map((p) => p.join(',')).join(' · ') || islSpots.length + ' other spots, nearest is clear');
+        /* ⛑ ON THE ROAD EAST, THEN ON SHOGI ISLAND (his, 09-24), AND SINCE 2026-10-12 WHERE THE BOOTH
+           STOOD: his, "Put the underwriter in his place. Maybe he's a character you may not unlock and
+           the game still plays the same." His class is TownMoney.Underwriter; the evening batch's
+           block checks when he turns up. Here: nobody else places him, and nothing waits on him. */
+        const monG = rd('money.gd');
+        const uw = monG.slice(monG.indexOf('class Underwriter extends TownNPC:'));
+        ok(/m\.who = "Murphy"/.test(uw) && !/Underwriter|\.who = "Murphy"/.test(code(islG))
+          && !/\.who = "Murphy"/.test(townG) && /"who": "Murphy"/.test(gsG)
+          && /\{ "p": "p", "who": "Murphy",\s+"key": "",[^\n]*\n\s*"un": \["murphys-law"/.test(gsG),
+          '⭐ Murphy’s nameplate is his square’s name, and his square is won in a GAME, never off him',
+          '⛑ so a player who never meets him loses nothing: he is in the town or nowhere, never on the island');
         ok(/Pavilion\.SEATS \+ Pavilion\.OFF/.test(uw) && /GameState\.CEO_ELO/.test(uw) && !/2400|1800|1400/.test(uw) && /\/ 400\.0/.test(uw),
           '…every rating he quotes is read off the Pavilion’s own table, through Elo’s 400',
           '⚠ a second copy of the seat ratings is a bookmaker quoting last season’s odds');
@@ -3742,7 +3759,8 @@ const server = http.createServer((req, res) => {
           '⛑ Milo and Argus cannot be challenged until you know dogs play');
         /* ⚠⚠ THE REFUSAL MUST NOT GIVE THE SECRET AWAY. "he is a dog" is what you would think
            looking at him; "he can play, you just have not found out" is the game spoiling itself. */
-        const shutLine = /return "([^"]*)"\s*\n\s*return ""/.exec(fnGd(dogG, 'locked_say'));
+        /* ⚑ 2026-10-12: past the secret it falls through to the lock every seat shares (your rating). */
+        const shutLine = /return "([^"]*)"\s*\n\s*return super\(\)/.exec(fnGd(dogG, 'locked_say'));
         ok(shutLine && !/chess|play|princess|secret|yet/i.test(shutLine[1]),
           '…and the refusal does not tell you what you have not found out',
           shutLine ? '"' + shutLine[1] + '"' : 'no line');
@@ -4918,8 +4936,11 @@ const server = http.createServer((req, res) => {
             ok(out > 0 && self > out && bye > out,
               '⛑ an animal is never asked how it has been, nor told you will let it get on',
               'both rows are added after the menu has already handed an animal its rows');
-            ok(/if animal:\s*if not rows\.any\(func \(r: Dictionary\) -> bool: return bool\(r\.get\("on", true\)\)\):\s*say\(_greeted, 4\.2\)/.test(act),
+            ok(/if animal:\s*if not rows\.any\(func \(r: Dictionary\) -> bool: return bool\(r\.get\("on", true\)\) or bool\(r\.get\("tell", false\)\)\):\s*say\(_greeted, 4\.2\)/.test(act),
               '⛑ …with nothing to DO with it, a dog does its line and no box opens');
+            ok(/play\["tell"\] = key != "" and \(not animal or GameState\.dogs_play\)/.test(fnGd(chE, 'menu')),
+              '⚠ …but a gray row with news in it still opens one: a dog you KNOW plays can say why not today',
+              'before the secret it cannot: "he is a dog" is the secret being kept');
             ok(/rows\.append\(\{ "id": "bye", "text": "Walk on\.", "said": "" \}\)\s*open_talk\(who, _greeted, rows\)/.test(act),
               '   …and with something to do, the way out is a thing you do: nothing is said over your head');
           }
@@ -4982,6 +5003,152 @@ const server = http.createServer((req, res) => {
             const said = [/"puzzle": "([^"]+)"/.exec(chE), /"id": "puzzle",[^\n]*"text": "([^"]+)"/.exec(gsE), /"puzzle":\s*return "([^"]+)"/.exec(fnGd(gsE, 'favor_line'))].map((m) => (m ? m[1] : ''));
             ok(said.every((s) => /Puzzle Champ's puzzles/.test(s) && !/site/.test(s)),
               '   and the three lines that send you there name HIM, not "the site"', said.join(' | '));
+          }
+        }
+
+        /* ══ a rating at the top of the glass · a booth that runs · Murphy where it stood · fixes that
+              mean something — 2026-10-12, the evening batch, second half ══ */
+        /* his: "Let's put the player's rating top and center screen ... It's not the user's true rating, a
+           beginner chess player can get their character up to 3200 in the game ... The rating unlocks
+           higher rated players" · "pays out the first two times, then offers to quintuple your money and
+           takes it all and never comes back. Put the underwriter in his place. Maybe he's a character you
+           may not unlock and the game still plays the same." · "Let's make the Maxwell fixes more
+           meaningful; the fixed lamp unveils something, ... makes the owner like you more, etc." */
+        {
+          const gsR = code(rd('game_state.gd')), znR = code(rd('zone.gd')), twR = code(rd('town.gd'));
+          const mnR = code(rd('money.gd')), chR = code(rd('challenger.gd')), dgR = code(rd('dog.gd'));
+          const pkR = code(rd('park.gd')), hmR = code(rd('home.gd')), jrR = code(rd('journal.gd'));
+          const num1 = (name) => +(new RegExp('const ' + name + ' := (-?\\d+)').exec(gsR) || [])[1];
+
+          /* ── 1 · the rating: it only climbs ── */
+          const START = num1('RATING_START'), CAP = num1('RATING_CAP'), SQ = num1('RATING_SQUARE');
+          const PER = num1('RATING_WIN_PER'), MIN = num1('RATING_WIN_MIN'), REACH = num1('RATING_REACH');
+          ok(START === 400 && CAP === 3200 && /var rating: int = RATING_START/.test(gsR),
+            '⭐ your rating starts at 400 and tops out at 3200  (his numbers)', START + ' to ' + CAP);
+          {
+            const rate = fnGd(gsR, 'rate');
+            const sets = (gsR.match(/(^|[^\w.])rating = /g) || []).length, drops = /(^|[^\w.])rating -= /.test(gsR);
+            ok(/var up := mini\(RATING_CAP, rating \+ maxi\(0, by\)\) - rating\s*if up <= 0:\s*return\s*rating \+= up\s*rating_changed\.emit\(rating, up\)/.test(rate)
+               && sets === 1 && !drops,
+              '⛑ it ONLY EVER CLIMBS: one function raises it, nothing lowers it, and a loss is not mentioned',
+              sets + ' plain assignment (the load), ' + (drops ? 'and something subtracts' : 'nothing subtracts'));
+            ok(/rating = clampi\(maxi\(int\(d\.get\("rating", 0\)\), RATING_START \+ RATING_SQUARE \* army\.size\(\)\), RATING_START, RATING_CAP\)/.test(fnGd(gsR, 'load_state'))
+               && fnGd(gsR, 'load_state').indexOf('army.sort()') < fnGd(gsR, 'load_state').indexOf('rating = clampi('),
+              '⛑ a save from before the rating starts where its board put it, never at 400 with squares won',
+              'the seats those squares came from would have locked behind a number nobody had been shown');
+          }
+          ok(/deed_won\(key\)\s*rate\(maxi\(RATING_WIN_MIN, seat_elo\(key\) \/ RATING_WIN_PER\)\)/.test(fnGd(gsR, 'resolve_challenge'))
+             && /army_changed\.emit\(army\.size\(\)\)\s*rate\(RATING_SQUARE\)\s*return slot/.test(fnGd(gsR, '_fill_their_slot'))
+             && /rate\(RATING_SQUARE \* won\.size\(\)\)/.test(fnGd(gsR, 'check_site_unlocks')),
+            '⭐ a win raises it by their rating over ' + PER + ', and a square on your board by ' + SQ + ', wherever the square came from');
+          {
+            const need = fnGd(gsR, 'rating_needed'), sit = fnGd(gsR, 'sit_down');
+            ok(/if key == "" or key == CEO_KEY or has_slot\(slot_for_key\(key\)\):\s*return 0\s*return maxi\(0, seat_elo\(key\) - RATING_REACH\)/.test(need),
+              '⛑ a seat wants a rating within ' + REACH + ' of its own, EXCEPT one whose square you hold, and the CEO\'s',
+              'his chair is opened by the full board: a second lock on the finale is a grind in front of the ending');
+            ok(sit.indexOf('rating_short(key)') > sit.indexOf('beaten_today(key)') && sit.indexOf('rating_short(key)') < sit.indexOf('spend(cost)'),
+              '⛑ …refused in the ONE place that sits you down, before any energy is taken');
+            ok(/func locked_say\(\) -> String:\s*return GameState\.rating_short\(key\)/.test(chR)
+               && /return "he is a dog"\s*return super\(\)/.test(fnGd(dgR, 'locked_say'))
+               && /var short := GameState\.rating_short\(key\)\s*if short != "":\s*return s \+ "  —  " \+ short/.test(pkR)
+               && /elif GameState\.rating_short\(key\) != "":/.test(hmR),
+              '   and all four places that offer a seat say so in the same words: the person, the dog, the table, the board at home');
+            /* the ladder, walked: each seat beaten once in rating order, nothing else done */
+            const seatsSrc = pkR.slice(pkR.indexOf('const SEATS := ['), pkR.indexOf('\n]', pkR.indexOf('const OFF := [')));
+            const seats = [...seatsSrc.matchAll(/\{ "key": "(\w+)",\s+"who": "(\w+)",\s+"elo": (\d+)/g)]
+              .map((m) => ({ who: m[2], elo: +m[3] })).filter((s) => s.elo > 0 && s.who !== 'CEO').sort((a, b) => a.elo - b.elo);
+            let r = START, open = 0, wall = '';
+            for (const s of seats) {
+              if (r < Math.max(0, s.elo - REACH)) { wall = s.who + ' wants ' + (s.elo - REACH) + ', the ladder alone gives ' + r; break; }
+              open++;
+              r += Math.max(MIN, Math.floor(s.elo / PER)) + SQ;
+            }
+            ok(seats.length >= 7 && open >= 6,
+              '⚠ …and from 400 the first six seats open one after another, each beaten once  (the numbers are his to set)',
+              open + ' of ' + seats.length + ' open in turn' + (wall ? '; then ' + wall : '; no wall'));
+          }
+          {
+            const build = fnGd(znR, '_build_hud'), place = fnGd(znR, '_place_rating'), paint = fnGd(znR, '_paint_hud');
+            ok(/_rate_cap\.text = "RATING"/.test(build) && /bold\.variation_embolden = 0\.8\s*_rate\.add_theme_font_override\("font", bold\)\s*_hud\.add_child\(_rate\)/.test(build)
+               && /_rate\.text = str\(GameState\.rating\)/.test(place)
+               && /var x: float = \(get_viewport\(\)\.get_visible_rect\(\)\.size\.x - \(cap\.x \+ gap \+ num\.x\)\) \* 0\.5/.test(place),
+              '⭐ the rating is on the glass, in bold, with its middle on the middle of the screen');
+            ok(/_rate\.visible = _stat\.visible\s*_rate_cap\.visible = _stat\.visible/.test(place)
+               && /_after_ready\(\)\s*_place_rating\(\)/.test(znR),
+              '   it goes with the stat row: a room that hides one (the crossing, the nightmare) has its own score there');
+            ok(/_place_rating\(\)\s*if not wrap and is_instance_valid\(_rate_cap\) and _rate_cap\.visible:\s*room = minf\(room, _rate_cap\.position\.x - _stat\.position\.x - 18\.0 \* k\)/.test(paint)
+               && /_rate\.visible and r\.intersects\(Rect2\(_rate_cap\.position,/.test(fnGd(znR, 'hud_over')),
+              '⚠ the stat row gives way to it, and a name in the world steps aside for it like the rest of the top');
+            ok((znR.match(/_rating_note\(\)/g) || []).length === 5 && /_rated_by \+= by\s*_paint_hud\(\)\s*call_deferred\("_flush_rating"\)/.test(fnGd(znR, '_report_rating')),
+              '   the win that raised it says by how much in its own line, once',
+              (znR.match(/_rating_note\(\)/g) || []).length - 1 + ' sentences carry it (three wins and a square that arrives from a game)');
+            ok(/"a": "Your rating"/.test(jrR), '   and the Journal has it under THE BOARD');
+          }
+          ok(/"rating": rating, "booth_nights": booth_nights\s*\}\)\)/.test(gsR)
+             && /"rating": rating, "booth_nights": booth_nights,\s*"board": banner\(\) \}\)/.test(gsR)
+             && /if int\(d\.get\("rating", 0\)\) > rating:/.test(fnGd(gsR, 'merge_in'))
+             && /if int\(d\.get\("booth_nights", 0\)\) > booth_nights:/.test(fnGd(gsR, 'merge_in'))
+             && /local\.rating = Math\.max\(\+local\.rating \|\| 0, \+remote\.rating \|\| 0\)/.test(fn(PROF, 'townMerge'))
+             && /local\.booth_nights = Math\.max\(\+local\.booth_nights \|\| 0, \+remote\.booth_nights \|\| 0\)/.test(fn(PROF, 'townMerge')),
+            '⭐⭐ both new numbers are saved, loaded, pushed and merged as a MAX on both sides  [[everything-earned-syncs]]');
+
+          /* ── 2 · the booth runs, and Murphy stands where it stood ── */
+          {
+            const booth = mnR.slice(mnR.indexOf('class Booth extends Interactable:'), mnR.indexOf('class Underwriter extends TownNPC:'));
+            ok(/GameState\.booth_changed\.connect\(func \(\) -> void:\s*if not GameState\.booth_open\(\):\s*queue_free\(\)\)/.test(booth)
+               && /\(LAST_PAGE % GameState\.BOOTH_PROMISE\) if GameState\.booth_last_night\(\) else PAGE/.test(booth)
+               && /const LAST_PAGE := "[^"]*%d times over\."/.test(booth),
+              '⛑ the third night the book promises five times over, and the booth is gone the morning it runs');
+            const swap = fnGd(twR, '_booth_or_murphy');
+            ok(/if GameState\.booth_open\(\):\s*if not is_instance_valid\(_booth\):/.test(swap)
+               && /booth\.position = BOOTH_AT/.test(swap)
+               && /elif not is_instance_valid\(_murphy\):\s*_murphy = TownMoney\.Underwriter\.murphy\(BOOTH_AT\)\s*add_child\(_murphy\)/.test(swap)
+               && /_booth_or_murphy\(\)\s*GameState\.booth_changed\.connect\(_booth_or_murphy\)/.test(fnGd(twR, '_furnish_square_extras'))
+               && (twR.match(/TownMoney\.Booth\.new\(\)/g) || []).length === 1 && (twR.match(/Underwriter\.murphy\(/g) || []).length === 1,
+              '⛑ …and Murphy stands WHERE IT STOOD from that morning on: one or the other, never both, never twice',
+              'a character you may never unlock: his square is won in a game, so nothing waits on him');
+            ok(/GameState\.booth_gone\.connect\(_report_booth_gone\)/.test(znR)
+               && /_paid_lines\.append\("The booth is gone, and the %d ore you left in it" % taken\)/.test(fnGd(znR, '_report_booth_gone')),
+              '   whichever room you wake in says what happened');
+            ok(/else \("nothing" if GameState\.booth_open\(\) else "it is gone"\)/.test(jrR), '   and the Journal stops offering it');
+          }
+
+          /* ── 3 · a fix means something ── */
+          {
+            const block2 = gsR.slice(gsR.indexOf('const REPAIRS := ['), gsR.indexOf('\n]', gsR.indexOf('const REPAIRS := [')));
+            const rows = [...block2.matchAll(/\{ "id": "([a-z]+)",[^\n]*"likes": \[([^\]]*)\] \}/g)].map((m) => ({ id: m[1], likes: (m[2].match(/"([^"]+)"/g) || []).map((s) => s.slice(1, -1)) }));
+            /* everybody named must be somebody who stands in the game: a heart for a typo is a heart for nobody */
+            const everyGd = fs.readdirSync(GD).filter((f) => f.endsWith('.gd')).map((f) => code(rd(f))).join('\n');
+            const real = (n) => new RegExp('_add_challenger\\("' + n + '"|\\.who = "' + n + '"|"who": "' + n + '"').test(everyGd);
+            const ghosts = [...new Set(rows.flatMap((r) => r.likes))].filter((n) => !real(n));
+            ok(rows.length === 9 && rows.filter((r) => r.likes.length > 0).length >= 8 && ghosts.length === 0,
+              '⭐ every repair names who likes you more for it, and each of them is somebody who stands in the game',
+              ghosts.length ? 'NOBODY BY THAT NAME: ' + ghosts.join(', ') : rows.map((r) => r.id + ':' + (r.likes.join('+') || '-')).join(' '));
+            ok(/repairs\[id\] = 1\s*for who in row\.get\("likes", \[\]\):\s*_bump\(str\(who\), 1\)/.test(fnGd(gsR, 'repair'))
+               && /var did := GameState\.fix_note\(str\(r\["id"\]\)\)/.test(twR)
+               && /\+ \("  \(%s\)" % did if did != "" else ""\)/.test(twR),
+              '⛑ …a heart each the day it is mended, and Maxwell\'s line says who');
+            const tin = twR.slice(twR.indexOf('class LampFind extends Interactable:'), twR.indexOf('class SignRead extends Interactable:'));
+            const deadLamp = /for x in \[(-?[\d.]+), -?[\d.]+\]:\s*var lamp := TownLamp\.new\(\)\s*lamp\.position = Vector2\(x, -?[\d.]+\)\s*lamp\.fix_id = "lamp" if x < -1000\.0 else ""/.exec(twR);
+            const tinAt = /var tin := LampFind\.new\(\)\s*tin\.position = Vector2\((-?[\d.]+), /.exec(twR);
+            ok(/return GameState\.fixed\("lamp"\) and TownClock\.is_dark\(\) and not GameState\.found\("lamp"\)/.test(tin)
+               && /visible = shown\(\)\s*monitoring = visible/.test(tin)
+               && /GameState\.find\("lamp"\)\s*GameState\.add_ore\(GameState\.LAMP_FIND\)/.test(tin)
+               && deadLamp && tinAt && +deadLamp[1] === +tinAt[1] && +deadLamp[1] < -1000,
+              '⭐ the mended west lamp UNVEILS something: a tin of ore at its own foot, in its light, after dark, once',
+              deadLamp && tinAt ? 'lamp at x ' + deadLamp[1] + ', tin at x ' + tinAt[1] : 'not placed');
+            ok(/return told\.has\("find:" \+ id\)/.test(fnGd(gsR, 'found')) && /told\["find:" \+ id\] = 1\s*save_state\(\)/.test(fnGd(gsR, 'find'))
+               && /"told": told/.test(gsR) && /local\.told = union\(local\.told, remote\.told\)/.test(fn(PROF, 'townMerge')),
+              '   …found once on every device: it is kept where the story\'s beats are, which already sync as a union');
+            const post = twR.slice(twR.indexOf('class SignRead extends Interactable:'), twR.indexOf('const BOOTH_AT :='));
+            const old = twR.slice(twR.indexOf('class Signpost extends Interactable:'), twR.indexOf('func _light_the_hall'));
+            /* ⚠ THE STATEMENT, NOT THE WORDS: an earlier version of this passed on a listener's body while
+               the post answered from the first morning. */
+            ok(/prompt_text = "Read the chalk on the signpost"\s*monitoring = GameState\.fixed\("sign"\)\s*func interact/.test(post)
+               && /who != null and not who\.animal and who\.away\(\)/.test(post)
+               && !/North|East|South|West/.test(post) && /North up the haul road/.test(old)
+               && /if spot\[1\] == "sign":\s*var post := SignRead\.new\(\)/.test(twR),
+              '⭐ the mended signpost says who is NOT OUT today  (the roads are the square\'s post\'s job, and stay it)');
           }
         }
 

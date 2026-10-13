@@ -661,6 +661,10 @@
     local.dogs_play = !!(local.dogs_play || remote.dogs_play);
     /* ⭐ PAWN CROSSING'S BEST RUN (2026-10-04): earned, so the max. */
     local.crossing_best = Math.max(+local.crossing_best || 0, +remote.crossing_best || 0);
+    /* ⭐ YOUR RATING, AND HOW FAR THE BOOTH HAS RUN (2026-10-12): both only ever climb, so the max.
+       ⚠ The rating has no floor here on purpose: the town starts a save with none at its own 400. */
+    local.rating = Math.max(+local.rating || 0, +remote.rating || 0);
+    local.booth_nights = Math.max(+local.booth_nights || 0, +remote.booth_nights || 0);
     /* the army is SLOT INDICES, so a union needs no arithmetic and two devices that filled
        different squares keep both */
     var army = {}, i;

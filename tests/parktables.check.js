@@ -87,6 +87,12 @@ function render(src) {
 }
 
 const server = http.createServer((req, res) => {
+  /* ⚠ THE TOWN'S ADDRESS ANSWERS WITH AN EMPTY PAGE. Section 14 watches a visit go home; with no
+     Jekyll that address was a 404, and a 404 is a console error this run counts as the room's. */
+  if (req.url.split('?')[0] === '/games/checker-town/') {
+    res.writeHead(200, { 'Content-Type': MIME['.html'] });
+    return res.end('<!doctype html><meta charset="utf-8"><title>the town</title>');
+  }
   const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
   fs.readFile(p, (e, b) => {
     if (e) { res.writeHead(404); return res.end('nope'); }
@@ -1198,6 +1204,72 @@ const BOT = 'maxwell';
      doors > 0 && blind.length === 0, doors + ' doors' + (blind.length ? ' · BLIND: ' + blind.join(', ') : ''));
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
                            localStorage.removeItem('pjcc.pt.side.v1'); });
+
+  /* ── 14. A VISIT THE TOWN STARTED ENDS BACK IN THE TOWN (2026-10-12) ───────────────
+     Nate: *"Exiting the review while it loads takes you to the park tables site - we need to take
+     that out and any similar scenarios: going to the website. It should feel like a game."*
+     The town's "show me that game again" opens a review over the park's LOBBY. Closing it left you
+     in the lobby; so did "← The park" at a table the town had sat you at.
+     ⚠ "WENT HOME" IS READ OFF THE ADDRESS BAR. There is no town in this harness (no Jekyll), so the
+       page it lands on is a 404; that it LEFT for the town's address is the whole of the claim.
+     ⚠ THE TAB REMEMBERS IT CAME FROM THE TOWN (sessionStorage), so each case clears that first. */
+  const TOWN_PATH = '/games/checker-town/';
+  const fresh = async (qs, banked) => {
+    await p.goto(URL, { waitUntil: 'networkidle2' });
+    await p.evaluate((banked, game) => {
+      sessionStorage.removeItem('pjcc.pt.fromtown');
+      localStorage.removeItem('pjcc.park.bot.v1');
+      localStorage.setItem('pjcc.pt.side.v1', 'w');
+      if (banked) localStorage.setItem('pjcc.pt.games.v1', JSON.stringify({ maxwell: { moves: game, result: '1-0', pc: 'w', at: Date.now() } }));
+      else localStorage.removeItem('pjcc.pt.games.v1');
+    }, banked, OPENING);
+    await p.goto(URL + qs, { waitUntil: 'networkidle2' });
+  };
+  const where = () => new (require('url').URL)(p.url()).pathname;
+  const leftForTown = async () => { for (let i = 0; i < 25; i++) { if (where() === TOWN_PATH) return true; await sleep(100); } return false; };
+
+  await fresh('?replay=' + BOT, true);
+  await p.waitForSelector('.pgr-ov', { timeout: 15000 });
+  await p.evaluate(() => document.querySelector('.pgr-x').click());
+  await sleep(700);
+  ok('a visitor from the SITE who closes a played-back game stays in the park',
+     where() !== TOWN_PATH && await p.evaluate(() => !document.querySelector('.pgr-ov')), where());
+
+  await fresh('?replay=' + BOT + '&from=town', true);
+  await p.waitForSelector('.pgr-ov', { timeout: 15000 });
+  const loading = await p.evaluate(() => !!document.getElementById('pgr-status'));
+  await p.evaluate(() => document.querySelector('.pgr-x').click());        // while it is still analyzing
+  ok('⛑⛑ from the TOWN, closing the played-back game goes back to the town, even while it loads',
+     await leftForTown(), (loading ? 'closed mid-analysis' : 'closed after it finished') + ' → ' + where());
+
+  await fresh('?replay=' + BOT + '&from=town', false);
+  ok('…and so does a game that was never banked, after it has said so', await leftForTown() || await leftForTown(), where());
+
+  await fresh('?replay=' + BOT + '&from=town', true);
+  await p.waitForSelector('#pgr-analyse', { timeout: 60000 });
+  await clickId('pgr-analyse');
+  await sleep(400);
+  await p.keyboard.press('Escape');
+  await sleep(500);
+  const layers = await p.evaluate(() => ({ board: !!document.querySelector('.pab-ov'), review: !!document.querySelector('.pgr-ov') }));
+  ok('⚠ one Escape closes ONE layer: the analysis board goes, the review under it stays, and nobody is sent home',
+     !layers.board && layers.review && where() !== TOWN_PATH, JSON.stringify(layers) + ' at ' + where());
+  await p.keyboard.press('Escape');
+  ok('…and the next Escape closes the review, which IS the way home', await leftForTown(), where());
+
+  await fresh('?table=' + BOT, false);
+  await sleep(900);
+  const plain = await text('#pt-back');
+  await fresh('?table=' + BOT + '&from=town', false);
+  await sleep(900);
+  const errand = await text('#pt-back');
+  ok('at a table, the way out reads "The park" from the site and "Back to Checker Town" from the town',
+     /The park/.test(plain) && /Back to Checker Town/.test(errand), '"' + plain + '" · "' + errand + '"');
+  await clickId('pt-back');
+  ok('⛑ …and from the town it goes to the town, not into the park\'s lobby', await leftForTown(), where());
+  await p.goto(URL, { waitUntil: 'networkidle2' });
+  await p.evaluate(() => { sessionStorage.removeItem('pjcc.pt.fromtown'); localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.removeItem('pjcc.pt.side.v1'); localStorage.removeItem('pjcc.pt.games.v1'); });
 
   /* ══ AUSTON'S RATING MOVES WITH EVERY GAME (2026-09-15) ═══════════════════════════
      Its own page, because her day off is a town-date roll and this has to find her in her

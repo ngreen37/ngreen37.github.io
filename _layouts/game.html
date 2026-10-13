@@ -291,6 +291,55 @@
 
       {{ content }}
 
+      <script id="town-start">
+      /* ⛑ FROM CHECKER TOWN, A GAME STARTS (2026-10-12, his: "Sky Run in Checker Town, Princess Dungeon,
+         etc, should just go right to the game and not the title screen"). The town stamps from=town on
+         every door it opens. A game marks its own way in with data-town-start, and that button is
+         pressed for you, once, when the game has drawn it.
+         ⚠ ONLY FROM THE TOWN: a visitor who came from the site still meets the title screen.
+         ⚠ ONE PRESS A GROUP. The attribute's value is a group, and the FIRST one showing in a group is
+           the only one ever pressed: a campaign with a game saved shows Continue above Begin, and
+           pressing both starts it over.
+         ⚠ A GROUP AT A TIME, IN ORDER: Notation Blitz has a splash and then a Start. */
+      (function () {
+        if (!/[?&]from=town(?:&|$)/.test(location.search)) return;
+        var frame = document.querySelector('.game-frame-wrap iframe');
+        if (!frame) return;
+        var done = {}, tries = 0, rest = 0;
+        var t = setInterval(function () {
+          if (++tries > 120) return clearInterval(t);            /* twelve seconds: then the title stands */
+          if (rest > 0) { rest--; return; }
+          var d = null;
+          try { d = frame.contentDocument; } catch (e) {}
+          if (!d || d.readyState !== 'complete') return;
+          var all = d.querySelectorAll('[data-town-start]'), groups = [], i, g;
+          for (i = 0; i < all.length; i++) {
+            g = all[i].getAttribute('data-town-start') || '1';
+            if (groups.indexOf(g) < 0) groups.push(g);
+          }
+          groups.sort();
+          for (i = 0; i < groups.length; i++) if (!done[groups[i]]) break;
+          if (i >= groups.length) { if (all.length) clearInterval(t); return; }
+          g = groups[i];
+          for (i = 0; i < all.length; i++) {
+            var b = all[i];
+            if ((b.getAttribute('data-town-start') || '1') !== g) continue;
+            if (b.hidden || b.disabled || !b.getClientRects().length) continue;   /* not drawn yet */
+            done[g] = 1;
+            rest = 6;                                              /* let the screen change before the next group */
+            /* ⚠ A WHOLE PRESS, NOT ONLY A CLICK: Notation Blitz's splash listens for the finger going
+               down, and a bare click started the run underneath a splash that was still up. */
+            try {
+              b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+              b.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+            } catch (e) {}
+            b.click();
+            return;
+          }
+        }, 100);
+      })();
+      </script>
+
       <!-- Game-over funnel: catch arcade players for the dispatch (Avenue 10) -->
       <div class="game-dispatch">
         {%- comment -%} 2026-07-14 (Nate: "is that a mailing list prompt? Make it clear

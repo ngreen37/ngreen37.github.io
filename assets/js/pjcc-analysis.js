@@ -28,6 +28,7 @@
  *          moves    a UCI move list: THE GAME. All of it is loaded and none of it is ever cut.
  *          ply      which move of it to stand on (default: the last)
  *          flip     true to look from Black's side
+ *          onClose  called once when the overlay goes away, however it was closed
  *
  *  ⭐ THE GAME STAYS (2026-10-12, Nate: "like other sites where you can experiment with other
  *  moves at any position of the game just played"). A different move from any position of the
@@ -399,10 +400,14 @@
     boardHost.appendChild(cv);
 
     function closed() { return !ov.isConnected; }
+    var told = false;
     function close() {
       try { ov.remove(); } catch (e) {}
       document.body.style.overflow = prevOverflow;
       killEngine();
+      if (told || typeof opts.onClose !== 'function') return;     // once, however it was closed
+      told = true;
+      try { opts.onClose(); } catch (e) {}
     }
     ov.querySelector('.pab-x').onclick = close;
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
