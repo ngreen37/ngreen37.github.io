@@ -2378,7 +2378,7 @@ body_class: theme-hall
     var them = (BOTS[key] && BOTS[key].name) || key;
     var iAmWhite = rec.pc !== 'b';
     var meta = { whiteName: iAmWhite ? 'You' : them, blackName: iAmWhite ? them : 'You',
-                 result: rec.result };
+                 result: rec.result, flip: !iAmWhite };
     // a beat, so the overlay opens over a painted lobby rather than an empty one
     setTimeout(function(){
       try {
@@ -3052,7 +3052,7 @@ body_class: theme-hall
                                   blackName: white ? bot.name : meName,
                                   whiteRating: white ? myElo : oppElo,
                                   blackRating: white ? oppElo : myElo,
-                                  result: st.result });
+                                  result: st.result, flip: !white });
     };
     /* ⚠⚠ BANK BEFORE THE STATE CHANGES, NOT AFTER. Switching the regular's clock off while
        IT is the side thinking retires the very stopwatch that is running; without the bank
@@ -3547,7 +3547,8 @@ body_class: theme-hall
           b.onclick = function(e){
             e.stopPropagation();
             var m = finishedById[b.getAttribute('data-review')];
-            if (m && window.PJCCReview) PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result });
+            if (m && window.PJCCReview) PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name,
+              result: m.result, flip: m.black === me });
           };
         });
         Array.prototype.forEach.call(app.querySelectorAll('[data-pgn]'), function (b) {
@@ -3865,7 +3866,8 @@ body_class: theme-hall
       PJCCPgn.copy(t).then(function(ok){ toast(ok ? 'PGN copied.' : 'Could not copy.'); });
     };
     var rv = document.getElementById('pt-review');
-    if (rv) rv.onclick = function(){ PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result }); };
+    if (rv) rv.onclick = function(){ PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name,
+      result: m.result, flip: !white }); };
     var fl = document.getElementById('pt-flag');
     if (fl) fl.onclick = function(){
       fl.disabled = true;

@@ -25,9 +25,14 @@
  *    open(opts)         -> opens the overlay
  *        opts: { fen, moves, ply, title, subtitle, flip }
  *          fen      starting position (default: the standard start)
- *          moves    a UCI move list to replay first (a game to walk into)
- *          ply      how far down `moves` to start (default: all of it)
+ *          moves    a UCI move list: THE GAME. All of it is loaded and none of it is ever cut.
+ *          ply      which move of it to stand on (default: the last)
  *          flip     true to look from Black's side
+ *
+ *  ⭐ THE GAME STAYS (2026-10-12, Nate: "like other sites where you can experiment with other
+ *  moves at any position of the game just played"). A different move from any position of the
+ *  game starts a line of your own hanging off that position; the game is still in the list, and
+ *  one line is kept per position until you try something else there.
  */
 (function (root) {
   'use strict';
@@ -169,6 +174,7 @@
       '.pab-bar{width:16px;border-radius:8px;overflow:hidden;background:#241a3f;border:1px solid #3a2a6a;' +
         'position:relative;flex-shrink:0}' +
       '.pab-bar i{position:absolute;left:0;right:0;bottom:0;height:50%;background:#f0eee8;transition:height .28s ease}' +
+      '.pab-bar--flip i{top:0;bottom:auto}' +
       '.pab-bar u{position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(245,197,24,.5);text-decoration:none}' +
       '.pab-evalrow{display:flex;align-items:baseline;gap:8px;justify-content:center}' +
       '.pab-eval{font-family:"Share Tech Mono",monospace;font-size:1.15rem;color:#fff;font-weight:700;min-width:66px;text-align:center}' +
@@ -191,6 +197,24 @@
       '.pab-moves span{padding:3px 6px;border-radius:6px;cursor:pointer}' +
       '.pab-moves span:hover{background:#20153f}' +
       '.pab-moves span.sel{background:#2a1a5e;outline:1px solid #F5C518}' +
+      /* a line of your own: green where it continues past the game's end, a dot on the game move it leaves from */
+      '.pab-moves span.mine{color:#6bffb8}' +
+      '.pab-moves span.has::after{content:"\\25CF";color:#6bffb8;font-size:.6em;margin-left:5px;vertical-align:middle}' +
+      '.pab-mine{font-size:.82rem;color:#cdbcf2;border:1px dashed #4a3a86;border-radius:10px;' +
+        'padding:9px 11px;margin-top:10px;line-height:1.9}' +
+      '.pab-mine em{font-style:normal;color:#8f82c8;font-size:.72rem;letter-spacing:.06em;' +
+        'display:block;text-transform:uppercase;margin-bottom:3px}' +
+      '.pab-mine p{margin:0;color:#8f82c8;line-height:1.5}' +
+      '.pab-mine span[data-s]{display:inline-block;padding:1px 6px;border-radius:6px;cursor:pointer;color:#6bffb8;white-space:nowrap}' +
+      '.pab-mine span[data-s]:hover{background:#20153f}' +
+      '.pab-mine span.sel{background:#2a1a5e;outline:1px solid #F5C518}' +
+      '.pab-mine button{display:block;margin-top:8px;background:#241847;border:1px solid #4a3a86;color:#cdbcf2;' +
+        'border-radius:8px;min-height:38px;padding:6px 12px;cursor:pointer;font-size:.82rem;font-family:inherit}' +
+      '.pab-mine button:hover{border-color:#F5C518;color:#F5C518}' +
+      /* a finger: every move in either list and every button is a full thumb tall */
+      '@media(pointer:coarse){.pab-moves{align-items:center}' +
+        '.pab-moves span,.pab-mine span[data-s]{min-height:44px;display:inline-flex;align-items:center}' +
+        '.pab-tools button,.pab-mine button,.pab-x{min-height:44px;min-width:44px}}' +
       '.pab-status{font-size:.78rem;color:#ffd77a;text-align:center;min-height:1.2em}' +
       '.pab-foot{font-size:.7rem;color:#6f5fb0;text-align:center;padding:0 16px 14px}' +
       /* the promotion picker, right on the board */
@@ -305,20 +329,34 @@
     var Cc = C();
     styles();
 
-    // ── build the line we're walking into ───────────────────────────────────────
-    var startFen = opts.fen || Cc.START_FEN;
-    var nodes = [{ S: Cc.parseFEN(startFen), san: null, from: null, to: null }];
+    // ── the game we were handed, and the lines tried off it ─────────────────────
+    function node(S, m) {
+      return { S: Cc.makeMove(S, m), san: Cc.toSAN(S, m), from: m.from, to: m.to,
+               uci: Cc.nameFromSq(m.from) + Cc.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : '') };
+    }
+    /* ⚠ ALL OF `moves`, WHATEVER `ply` SAYS. Loaded only as far as `ply`, the review's door opened on a
+       game with its second half missing: nothing to step forward into. `ply` is where you STAND. */
+    var game = [{ S: Cc.parseFEN(opts.fen || Cc.START_FEN), san: null, from: null, to: null, uci: null }];
     var list = (opts.moves || '').trim() ? opts.moves.trim().split(/\s+/) : [];
-    var upto = (opts.ply == null) ? list.length : Math.max(0, Math.min(list.length, opts.ply));
-    for (var i = 0; i < upto; i++) {
+    for (var i = 0; i < list.length; i++) {
       var u = list[i];
-      if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(u)) break;
-      var S0 = nodes[nodes.length - 1].S;
+      if (!UCI.test(u)) break;
+      var S0 = game[game.length - 1].S;
       var mv = Cc.findMove(S0, Cc.sqFromName(u.slice(0, 2)), Cc.sqFromName(u.slice(2, 4)), u[4] || null);
       if (!mv) break;
-      nodes.push({ S: Cc.makeMove(S0, mv), san: Cc.toSAN(S0, mv), from: mv.from, to: mv.to });
+      game.push(node(S0, mv));
     }
-    var at = nodes.length - 1;
+    var END = game.length - 1;
+    var home = (opts.ply == null) ? END : Math.max(0, Math.min(END, opts.ply));
+    var sides = {}, tried = false; // game index -> the moves you tried from that position
+    var at = home, s = -1;         // standing on game[at]; s >= 0 means that far into sides[at]
+    function here() { return s < 0 ? game[at] : sides[at][s]; }
+    function next() {              // where ▸ leads, as [at, s], or null
+      var l = sides[at];
+      if (s >= 0) return s < l.length - 1 ? [at, s + 1] : null;
+      if (at < END) return [at + 1, -1];
+      return l ? [at, 0] : null;   // past the game's last move: into what you played on from there
+    }
     var flip = !!opts.flip, sel = -1, hints = null;
     var best = null, sc = null, depth = 0, pvSan = '';
 
@@ -345,6 +383,7 @@
           '</div>' +
         '</div>' +
         '<div><div class="pab-line" id="pab-pv"><em>Best line</em><span id="pab-pvtext">Thinking…</span></div>' +
+        '<div class="pab-mine" id="pab-mine" hidden></div>' +
         '<div class="pab-moves" id="pab-moves"></div></div>' +
       '</div>' +
       '<p class="pab-foot">Stockfish, running in your browser — free, always. Analysis only: never open beside a game in progress.</p>' +
@@ -370,8 +409,8 @@
     document.addEventListener('keydown', function key(e) {
       if (closed()) { document.removeEventListener('keydown', key); return; }
       if (e.key === 'Escape') close();
-      else if (e.key === 'ArrowLeft') go(at - 1);
-      else if (e.key === 'ArrowRight') go(at + 1);
+      else if (e.key === 'ArrowLeft') back();
+      else if (e.key === 'ArrowRight') fwd();
     });
 
     // ── the engine column ───────────────────────────────────────────────────────
@@ -390,8 +429,8 @@
        move from that line are good; the LINE is not, so a one-move pv never overwrites a
        longer one we already have for this same position. */
     onInfo = function (fen, score, d, pv) {
-      if (closed() || fen !== Cc.toFEN(nodes[at].S)) return;   // a stale search's info
-      sc = whitePov(score, nodes[at].S.turn); depth = d;
+      if (closed() || fen !== Cc.toFEN(here().S)) return;      // a stale search's info
+      sc = whitePov(score, here().S.turn); depth = d;
       if (pv && pv.length) {
         best = pv[0];
         if (pv.length > 1 || !pvSan) pvSan = namePV(pv);
@@ -401,7 +440,7 @@
     onDone = function () { if (!closed()) paintEval(); };
 
     function namePV(pv) {
-      var S = nodes[at].S, out = [], n = Math.min(PV_MOVES, pv.length);
+      var S = here().S, out = [], n = Math.min(PV_MOVES, pv.length);
       for (var i = 0; i < n; i++) {
         var u = pv[i];
         if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(u)) break;
@@ -435,14 +474,16 @@
       try { return Cc.inCheck(S, S.turn) ? Cc.kingSq(S.b, S.turn) : -1; } catch (e) { return -1; }
     }
     function draw() {
-      var n = nodes[at];
+      var n = here();
+      // ⚠ THE BAR TURNS WITH THE BOARD: White's share left at the bottom, beside Black's pieces, reads backwards.
+      ov.querySelector('.pab-bar').classList.toggle('pab-bar--flip', flip);
       paint(cv, n.S, { flip: flip, sel: sel, hints: hints,
                        last: n.from == null ? null : { from: n.from, to: n.to },
                        arrow: bestArrow(), checkSq: checkSquare(n.S) });
     }
 
     function status() {
-      var S = nodes[at].S, el = ov.querySelector('#pab-status');
+      var S = here().S, el = ov.querySelector('#pab-status');
       var legal = Cc.legalMoves(S);
       if (!legal.length) {
         el.textContent = Cc.isCheckmate(S)
@@ -455,18 +496,47 @@
       }
     }
 
+    /* THE SCORESHEET: the game, then whatever you played on past its last move. A line that leaves the
+       game EARLIER is drawn in its own box (yourLine), so the game is never pushed out of this list. */
     function moveList() {
+      var S0 = game[0].S, cells = [], k, tail = sides[END] || [];
+      if (S0.turn === 'b') cells.push('<span></span>');         // Black moved first: White's cell stays empty
+      for (k = 1; k <= END; k++) {
+        cells.push('<span data-at="' + k + '" class="' + (s < 0 && at === k ? 'sel' : '') +
+                   (k < END && sides[k] ? ' has' : '') + '">' + esc(game[k].san) + '</span>');
+      }
+      for (k = 0; k < tail.length; k++) {
+        cells.push('<span data-at="' + END + '" data-s="' + k + '" class="mine' +
+                   (at === END && s === k ? ' sel' : '') + '">' + esc(tail[k].san) + '</span>');
+      }
       var h = '';
-      for (var k = 1; k < nodes.length; k += 2) {
-        h += '<i>' + ((k - 1) / 2 + 1) + '.</i>' +
-             '<span data-at="' + k + '"' + (at === k ? ' class="sel"' : '') + '>' + esc(nodes[k].san) + '</span>' +
-             (nodes[k + 1]
-               ? '<span data-at="' + (k + 1) + '"' + (at === k + 1 ? ' class="sel"' : '') + '>' + esc(nodes[k + 1].san) + '</span>'
-               : '<span></span>');
+      for (k = 0; k < cells.length; k += 2) {
+        h += '<i>' + ((S0.full || 1) + k / 2) + '.</i>' + cells[k] + (cells[k + 1] || '<span></span>');
       }
       var el = ov.querySelector('#pab-moves');
       el.innerHTML = h;
-      var s = el.querySelector('.sel'); if (s) s.scrollIntoView({ block: 'nearest' });
+      var on = el.querySelector('.sel'); if (on) on.scrollIntoView({ block: 'nearest' });
+    }
+
+    /* YOUR LINE, when it leaves the game before the end. Shown on the game move it leaves from as well,
+       so a line tried earlier is one tap away from the dot that marks it. */
+    function yourLine() {
+      var el = ov.querySelector('#pab-mine'), l = at < END ? sides[at] : null;
+      if (!l) {
+        // the one-time word that this is allowed: gone for good once a line has been tried
+        el.hidden = tried || at >= END;
+        el.innerHTML = '<p>Play a different move here to try it out. The moves below stay put.</p>';
+        return;
+      }
+      var S = game[at].S, full = S.full || 1, turn = S.turn, h = '<em>Your line</em>';
+      for (var k = 0; k < l.length; k++) {
+        h += '<span data-s="' + k + '"' + (s === k ? ' class="sel"' : '') + '>' +
+             (turn === 'w' ? full + '. ' : (k === 0 ? full + '… ' : '')) + esc(l[k].san) + '</span> ';
+        if (turn === 'b') full++;
+        turn = turn === 'w' ? 'b' : 'w';
+      }
+      el.hidden = false;
+      el.innerHTML = h + (s >= 0 ? '<button type="button" id="pab-rejoin">↩ Back to the main line</button>' : '');
     }
 
     function refresh() {
@@ -476,13 +546,13 @@
       ov.querySelector('#pab-depth').textContent = '';
       var pvEl = ov.querySelector('#pab-pvtext');
       if (pvEl && engineOk()) pvEl.textContent = 'Thinking…';
-      draw(); status(); moveList();
-      ov.querySelector('#pab-back').disabled = at === 0;
-      ov.querySelector('#pab-fwd').disabled = at === nodes.length - 1;
+      draw(); status(); moveList(); yourLine();
+      ov.querySelector('#pab-back').disabled = s < 0 && at === 0;
+      ov.querySelector('#pab-fwd').disabled = !next();
       // A finished position has nothing to search — asking anyway spends a worker on a
       // question with no answer, and Stockfish's reply to a mated position is not a
       // number you'd want on the bar. Say what happened instead.
-      var S = nodes[at].S;
+      var S = here().S;
       if (Cc.legalMoves(S).length) { search(Cc.toFEN(S)); return; }
       var mated = Cc.isCheckmate(S);
       sc = mated ? { type: 'mate', val: S.turn === 'w' ? -1 : 1 } : { type: 'cp', val: 0 };
@@ -490,27 +560,31 @@
       ov.querySelector('#pab-fill').style.height = (mated ? (S.turn === 'w' ? 0 : 100) : 50) + '%';
       if (pvEl) pvEl.textContent = mated ? 'Checkmate — nothing left to calculate.' : 'Stalemate — the game is drawn here.';
     }
-    function go(i) {
-      i = Math.max(0, Math.min(nodes.length - 1, i));
-      if (i === at) return;
-      at = i; refresh();
-    }
+    function stand(a, b) { if (a === at && b === s) return; at = a; s = b; refresh(); }
+    function back() { if (s >= 0) stand(at, s - 1); else if (at > 0) stand(at - 1, -1); }
+    function fwd() { var n = next(); if (n) stand(n[0], n[1]); }
 
+    /* ⚠⚠ `game` IS NEVER WRITTEN HERE. This used to cut the list at the move you were on and append:
+       one experiment at move 20 deleted moves 21 to the end, and Reset then emptied the rest.
+       The game's own next move walks on down the game; anything else is YOUR line off this position. */
     function play(from, to, promo) {
-      var S = nodes[at].S;
+      var S = here().S;
       var m = Cc.findMove(S, from, to, promo || null);
       if (!m) return false;
-      nodes = nodes.slice(0, at + 1);
-      nodes.push({ S: Cc.makeMove(S, m), san: Cc.toSAN(S, m), from: m.from, to: m.to });
-      at = nodes.length - 1;
-      refresh();
+      var n = node(S, m), l = sides[at];
+      if (s < 0 && at < END && game[at + 1].uci === n.uci) { stand(at + 1, -1); return true; }
+      if (!(l && s + 1 < l.length && l[s + 1].uci === n.uci)) {
+        sides[at] = (s < 0 ? [] : l.slice(0, s + 1)).concat([n]);
+        tried = true;
+      }
+      stand(at, s + 1);
       return true;
     }
 
     // Promotion: ask, right on the board, rather than silently queening — under-promotion
     // is exactly the kind of thing you open an analysis board to check.
     function askPromo(from, to, cb) {
-      var white = nodes[at].S.turn === 'w';
+      var white = here().S.turn === 'w';
       var box = document.createElement('div'); box.className = 'pab-promo';
       box.innerHTML = ['q', 'r', 'b', 'n'].map(function (p) {
         return '<button data-p="' + p + '" aria-label="' +
@@ -530,7 +604,7 @@
       var r = cv.getBoundingClientRect();
       var i = idxAt(e.clientX - r.left, e.clientY - r.top, cv._px, flip);
       if (i < 0) return;
-      var S = nodes[at].S, legal = Cc.legalMoves(S);
+      var S = here().S, legal = Cc.legalMoves(S);
       var mine = S.b[i] && Cc.colorOf(S.b[i]) === S.turn;
       if (sel === -1 || mine) {
         if (!mine) { sel = -1; hints = null; return draw(); }
@@ -550,14 +624,19 @@
       play(from, i);
     });
 
-    ov.querySelector('#pab-back').onclick = function () { go(at - 1); };
-    ov.querySelector('#pab-fwd').onclick = function () { go(at + 1); };
+    ov.querySelector('#pab-back').onclick = back;
+    ov.querySelector('#pab-fwd').onclick = fwd;
     ov.querySelector('#pab-flip').onclick = function () { flip = !flip; sel = -1; hints = null; draw(); };
-    ov.querySelector('#pab-reset').onclick = function () {
-      nodes = nodes.slice(0, 1); at = 0; refresh();
-    };
+    // back to the move the board opened on, with every line of yours dropped; the game is untouched
+    ov.querySelector('#pab-reset').onclick = function () { sides = {}; at = home; s = -1; refresh(); };
     ov.querySelector('#pab-moves').addEventListener('click', function (e) {
-      var t = e.target.closest('[data-at]'); if (t) go(+t.getAttribute('data-at'));
+      var t = e.target.closest('[data-at]');
+      if (t) stand(+t.getAttribute('data-at'), t.hasAttribute('data-s') ? +t.getAttribute('data-s') : -1);
+    });
+    ov.querySelector('#pab-mine').addEventListener('click', function (e) {
+      var t = e.target.closest('[data-s]');
+      if (t) stand(at, +t.getAttribute('data-s'));
+      else if (e.target.closest('#pab-rejoin')) stand(at, -1);
     });
     window.addEventListener('resize', function rz() {
       if (closed()) { window.removeEventListener('resize', rz); return; }

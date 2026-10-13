@@ -38,7 +38,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
-const { findChrome } = require('./harness');
+const { findChrome, bottomSide, inkAt } = require('./harness');
 
 let sass;
 try { sass = require('sass'); }
@@ -1104,6 +1104,98 @@ const BOT = 'maxwell';
   ok('⛑⛑ …and it does not swallow a link asking for the other chair',
      await p.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).pc) === 'b',
      'an empty seat is not a game in progress');
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.removeItem('pjcc.pt.side.v1'); });
+
+  /* ── 13. THE REVIEW LOOKS FROM YOUR CHAIR (2026-10-12) ────────────────────────────
+     Nate, after a game against Auston: *"Can we make the board orient always with our pieces
+     starting at the bottom? The review had it flipped."* The review had never been told which
+     side you played: it drew White below for everybody.
+     ⚠ READ OFF THE CANVAS'S PIXELS (bottomSide). The page is never asked which way it faces.
+     ⚠ BOTH CHAIRS, so "always turn it round" cannot pass. */
+  const OPENING = 'e2e4 e7e5 g1f3 b8c6 f1c4 g8f6 f3g5 d7d5 e4d5 c6a5';
+  const reviewAs = async (color) => {
+    // ends with the move in YOUR hands, so nobody is thinking when Resign is pressed
+    const game = color === 'b' ? OPENING + ' c4b5' : OPENING;
+    await p.evaluate(() => { localStorage.setItem('pjcc.pt.side.v1', 'r');
+                             localStorage.removeItem('pjcc.park.bot.v1'); });
+    await p.goto(URL + '?table=' + BOT + '&side=' + color, { waitUntil: 'networkidle2' });
+    await sleep(1000);
+    await p.evaluate((game) => {
+      const st = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+      st.moves = game; localStorage.setItem('pjcc.park.bot.v1', JSON.stringify(st));
+    }, game);
+    await p.goto(URL + '?table=' + BOT, { waitUntil: 'networkidle2' });
+    await sleep(1000);
+    const sat = await saved();
+    await clickId('pt-bot-resign');
+    await sleep(700);
+    await clickId('pt-bot-review');
+    await p.waitForSelector('#pgr-board canvas', { timeout: 60000 });
+    await sleep(300);
+    return sat.pc === color && sat.moves === game;
+  };
+  const hangs = (bar, fill) => p.evaluate((bar, fill) => {
+    const b = document.querySelector(bar).getBoundingClientRect(), f = document.querySelector(fill).getBoundingClientRect();
+    return Math.abs(f.top - b.top) < 3 ? 'top' : Math.abs(f.bottom - b.bottom) < 3 ? 'bottom' : 'neither';
+  }, bar, fill);
+
+  ok('a finished game with the black pieces is on the board, and its review opens',
+     await reviewAs('b'), 'eleven plies of a real opening, resigned with the room\'s own button');
+  let facing = await bottomSide(p, '#pgr-board canvas');
+  ok('⛑⛑ the review draws YOUR pieces nearest you when you played Black',
+     facing.side === 'b', JSON.stringify(facing));
+  // Black's knight went to a5: from Black's chair that is the RIGHT edge, five rows down
+  const a5 = [await inkAt(p, '#pgr-board canvas', 7, 4), await inkAt(p, '#pgr-board canvas', 0, 4)];
+  ok('…turned all the way round, not just top for bottom',
+     a5[0].b > 100 && a5[1].b === 0, JSON.stringify(a5));
+  ok('…and its bar turns with the board, White\'s share hanging from the top',
+     (await hangs('.pgr-bar', '#pgr-evalfill')) === 'top');
+  await clickId('pgr-analyse');
+  await sleep(400);
+  facing = await bottomSide(p, '#pab-board canvas');
+  ok('⛑⛑ …and the analysis board opened from that review faces the same way',
+     facing.side === 'b', JSON.stringify(facing));
+  await shot('21-review-as-black');
+  await p.evaluate(() => { document.querySelector('.pab-x').click(); document.querySelector('.pgr-x').click(); });
+  await clickId('pt-bot-analyse');
+  await sleep(400);
+  facing = await bottomSide(p, '#pab-board canvas');
+  const whole = await p.evaluate(() => ({
+    n: document.querySelectorAll('#pab-moves span[data-at]').length,
+    on: (document.querySelector('#pab-moves .sel') || {}).textContent || '' }));
+  ok('the finished board\'s own Analysis button faces your way too, on the last move of the whole game',
+     facing.side === 'b' && whole.n === 11 && whole.on === 'Bb5+', JSON.stringify(whole));
+  await p.evaluate(() => document.querySelector('.pab-x').click());
+
+  ok('…and a finished game with the white pieces opens its review', await reviewAs('w'));
+  facing = await bottomSide(p, '#pgr-board canvas');
+  ok('played as White, the review keeps White nearest you', facing.side === 'w', JSON.stringify(facing));
+  ok('…and its bar stands White\'s share on the bottom', (await hangs('.pgr-bar', '#pgr-evalfill')) === 'bottom');
+  await clickId('pgr-analyse');
+  await sleep(400);
+  facing = await bottomSide(p, '#pab-board canvas');
+  ok('…and so does the analysis board behind it', facing.side === 'w', JSON.stringify(facing));
+  await p.evaluate(() => { document.querySelector('.pab-x').click(); document.querySelector('.pgr-x').click(); });
+
+  /* ⚠ THE DOORS THIS RUN CANNOT WALK THROUGH: a table against a PERSON needs two signed-in accounts.
+     So every door is also read: one that opens the review without naming the chair draws White below. */
+  const blind = [];
+  let doors = 0;
+  ['games/park-tables/index.html', 'assets/games/pjcc_gauntlet.html'].forEach((f) => {
+    const parts = fs.readFileSync(path.join(ROOT, f), 'utf8').split('PJCCReview.open(');
+    parts.slice(1).forEach((t, i) => {
+      doors++;
+      const call = t.slice(0, t.indexOf(');'));
+      if (/\bflip\s*:/.test(call)) return;
+      // handed an object built just above: that literal has to carry the chair
+      const before = parts.slice(0, i + 1).join('PJCCReview.open(');
+      const lit = before.slice(before.lastIndexOf('var meta = {'));
+      if (!/\bmeta\b/.test(call) || !/^var meta = \{[^;]*\bflip\s*:/.test(lit)) blind.push(f + ' door ' + (i + 1));
+    });
+  });
+  ok('every door into the review says which chair you sat in',
+     doors > 0 && blind.length === 0, doors + ' doors' + (blind.length ? ' · BLIND: ' + blind.join(', ') : ''));
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
                            localStorage.removeItem('pjcc.pt.side.v1'); });
 

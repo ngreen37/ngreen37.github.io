@@ -177,9 +177,13 @@ function insufficientMaterial(S){
 // Empty squares are '' in S.b, so they MUST be given a placeholder here — a bare
 // join('') would drop every gap and collapse different positions onto one key (a
 // rook sliding along an empty rank would read identical), firing a false threefold.
+// ⚠ THE EN-PASSANT SQUARE COUNTS ONLY WHILE A PAWN CAN ACTUALLY TAKE THERE (the rule's own wording).
+// Keyed on every two-square pawn move, a position first reached by one was never counted as itself
+// again, and the draw by repetition came on its FOURTH appearance instead of its third.
 function posKey(S){
   var board=''; for(var i=0;i<64;i++){ board += S.b[i] || '.'; }
-  return board+'|'+S.turn+'|'+(S.cast.K?'K':'')+(S.cast.Q?'Q':'')+(S.cast.k?'k':'')+(S.cast.q?'q':'')+'|'+S.ep;
+  var ep = (S.ep>=0 && legalMoves(S).some(function(m){ return m.ep; })) ? S.ep : -1;
+  return board+'|'+S.turn+'|'+(S.cast.K?'K':'')+(S.cast.Q?'Q':'')+(S.cast.k?'k':'')+(S.cast.q?'q':'')+'|'+ep;
 }
 // Outcome of the position. repCount = how many times this exact position has occurred (for threefold).
 function gameResult(S, repCount){

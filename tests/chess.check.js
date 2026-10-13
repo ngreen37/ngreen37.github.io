@@ -51,6 +51,38 @@ console.log('\n=== pjcc-chess: genuine threefold still fires ===');
   ok(C.gameResult(C.parseFEN(C.START_FEN), 2) === null, 'no draw at only 2 occurrences');
 })();
 
+/* ══ A REPETITION THAT STARTS WITH A TWO-SQUARE PAWN MOVE (2026-10-12) ═══════════════
+   The rule: two positions differ if a pawn could be taken en passant in one and not the other.
+   posKey used to key on the en-passant square after EVERY two-square pawn move, takeable or
+   not, so the first time such a position stood was never counted and the draw came one
+   repetition late. ⚠ BOTH HALVES: "never key on it" passes the first and fails the second. */
+console.log('\n=== pjcc-chess: repetition and the en-passant square ===');
+(function () {
+  const shuffle = ['g1f3', 'g8f6', 'f3g1', 'f6g8'];
+  const countAfter = (moves) => {
+    let g = C.parseFEN(C.START_FEN);
+    const reps = {};
+    reps[C.posKey(g)] = 1;
+    let n = 0;
+    moves.forEach((u) => {
+      g = C.makeMove(g, C.findMove(g, C.sqFromName(u.slice(0, 2)), C.sqFromName(u.slice(2, 4))));
+      const k = C.posKey(g);
+      n = reps[k] = (reps[k] || 0) + 1;
+    });
+    return { n, result: C.gameResult(g, n) };
+  };
+  // 1.e4 e5: nothing can take on e6, so the position after 1...e5 is the same position each time
+  const quiet = countAfter(['e2e4', 'e7e5'].concat(shuffle, shuffle));
+  eq(quiet.n, 3, 'after 1.e4 e5 and two knight shuffles the position has stood three times');
+  eq(quiet.result, 'threefold', '…and that is a draw, on the third time and not the fourth');
+  // 1.e4 a6 2.e5 d5: exd6 IS on offer the first time, so that first time is a different position
+  const live = countAfter(['e2e4', 'a7a6', 'e4e5', 'd7d5'].concat(shuffle, shuffle));
+  eq(live.n, 2, 'but where a pawn really could have been taken, the first time does not count');
+  ok(live.result === null, '…so that one is not a draw yet');
+  ok(countAfter(['e2e4', 'a7a6', 'e4e5', 'd7d5'].concat(shuffle, shuffle, shuffle)).result === 'threefold',
+     '…until it has stood three times without the capture');
+})();
+
 console.log('\n=== pjcc-chess: terminal states ===');
 eq(C.gameResult(C.parseFEN('rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3'), 1), 'checkmate', "fool's mate = checkmate");
 eq(C.gameResult(C.parseFEN('k7/8/1Q6/8/8/8/8/7K b - - 0 1'), 1), 'stalemate', 'K+Q vs K trap = stalemate');

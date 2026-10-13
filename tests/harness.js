@@ -89,4 +89,60 @@ function report(name, results, errors) {
   return pass;
 }
 
-module.exports = { withGame, report, sleep, findChrome };
+/* Which army stands on the two rows nearest the player, READ OFF A BOARD CANVAS'S PIXELS.
+   ⚠ The page is never asked which way it thinks it is facing: a board that says "flipped" and
+   draws White below must fail. Counts pixels of each army's fill color in the top and bottom
+   quarters; an early-game position (both armies mostly at home) is what makes it decisive. */
+function bottomSide(page, sel) {
+  return page.evaluate((sel) => {
+    const cv = document.querySelector(sel);
+    if (!cv || !cv.width) return { side: '?', why: 'no canvas at ' + sel };
+    const rgb = (token, fallback) => {
+      const probe = document.createElement('i');
+      probe.style.color = 'var(' + token + ', ' + fallback + ')';
+      document.body.appendChild(probe);
+      const m = getComputedStyle(probe).color.match(/[\d.]+/g).map(Number);
+      probe.remove();
+      return m;
+    };
+    const W = rgb('--piece-w-fill', '#fff'), B = rgb('--piece-b-fill', '#4a3585');
+    const near = (d, i, c, tol) => Math.abs(d[i] - c[0]) < tol && Math.abs(d[i + 1] - c[1]) < tol && Math.abs(d[i + 2] - c[2]) < tol;
+    const count = (y0, y1) => {
+      const d = cv.getContext('2d').getImageData(0, y0, cv.width, y1 - y0).data;
+      let w = 0, b = 0;
+      for (let i = 0; i < d.length; i += 4) { if (near(d, i, W, 12)) w++; else if (near(d, i, B, 24)) b++; }
+      return { w, b };
+    };
+    const q = Math.floor(cv.height / 4), top = count(0, q), bot = count(cv.height - q, cv.height);
+    const side = (bot.w > 4 * top.w && top.b > 4 * bot.b) ? 'w'
+               : (top.w > 4 * bot.w && bot.b > 4 * top.b) ? 'b' : '?';
+    return { side, top, bot };
+  }, sel);
+}
+
+/* How much of each army's color is drawn in ONE square of a board canvas, (file, row) from the top
+   left AS DRAWN. ⚠ bottomSide cannot see a board turned top-for-bottom but not left-for-right: both
+   armies are on the right rows and the king and queen have swapped sides. One named piece can. */
+function inkAt(page, sel, file, row) {
+  return page.evaluate((sel, file, row) => {
+    const cv = document.querySelector(sel);
+    if (!cv || !cv.width) return { w: -1, b: -1 };
+    const rgb = (token, fallback) => {
+      const probe = document.createElement('i');
+      probe.style.color = 'var(' + token + ', ' + fallback + ')';
+      document.body.appendChild(probe);
+      const m = getComputedStyle(probe).color.match(/[\d.]+/g).map(Number);
+      probe.remove();
+      return m;
+    };
+    const W = rgb('--piece-w-fill', '#fff'), B = rgb('--piece-b-fill', '#4a3585');
+    const near = (d, i, c, tol) => Math.abs(d[i] - c[0]) < tol && Math.abs(d[i + 1] - c[1]) < tol && Math.abs(d[i + 2] - c[2]) < tol;
+    const t = cv.width / 8;
+    const d = cv.getContext('2d').getImageData(Math.round(file * t), Math.round(row * t), Math.round(t), Math.round(t)).data;
+    let w = 0, b = 0;
+    for (let i = 0; i < d.length; i += 4) { if (near(d, i, W, 12)) w++; else if (near(d, i, B, 24)) b++; }
+    return { w, b };
+  }, sel, file, row);
+}
+
+module.exports = { withGame, report, sleep, findChrome, bottomSide, inkAt };

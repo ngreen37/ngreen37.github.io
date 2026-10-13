@@ -26,6 +26,9 @@
 <script src="/assets/js/pjcc-openings.js"></script>
 <script src="/assets/js/pjcc-replay.js"></script>
 <script src="/assets/js/pjcc-game-review.js"></script>
+<!-- ⚠ WITHOUT THIS THE REVIEW HAS NO "ANALYSIS BOARD" BUTTON: it draws one only where the board is loaded,
+     and this room never loaded it, so its review was a dead end the Park Tables' was not. -->
+<script src="/assets/js/pjcc-analysis.js"></script>
 <script src="/assets/js/pjcc-pgn.js"></script>
 <!-- the ONE Gauntlet door (2026-07-27) — the same _sass partial the games hall compiles,
      served standalone so this shell can wear it. See assets/css/gauntlet-door.scss. -->
@@ -1298,7 +1301,7 @@ function endGame(result){
                                   blackName: youWhite ? oppName : youName,
                                   whiteRating: youWhite ? youElo : oppElo,
                                   blackRating: youWhite ? oppElo : youElo,
-                                  result: revResult });
+                                  result: revResult, flip: !youWhite });
     });
     /* The same game, as text. Captured here for the reason the review above is: G belongs
        to the next match the moment one starts. */

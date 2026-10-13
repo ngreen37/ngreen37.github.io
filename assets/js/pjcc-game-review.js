@@ -20,8 +20,11 @@
  *    enabled()                 -> boolean  (ENABLED || private preview)
  *    available()               -> boolean  (Stockfish can run in this browser)
  *    open(movesStr, meta)      -> opens the review overlay for a UCI move list
- *        meta: { whiteName, blackName, whiteRating, blackRating, result }
+ *        meta: { whiteName, blackName, whiteRating, blackRating, result, flip }
  *              (all optional, for the header)
+ *              flip   true when the player sat on Black's side: the board, the bar and the
+ *                     analysis board behind it are then drawn from there.
+ *                     ⚠ OMITTED MEANS WHITE AT THE BOTTOM. Every door passes it (test:parktables counts them).
  */
 (function (root) {
   'use strict';
@@ -311,6 +314,7 @@
       '.pgr-boardwrap{display:flex;gap:8px}' +
       '.pgr-bar{width:12px;border-radius:6px;overflow:hidden;background:#111;border:1px solid #2a1f52;position:relative;flex-shrink:0}' +
       '.pgr-bar i{position:absolute;left:0;right:0;bottom:0;background:#f0eee8;transition:height .25s}' +
+      '.pgr-bar--flip i{top:0;bottom:auto}' +
       '.pgr-nav{display:flex;gap:6px;align-items:center;justify-content:center}' +
       '.pgr-nav button{background:#241847;border:1px solid #4a3a86;color:#cdbcf2;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px}' +
       '.pgr-nav button:hover{border-color:#F5C518;color:#F5C518}' +
@@ -362,13 +366,17 @@
     document.head.appendChild(s);
   }
 
-  function boardSVG(fen, hi, arrow) {
+  // Where square i is drawn, in files and ranks from the top left. Flipped, a8 is the bottom right.
+  function fileOf(i, flip) { return flip ? 7 - (i % 8) : i % 8; }
+  function rankOf(i, flip) { return flip ? 7 - ((i / 8) | 0) : (i / 8) | 0; }
+
+  function boardSVG(fen, hi, arrow, flip) {
     var S = C().parseFEN(fen), b = S.b, sq = '', pc = '', mk = '';
     // colors come from THE CHESS CANON tokens (_pjcc-22-chess-canon.scss) — the
     // review board matches the Park Tables + Academy boards (Nate: "always uniform").
     // Inline SVG resolves var(--…) from the page; fallbacks mirror the partial.
     for (var i = 0; i < 64; i++) {
-      var x = i % 8, y = (i / 8) | 0, dark = (x + y) % 2 === 1;
+      var x = fileOf(i, flip), y = rankOf(i, flip), dark = (x + y) % 2 === 1;
       sq += '<rect x="' + (x * 10) + '" y="' + (y * 10) + '" width="10" height="10" fill="' + (dark ? 'var(--chess-dk, #9c5f33)' : 'var(--chess-lt, #e9d3a4)') + '"/>';
       if (hi && (i === hi.from || i === hi.to))
         mk += '<rect x="' + (x * 10) + '" y="' + (y * 10) + '" width="10" height="10" fill="rgba(245,197,24,0.42)"/>';
@@ -386,8 +394,8 @@
     // Drawn ABOVE the pieces so it can't hide under them.
     var ar = '';
     if (arrow && arrow.from != null && arrow.to != null && arrow.from !== arrow.to) {
-      var x1 = (arrow.from % 8) * 10 + 5, y1 = ((arrow.from / 8) | 0) * 10 + 5;
-      var x2 = (arrow.to % 8) * 10 + 5,  y2 = ((arrow.to / 8) | 0) * 10 + 5;
+      var x1 = fileOf(arrow.from, flip) * 10 + 5, y1 = rankOf(arrow.from, flip) * 10 + 5;
+      var x2 = fileOf(arrow.to, flip) * 10 + 5,  y2 = rankOf(arrow.to, flip) * 10 + 5;
       var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
       var ux = dx / len, uy = dy / len;                 // unit vector along the arrow
       var bx = x2 - ux * 3.4, by = y2 - uy * 3.4;       // where the head begins
@@ -412,9 +420,9 @@
   // canvas too, so it's one texture. Woods + livery still come straight from the canon tokens.
   // Falls back to the SVG board wherever PJCCPieces isn't loaded, so a review never renders empty.
   var REVIEW_PX = 240;
-  function drawBoard(host, fen, hi, arrow) {
+  function drawBoard(host, fen, hi, arrow, flip) {
     if (!host) return;
-    if (!window.PJCCPieces) { host.innerHTML = boardSVG(fen, hi, arrow); return; }
+    if (!window.PJCCPieces) { host.innerHTML = boardSVG(fen, hi, arrow, flip); return; }
     var dpr = Math.min(2, window.devicePixelRatio || 1), tile = REVIEW_PX / 8;
     var cv = host.firstChild;
     if (!cv || cv.tagName !== 'CANVAS') {
@@ -432,17 +440,17 @@
                 bFill: v('--piece-b-fill', '#4a3585'), bEdge: v('--piece-b-line', '#f2e9ff') };
     var S = C().parseFEN(fen), b = S.b, i, x, y;
     for (i = 0; i < 64; i++) {
-      x = i % 8; y = (i / 8) | 0;
+      x = fileOf(i, flip); y = rankOf(i, flip);
       ctx.fillStyle = ((x + y) % 2 === 1) ? DK : LT; ctx.fillRect(x * tile, y * tile, tile, tile);
       if (hi && (i === hi.from || i === hi.to)) { ctx.fillStyle = 'rgba(245,197,24,0.42)'; ctx.fillRect(x * tile, y * tile, tile, tile); }
     }
     for (i = 0; i < 64; i++) {
-      var p = b[i]; if (!p) continue; x = i % 8; y = (i / 8) | 0;
+      var p = b[i]; if (!p) continue; x = fileOf(i, flip); y = rankOf(i, flip);
       PJCCPieces.draw(ctx, x * tile + tile / 2, y * tile + tile / 2, tile * 0.82, p.toUpperCase(), p === p.toUpperCase() ? 'w' : 'b', PAL);
     }
     if (arrow && arrow.from != null && arrow.to != null && arrow.from !== arrow.to) {
-      var x1 = (arrow.from % 8) * tile + tile / 2, y1 = ((arrow.from / 8) | 0) * tile + tile / 2;
-      var x2 = (arrow.to % 8) * tile + tile / 2, y2 = ((arrow.to / 8) | 0) * tile + tile / 2;
+      var x1 = fileOf(arrow.from, flip) * tile + tile / 2, y1 = rankOf(arrow.from, flip) * tile + tile / 2;
+      var x2 = fileOf(arrow.to, flip) * tile + tile / 2, y2 = rankOf(arrow.to, flip) * tile + tile / 2;
       var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / len, uy = dy / len;
       var hl = tile * 0.34, bx = x2 - ux * hl, by = y2 - uy * hl, pxp = -uy, pyp = ux, hw = tile * 0.21;
       ctx.globalAlpha = 0.9; ctx.strokeStyle = '#2fbf71'; ctx.fillStyle = '#2fbf71';
@@ -588,7 +596,9 @@
       openH +
       graph +
       '<div class="pgr-grid"><div class="pgr-left">' +
-        '<div class="pgr-boardwrap"><div class="pgr-bar"><i id="pgr-evalfill"></i></div><div id="pgr-board"></div></div>' +
+        // ⚠ THE BAR TURNS WITH THE BOARD: White's share left at the bottom, beside Black's pieces, reads backwards.
+        '<div class="pgr-boardwrap"><div class="pgr-bar' + (meta.flip ? ' pgr-bar--flip' : '') +
+          '"><i id="pgr-evalfill"></i></div><div id="pgr-board"></div></div>' +
         '<div class="pgr-nav"><button id="pgr-prev">◂</button><span id="pgr-ply">Start</span><button id="pgr-next">▸</button></div>' +
         // 2026-07-28 — the review tells you WHAT happened; this is the door to asking WHY.
         // It hands the analysis board the game and the ply you're looking at, so you land on
@@ -606,7 +616,7 @@
       // the best-move arrow: any move that wasn't the engine's best gets pointed out
       var pk = k > 0 ? rep.plies[k - 1] : null;
       var arrow = (pk && pk.bestFrom != null) ? { from: pk.bestFrom, to: pk.bestTo } : null;
-      drawBoard(document.getElementById('pgr-board'), rep.fens[k], hi, arrow);
+      drawBoard(document.getElementById('pgr-board'), rep.fens[k], hi, arrow, !!meta.flip);
       var ev = rep.evalW[k], pct = 50 + Math.max(-1, Math.min(1, ev / 800)) * 50;
       document.getElementById('pgr-evalfill').style.height = pct.toFixed(0) + '%';
       var plyLbl = document.getElementById('pgr-ply'), best = document.getElementById('pgr-best');
@@ -627,12 +637,14 @@
     document.getElementById('pgr-next').onclick = function () { show(k + 1); };
     var an = document.getElementById('pgr-analyse');
     if (an) an.onclick = function () {
-      // `k` is the number of plies played, which is exactly the ply index to stop at.
+      // `k` is the number of plies played, which is exactly the ply to stand on. The whole game goes
+      // with it: the board over there can walk on past this move and back.
       PJCCAnalysis.open({
         moves: rep.moves.map(function (m) { return m.uci; }).join(' '),
         ply: k,
+        flip: !!meta.flip,
         subtitle: (meta.whiteName || 'White') + ' vs ' + (meta.blackName || 'Black') +
-                  (k ? ' · after ' + (Math.floor((k - 1) / 2) + 1) + (rep.plies[k - 1].mover === 'w' ? '. ' : '… ') + rep.plies[k - 1].san : ' · start')
+                  (meta.result ? ' · ' + meta.result : '')
       });
     };
     body.addEventListener('click', function (e) {
