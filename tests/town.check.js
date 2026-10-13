@@ -4851,6 +4851,140 @@ const server = http.createServer((req, res) => {
           }
         }
 
+        /* ══ a crossing that goes dark · a fence with no false mouth · a dog that is not a conversation ·
+              a knight on one key · a puzzle with no count — 2026-10-12, the evening batch ══ */
+        /* his: "Switching windows walking around cuts to like a gray screen: can we eliminate that?" ·
+           "Fix the fence at the bottom of the south end near Nate (bottom left)" · "Don't do How have you
+           been or I'll let you Get on w/ the dogs. Take those out, don't make it a dialogue." · "I beat
+           Maxwell, but ... it says 'You already took one off me' which would imply the opposite." ·
+           "Frogger game: put in bold letters 'Hit Space to Exit' ... only offer the two options that go
+           left/right 2 squares and up one" · "Maxwell asked for a puzzle completion, but the Puzzle Champ
+           doesn't have that option" */
+        {
+          const fdE = code(rd('fade.gd')), twE = code(rd('town.gd')), npE = code(rd('npc.gd'));
+          const chE = code(rd('challenger.gd')), gsE = code(rd('game_state.gd')), crE = code(rd('crossing.gd'));
+
+          /* ── 1 · the crossing: one cover, on the root, with a size ── */
+          ok(/_rect\.set_anchors_and_offsets_preset\(Control\.PRESET_FULL_RECT\)/.test(fdE)
+             && !/\.set_anchors_preset\(/.test(fdE),
+            '⛑⛑ the cover between two windows HAS A SIZE  (anchors AND offsets)',
+            'anchors alone left a new ColorRect 0 by 0: the fade was never on screen and the engine\'s gray was');
+          ok(/from\.get_tree\(\)\.root\.add_child\(f\)\s*_cover = f/.test(fnGd(fdE, 'cross'))
+             && !/current_scene\.add_child/.test(fdE),
+            '⛑ …and it hangs off the ROOT, so it is still black while the next window builds',
+            'a child of the scene is freed with the scene');
+          ok(/if is_instance_valid\(_cover\):\s*_cover\._lift\(\)\s*_cover = null\s*return/.test(fnGd(fdE, 'landing')),
+            '   the window that was reached is what lifts it');
+          ok(/_then\.call\(\)\s*get_tree\(\)\.create_timer\(float\(BUSY_US\) \/ 1000000\.0\)\.timeout\.connect\(_lift\)/.test(fnGd(fdE, '_done')),
+            '⚠ …and a window that never says so cannot leave the screen black: the cover lifts itself');
+          ok(/if not _hold:\s*return\s*_hold = false\s*remove_from_group\("town_cover"\)/.test(fnGd(fdE, '_lift')),
+            '   lifting gives the feet back, once');
+
+          /* ── 2 · the fence: a seam opens only the edge it stands at ── */
+          {
+            const bare = fnGd(twE, '_edge_bare');
+            ok(/absf\(at\.x - p\.x\) <= s\.x \* 0\.5 \+ 14\.0 and absf\(at\.y - p\.y\) <= SEAM_NEAR/.test(bare)
+               && /absf\(at\.y - p\.y\) <= s\.y \* 0\.5 \+ 14\.0 and absf\(at\.x - p\.x\) <= SEAM_NEAR/.test(bare),
+              '⛑ a road out opens the fence on ITS edge, not on the one across the window',
+              'the road in at the top of the south window cut the same hole in its bottom fence');
+            /* the constant, against every seam and both of its window's parallel edges: derived, not trusted */
+            const near = +(/const SEAM_NEAR := ([\d.]+)/.exec(twE) || [])[1];
+            const topIn = +(/const EDGE_TOP_IN := ([\d.]+)/.exec(twE) || [])[1], sideIn = +(/const EDGE_SIDE_IN := ([\d.]+)/.exec(twE) || [])[1];
+            const rects = { square: (/\n\treturn Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(fnGd(twE, 'region_rect')) || []).slice(1).map(Number) };
+            for (const m of fnGd(twE, 'region_rect').matchAll(/"(\w+)":\s*return Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/g)) rects[m[1]] = m.slice(2).map(Number);
+            const seamsSrc = twE.slice(twE.indexOf('const SEAMS := {'), twE.indexOf('\n}', twE.indexOf('const SEAMS := {')));
+            let own = 0, across = Infinity, seams = 0, region = '';
+            for (const line of seamsSrc.split('\n')) {
+              const r = /^\t"(\w+)": \[/.exec(line);
+              if (r) region = r[1];
+              const s = /"at": Vector2\((-?[\d.]+), (-?[\d.]+)\), "size": Vector2\(([\d.]+), ([\d.]+)\)/.exec(line);
+              if (!s || !rects[region]) continue;
+              seams++;
+              const [x, y, w, h] = rects[region], px = +s[1], py = +s[2], wide = +s[3] > +s[4];
+              const d = wide ? [Math.abs(py - (y + topIn)), Math.abs(py - (y + h))] : [Math.abs(px - (x + sideIn)), Math.abs(px - (x + w - sideIn))];
+              own = Math.max(own, Math.min(...d));
+              across = Math.min(across, Math.max(...d));
+            }
+            ok(seams >= 8 && Object.keys(rects).length === 5 && own < near && near < across,
+              '⚠ …and that distance sits between every seam\'s own fence and the one opposite it',
+              seams + ' seams: furthest from its own edge ' + own + ', nearest opposite edge ' + across + ', SEAM_NEAR ' + near);
+          }
+
+          /* ── 3 · a dog is not a conversation ── */
+          {
+            const menu = fnGd(npE, 'menu'), act = fnGd(npE, 'interact');
+            const self = menu.indexOf('"How have you been?"'), bye = menu.indexOf('"I\'ll let you get on."');
+            const out = menu.search(/if animal:\s*return rows/);
+            ok(out > 0 && self > out && bye > out,
+              '⛑ an animal is never asked how it has been, nor told you will let it get on',
+              'both rows are added after the menu has already handed an animal its rows');
+            ok(/if animal:\s*if not rows\.any\(func \(r: Dictionary\) -> bool: return bool\(r\.get\("on", true\)\)\):\s*say\(_greeted, 4\.2\)/.test(act),
+              '⛑ …with nothing to DO with it, a dog does its line and no box opens');
+            ok(/rows\.append\(\{ "id": "bye", "text": "Walk on\.", "said": "" \}\)\s*open_talk\(who, _greeted, rows\)/.test(act),
+              '   …and with something to do, the way out is a thing you do: nothing is said over your head');
+          }
+
+          /* ── 4 · whose mouth the line is in ── */
+          {
+            const all = fs.readdirSync(GD).filter((f) => f.endsWith('.gd')).filter((f) => /took one off me/.test(code(rd(f))));
+            ok(/play\["text"\] = "Another game\? — you already took one off %s\." % who/.test(chE)
+               && /return "You already took one off %s\." % who/.test(fnGd(gsE, 'sit_down')) && all.length === 0,
+              '⛑ "you already took one off MAXWELL": the row is in your mouth, and "off me" said he had beaten you',
+              all.length ? 'still says "off me": ' + all.join(' ') : 'both sentences name them');
+          }
+
+          /* ── 5 · the crossing's knight ── */
+          {
+            const ways = /const KNIGHT_WAYS: Array\[Vector2i\] = \[Vector2i\(-2, -1\), Vector2i\(2, -1\)\]/.test(crE);
+            ok(ways && /for d in \(KNIGHT_WAYS if _piece == "n" else PortalBoard\.ORTH \+ PortalBoard\.DIAG\):/.test(fnGd(crE, 'legal')),
+              '⛑ your knight is offered two jumps: two across and one up, left or right');
+            ok(/if d\.x != 0:\s*go\(_at \+ \(KNIGHT_WAYS\[0\] if d\.x < 0 else KNIGHT_WAYS\[1\]\)\)/.test(fnGd(crE, '_unhandled_key_input'))
+               && !/_leg\b|leg_ends/.test(crE),
+              '⛑ …on ONE key, left or right  (the two-key leg and its 1.4 s are gone)');
+            ok(/for d in \(PortalBoard\.JUMPS if f\.code == "n" else/.test(fnGd(crE, 'moves_of')),
+              '   theirs keep all eight');
+            /* seven jumps, every order of left and right, from each file a crossing can start on */
+            const cols = (/var cols := \[([\d, ]+)\]/.exec(fnGd(crE, '_start_for')) || ['', ''])[1].split(',').map(Number);
+            const back = +(/const BACK_ROW := (\d+)/.exec(crE) || [])[1];
+            let bad = '';
+            for (const c of cols) {
+              const ends = new Set();
+              for (let bits = 0; bits < (1 << back); bits++) {
+                let x = c, on = true;
+                for (let j = 0; j < back && on; j++) { x += (bits >> j) & 1 ? 2 : -2; on = x >= 0 && x <= 7; }
+                if (on) ends.add(x);
+              }
+              const got = [...ends].sort((a, b) => a - b).join(','), want = [c - 2, c + 2].join(',');
+              if (got !== want) bad += ' file ' + c + ' lands on ' + got;
+            }
+            ok(cols.length === 4 && back === 7 && bad === ''
+               && /if code == "n":\s*for c in cols:\s*for x in \[int\(c\) - 2, int\(c\) \+ 2\]:\s*if not bool\(_seats\[x\]\):\s*return int\(c\)/.test(fnGd(crE, '_start_for')),
+              '⛑ …and it starts where one of the two seats it can reach is open  (walked: every order of seven jumps)',
+              bad || 'from files ' + cols.join(' ') + ' it can only ever land two files away');
+            ok(/if _piece == "n" and _hop < 0\.0 and legal\(\)\.is_empty\(\):\s*_to_start\(\)/.test(fnGd(crE, '_process')),
+              '⚠ a knight with no jump left walks back to the start; it does not wait there for the flag');
+            ok(/_exit_tip\.text = "Tap USE to Exit" if TouchPad\.probably_touch\(\) else "Hit Space to Exit"/.test(crE)
+               && /bold\.variation_embolden = 1\.0\s*_exit_tip\.add_theme_font_override\("font", bold\)/.test(crE)
+               && /_hud\.add_child\(_exit_tip\)/.test(crE),
+              '⛑ "Hit Space to Exit" is on the glass in bold  (the pad\'s word on a phone)');
+          }
+
+          /* ── 6 · a puzzle for its own sake ── */
+          {
+            const champ = twE.slice(twE.indexOf('class PuzzleChamp extends TownNPC:'));
+            ok(/if not GameState\.puzzle_running\(\) and not GameState\.puzzle_ready\(\):\s*rows\.append\(\{ "id": "one", "text": "Set me one\. No count\." \}\)/.test(champ)
+               && /"one":\s*end_talk\(\)\s*GameState\.puzzle_practice\(\)/.test(champ),
+              '⛑ with the oars won or today\'s run missed, the Puzzle Champ still sets ONE',
+              'a favor or a bounty that asks for a puzzle could not be done from inside the game');
+            const prac = fnGd(gsE, 'puzzle_practice');
+            ok(/open_url\(PUZZLE_URL\)/.test(prac) && !/oars|puz\b|puz\[/.test(prac),
+              '   …through the same door, with no run started and none touched');
+            const said = [/"puzzle": "([^"]+)"/.exec(chE), /"id": "puzzle",[^\n]*"text": "([^"]+)"/.exec(gsE), /"puzzle":\s*return "([^"]+)"/.exec(fnGd(gsE, 'favor_line'))].map((m) => (m ? m[1] : ''));
+            ok(said.every((s) => /Puzzle Champ's puzzles/.test(s) && !/site/.test(s)),
+              '   and the three lines that send you there name HIM, not "the site"', said.join(' | '));
+          }
+        }
+
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
         /* his, 2026-09-20: "fine if everyone looks the same for now" · 2026-10-11: "play the skeptic on checker town, fix the worst thing you can find … This will be a game I'll eventually want to preview and sell on Steam, so think big." */
         {
