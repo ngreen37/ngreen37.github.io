@@ -305,13 +305,47 @@
         if (!/[?&]from=town(?:&|$)/.test(location.search)) return;
         var frame = document.querySelector('.game-frame-wrap iframe');
         if (!frame) return;
-        var done = {}, tries = 0, rest = 0;
+        var done = {}, tries = 0, rest = 0, heard = null;
+        /* ⛑ A SCRIPT'S PRESS IS NOT A PERSON'S, AND A BROWSER KEEPS A PAGE SILENT UNTIL A PERSON PRESSES.
+           A game wakes its sound from its own Start, so started from here three of them were silent
+           all game (measured 2026-10-13: Sand Mine Depths, the Campaign, Notation Blitz). Every sound
+           context the game makes is kept until it has run, and woken on each REAL press until then.
+           ⚠ FORGOTTEN THE MOMENT IT RUNS: a game that quiets itself on purpose later is left alone.
+           ⚠ NOT pointerdown: a finger going down is not a press a phone's browser counts. */
+        function hear(w) {
+          var made = [];
+          ['AudioContext', 'webkitAudioContext'].forEach(function (k) {
+            var Real = w[k];
+            if (!Real) return;
+            var Kept = function (o) {
+              var c = o === undefined ? new Real() : new Real(o);
+              made.push(c);
+              c.addEventListener('statechange', function () {
+                var i = made.indexOf(c);
+                if (c.state === 'running' && i >= 0) made.splice(i, 1);
+              });
+              return c;
+            };
+            Kept.prototype = Real.prototype;
+            try { w[k] = Kept; } catch (e) {}
+          });
+          var wake = function (e) {
+            if (!e.isTrusted) return;
+            for (var i = 0; i < made.length; i++) {
+              try { var r = made[i].resume(); if (r && r.catch) r.catch(function () {}); } catch (x) {}
+            }
+          };
+          ['pointerup', 'touchend', 'mousedown', 'keydown', 'click'].forEach(function (n) { w.addEventListener(n, wake, true); });
+        }
         var t = setInterval(function () {
           if (++tries > 120) return clearInterval(t);            /* twelve seconds: then the title stands */
           if (rest > 0) { rest--; return; }
           var d = null;
           try { d = frame.contentDocument; } catch (e) {}
-          if (!d || d.readyState !== 'complete') return;
+          if (!d) return;
+          /* ⚠ ONCE A DOCUMENT, AND BEFORE THE PRESS BELOW: the context is made in the press. */
+          if (d !== heard && d.URL !== 'about:blank') { heard = d; try { hear(d.defaultView); } catch (e) {} }
+          if (d.readyState !== 'complete') return;
           var all = d.querySelectorAll('[data-town-start]'), groups = [], i, g;
           for (i = 0; i < all.length; i++) {
             g = all[i].getAttribute('data-town-start') || '1';
