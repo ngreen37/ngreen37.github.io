@@ -4686,6 +4686,11 @@ const server = http.createServer((req, res) => {
 
         /* ══ a thumb · a name under the HUD · a line under USE · the map's names — 2026-10-12 ══ */
         /* his: "Great please work through the Seen and Not Fixed" */
+        /* ⚠ THE FIFTH THING ON THAT LIST HAS NO CHECK, BECAUSE IT WAS NEVER FOUND: two white marks at dusk,
+           seen once, in one picture of the first desktop wrapper. Not reproduced in the game (native and
+           web, pinned to that day and minute; the real build at real dusk) nor in the desktop program.
+           The commit that added this block calls them the site's skyline windows. That was a guess,
+           and letting the site's layers back over the game did not bring them back. Cause unknown. */
         {
           const uiS = code(rd('town_ui.gd')), znS = code(rd('zone.gd')), jrS = code(rd('journal.gd'));
           const papS = code(rd('paper.gd')), phoS = code(rd('photo.gd')), lkS = code(rd('lookout.gd'));
