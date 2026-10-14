@@ -3366,7 +3366,9 @@ const server = http.createServer((req, res) => {
         const fin = fnGd(mineG, '_finish');
         ok(/PROCESS_MODE_DISABLED/.test(fin) && /player\.set_physics_process\(false\)/.test(fin),
           '…and the run stops where it ends: the pieces and your feet');
-        ok(/"tap USE" if TouchPad\.probably_touch\(\) else "press ENTER"/.test(fin), '…and the line names the input you have');
+        /* ⚑ 2026-10-13: the words are Pad's now, so a controller is named too ("press A"). */
+        ok(/Pad\.use_words\(\)\]/.test(fin) && /return "tap USE" if TouchPad\.probably_touch\(\) else "press ENTER"/.test(fnGd(rd('pad.gd'), 'use_words')),
+          '…and the line names the input you have');
         const hud = fnGd(mineG, '_layout_hud');
         ok(/TownZone\.ui_scale\(self\)/.test(hud) && /int\(42\.0 \* k\)/.test(hud) && /int\(20\.0 \* k\)/.test(hud),
           "…and the mine's HUD is scaled for the window");
@@ -4723,7 +4725,8 @@ const server = http.createServer((req, res) => {
             '44 * ui_scale alone was 38 CSS px on his phone (352x560), on every button that used it');
           {
             /* every file that makes a Button, found, not listed */
-            const makers = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && /Button\.new\(\)/.test(code(rd(f))));
+            /* ⚠ A PAD'S BUTTON PRESS IS NOT A BUTTON ON THE GLASS: pad.gd makes `InputEventJoypadButton`s. */
+            const makers = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && /Button\.new\(\)/.test(code(rd(f)).replace(/InputEventJoypadButton\.new\(\)/g, '')));
             const flat = makers.filter((f) => /Vector2\([^()\n]*, 44\.0 \* _?k\)|= 44\.0 \* _?k\s*$/m.test(code(rd(f))));
             const off = makers.filter((f) => f !== 'town_ui.gd' && !/TownUI\.finger\(self\)/.test(code(rd(f))));
             ok(makers.length >= 7 && flat.length === 0 && off.length === 0,
@@ -4984,7 +4987,9 @@ const server = http.createServer((req, res) => {
               bad || 'from files ' + cols.join(' ') + ' it can only ever land two files away');
             ok(/if _piece == "n" and _hop < 0\.0 and legal\(\)\.is_empty\(\):\s*_to_start\(\)/.test(fnGd(crE, '_process')),
               '⚠ a knight with no jump left walks back to the start; it does not wait there for the flag');
-            ok(/_exit_tip\.text = "Tap USE to Exit" if TouchPad\.probably_touch\(\) else "Hit Space to Exit"/.test(crE)
+            /* ⚑ 2026-10-13: the words moved into _exit_words(), which also knows a controller ("Press A to Exit"). */
+            ok(/_exit_tip\.text = _exit_words\(\)/.test(crE)
+               && /return "Tap USE to Exit" if TouchPad\.probably_touch\(\) else "Hit Space to Exit"/.test(fnGd(crE, '_exit_words'))
                && /bold\.variation_embolden = 1\.0\s*_exit_tip\.add_theme_font_override\("font", bold\)/.test(crE)
                && /_hud\.add_child\(_exit_tip\)/.test(crE),
               '⛑ "Hit Space to Exit" is on the glass in bold  (the pad\'s word on a phone)');
@@ -5150,6 +5155,62 @@ const server = http.createServer((req, res) => {
                && /if spot\[1\] == "sign":\s*var post := SignRead\.new\(\)/.test(twR),
               '⭐ the mended signpost says who is NOT OUT today  (the roads are the square\'s post\'s job, and stay it)');
           }
+        }
+
+        /* ══ a controller in the hand — 2026-10-13 ══ */
+        /* his: "Can you make it so I can play using my nintendo switch controller?" */
+        {
+          const pdC = code(rd('pad.gd')), plC = code(rd('player.gd')), jrC = code(rd('journal.gd')), uiC = code(rd('town_ui.gd'));
+          const znC = code(rd('zone.gd')), crC = code(rd('crossing.gd')), prj = rd('project.godot');
+          ok(/\[autoload\][\s\S]*?\nPad="\*res:\/\/pad\.gd"/.test(prj), '⭐ the pad\'s script is loaded with the game  (an autoload, so every room can ask it)');
+          /* ── which make of pad: the list is the game's, the names are real browsers' ── */
+          const marks = JSON.parse(((/const MARKS := (\[[^\]]*\])/.exec(pdC) || [0, '[]'])[1]));
+          const isNin = (id) => marks.some((m) => id.toLowerCase().includes(m));
+          const NIN = ['Pro Controller (STANDARD GAMEPAD Vendor: 057e Product: 2009)', 'Joy-Con L+R (STANDARD GAMEPAD Vendor: 057e Product: 200e)',
+            'Joy-Con (L) (Vendor: 057e Product: 2006)', '057e-2009-Pro Controller', 'Nintendo Switch Pro Controller'];
+          const NOT = ['Xbox 360 Controller (XInput STANDARD GAMEPAD)', 'Xbox Wireless Controller (STANDARD GAMEPAD Vendor: 045e Product: 0b13)',
+            'DualSense Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)', 'Standard Gamepad Mapping', ''];
+          ok(marks.length > 0 && NIN.every(isNin) && !NOT.some(isNin)
+             && /for mark in MARKS:\s*if n\.contains\(mark\):\s*return true\s*return false/.test(fnGd(pdC, 'is_nintendo')),
+            '⛑ a Switch pad is known by its own name, as Chrome and Firefox word it, and an Xbox or a PlayStation one is not', marks.join(' · '));
+          ok(/if OS\.has_feature\("web"\):\s*var id = JavaScriptBridge\.eval\(\s*"\(function\(\)\{try\{var p=navigator\.getGamepads\(\)\[%d\];return p\?String\(p\.id\):''\}catch\(e\)\{return ''\}\}\)\(\)" % device, true\)/.test(fnGd(pdC, '_name_of'))
+             && /nintendo = is_nintendo\(_name_of\(_device\)\)/.test(fnGd(pdC, '_input')),
+            '⛑ in a browser the make is read off the BROWSER\'s id  (the engine calls every standard pad "Standard Gamepad Mapping")');
+          ok(/var swap := nintendo and by_print\s*_joy\("ui_accept", JOY_BUTTON_B if swap else JOY_BUTTON_A\)\s*_joy\("ui_cancel", JOY_BUTTON_A if swap else JOY_BUTTON_B\)/.test(fnGd(pdC, '_bind'))
+             && /var by_print := OS\.has_feature\("web"\)/.test(pdC),
+            '⛑ on his pad A is the RIGHT button and B the bottom one: accept and cancel are swapped, in a browser only');
+          ok(/Input\.joy_connection_changed\.connect\(_plugged\)/.test(fnGd(pdC, '_ready')) && /_device = -1/.test(fnGd(pdC, '_plugged')),
+            '   …and a pad that comes or goes is asked its name again');
+          /* ── walking ── */
+          ok(/Input\.get_vector\("ui_left", "ui_right", "ui_up", "ui_down", Pad\.WALK_DEADZONE\)/.test(plC)
+             && /elif dir\.length\(\) < 0\.999:\s*push = lerpf\(CRAWL, 1\.0, dir\.length\(\)\)/.test(plC)
+             && +(/const WALK_DEADZONE := ([\d.]+)/.exec(pdC) || [])[1] <= 0.3,
+            '⭐ a stick has a middle: a part push is a slow walk, not nothing and then his full speed');
+          /* ── the Journal, a conversation ── */
+          const jIn = fnGd(jrC, '_unhandled_input');
+          ok(/if Pad\.hit\(event, Pad\.TOP\) and not _talking\(\):\s*toggle\(\)/.test(jIn) && /elif Pad\.hit\(event, Pad\.MINUS\) and not _talking\(\):\s*_map_key\(\)/.test(jIn)
+             && /elif _open and event\.is_action_pressed\("ui_cancel"\):\s*close\(\)/.test(jIn)
+             && /elif _open and step != 0:\s*_pick\(wrapi\(_tab \+ step, 0, TABS\.size\(\)\)\)/.test(jIn),
+            '⭐ the Journal on a pad: the top button opens it, Minus the map, the shoulders walk the tabs, B shuts it');
+          const uIn = fnGd(uiC, '_unhandled_input');
+          ok((uIn.match(/event\.is_action_pressed\("ui_cancel"\)/g) || []).length === 2 && !/KEY_ESCAPE/.test(uIn)
+             && /is_action_pressed\("ui_cancel"\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*close\(\)\s*return\s*if not \(event is InputEventKey\)/.test(uIn),
+            '⛑ B leaves a conversation the way Escape does, rows up or rows down  (asked BEFORE the keys-only line: a pad\'s B is no key)');
+          /* ── the words follow the hand ── */
+          ok(/if Pad\.using:\s*return "Stick or D-pad  ·  A  ·  B  ·  %s Journal" % Pad\.word\(Pad\.TOP\)/.test(fnGd(znC, 'default_hint'))
+             && /if hint == "" or hint == TownZone\.default_hint\(\):\s*Pad\.changed\.connect\(_default_hint_again\)/.test(znC),
+            '⭐ the line at the bottom names the pad\'s buttons, and changes the moment a pad or a key is touched');
+          ok(/if using:\s*return "press A"/.test(fnGd(pdC, 'use_words')) && /Pad\.use_words\(\)/.test(code(rd('mine.gd'))) && /Pad\.use_words\(\)/.test(code(rd('sea_board.gd')))
+             && /if Pad\.using:\s*return "Press A to Exit"/.test(fnGd(crC, '_exit_words')) && /Pad\.changed\.connect\(_pad_words\)/.test(crC),
+            '   …and so does every "press ENTER", and the bold way out of Pawn Crossing');
+          /* ── Pawn Crossing ── */
+          ok(/var joy := v\.length\(\) < 0\.3\s*if joy:\s*v = Pad\.stick\(\)/.test(fnGd(crC, '_stick')) && !/get_vector/.test(crC)
+             && /if d != Vector2\.ZERO:\s*return d\.normalized\(\)/.test(fnGd(pdC, 'stick')) && !/get_vector|is_action/.test(fnGd(pdC, 'stick')),
+            '⛑ Pawn Crossing hops on a pad\'s OWN stick and D-pad, never on an action a key answers to  (a key that did both hopped twice)');
+          const cIn = fnGd(crC, '_unhandled_input');
+          ok(/var skill := \[Pad\.LEFT, Pad\.TOP, Pad\.R\]\.find\(b\.button_index\)/.test(cIn)
+             && /if Pad\.hit\(event, Pad\.L\):\s*_pick = _pick \+ 1 if _pick \+ 1 < _hand\.size\(\) else -1/.test(cIn) && /elif skill >= 0:\s*use_skill\(skill\)/.test(cIn),
+            '   …L walks your hand, and the three skills are the left button, the top one and R');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
