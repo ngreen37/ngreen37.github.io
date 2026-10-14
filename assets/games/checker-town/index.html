@@ -186,6 +186,11 @@ body {
     #ct-boot b { animation: none; }
   }
 </style>
+<!-- ⛑ A CONTROLLER A BROWSER DOES NOT KNOW (2026-10-14, his: "right now Y appears to be Use"). His
+     PowerA pad comes raw, in its maker's order; this re-orders it BEFORE the engine first asks.
+     ⚠ A site path on purpose: the game is only ever served from the site (or the desktop program,
+     which serves the site). Missing, the game still starts, and a standard pad never needed it. -->
+<script src="/assets/js/pjcc-pad.js"></script>
 <script>
 /* ⚠ ONE ELEMENT, INSERTED ONCE, AND EVERY LINE OF IT GUARDED. This runs inside the game's
    own document at boot; anything that throws here takes the loading screen down with it and
@@ -239,7 +244,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1433704,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1435112,"index.wasm":39509339},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 

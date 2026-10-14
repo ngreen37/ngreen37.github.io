@@ -5211,6 +5211,30 @@ const server = http.createServer((req, res) => {
           ok(/var skill := \[Pad\.LEFT, Pad\.TOP, Pad\.R\]\.find\(b\.button_index\)/.test(cIn)
              && /if Pad\.hit\(event, Pad\.L\):\s*_pick = _pick \+ 1 if _pick \+ 1 < _hand\.size\(\) else -1/.test(cIn) && /elif skill >= 0:\s*use_skill\(skill\)/.test(cIn),
             '   …L walks your hand, and the three skills are the left button, the top one and R');
+
+          /* ── a stick is not a key — 2026-10-14 ── */
+          /* his: "using the joystick to choose dialogue options is erratic, it should be a smooth selection
+             process. Right now you have to finesse it to select what you want" */
+          const stepC = fnGd(pdC, 'menu_step'), numP = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(pdC) || [])[1];
+          const uPr = fnGd(uiC, '_process');
+          ok(/if event\.is_action_pressed\("ui_down"\) or event\.is_action_pressed\("ui_up"\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*if event is InputEventKey:\s*_step_row\(/.test(uIn)
+             && /elif _mode == TALK:\s*var by := Pad\.menu_step\(delta\)\s*if by != 0:\s*_step_row\(by\)/.test(uPr),
+            '⛑ the rows of a conversation step on a KEY where keys are heard, and on a pad ONCE A FRAME  (every report of a held stick was another press: one push ran down the list)');
+          ok(numP('STEP_ON') >= 0.5 && numP('STEP_OFF') > 0 && numP('STEP_OFF') <= numP('STEP_ON') - 0.2
+             && /absf\(v\.y\) > absf\(v\.x\) and absf\(v\.y\) > \(STEP_OFF if _step_dir != 0 else STEP_ON\)/.test(stepC),
+            '⭐ a push has to go well over to count and come well back to count again, and a sideways one is not a push', 'on at ' + numP('STEP_ON') + ', off at ' + numP('STEP_OFF'));
+          ok(/if sprung and _step_dir == 0 and _step_deaf > 0\.0 and want == -_step_was:\s*return 0/.test(stepC)
+             && /if _step_dir != 0:\s*_step_was = _step_dir\s*_step_deaf = STEP_DEAF/.test(stepC) && numP('STEP_DEAF') >= 0.1 && numP('STEP_DEAF') <= 0.4,
+            '⛑ a stick let go springs past the middle: the far side is deaf for a moment  (the STICK only: a D-pad pressed the other way is a press)', numP('STEP_DEAF') + ' s');
+          ok(/_step_wait = STEP_FIRST\s*return want/.test(stepC) && /_step_wait -= delta\s*if _step_wait <= 0\.0:\s*_step_wait = STEP_NEXT\s*return want/.test(stepC)
+             && numP('STEP_FIRST') >= 0.3 && numP('STEP_NEXT') >= 0.1 && numP('STEP_NEXT') < numP('STEP_FIRST'),
+            '⭐ held, it walks on at a steady pace: a pause, then a row at a time', numP('STEP_FIRST') + ' s, then every ' + numP('STEP_NEXT') + ' s');
+          ok(/var fresh := Engine\.get_process_frames\(\) - _step_frame > 1/.test(stepC) && /if fresh:\s*_step_block = want != 0/.test(stepC)
+             && /if _step_block:\s*_step_block = want != 0\s*return 0/.test(stepC),
+            '⚠ a list that opens under a stick already pushed (you walked up to somebody) waits for it to be let go');
+          ok(/if _out >= 0\.0:\s*return\s*if event is InputEventJoypadMotion:\s*return/.test(fnGd(code(rd('board_view.gd')), '_unhandled_input'))
+             && /elif \(not \(event is InputEventJoypadMotion\) and \(event\.is_action_pressed\("ui_left"\) or event\.is_action_pressed\("ui_right"\)\)\)/.test(code(rd('photo.gd'))),
+            '   …and the two other places a held stick was counted over and over (a lesson\'s steps, the camera\'s flip) take a D-pad or a key');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
