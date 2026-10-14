@@ -5197,8 +5197,9 @@ const server = http.createServer((req, res) => {
              && /is_action_pressed\("ui_cancel"\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*close\(\)\s*return\s*if not \(event is InputEventKey\)/.test(uIn),
             '⛑ B leaves a conversation the way Escape does, rows up or rows down  (asked BEFORE the keys-only line: a pad\'s B is no key)');
           /* ── the words follow the hand ── */
-          ok(/if Pad\.using:\s*return "Stick or D-pad  ·  A  ·  B  ·  %s Journal" % Pad\.word\(Pad\.TOP\)/.test(fnGd(znC, 'default_hint'))
-             && /if hint == "" or hint == TownZone\.default_hint\(\):\s*Pad\.changed\.connect\(_default_hint_again\)/.test(znC),
+          ok(/if Pad\.using:\s*return "Stick or D-pad  ·  %sA  ·  B  ·  %s Journal" % \["click it to run  ·  " if runs else "", Pad\.word\(Pad\.TOP\)\]/.test(fnGd(znC, 'default_hint'))
+             && /if hint == "" or hint == TownZone\.default_hint\(not is_fight\(\)\):\s*Pad\.changed\.connect\(_default_hint_again\)/.test(znC)
+             && /hint = TownZone\.default_hint\(not is_fight\(\)\)\s*_ui\.set_hint\(hint\)/.test(fnGd(znC, '_default_hint_again')),
             '⭐ the line at the bottom names the pad\'s buttons, and changes the moment a pad or a key is touched');
           ok(/if using:\s*return "press A"/.test(fnGd(pdC, 'use_words')) && /Pad\.use_words\(\)/.test(code(rd('mine.gd'))) && /Pad\.use_words\(\)/.test(code(rd('sea_board.gd')))
              && /if Pad\.using:\s*return "Press A to Exit"/.test(fnGd(crC, '_exit_words')) && /Pad\.changed\.connect\(_pad_words\)/.test(crC),
@@ -5235,6 +5236,46 @@ const server = http.createServer((req, res) => {
           ok(/if _out >= 0\.0:\s*return\s*if event is InputEventJoypadMotion:\s*return/.test(fnGd(code(rd('board_view.gd')), '_unhandled_input'))
              && /elif \(not \(event is InputEventJoypadMotion\) and \(event\.is_action_pressed\("ui_left"\) or event\.is_action_pressed\("ui_right"\)\)\)/.test(code(rd('photo.gd'))),
             '   …and the two other places a held stick was counted over and over (a lesson\'s steps, the camera\'s flip) take a D-pad or a key');
+
+          /* ── the six other buttons: running, the view — 2026-10-14 ── */
+          /* his: "running should cost a little energy.  I like your idea: go for it" */
+          const gsC = code(rd('game_state.gd')), numPl = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(plC) || [])[1];
+          const numGs = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(gsC) || [])[1];
+          const plIn = fnGd(plC, '_unhandled_input'), plPh = fnGd(plC, '_physics_process'), plView = fnGd(plC, '_pad_view');
+          ok(/if _run_on:\s*if dir\.length_squared\(\) < 0\.001:\s*_run_still \+= _delta\s*if _run_still > RUN_GRACE:\s*_run_on = false\s*else:\s*_run_still = 0\.0\s*if not GameState\.tire\(_delta\):\s*_run_on = false\s*var run := RUN_SPEED if _run_on else 1\.0\s*velocity = dir\.normalized\(\) \* speed \* push \* run/.test(plPh)
+             && /if Pad\.hit\(event, JOY_BUTTON_LEFT_STICK\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_run_on = not _run_on and roams_here\(\)/.test(plIn)
+             && numPl('RUN_SPEED') >= 1.2 && numPl('RUN_SPEED') <= 2 && numPl('RUN_GRACE') > 0 && numPl('RUN_GRACE') <= 1,
+            '⭐ a click of the left stick runs, for as long as you keep moving: stand still and it is over',
+            numPl('RUN_SPEED') + '× the walk, over after ' + numPl('RUN_GRACE') + ' s still');
+          ok(/_run_s \+= seconds\s*if _run_s >= RUN_TIRES_SECS:\s*_run_s -= RUN_TIRES_SECS\s*energy = maxi\(0, energy - 1\)\s*energy_changed\.emit\(energy, energy_cap\)\s*if energy % GAME_COST == 0:\s*save_state\(\)\s*return energy > 0/.test(fnGd(gsC, 'tire'))
+             && numGs('RUN_TIRES_SECS') >= 10 && numGs('RUN_TIRES_SECS') <= 120,
+            '⭐ running costs a little energy, and an empty bar ends the run', 'a point for every ' + numGs('RUN_TIRES_SECS') + ' s of running');
+          ok(/if _in_talk\(\):\s*velocity = Vector2\.ZERO\s*_goal = null\s*_run_on = false/.test(plPh),
+            '   …and a conversation ends it too');
+          /* ⚠ A FIGHT'S PACE AND VIEW ARE THE GAME'S: zoomed in on the square, you walked into Chess Zombies
+             unable to see the board. The Sand Mine run is no town room at all. */
+          const roams = fnGd(plC, 'roams_here'), cbC = code(rd('chessboard.gd'));
+          const fights = ['chessboard.gd', 'crossing.gd'].filter((f) => /func is_fight\(\) -> bool:\s*return true/.test(code(rd(f))));
+          ok(/var z := get_parent\(\) as TownZone\s*return z != null and not z\.is_fight\(\)/.test(roams)
+             && /func is_fight\(\) -> bool:\s*return false/.test(znC) && fights.length === 2
+             && /var z := maxf\(least, maxf\(1\.0, least\) \* \(Pad\.zoom if roams_here\(\) else 1\.0\)\)/.test(fnGd(plC, '_fit_camera'))
+             && /if not is_instance_valid\(_cam\) or not roams_here\(\):\s*return/.test(plView)
+             && /hint = TownZone\.default_hint\(false\)/.test(fnGd(cbC, '_furnish')),
+            '⛑ in a fight the pad neither runs nor moves the view, and the line does not offer it  (Chess Zombies, Pawn Crossing; the Sand Mine run is no town room)',
+            'fights: ' + fights.join(' · '));
+          ok(/var zt := Pad\.triggers\(\)\s*if absf\(zt\) > 0\.05:\s*Pad\.zoom = clampf\(Pad\.zoom \* exp\(zt \* Pad\.ZOOM_RATE \* delta\), Pad\.ZOOM_OUT, Pad\.ZOOM_IN\)\s*_fit_camera\(_lim\)/.test(plView)
+             && /Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_RIGHT\) - Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_LEFT\)/.test(fnGd(pdC, 'triggers'))
+             && /var z := maxf\(least, maxf\(1\.0, least\) \* \(Pad\.zoom if roams_here\(\) else 1\.0\)\)\s*_cam\.zoom = Vector2\(z, z\)/.test(fnGd(plC, '_fit_camera'))
+             && /func _process\(delta: float\) -> void:\s*_pad_view\(delta\)/.test(plC)
+             && numP('ZOOM_OUT') >= 0.5 && numP('ZOOM_OUT') < 1 && numP('ZOOM_IN') > 1 && numP('ZOOM_IN') <= 2,
+            '⭐ ZL pulls the view out and ZR brings it in, and the room\'s own fit still wins: out never shows past its edge or its cap',
+            'from ' + numP('ZOOM_OUT') + ' to ' + numP('ZOOM_IN') + ' of the room\'s fit');
+          ok(/var lv := Pad\.look\(\)\s*if lv != Vector2\.ZERO:\s*var reach := get_viewport_rect\(\)\.size \* LOOK_REACH \/ _cam\.zoom\.x\s*_look = \(_look \+ lv \* reach \* LOOK_RATE \* delta\)\.clamp\(-reach, reach\)\s*_cam\.position = cam_offset \+ _look/.test(plView)
+             && !/_cam\.offset/.test(plC) && numPl('LOOK_REACH') > 0 && numPl('LOOK_REACH') <= 0.5,
+            '⛑ the right stick looks ahead by moving the CAMERA, never its offset  (an offset shows what is past the map\'s edge), and only so far',
+            numPl('LOOK_REACH') + ' of the screen');
+          ok(/if Pad\.hit\(event, JOY_BUTTON_RIGHT_STICK\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*Pad\.zoom = 1\.0\s*_look = Vector2\.ZERO\s*if is_instance_valid\(_cam\):\s*_cam\.position = cam_offset\s*_fit_camera\(_lim\)/.test(plIn),
+            '   …and clicking it puts the view back, zoom and all');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
