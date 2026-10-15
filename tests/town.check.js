@@ -1601,8 +1601,9 @@ const server = http.createServer((req, res) => {
       {
         const rigs = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
           .filter((f) => /TownPlayerModel\.make\(/.test(fs.readFileSync(path.join(GD, f), 'utf8')));
-        ok(rigs.length === 2 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd'),
-          '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture',
+        /* \u26a0 lift.gd IS THE THIRD (2026-10-15): it is HIM, up close on the bench, and goes when the lift does. */
+        ok(rigs.length === 3 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd') && rigs.includes('lift.gd'),
+          '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture  (and the bench press is him)',
           rigs.length ? 'builds one: ' + rigs.join(', ') : 'nobody builds one at all');
       }
 
@@ -4431,9 +4432,9 @@ const server = http.createServer((req, res) => {
           ok(/class Rack extends Node2D:/.test(hm) && /class FloorWeights extends Node2D:/.test(hm)
              && /class Shoes extends Node2D:/.test(hm) && /class Blades extends Node2D:/.test(hm)
              && /rack\.position = RACK_AT/.test(hm) && /_solid\(rack, Rect2\(/.test(hm)
-             && /\[FloorWeights\.new\(\), MAT_AT\], \[Shoes\.new\(\), SHOES_AT\], \[Blades\.new\(\), BLADES_AT\]/.test(hm),
+             && /\[FloorWeights\.new\(\), MAT_AT\], \[Shoes\.new\(\), SHOES_AT\], \[blades, BLADES_AT\]/.test(hm),
             '⭐ a bench and a bar, weights on a mat, his running shoes and his rollerblades are in the checker',
-            '⚠ scenery like the fridge: no prompt until he writes one; only the rack is solid');
+            'the bench presses and the rollerblades go on (10-15); the shoes and the weights are scenery; only the rack is solid');
           const gear = ['RACK_AT', 'MAT_AT', 'SHOES_AT', 'BLADES_AT'].map((n) => [n, v2(hm, n)]);
           const offFloor = gear.filter(([, p]) => !p || ell(p.x, p.y) > 0.93).map(([n]) => n);
           ok(offFloor.length === 0, '…every one of them on the floor  (the rack\'s box is in the disc audit above)',
@@ -5198,8 +5199,9 @@ const server = http.createServer((req, res) => {
             '⛑ B leaves a conversation the way Escape does, rows up or rows down  (asked BEFORE the keys-only line: a pad\'s B is no key)');
           /* ── the words follow the hand ── */
           ok(/if Pad\.using:\s*return "Stick or D-pad  ·  %sA  ·  B  ·  %s Journal" % \["click it to run  ·  " if runs else "", Pad\.word\(Pad\.TOP\)\]/.test(fnGd(znC, 'default_hint'))
-             && /if hint == "" or hint == TownZone\.default_hint\(not is_fight\(\)\):\s*Pad\.changed\.connect\(_default_hint_again\)/.test(znC)
-             && /hint = TownZone\.default_hint\(not is_fight\(\)\)\s*_ui\.set_hint\(hint\)/.test(fnGd(znC, '_default_hint_again')),
+             && /if hint == "" or hint == TownZone\.default_hint\(true\) or hint == TownZone\.default_hint\(false\):\s*_keys_line = true\s*Pad\.changed\.connect\(_default_hint_again\)\s*hint = TownZone\.default_hint\(runs\(\)\)\s*_ui\.set_hint\(hint\)/.test(znC)
+             && /hint = TownZone\.default_hint\(runs\(\)\)\s*_ui\.set_hint\(hint\)/.test(fnGd(znC, '_default_hint_again'))
+             && /return not is_fight\(\) and not GameState\.skates/.test(fnGd(znC, 'runs')),
             '⭐ the line at the bottom names the pad\'s buttons, and changes the moment a pad or a key is touched');
           ok(/if using:\s*return "press A"/.test(fnGd(pdC, 'use_words')) && /Pad\.use_words\(\)/.test(code(rd('mine.gd'))) && /Pad\.use_words\(\)/.test(code(rd('sea_board.gd')))
              && /if Pad\.using:\s*return "Press A to Exit"/.test(fnGd(crC, '_exit_words')) && /Pad\.changed\.connect\(_pad_words\)/.test(crC),
@@ -5242,7 +5244,7 @@ const server = http.createServer((req, res) => {
           const gsC = code(rd('game_state.gd')), numPl = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(plC) || [])[1];
           const numGs = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(gsC) || [])[1];
           const plIn = fnGd(plC, '_unhandled_input'), plPh = fnGd(plC, '_physics_process'), plView = fnGd(plC, '_pad_view');
-          ok(/if _run_on:\s*if dir\.length_squared\(\) < 0\.001:\s*_run_still \+= _delta\s*if _run_still > RUN_GRACE:\s*_run_on = false\s*else:\s*_run_still = 0\.0\s*if not GameState\.tire\(_delta\):\s*_run_on = false\s*var run := RUN_SPEED if _run_on else 1\.0\s*velocity = dir\.normalized\(\) \* speed \* push \* run/.test(plPh)
+          ok(/if _run_on:\s*if dir\.length_squared\(\) < 0\.001:\s*_run_still \+= _delta\s*if _run_still > RUN_GRACE:\s*_run_on = false\s*else:\s*_run_still = 0\.0\s*if not GameState\.tire\(_delta\):\s*_run_on = false\s*var run := RUN_SPEED if _run_on else 1\.0[\s\S]*?else:\s*_skate_push = false\s*velocity = dir\.normalized\(\) \* speed \* push \* run/.test(plPh)
              && /if Pad\.hit\(event, JOY_BUTTON_LEFT_STICK\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_run_on = not _run_on and roams_here\(\)/.test(plIn)
              && numPl('RUN_SPEED') >= 1.2 && numPl('RUN_SPEED') <= 2 && numPl('RUN_GRACE') > 0 && numPl('RUN_GRACE') <= 1,
             '⭐ a click of the left stick runs, for as long as you keep moving: stand still and it is over',
@@ -5259,7 +5261,7 @@ const server = http.createServer((req, res) => {
           ok(/var z := get_parent\(\) as TownZone\s*return z != null and not z\.is_fight\(\)/.test(roams)
              && /func is_fight\(\) -> bool:\s*return false/.test(znC) && fights.length === 2
              && /var z := maxf\(least, maxf\(1\.0, least\) \* \(Pad\.zoom if roams_here\(\) else 1\.0\)\)/.test(fnGd(plC, '_fit_camera'))
-             && /if not is_instance_valid\(_cam\) or not roams_here\(\):\s*return/.test(plView)
+             && /if not is_instance_valid\(_cam\) or not roams_here\(\) or _in_talk\(\):\s*return/.test(plView)
              && /hint = TownZone\.default_hint\(false\)/.test(fnGd(cbC, '_furnish')),
             '⛑ in a fight the pad neither runs nor moves the view, and the line does not offer it  (Chess Zombies, Pawn Crossing; the Sand Mine run is no town room)',
             'fights: ' + fights.join(' · '));
@@ -5281,7 +5283,7 @@ const server = http.createServer((req, res) => {
           /* his: "waving and moving at the same time causes a funny instance of legs not moving and the character
              gliding while moving - can we make it so he can't wave and move at the same time?" */
           const pmC = code(rd('player_model.gd'));
-          ok(/if _model != null and _model\.waving\(\) and roams_here\(\):\s*velocity = Vector2\.ZERO\s*_run_on = false\s*move_and_slide\(\)\s*return/.test(plPh)
+          ok(/if _model != null and _model\.waving\(\) and roams_here\(\):\s*velocity = velocity\.move_toward\(Vector2\.ZERO, speed \* SKATE_COAST \* _delta\) if skating\(\) else Vector2\.ZERO\s*_run_on = false/.test(plPh)
              && /if _model\.celebrate\(\) and roams_here\(\):\s*velocity = Vector2\.ZERO/.test(fnGd(plC, 'celebrate')),
             '⭐ he stops to wave and walks on when it is done, stopped by the press itself  (a fast screen draws a frame before the next physics step)');
           ok(/var walking := moved > 0\.0001\s*if _wave and walking:\s*_emote = 0\.0\s*_wave = false/.test(fnGd(pmC, 'advance'))
@@ -5289,6 +5291,72 @@ const server = http.createServer((req, res) => {
              && /_emote = _anim\.get_animation\(_clip_win\)\.length \+ WIN_HOLD\s*_wave = true/.test(fnGd(pmC, 'celebrate'))
              && /_wave = false\s*return true/.test(fnGd(pmC, '_once')),
             '⛑ wherever something else moves him (a fight, a hop in Pawn Crossing), his first step ends the wave  (its clip owns the legs, and a body moved under it glides)');
+        }
+
+        /* ══ his gear works: the bench press and the rollerblades — 2026-10-15 ══ */
+        /* his: "Let's do bench press and rollerblade functions now. pressing nothing lowers the bar, holding L and R
+           triggers raises it. And hitting A repeatedly helps you get the last rep when character is failing to raise it
+           high enough. Put little explainer text during the lift. For the rollerblades, we'll be rollerblading with the
+           dogs around town" */
+        {
+          const lfC = code(rd('lift.gd')), hmC = code(rd('home.gd')), pmC = code(rd('player_model.gd')), plC = code(rd('player.gd'));
+          const pdC = code(rd('pad.gd')), dgC = code(rd('dog.gd')), gsC = code(rd('game_state.gd')), twC = code(rd('town.gd'));
+          const numL = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(lfC) || [])[1];
+          const numPl = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(plC) || [])[1];
+          const lift = fnGd(lfC, '_lift');
+          /* ── the bench ── */
+          ok(/class BenchPress extends Interactable:/.test(hmC) && /var bench := BenchPress\.new\(\)\s*bench\.position = RACK_AT/.test(hmC)
+             && /var lift := LiftView\.new\(\)[\s\S]{0,200}p\.visible = false\s*lift\.closed\.connect\(func\(_reps: int\) -> void:\s*if is_instance_valid\(p\):\s*p\.visible = true\)\s*get_tree\(\)\.current_scene\.add_child\(lift\)/.test(hmC),
+            '⭐ A at the rack in his home lies him down on the bench  (and he stands back up beside it when the set is over)');
+          ok(/var v: float = clampf\(up, -LOWER, 1\.0\) if _push else -LOWER/.test(lift)
+             && /return Pad\.squeezed\(\) or Input\.is_action_pressed\("ui_up"\) or _mouse or _touches > 0/.test(fnGd(lfC, '_pushing'))
+             && /var trig := Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_LEFT\) > 0\.5 and Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_RIGHT\) > 0\.5/.test(fnGd(pdC, 'squeezed'))
+             && /return trig or held/.test(fnGd(pdC, 'squeezed')),
+            '⭐ pressing nothing lowers the bar, and both triggers held press it up  (both shoulders as well: he called them L and R)');
+          const fresh = numL('FORCE') * (1 - numL('DIP')), load = numL('LOAD');
+          ok(/_grit \+= MASH/.test(fnGd(lfC, '_mash')) && /_grit \*= exp\(-delta \/ GRIT_LIFE\)/.test(lift)
+             && fresh > load && fresh * (1 - 7 * numL('TIRE_REP')) < load,
+            '⭐ he tires a rep at a time until the triggers alone stall at the sticking point, and A mashed gets the last ones up  (the push from A fades by a share: at a flat rate it ran out between presses)',
+            'fresh ' + fresh.toFixed(2) + ' against a load of ' + load + ', ' + (fresh * (1 - 7 * numL('TIRE_REP'))).toFixed(2) + ' seven reps in');
+          ok(/if _h <= 0\.04:\s*_low = true\s*elif _low and _h >= 0\.97:\s*_low = false\s*_reps \+= 1/.test(lift)
+             && /_stuck = _stuck \+ delta if _push and up <= 0\.0 and _h < 0\.96 else 0\.0/.test(lift),
+            '   …a rep is chest to lockout, and a bar that will not move any more ends the set, wherever it stalled');
+          const say = fnGd(lfC, '_say');
+          ok(/"He is failing\. " \+ \("Mash A!"/.test(say) && /"Pressing nothing lowers the bar\."/.test(say) && /"Hold ZL \+ ZR"/.test(say) && /"Rep %d!"/.test(say),
+            '⭐ little words during the lift say what to press and when, in the hand he is holding');
+          ok(/if not \(event is InputEventKey or event is InputEventJoypadButton\):\s*return\s*get_viewport\(\)\.set_input_as_handled\(\)/.test(fnGd(lfC, '_input'))
+             && /add_to_group\("town_cover"\)/.test(fnGd(lfC, '_ready')),
+            '⛑ the lift owns every button and key while it is up  (the Journal opens on the top button whatever covers the room)');
+          ok(/mb\.button_index == MOUSE_BUTTON_LEFT and mb\.device != InputEvent\.DEVICE_ID_EMULATION/.test(fnGd(lfC, '_input')),
+            '⛑ …and a finger counts once  (Godot copies every touch into a click, and the copy was a second mash per tap)');
+          ok(/_body = TownPlayerModel\.make\(PX, 0\.0\)/.test(lfC) && /var ik := TwoBoneIK3D\.new\(\)/.test(fnGd(pmC, 'lie_back'))
+             && /\["Upper_Arm\.L", "Lower_Arm\.L", "Hand\.L"\]/.test(pmC) && /\["UpperLeg\.R", "LowerLeg\.R", "Foot\.R"\]/.test(pmC),
+            '⭐ it is HIM on the bench, side on, his hands on the bar and his feet on the floor by IK  (a level camera, so the bar\'s two plates are one)');
+          /* ── the rollerblades ── */
+          ok(/class SkateSpot extends Interactable:/.test(hmC) && /GameState\.skates = not GameState\.skates\s*if not GameState\.skates:\s*TownDog\.pack\.clear\(\)/.test(hmC)
+             && /if GameState\.skates:\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw')),
+            '⭐ A at the rollerblades by his door puts them on and takes them off  (the pair is gone from the floor while he wears them)');
+          ok(/var want := dir\.normalized\(\) \* speed \* SKATE_TOP \* push if dir\.length_squared\(\) > 0\.001 else Vector2\.ZERO/.test(plC)
+             && /velocity = velocity\.move_toward\(want, speed \* \(SKATE_PUSH if _skate_push else SKATE_COAST\) \* _delta\)/.test(plC)
+             && /return GameState\.skates and roams_here\(\)/.test(fnGd(plC, 'skating'))
+             && numPl('SKATE_TOP') > 1.2 && numPl('SKATE_COAST') < numPl('SKATE_PUSH'),
+            '⭐ on rollerblades he glides: he works up to speed, carves round, and coasts when you let go',
+            numPl('SKATE_TOP') + '× the walk');
+          ok(/_model\.advance\(delta, facing, velocity\.length\(\) \* delta if _skate_push else 0\.0, speed \* 0\.298 \* SKATE_STRIDE\)/.test(plC)
+             && /var att := BoneAttachment3D\.new\(\)\s*att\.bone_name = "Foot\." \+ side/.test(fnGd(pmC, '_build_skates'))
+             && /var ground := _floor \+ _skate_lift/.test(fnGd(pmC, 'advance'))
+             && !/"skates"/.test(fnGd(gsC, 'save_state')),
+            '   …the skates are on his feet, his legs push only while he pushes, and a new day wakes him in his shoes');
+          /* ── the dogs ── */
+          ok(/static var pack: Array\[String\] = \[\]/.test(dgC) && /TownDog\.gather\(self\)/.test(fnGd(twC, '_after_ready'))
+             && /if td != null and td\.who == name_ and not td\.at_home:\s*d = td/.test(fnGd(dgC, 'gather'))
+             && /if TownDog\.indoors\(name_\):\s*pack\.erase\(name_\)/.test(fnGd(dgC, 'gather')),
+            '⭐ the dogs he skates past come with him, across every window of the town  (one dog, one copy: the one in that window if there is one)');
+          ok(/if companion and GameState\.hearts_for\(who\) <= 0:\s*return false/.test(fnGd(dgC, '_joins'))
+             && /not \(get_parent\(\) is CheckerTown\)/.test(fnGd(dgC, '_joins'))
+             && /var keep := maxf\(TROT, p\.velocity\.length\(\)\)/.test(fnGd(dgC, '_skate_along'))
+             && /return _follow or _packed/.test(fnGd(dgC, 'yields')),
+            '   …Princess only once she knows him, at his pace and not a trot, and never in the way of a door');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
@@ -6009,7 +6077,8 @@ const server = http.createServer((req, res) => {
           {
             const tinters = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
               .filter((f) => /\.apply_tint\(/.test(bare(rd(f))));
-            ok(tinters.length === 1 && tinters[0] === 'player.gd',
+            /* ⚠ lift.gd tints HIM: his own body, on the bench */
+            ok(tinters.length >= 1 && tinters.every((f) => f === 'player.gd' || f === 'lift.gd') && tinters.includes('player.gd'),
               '⛑⛑ NOBODY BUT THE PLAYER IS TINTED — one painted NPC and a shared sheet is wrong for everyone',
               tinters.join(' ') || 'nobody');
           }
