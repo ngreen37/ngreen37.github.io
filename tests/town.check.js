@@ -5276,6 +5276,19 @@ const server = http.createServer((req, res) => {
             numPl('LOOK_REACH') + ' of the screen');
           ok(/if Pad\.hit\(event, JOY_BUTTON_RIGHT_STICK\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*Pad\.zoom = 1\.0\s*_look = Vector2\.ZERO\s*if is_instance_valid\(_cam\):\s*_cam\.position = cam_offset\s*_fit_camera\(_lim\)/.test(plIn),
             '   …and clicking it puts the view back, zoom and all');
+
+          /* ── he stops to wave — 2026-10-14 ── */
+          /* his: "waving and moving at the same time causes a funny instance of legs not moving and the character
+             gliding while moving - can we make it so he can't wave and move at the same time?" */
+          const pmC = code(rd('player_model.gd'));
+          ok(/if _model != null and _model\.waving\(\) and roams_here\(\):\s*velocity = Vector2\.ZERO\s*_run_on = false\s*move_and_slide\(\)\s*return/.test(plPh)
+             && /if _model\.celebrate\(\) and roams_here\(\):\s*velocity = Vector2\.ZERO/.test(fnGd(plC, 'celebrate')),
+            '⭐ he stops to wave and walks on when it is done, stopped by the press itself  (a fast screen draws a frame before the next physics step)');
+          ok(/var walking := moved > 0\.0001\s*if _wave and walking:\s*_emote = 0\.0\s*_wave = false/.test(fnGd(pmC, 'advance'))
+             && /return _wave and _emote > 0\.0/.test(fnGd(pmC, 'waving'))
+             && /_emote = _anim\.get_animation\(_clip_win\)\.length \+ WIN_HOLD\s*_wave = true/.test(fnGd(pmC, 'celebrate'))
+             && /_wave = false\s*return true/.test(fnGd(pmC, '_once')),
+            '⛑ wherever something else moves him (a fight, a hop in Pawn Crossing), his first step ends the wave  (its clip owns the legs, and a body moved under it glides)');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
