@@ -1039,7 +1039,7 @@ const server = http.createServer((req, res) => {
           '…and the board\'s own portal goes back where you came in, home if nothing says');
         ok(/TownFade\.landing\(self\)/.test(fnGd(cb, '_after_ready')) && /TownFade\.landing\(self\)/.test(fnGd(hm, '_after_ready')),
           '…and both rooms it lands in fade up out of the black it left in');
-        ok(/const SPIN_TURNS := 2\.0/.test(pl) && /if _warp >= 0\.0:\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*return/.test(fnGd(pl, '_physics_process')),
+        ok(/const SPIN_TURNS := 2\.0/.test(pl) && /if _warp >= 0\.0 or aloft\(\):\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*return/.test(fnGd(pl, '_physics_process')),
           '…he spins twice going in, and no key moves him while he does');
       }
       /* ══ CHESS ZOMBIES (2026-10-01, his: "pieces come in from the opposite side of the board and
@@ -5390,10 +5390,10 @@ const server = http.createServer((req, res) => {
           /* ── a jump ── */
           ok(/if \(\(jb != null and jb\.pressed and event\.is_action_pressed\("ui_cancel"\)\) or \(k != null and k\.pressed and not k\.echo and k\.keycode == KEY_SHIFT\)\) and can_jump\(\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*jump\(\)/.test(fnGd(plC, '_unhandled_input'))
              && /if can_jump\(\):\s*_jump = 0\.0/.test(fnGd(plC, 'jump')) && /return 4\.0 \* JUMP_HIGH \* u \* \(1\.0 - u\)/.test(fnGd(plC, 'hop'))
-             && /_model\.draw_on\(self, Vector2\(0\.0, FEET\), radius \* 1\.25, _shrink, hop\(\)\)/.test(plC)
+             && /_model\.draw_on\(self, Vector2\(0\.0, FEET\), 0\.0 if floating else radius \* 1\.25, _shrink, hop\(\) \+ air\)/.test(plC)
              && /if pad != null and pad\.take_jump\(\):\s*jump\(\)/.test(plC) && /var jt := "JUMP"/.test(tpC),
             '⭐ B jumps, in any shoes or none  (Shift on keys, JUMP on the glass; his: "We\'ll be able to jump using skates, shoes, or default as well")');
-          ok(/return afoot\(\) and _jump < 0\.0 and not _in_talk\(\) and _warp < 0\.0 and not \(_model != null and _model\.waving\(\)\)/.test(fnGd(plC, 'can_jump'))
+          ok(/return afoot\(\) and _jump < 0\.0 and not _in_talk\(\) and _warp < 0\.0 and not aloft\(\) and not \(_model != null and _model\.waving\(\)\)/.test(fnGd(plC, 'can_jump'))
              && /return roams_here\(\)/.test(fnGd(plC, 'afoot'))
              && /var p := get_parent\(\) as TownPlayer\s*return p != null and p\.afoot\(\)/.test(fnGd(tpC, '_jumps'))
              && /if _jumps\(\) and t\.position\.distance_to\(_jump_at\(\)\) <= R_JUMP \* 1\.35 \* k\(\):/.test(tpC)
@@ -5413,6 +5413,92 @@ const server = http.createServer((req, res) => {
           /* ── no dog ── */
           ok(!/static var pack/.test(dgC) && !/TownDog\.gather/.test(twC) && /func yields\(\) -> bool:\s*return _follow\s/.test(dgC),
             '⛑ no dog skates with him  (his: "No dog. Just you.")');
+        }
+
+        /* ══ a lamp by the bed, a cushion that sends him to space, and the White Knight — 2026-10-16 ══ */
+        /* his: "add a spot for meditating - blasts you off into space and you can travel in any direction.  Pitch
+           black with random things like chess pieces.  Add a nightstand and a lamp … Add a white knight character -
+           annoying, shows up on a horse - tries to intervene where he is unwelcome." */
+        {
+          const hmC = code(rd('home.gd')), plC = code(rd('player.gd')), spC = code(rd('space.gd')), knC = code(rd('knight.gd'));
+          const uiC = code(rd('town_ui.gd')), twC = code(rd('town.gd')), ppC = code(rd('people_sheet.gd'));
+          /* an inner class: its header and every line indented under it (fnGd runs on to the end of the class) */
+          const cls = (src, name) => {
+            const a = src.indexOf('class ' + name + ' extends');
+            if (a < 0) return '';
+            const lines = src.slice(a).split('\n');
+            const out = [lines[0]];
+            for (let i = 1; i < lines.length; i++) {
+              if (lines[i].trim() !== '' && !/^[\t ]/.test(lines[i])) break;
+              out.push(lines[i]);
+            }
+            return out.join('\n');
+          };
+          const v2 = (src, name) => (new RegExp('const ' + name + ' := Vector2\\(([-\\d.]+), ([-\\d.]+)\\)').exec(src) || [0, NaN, NaN]).slice(1, 3).map(Number);
+          /* ── the nightstand and the lamp ── */
+          const ns = cls(hmC, 'Nightstand'), stand = v2(hmC, 'STAND_AT'), bed = v2(hmC, 'BED_AT'), dogBed = v2(hmC, 'DOG_BED_AT');
+          ok(/_pool = _light\(CheckerRoom\.Daylight\.SCENERY, GLOW\)\s*_touch = _light\(CheckerRoom\.Daylight\.LIVING, GLOW \* CheckerRoom\.Daylight\.TOUCH\)/.test(ns)
+             && /l\.range_item_cull_mask = mask/.test(ns) && /_pool\.enabled = lit\s*_touch\.enabled = lit/.test(ns)
+             && /func interact\(_player: Node\) -> void:\s*lit = not lit\s*_words\(\)/.test(ns)
+             && /relabel\("Turn off the lamp" if lit else "Turn on the lamp"\)/.test(ns)
+             && /var stand := Nightstand\.new\(\)\s*stand\.position = STAND_AT[\s\S]*?_solid\(stand, Rect2\(-18\.0, -12\.0, 36\.0, 24\.0\)\)/.test(hmC)
+             && stand[0] - 18 > bed[0] + 34 && stand[0] + 18 < dogBed[0] - 40,
+            '⭐ a nightstand and a lamp by the bed  (his); A switches it, and its light is ADDED: the furniture takes it, the living a third, off is off',
+            'the stand ' + (stand[0] - 18) + ' to ' + (stand[0] + 18) + ', the bed to ' + (bed[0] + 34) + ', Princess\'s cushion from ' + (dogBed[0] - 40));
+          /* ── the cushion ── */
+          const ms = cls(hmC, 'MeditateSpot'), cush = v2(hmC, 'CUSHION_AT'), fridge = v2(hmC, 'FRIDGE_AT'), rug = v2(hmC, 'RUG_AT');
+          const rugW = +(/const RUG_W := ([\d.]+)/.exec(hmC) || [])[1], board = v2(hmC, 'BOARD_AT'), rack = v2(hmC, 'RACK_AT');
+          ok(/relabel\("Meditate"\)/.test(ms) && /GameState\.reentry\[here\.scene_file_path\] = global_position/.test(ms)
+             && /you\.launch\(\)\s*await you\.launched/.test(ms) && /change_scene_to_file\(OuterSpace\.SCENE\)/.test(ms) && /TownFade\.cross\(self, go\)/.test(ms)
+             && /var seat := MeditateSpot\.new\(\)\s*seat\.position = CUSHION_AT/.test(hmC)
+             && cush[0] - 30 > rug[0] + rugW / 2 && cush[0] + 30 < fridge[0] - 30 && cush[1] + 13 < rack[1] - 28 && cush[1] - 13 > board[1] + 16 * 1.8,
+            '⭐ a spot to meditate  (his), on the open floor between the rug, the fridge, the rack and Princess\'s board: A sends him up and off to space',
+            'the mat ' + (cush[0] - 30) + ' to ' + (cush[0] + 30) + ' across, ' + (cush[1] - 13) + ' to ' + (cush[1] + 13) + ' down');
+          /* ── up, and back down ── */
+          ok(/_lift = 0\.0/.test(fnGd(plC, 'launch')) && /return _lift >= 0\.0 or _drop >= 0\.0/.test(fnGd(plC, 'aloft'))
+             && /if _warp >= 0\.0 or aloft\(\) or _in_talk\(\):\s*return/.test(fnGd(plC, '_process'))
+             && /if was < HOVER_SECS \+ BLAST_SECS and _lift >= HOVER_SECS \+ BLAST_SECS:\s*launched\.emit\(\)/.test(plC)
+             && /if _lift >= HOVER_SECS:\s*_streak\(air\)/.test(fnGd(plC, '_draw')),
+            '⭐ he floats up off it, then blasts off out of the window, a streak to the floor; nothing moves him or answers a key meanwhile');
+          ok(/elif _lift >= HOVER_SECS \+ BLAST_SECS \+ STRANDED_SECS:\s*_lift = -1\.0\s*_drop = 0\.0/.test(plC),
+            '⛑ …and a lift-off that never changes the scene comes back down  (or he hangs out of sight, unable to move)');
+          ok(/TownPlayer\.dropping = true/.test(fnGd(spC, 'come_back')) && /const BACK_TO := "res:\/\/home\.tscn"/.test(spC)
+             && /if dropping:\s*dropping = false\s*_drop = 0\.0/.test(fnGd(plC, '_ready'))
+             && /var d := 1\.0 - minf\(_drop \/ DROP_SECS, 1\.0\)\s*return BLAST_HIGH \* d \* d/.test(fnGd(plC, '_air')),
+            '⭐ …and back from space he comes down out of the sky onto the cushion, slowing as he lands');
+          /* ── space ── */
+          const thingsF = fnGd(spC, 'things');
+          ok(/draw_rect\(OuterSpace\.view\(self\)\.grow\(64\.0\), Color\.BLACK\)/.test(fnGd(spC, '_draw'))
+             && /world_bounds = Rect2\(\)\s*camera_bounds = Rect2\(\)/.test(spC) && /PieceArt\.draw_piece\(/.test(fnGd(spC, 'draw_thing'))
+             && /"c", "c", "c", "C"\]/.test(spC) && (spC.match(/\[[\d.]+, [\d.]+, \d, [\d.]+\]/g) || []).length === 3,
+            '⭐ space is pitch black with no edge, full of his pieces (his renders where there are any) and checkers, at three depths');
+          ok(/rng\.seed = \(\(cx \* 73856093\) \^ \(cy \* 19349663\) \^ \(\(salt \+ 1\) \* 83492791\)\) & 0x7fffffff/.test(thingsF)
+             && !/randomize\(|hash\(|(?<!rng\.)rand[fi]/.test(thingsF) && !/\bTime\./.test(thingsF),
+            '⛑ …and what floats where is worked out from WHERE: any direction goes on for ever, and a place flown back to holds what it held  (my own arithmetic, not hash())');
+          const fl = cls(spC, 'Floater');
+          const flyN = (n) => +(new RegExp('const ' + n + ' := ([\\d.]+)').exec(fl) || [])[1];
+          ok(/func afoot\(\) -> bool:\s*return false/.test(fl) && /floating = true/.test(fl) && flyN('DRIFT') < flyN('PUSH') / 3
+             && /want = dir\.limit_length\(1\.0\) \* speed \* FLY/.test(fl) && /return Floater\.new\(\)/.test(fnGd(spC, '_make_player')),
+            '⭐ he flies any way the stick points, and with nothing pressed drifts a long way before he stops: no legs, no shadow, no jump',
+            'drift ' + flyN('DRIFT') + ' against a push of ' + flyN('PUSH'));
+          const spLine = fnGd(spC, '_line');
+          ok(/event\.is_action_pressed\("ui_accept"\) or event\.is_action_pressed\("ui_cancel"\)/.test(fnGd(spC, '_unhandled_input'))
+             && /if pad != null and pad\.take_accept\(\):\s*come_back\(\)/.test(fnGd(spC, '_process'))
+             && /return "WASD  ·  Arrows  ·  Spacebar comes back down"/.test(spLine) && /Pad\.changed\.connect\(_reline\)/.test(spC)
+             && /\[node name="OuterSpace" type="Node2D"\]\s*script = ExtResource\("1"\)/.test(rd('space.tscn')),
+            '⭐ …and A or B (Spacebar on keys, USE on the glass) brings him back down; the bottom line names the hand he is holding, the keys only his four');
+          /* ── the White Knight ── */
+          ok(/class_name WhiteKnight\s*extends Interactable/.test(knC) && /add_child\(WhiteKnight\.new\(\)\)/.test(fnGd(twC, '_after_ready'))
+             && /var with := u\.talking_with\(\)[\s\S]*?_was_with = with if with is TownNPC else null/.test(fnGd(knC, '_watch'))
+             && /func talking_with\(\) -> Node2D:\s*return _from if _mode == TALK else null/.test(uiC),
+            '⭐ the White Knight  (his): a conversation with somebody ends, or a game comes back, and he gallops up to rescue you from it');
+          ok(!/StaticBody2D|_solid\(/.test(knC) && /if _pending != "" and _quiet\(\):/.test(knC) && /func quiet\(\) -> bool:\s*return _mode == IDLE/.test(uiC)
+             && /static var _last_us/.test(knC) && +(/const AGAIN_SECS := ([\d.]+)/.exec(knC) || [])[1] >= 60
+             && /if slot == -4 or who == "":\s*return/.test(fnGd(knC, '_on_result')) && /return p\.clamp\(b\.position, b\.end\)/.test(fnGd(knC, '_inside')),
+            '⛑ …and never in the way: not solid, says his piece only when the box is quiet, rare, never over a study, and inside the window\'s walls');
+          ok(/var side := -signf\(near\.x - you\.global_position\.x\)[\s\S]*?_to = _inside\(you\.global_position \+ Vector2\(side \* 105\.0, 24\.0\)\)/.test(fnGd(knC, '_come'))
+             && /TownPeople\.dress\(self, WhiteKnight\.WHO, ""\)/.test(cls(knC, 'Rider')) && /"White Knight": "eef0f4"/.test(ppC),
+            '⭐ …he stops right beside you on your other side from them, a white rider on a white horse  (halfway between you he stood on you both)');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
