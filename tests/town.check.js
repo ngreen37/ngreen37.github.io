@@ -1096,8 +1096,9 @@ const server = http.createServer((req, res) => {
           '⭐ the bed asks which way down: the dream, the nightmare, or not now  (his: "the user can choose either one")');
         /* ⛑ 2026-10-03, his: "we shouldn't count days in the game and instead just use the real time the
            user is in". His "Day %d." had no day left to say; you wake to the time. */
-        ok(/prompt_text = "Go to bed, dick\."/.test(bd) && /say\("%s\." % TownClock\.time_text\(\)\)/.test(fnGd(bd, '_morning')),
-          '…his prompt untouched, and you wake to the real time');
+        /* ⛑ 2026-10-15, his: "Take out Go to Bed, Dick quote." */
+        ok(/prompt_text = "Sleep"/.test(bd) && !/dick/i.test(bd) && /say\("%s\." % TownClock\.time_text\(\)\)/.test(fnGd(bd, '_morning')),
+          '…the bed\'s old line is out, and you wake to the real time');
         ok(!/sleep\(\)|GameState\.day\b/.test(bd) && !/func sleep\(/.test(g)
           && /if id != "dream" and id != "nightmare":\s*\n\s*return/.test(fnGd(bd, '_on_chose')),
           '⚠ going to bed turns no day over, and "Not now." leaves it  (a phone has no Escape)');
@@ -4432,9 +4433,9 @@ const server = http.createServer((req, res) => {
           ok(/class Rack extends Node2D:/.test(hm) && /class FloorWeights extends Node2D:/.test(hm)
              && /class Shoes extends Node2D:/.test(hm) && /class Blades extends Node2D:/.test(hm)
              && /rack\.position = RACK_AT/.test(hm) && /_solid\(rack, Rect2\(/.test(hm)
-             && /\[FloorWeights\.new\(\), MAT_AT\], \[Shoes\.new\(\), SHOES_AT\], \[blades, BLADES_AT\]/.test(hm),
+             && /\[FloorWeights\.new\(\), MAT_AT\], \[shoes, SHOES_AT\], \[blades, BLADES_AT\]/.test(hm),
             '⭐ a bench and a bar, weights on a mat, his running shoes and his rollerblades are in the checker',
-            'the bench presses and the rollerblades go on (10-15); the shoes and the weights are scenery; only the rack is solid');
+            'the bench presses, the shoes and the rollerblades go on (10-15); the weights are scenery; only the rack is solid');
           const gear = ['RACK_AT', 'MAT_AT', 'SHOES_AT', 'BLADES_AT'].map((n) => [n, v2(hm, n)]);
           const offFloor = gear.filter(([, p]) => !p || ell(p.x, p.y) > 0.93).map(([n]) => n);
           ok(offFloor.length === 0, '…every one of them on the floor  (the rack\'s box is in the disc audit above)',
@@ -4808,8 +4809,8 @@ const server = http.createServer((req, res) => {
           {
             const lay = fnGd(uiS, '_layout'), rnd = fnGd(uiS, '_round_use'), use = fnGd(padS, 'use_rect');
             ok(/if not _seen_touch or _talking\(\):\s*\n\s*return Rect2\(\)/.test(use)
-               && /var r := \(R_BTN \+ 2\.0\) \* k\(\)\s*\n\s*return Rect2\(_btn_at\(\) - Vector2\(r, r\), Vector2\(r, r\) \* 2\.0\)/.test(use),
-              '⛑ the pad says where it is painting USE, and "nowhere" while it paints none');
+               && /var r := \(R_BTN \+ 2\.0\) \* k\(\)\s*\n\s*var use := Rect2\(_btn_at\(\) - Vector2\(r, r\), Vector2\(r, r\) \* 2\.0\)\s*\n\s*if not _jumps\(\):\s*\n\s*return use\s*\n\s*var j := \(R_JUMP \+ 2\.0\) \* k\(\)\s*\n\s*return use\.merge\(Rect2\(_jump_at\(\) - Vector2\(j, j\), Vector2\(j, j\) \* 2\.0\)\)/.test(use),
+              '⛑ the pad says where it is painting USE and JUMP, and "nowhere" while it paints none  (JUMP is not painted in a fight)');
             ok(/if _use\.has_area\(\):/.test(rnd) && /_line\.get_character_bounds\(i\)/.test(rnd)
                && /var rad: float = _use\.size\.x \* 0\.5 \+ GAP_CSS \* _css_unit\(\)/.test(rnd)
                && /if c\.distance_squared_to\(near\) <= rad \* rad:/.test(rnd),
@@ -5090,7 +5091,7 @@ const server = http.createServer((req, res) => {
               (znR.match(/_rating_note\(\)/g) || []).length - 1 + ' sentences carry it (three wins and a square that arrives from a game)');
             ok(/"a": "Your rating"/.test(jrR), '   and the Journal has it under THE BOARD');
           }
-          ok(/"rating": rating, "booth_nights": booth_nights\s*\}\)\)/.test(gsR)
+          ok(/"rating": rating, "booth_nights": booth_nights[,\s]/.test(fnGd(gsR, 'save_state'))
              && /"rating": rating, "booth_nights": booth_nights,\s*"board": banner\(\) \}\)/.test(gsR)
              && /if int\(d\.get\("rating", 0\)\) > rating:/.test(fnGd(gsR, 'merge_in'))
              && /if int\(d\.get\("booth_nights", 0\)\) > booth_nights:/.test(fnGd(gsR, 'merge_in'))
@@ -5198,11 +5199,12 @@ const server = http.createServer((req, res) => {
              && /is_action_pressed\("ui_cancel"\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*close\(\)\s*return\s*if not \(event is InputEventKey\)/.test(uIn),
             '⛑ B leaves a conversation the way Escape does, rows up or rows down  (asked BEFORE the keys-only line: a pad\'s B is no key)');
           /* ── the words follow the hand ── */
-          ok(/if Pad\.using:\s*return "Stick or D-pad  ·  %sA  ·  B  ·  %s Journal" % \["click it to run  ·  " if runs else "", Pad\.word\(Pad\.TOP\)\]/.test(fnGd(znC, 'default_hint'))
-             && /if hint == "" or hint == TownZone\.default_hint\(true\) or hint == TownZone\.default_hint\(false\):\s*_keys_line = true\s*Pad\.changed\.connect\(_default_hint_again\)\s*hint = TownZone\.default_hint\(runs\(\)\)\s*_ui\.set_hint\(hint\)/.test(znC)
-             && /hint = TownZone\.default_hint\(runs\(\)\)\s*_ui\.set_hint\(hint\)/.test(fnGd(znC, '_default_hint_again'))
-             && /return not is_fight\(\) and not GameState\.skates/.test(fnGd(znC, 'runs')),
-            '⭐ the line at the bottom names the pad\'s buttons, and changes the moment a pad or a key is touched');
+          ok(/if Pad\.using:\s*return "Stick or D-pad  ·  %sA  ·  %s%s Journal" % \["click it to run  ·  " if runs else "", "B jump  ·  " if jumps else "", Pad\.word\(Pad\.TOP\)\]/.test(fnGd(znC, 'default_hint'))
+             && /if hint == "" or hint == TownZone\.default_hint\(true\) or hint == TownZone\.default_hint\(false\):\s*_keys_line = true\s*Pad\.changed\.connect\(_default_hint_again\)\s*hint = TownZone\.default_hint\(runs\(\), jumps\(\)\)\s*_ui\.set_hint\(hint\)/.test(znC)
+             && /hint = TownZone\.default_hint\(runs\(\), jumps\(\)\)\s*_ui\.set_hint\(hint\)/.test(fnGd(znC, '_default_hint_again'))
+             && /return player != null and player\.afoot\(\) and GameState\.gear == ""/.test(fnGd(znC, 'runs'))
+             && /return player != null and player\.afoot\(\)(?! and)/.test(fnGd(znC, 'jumps')),
+            '⭐ the line at the bottom names the pad\'s buttons, and changes the moment a pad or a key is touched  (no "B jump" in a fight)');
           ok(/if using:\s*return "press A"/.test(fnGd(pdC, 'use_words')) && /Pad\.use_words\(\)/.test(code(rd('mine.gd'))) && /Pad\.use_words\(\)/.test(code(rd('sea_board.gd')))
              && /if Pad\.using:\s*return "Press A to Exit"/.test(fnGd(crC, '_exit_words')) && /Pad\.changed\.connect\(_pad_words\)/.test(crC),
             '   …and so does every "press ENTER", and the bold way out of Pawn Crossing');
@@ -5256,13 +5258,13 @@ const server = http.createServer((req, res) => {
             '   …and a conversation ends it too');
           /* ⚠ A FIGHT'S PACE AND VIEW ARE THE GAME'S: zoomed in on the square, you walked into Chess Zombies
              unable to see the board. The Sand Mine run is no town room at all. */
-          const roams = fnGd(plC, 'roams_here'), cbC = code(rd('chessboard.gd'));
+          const roams = fnGd(plC, 'roams_here');
           const fights = ['chessboard.gd', 'crossing.gd'].filter((f) => /func is_fight\(\) -> bool:\s*return true/.test(code(rd(f))));
           ok(/var z := get_parent\(\) as TownZone\s*return z != null and not z\.is_fight\(\)/.test(roams)
              && /func is_fight\(\) -> bool:\s*return false/.test(znC) && fights.length === 2
              && /var z := maxf\(least, maxf\(1\.0, least\) \* \(Pad\.zoom if roams_here\(\) else 1\.0\)\)/.test(fnGd(plC, '_fit_camera'))
              && /if not is_instance_valid\(_cam\) or not roams_here\(\) or _in_talk\(\):\s*return/.test(plView)
-             && /hint = TownZone\.default_hint\(false\)/.test(fnGd(cbC, '_furnish')),
+             && /return roams_here\(\)/.test(fnGd(plC, 'afoot')) && /return player != null and player\.afoot\(\) and GameState\.gear == ""/.test(fnGd(znC, 'runs')),
             '⛑ in a fight the pad neither runs nor moves the view, and the line does not offer it  (Chess Zombies, Pawn Crossing; the Sand Mine run is no town room)',
             'fights: ' + fights.join(' · '));
           ok(/var zt := Pad\.triggers\(\)\s*if absf\(zt\) > 0\.05:\s*Pad\.zoom = clampf\(Pad\.zoom \* exp\(zt \* Pad\.ZOOM_RATE \* delta\), Pad\.ZOOM_OUT, Pad\.ZOOM_IN\)\s*_fit_camera\(_lim\)/.test(plView)
@@ -5293,36 +5295,68 @@ const server = http.createServer((req, res) => {
             '⛑ wherever something else moves him (a fight, a hop in Pawn Crossing), his first step ends the wave  (its clip owns the legs, and a body moved under it glides)');
         }
 
-        /* ══ his gear works: the bench press and the rollerblades — 2026-10-15 ══ */
+        /* ══ his gear works: the bench press, the rollerblades, the running shoes, a jump and the loop — 2026-10-15 ══ */
         /* his: "Let's do bench press and rollerblade functions now. pressing nothing lowers the bar, holding L and R
            triggers raises it. And hitting A repeatedly helps you get the last rep when character is failing to raise it
-           high enough. Put little explainer text during the lift. For the rollerblades, we'll be rollerblading with the
-           dogs around town" */
+           high enough. Put little explainer text during the lift." Then: "Skating should cost as much as running,
+           energy-wise. A set should burn energy too of course, weightlifting, and should have diminishing returns after
+           3 sets a day, and should add to a health meter that starts in the middle. … Add a rack for the bar to rest
+           on. A rep counts if it's lowered at least 75% of the way, but full gain comes from full range-of-motion. If
+           fail, the weights end up all over the floor. It should all cost energy; extra energy if fail. Failure should
+           come sooner after 3 sets." And: "the turns are too rounded and the top speed is significantly too high.
+           let's activate the running shoes as well. No dog. Just you. We'll add a walking/running/skating trail to
+           use. We'll be able to jump using skates, shoes, or default as well" (his picks: the loop round the park
+           lawn, B jumps, in the running shoes he always runs). */
         {
           const lfC = code(rd('lift.gd')), hmC = code(rd('home.gd')), pmC = code(rd('player_model.gd')), plC = code(rd('player.gd'));
           const pdC = code(rd('pad.gd')), dgC = code(rd('dog.gd')), gsC = code(rd('game_state.gd')), twC = code(rd('town.gd'));
+          const tpC = code(rd('touch_pad.gd')), znC2 = code(rd('zone.gd'));
           const numL = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(lfC) || [])[1];
           const numPl = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(plC) || [])[1];
-          const lift = fnGd(lfC, '_lift');
+          const lift = fnGd(lfC, '_lift'), press = fnGd(lfC, '_press'), rep = fnGd(lfC, '_rep');
           /* ── the bench ── */
-          ok(/class BenchPress extends Interactable:/.test(hmC) && /var bench := BenchPress\.new\(\)\s*bench\.position = RACK_AT/.test(hmC)
-             && /var lift := LiftView\.new\(\)[\s\S]{0,200}p\.visible = false\s*lift\.closed\.connect\(func\(_reps: int\) -> void:\s*if is_instance_valid\(p\):\s*p\.visible = true\)\s*get_tree\(\)\.current_scene\.add_child\(lift\)/.test(hmC),
-            '⭐ A at the rack in his home lies him down on the bench  (and he stands back up beside it when the set is over)');
-          ok(/var v: float = clampf\(up, -LOWER, 1\.0\) if _push else -LOWER/.test(lift)
+          ok(/class BenchPress extends Interactable:/.test(hmC) && /var bench := BenchPress\.new\(\)\s*bench\.rack = rack\s*bench\.position = RACK_AT/.test(hmC)
+             && /var lift := LiftView\.new\(\)[\s\S]{0,200}p\.visible = false\s*lift\.closed\.connect\(func\(_reps: int, failed: bool\) -> void:\s*if is_instance_valid\(p\):\s*p\.visible = true\s*if failed:\s*NateHome\.spilled = true/.test(hmC)
+             && /if GameState\.energy < LiftView\.REP_COST:\s*say\(/.test(hmC),
+            '⭐ A at the rack in his home lies him down on the bench  (he stands back up when the set is over; an empty bar is too tired to lift)');
+          ok(/var v: float = clampf\(up, -LOWER, 1\.0\) if _push else -LOWER/.test(press)
              && /return Pad\.squeezed\(\) or Input\.is_action_pressed\("ui_up"\) or _mouse or _touches > 0/.test(fnGd(lfC, '_pushing'))
              && /var trig := Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_LEFT\) > 0\.5 and Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_RIGHT\) > 0\.5/.test(fnGd(pdC, 'squeezed'))
              && /return trig or held/.test(fnGd(pdC, 'squeezed')),
             '⭐ pressing nothing lowers the bar, and both triggers held press it up  (both shoulders as well: he called them L and R)');
           const fresh = numL('FORCE') * (1 - numL('DIP')), load = numL('LOAD');
-          ok(/_grit \+= MASH/.test(fnGd(lfC, '_mash')) && /_grit \*= exp\(-delta \/ GRIT_LIFE\)/.test(lift)
+          ok(/_grit \+= MASH/.test(fnGd(lfC, '_mash')) && /_grit \*= exp\(-delta \/ GRIT_LIFE\)/.test(press)
              && fresh > load && fresh * (1 - 7 * numL('TIRE_REP')) < load,
             '⭐ he tires a rep at a time until the triggers alone stall at the sticking point, and A mashed gets the last ones up  (the push from A fades by a share: at a flat rate it ran out between presses)',
             'fresh ' + fresh.toFixed(2) + ' against a load of ' + load + ', ' + (fresh * (1 - 7 * numL('TIRE_REP'))).toFixed(2) + ' seven reps in');
-          ok(/if _h <= 0\.04:\s*_low = true\s*elif _low and _h >= 0\.97:\s*_low = false\s*_reps \+= 1/.test(lift)
-             && /_stuck = _stuck \+ delta if _push and up <= 0\.0 and _h < 0\.96 else 0\.0/.test(lift),
-            '   …a rep is chest to lockout, and a bar that will not move any more ends the set, wherever it stalled');
+          ok(/if _h >= 0\.97 and _deep < 0\.97:\s*_rep\(\)/.test(press) && /if depth < COUNTS:/.test(rep)
+             && /var part := 0\.5 \+ 0\.5 \* clampf\(\(depth - COUNTS\) \/ \(FULL - COUNTS\), 0\.0, 1\.0\)/.test(rep)
+             && /_gain \+= REP_GAIN \* part \* _worth/.test(rep) && numL('COUNTS') === 0.75 && numL('FULL') >= 0.9,
+            '⭐ a rep counts lowered at least 75% of the way, and gains its whole worth only from his chest  (his)');
+          ok(/GameState\.burn\(REP_COST\)/.test(rep) && /GameState\.burn\(FAIL_COST\)\s*_go\("fall"\)/.test(press)
+             && numL('FAIL_COST') > numL('REP_COST') && /if GameState\.energy <= 0:\s*_s = 0\.0/.test(rep),
+            '⭐ every rep costs energy and a failed set costs more  (an empty bar has nothing left to press with)', 'a rep ' + numL('REP_COST') + ', a fall ' + numL('FAIL_COST') + ' more');
+          ok(/_stuck = _stuck \+ delta if _push and up <= 0\.0 and _h < 0\.96 else 0\.0/.test(press)
+             && /if _stuck >= PINNED or _rest >= RESTING:/.test(press) && /if _lifted:\s*GameState\.set_done\(_gain\)/.test(fnGd(lfC, '_end')),
+            '   …a bar that will not move any more, wherever it stalled, is a failed set; any set off the rack is counted');
+          ok(/return pow\(0\.5, float\(maxi\(0, sets_today\(\) - FULL_SETS \+ 1\)\)\)/.test(fnGd(gsC, 'set_worth')) && /const FULL_SETS := 3/.test(gsC)
+             && /var health := HEALTH_CAP \* 0\.5/.test(gsC) && /health = clampf\(health \+ gain, 0\.0, HEALTH_CAP\)/.test(fnGd(gsC, 'set_done'))
+             && /"health": health, "lift_day": lift_day, "lift_sets": lift_sets/.test(fnGd(gsC, 'save_state'))
+             && !/"health"/.test(fnGd(gsC, 'push_to_site'))
+             && /_s = maxf\(0\.4, 1\.0 - LATE \* float\(late\)\)/.test(fnGd(lfC, '_ready')),
+            '⭐ a set adds to his health, a meter that starts in the middle; after three a day each is worth half the last, and he fails sooner  (kept here, not on his account)');
+          ok(/"Energy %d\/%d" \+ sep \+ "Health %d\/%d"/.test(fnGd(znC2, '_paint_hud')) && /GameState\.health_changed\.connect/.test(znC2),
+            '   …and the health is on the top row beside the energy');
+          ok(/if _pushing\(\):\s*_go\("out"\)/.test(lift) && /if _h < 0\.9:\s*_note\("Press it up to rack it\."\)/.test(fnGd(lfC, 'rack'))
+             && /var hook := _px\(_body\.bench_points\(1\.0, 1\.0\)\["near"\]\)/.test(fnGd(lfC, '_paint')),
+            '⭐ the bar rests on a rack: lifted off it to start, and put back only from the top  (his: "Add a rack for the bar to rest on")');
+          ok(/if loose:/.test(fnGd(lfC, '_paint')) && /var gone := 0\.5 \* S \* \(1\.0 - exp\(-tr \* 2\.2\)\)/.test(fnGd(lfC, '_rolled'))
+             && /if NateHome\.spilled:/.test(fnGd(hmC.slice(hmC.indexOf('class Rack')), '_draw')) && /static var spilled := false/.test(hmC)
+             && /if NateHome\.spilled:\s*NateHome\.spilled = false/.test(hmC),
+            '⭐ a failed set puts the plates all over the floor, up close and in his room, until he picks them up');
           const say = fnGd(lfC, '_say');
-          ok(/"He is failing\. " \+ \("Mash A!"/.test(say) && /"Pressing nothing lowers the bar\."/.test(say) && /"Hold ZL \+ ZR"/.test(say) && /"Rep %d!"/.test(say),
+          ok(/"He is failing\. " \+ \("Mash A!"/.test(say) && /"Pressing nothing lowers the bar\."/.test(say) && /" to lift it off the rack\."/.test(say)
+             && /"Lower it further for a rep\."/.test(rep) && /"Rep %d, but not all the way down\."/.test(rep) && /The plates are all over the floor\./.test(say),
             '⭐ little words during the lift say what to press and when, in the hand he is holding');
           ok(/if not \(event is InputEventKey or event is InputEventJoypadButton\):\s*return\s*get_viewport\(\)\.set_input_as_handled\(\)/.test(fnGd(lfC, '_input'))
              && /add_to_group\("town_cover"\)/.test(fnGd(lfC, '_ready')),
@@ -5332,31 +5366,53 @@ const server = http.createServer((req, res) => {
           ok(/_body = TownPlayerModel\.make\(PX, 0\.0\)/.test(lfC) && /var ik := TwoBoneIK3D\.new\(\)/.test(fnGd(pmC, 'lie_back'))
              && /\["Upper_Arm\.L", "Lower_Arm\.L", "Hand\.L"\]/.test(pmC) && /\["UpperLeg\.R", "LowerLeg\.R", "Foot\.R"\]/.test(pmC),
             '⭐ it is HIM on the bench, side on, his hands on the bar and his feet on the floor by IK  (a level camera, so the bar\'s two plates are one)');
-          /* ── the rollerblades ── */
-          ok(/class SkateSpot extends Interactable:/.test(hmC) && /GameState\.skates = not GameState\.skates\s*if not GameState\.skates:\s*TownDog\.pack\.clear\(\)/.test(hmC)
-             && /if GameState\.skates:\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw')),
-            '⭐ A at the rollerblades by his door puts them on and takes them off  (the pair is gone from the floor while he wears them)');
-          ok(/var want := dir\.normalized\(\) \* speed \* SKATE_TOP \* push if dir\.length_squared\(\) > 0\.001 else Vector2\.ZERO/.test(plC)
-             && /velocity = velocity\.move_toward\(want, speed \* \(SKATE_PUSH if _skate_push else SKATE_COAST\) \* _delta\)/.test(plC)
-             && /return GameState\.skates and roams_here\(\)/.test(fnGd(plC, 'skating'))
-             && numPl('SKATE_TOP') > 1.2 && numPl('SKATE_COAST') < numPl('SKATE_PUSH'),
-            '⭐ on rollerblades he glides: he works up to speed, carves round, and coasts when you let go',
-            numPl('SKATE_TOP') + '× the walk');
-          ok(/_model\.advance\(delta, facing, velocity\.length\(\) \* delta if _skate_push else 0\.0, speed \* 0\.298 \* SKATE_STRIDE\)/.test(plC)
-             && /var att := BoneAttachment3D\.new\(\)\s*att\.bone_name = "Foot\." \+ side/.test(fnGd(pmC, '_build_skates'))
-             && /var ground := _floor \+ _skate_lift/.test(fnGd(pmC, 'advance'))
-             && !/"skates"/.test(fnGd(gsC, 'save_state')),
-            '   …the skates are on his feet, his legs push only while he pushes, and a new day wakes him in his shoes');
-          /* ── the dogs ── */
-          ok(/static var pack: Array\[String\] = \[\]/.test(dgC) && /TownDog\.gather\(self\)/.test(fnGd(twC, '_after_ready'))
-             && /if td != null and td\.who == name_ and not td\.at_home:\s*d = td/.test(fnGd(dgC, 'gather'))
-             && /if TownDog\.indoors\(name_\):\s*pack\.erase\(name_\)/.test(fnGd(dgC, 'gather')),
-            '⭐ the dogs he skates past come with him, across every window of the town  (one dog, one copy: the one in that window if there is one)');
-          ok(/if companion and GameState\.hearts_for\(who\) <= 0:\s*return false/.test(fnGd(dgC, '_joins'))
-             && /not \(get_parent\(\) is CheckerTown\)/.test(fnGd(dgC, '_joins'))
-             && /var keep := maxf\(TROT, p\.velocity\.length\(\)\)/.test(fnGd(dgC, '_skate_along'))
-             && /return _follow or _packed/.test(fnGd(dgC, 'yields')),
-            '   …Princess only once she knows him, at his pace and not a trot, and never in the way of a door');
+          /* ── what is on his feet ── */
+          ok(/class GearSpot extends Interactable:/.test(hmC) && /GameState\.gear = "" if GameState\.gear == kind else kind/.test(hmC)
+             && /for n in get_tree\(\)\.get_nodes_in_group\("town_gear"\):/.test(hmC)
+             && /\[shoes, SHOES_AT, "runners", "running shoes"\], \[blades, BLADES_AT, "skates", "rollerblades"\]/.test(hmC)
+             && /if GameState\.gear == "skates":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw'))
+             && /if GameState\.gear == "runners":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Shoes')), '_draw')),
+            '⭐ A at the rollerblades or the running shoes by his door puts that pair on, the other off  (a pair is gone from the floor while he wears it)');
+          ok(/head = head\.rotated\(clampf\(head\.angle_to\(aim\), -SKATE_TURN \* _delta, SKATE_TURN \* _delta\)\)/.test(plC)
+             && /velocity = head \* move_toward\(spd, speed \* top \* push, speed \* SKATE_PUSH \* _delta\)/.test(plC)
+             && /var top := SKATE_TOP if GameState\.tire\(_delta\) else 1\.0/.test(plC)
+             && /return GameState\.gear == "skates" and roams_here\(\)/.test(fnGd(plC, 'skating'))
+             && numPl('SKATE_TOP') > 1.0 && numPl('SKATE_TOP') <= 1.5 && numPl('SKATE_TURN') >= 6 && numPl('SKATE_COAST') < numPl('SKATE_PUSH'),
+            '⭐ on rollerblades he glides and turns tight, no faster than he ought, and a push costs what running does  (his: "the turns are too rounded and the top speed is significantly too high")',
+            numPl('SKATE_TOP') + '× the walk, turning ' + numPl('SKATE_TURN') + ' radians a second');
+          ok(/if runners and dir\.length_squared\(\) > 0\.001:\s*run = RUN_SPEED if GameState\.tire\(_delta\) else 1\.0/.test(plC)
+             && /return GameState\.gear == "runners" and roams_here\(\)/.test(fnGd(plC, 'in_runners')),
+            '⭐ in his running shoes every step is a run, at a run\'s cost  (his pick)');
+          ok(/var att := BoneAttachment3D\.new\(\)\s*att\.bone_name = "Foot\." \+ side/.test(fnGd(pmC, '_build_gear'))
+             && /var pair := _skate_parts\(\) if kind == "skates" else _shoe_parts\(\)/.test(fnGd(pmC, '_build_gear'))
+             && /var ground := _floor \+ _skate_lift/.test(fnGd(pmC, 'advance')) && !/"gear"/.test(fnGd(gsC, 'save_state')),
+            '   …the pair is on his feet, and a new day wakes him in his own shoes');
+          /* ── a jump ── */
+          ok(/if \(\(jb != null and jb\.pressed and event\.is_action_pressed\("ui_cancel"\)\) or \(k != null and k\.pressed and not k\.echo and k\.keycode == KEY_SHIFT\)\) and can_jump\(\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*jump\(\)/.test(fnGd(plC, '_unhandled_input'))
+             && /if can_jump\(\):\s*_jump = 0\.0/.test(fnGd(plC, 'jump')) && /return 4\.0 \* JUMP_HIGH \* u \* \(1\.0 - u\)/.test(fnGd(plC, 'hop'))
+             && /_model\.draw_on\(self, Vector2\(0\.0, FEET\), radius \* 1\.25, _shrink, hop\(\)\)/.test(plC)
+             && /if pad != null and pad\.take_jump\(\):\s*jump\(\)/.test(plC) && /var jt := "JUMP"/.test(tpC),
+            '⭐ B jumps, in any shoes or none  (Shift on keys, JUMP on the glass; his: "We\'ll be able to jump using skates, shoes, or default as well")');
+          ok(/return afoot\(\) and _jump < 0\.0 and not _in_talk\(\) and _warp < 0\.0 and not \(_model != null and _model\.waving\(\)\)/.test(fnGd(plC, 'can_jump'))
+             && /return roams_here\(\)/.test(fnGd(plC, 'afoot'))
+             && /var p := get_parent\(\) as TownPlayer\s*return p != null and p\.afoot\(\)/.test(fnGd(tpC, '_jumps'))
+             && /if _jumps\(\) and t\.position\.distance_to\(_jump_at\(\)\) <= R_JUMP \* 1\.35 \* k\(\):/.test(tpC)
+             && /and \(not _jumps\(\) or t\.position\.distance_to\(_jump_at\(\)\) > R_JUMP \* 1\.8 \* k\(\)\)/.test(tpC)
+             && /if not _jumps\(\):\s*return\s*var jb := _jump_at\(\)/.test(fnGd(tpC, '_paint')),
+            '⛑ …but only where he walks about: no jump in a fight or under a cover, and no JUMP on the glass there  (Shift + a direction is Pawn Crossing\'s "all the way"; JUMP sat on its board; photo mode never got its B)');
+          ok(/class Rowing extends TownPlayer:[\s\S]*?func afoot\(\) -> bool:\s*return false/.test(code(rd('sea.gd'))),
+            '⛑ …and the boat has no legs: at sea the line offers no run and no jump, and B is left alone  (the boat is a TownPlayer too)');
+          /* ── the loop ── */
+          const loopR = /const LOOP := Rect2\(([-\d.]+), ([-\d.]+), ([\d.]+), ([\d.]+)\)/.exec(twC) || [], lw = +(/const LOOP_W := ([\d.]+)/.exec(twC) || [])[1];
+          const lx = +loopR[1], ly = +loopR[2], lend = lx + +loopR[3], lbot = ly + +loopR[4];
+          ok(/if pr\.intersects\(LOOP\.grow\(LOOP_W\)\):\s*_draw_loop\(\)/.test(fnGd(twC, '_draw'))
+             && lx + lw / 2 < -260 && ly + lw / 2 < -430 && lend - lw / 2 > 260 && lbot - lw / 2 > -80
+             && ly - lw / 2 > -500 && lend + lw / 2 < 334 && lbot + lw / 2 < -20,
+            '⭐ a loop of clay runs round the park lawn  (his pick): outside its trees, inside the fence, clear of the road north and above the main road',
+            'its middle ' + lx + ',' + ly + ' to ' + lend + ',' + lbot + ', ' + lw + ' wide');
+          /* ── no dog ── */
+          ok(!/static var pack/.test(dgC) && !/TownDog\.gather/.test(twC) && /func yields\(\) -> bool:\s*return _follow\s/.test(dgC),
+            '⛑ no dog skates with him  (his: "No dog. Just you.")');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
