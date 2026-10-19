@@ -409,8 +409,36 @@ const server = http.createServer((req, res) => {
     /* ⚠ THE GAME ITSELF, not a copy: the mirror in private/docs/godot/ was retired 2026-10-19. */
     const GD = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
     if (fs.existsSync(GD)) {
-      const gs = fs.readFileSync(path.join(GD, 'game_state.gd'), 'utf8');
-      const zone = fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8');
+      /* ⚠ THE GAME IS IN FEATURE FOLDERS (2026-10-19): a check names a file and GDF finds it; GD_LIST is
+         every file in the game by name. A name used twice is a red check, never a guess. */
+      const GD_INDEX = new Map(), GD_DUPS = [];
+      (function index(d) {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+          if (['.godot', '.git', 'tests'].includes(e.name)) continue;
+          const f = path.join(d, e.name);
+          if (e.isDirectory()) index(f);
+          else if (!GD_INDEX.has(e.name)) GD_INDEX.set(e.name, f);
+          else if (e.name !== 'README.md') GD_DUPS.push(e.name);
+        }
+      })(GD);
+      const GDF = (f) => GD_INDEX.get(f) || path.join(GD, f);
+      const GD_LIST = [...GD_INDEX.keys()].sort();
+      ok(GD_DUPS.length === 0, 'every file in the game has a name of its own, so a check can find it by name',
+        GD_DUPS.join(' '));
+      /* ⚠ A DOOR TO A MOVED SCENE SILENTLY DOES NOTHING, so every typed path must name a file that is there. */
+      {
+        const dead = [];
+        for (const f of GD_LIST.filter((n) => /\.(gd|tscn|godot)$/.test(n))) {
+          for (const m of fs.readFileSync(GDF(f), 'utf8')
+            .matchAll(/res:\/\/([A-Za-z0-9_\/.\-]+\.(?:gd|tscn|tres|glb|png|ttf|ogg|svg|gdshader))/g)) {
+            if (!fs.existsSync(path.join(GD, m[1]))) dead.push(f + ' -> res://' + m[1]);
+          }
+        }
+        ok(dead.length === 0, 'every res:// path in the game names a file that is there',
+          dead.length ? dead.slice(0, 6).join('  ') : 'scripts, scenes and project.godot read');
+      }
+      const gs = fs.readFileSync(GDF('game_state.gd'), 'utf8');
+      const zone = fs.readFileSync(GDF('zone.gd'), 'utf8');
       ok(/func poll_challenge\(/.test(gs), 'GameState.poll_challenge exists');
       ok(/townResult/.test(gs), '…and it calls PJCC.townResult');
       ok(/"at":\s*Time\.get_unix_time_from_system\(\)/.test(gs),
@@ -452,9 +480,9 @@ const server = http.createServer((req, res) => {
       ok(/str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)/.test(gs),
         '…and claimable() counts them, or army_full() locks the CEO behind them');
       /* ══ the three from 2026-09-03 ══ */
-      const player = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
-      const door = fs.readFileSync(path.join(GD, 'door.gd'), 'utf8');
-      const town = fs.readFileSync(path.join(GD, 'town.gd'), 'utf8');
+      const player = fs.readFileSync(GDF('player.gd'), 'utf8');
+      const door = fs.readFileSync(GDF('door.gd'), 'utf8');
+      const town = fs.readFileSync(GDF('town.gd'), 'utf8');
       /* ⛑ THE EDGE IS THE WINDOW'S NOW (2026-09-27), not the whole map's — but it is still
          ONE rect shared by the walls and the paint, which is what this always guarded. */
       ok(/world_bounds/.test(zone) && /world_bounds = region_rect\(region\)/.test(town)
@@ -469,7 +497,7 @@ const server = http.createServer((req, res) => {
         'the Assembly wears the board on its face — 16 windows in slot order');
       ok(/GameState\.army_changed\.connect\(_light_the_hall\)/.test(town),
         '…and relights them, because a square can fill from another tab');
-      const audio = fs.readFileSync(path.join(GD, 'town_audio.gd'), 'utf8');
+      const audio = fs.readFileSync(GDF('town_audio.gd'), 'utf8');
       ok(/AudioStreamWAV/.test(audio) && /FORMAT_16_BITS/.test(audio),
         'there is sound now, synthesized in code — no binary to ship or license');
       ok(/a\.step\(\)/.test(player) && /_walked/.test(player),
@@ -487,7 +515,7 @@ const server = http.createServer((req, res) => {
         '⛑ Vince is ON THE MAP — he owned the a-rook and was nowhere');
       /* ⛑ A TownDog since 2026-09-04, not _add_challenger. Outside the Assembly, and still the c-bishop. */
       ok(/var dog := TownDog\.princess\(\)/.test(town) && /dog\.position = HALL_AT \+/.test(town)
-         && /"Princess": \{ "key": "princess"/.test(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8')),
+         && /"Princess": \{ "key": "princess"/.test(fs.readFileSync(GDF('dog.gd'), 'utf8')),
         '…and Princess stands outside the Assembly she gates  (built once, in dog.gd — the house has her too)');
       /* ⚠ the bench was NOT reshaped to fit the town — that failure has happened once. */
       const yml = fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8');
@@ -501,12 +529,12 @@ const server = http.createServer((req, res) => {
       ok(/const HEART_CAP := 6/.test(gs), 'hearts cap at six, not ten');
       ok(/clampi\(int\(hearts\[k\]\), 0, HEART_CAP\)/.test(gs),
         '…and a save from before today is clamped, or six pips sit beside a nine');
-      const card = fs.readFileSync(path.join(GD, 'npc_card.gd'), 'utf8');
+      const card = fs.readFileSync(GDF('npc_card.gd'), 'utf8');
       ok(/get_mouse_position/.test(card) && /active_npc\(\)/.test(card),
         'the relationship card has TWO ways in — hover, and standing there  (he is on iOS)');
 
-      const acad = fs.readFileSync(path.join(GD, 'academy.gd'), 'utf8');
-      ok(/scene_path = "res:\/\/academy.tscn"/.test(town),
+      const acad = fs.readFileSync(GDF('academy.gd'), 'utf8');
+      ok(/scene_path = "res:\/\/rooms\/academy.tscn"/.test(town),
         'the Academy is a building you enter, not a link');
       /* ⚠⚠ A ROOM THAT OPENS ONTO A 404 IS THE WHOLE POINT OF THIS CHECK. */
       const permalinks = new Set();
@@ -534,18 +562,18 @@ const server = http.createServer((req, res) => {
       ok(/world_bounds = Rect2/.test(acad),
         '…and the room has walls, or you walk out into black');
 
-      const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
+      const hall = fs.readFileSync(GDF('hall.gd'), 'utf8');
       /* ⛑⛑ SUPERSEDED 2026-09-04. */
       /* his: "the message to the left of the assembly board NOT read the names of those who are not there yet (it should be a mystery) but instead a cryptic line." */
       ok(/func _owed\(\)/.test(hall),
         'the lectern still reads the BOARD  (⚠ cryptic is not random — a riddle still points somewhere)');
 
       /* ══ 5 · MONKEY ISLAND: THE LINE LEFT THE BOX (2026-09-03) ══ */
-      const speech = fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8');
-      const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
-      const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
-      const npc = fs.readFileSync(path.join(GD, 'npc.gd'), 'utf8');
-      const chal = fs.readFileSync(path.join(GD, 'challenger.gd'), 'utf8');
+      const speech = fs.readFileSync(GDF('speech.gd'), 'utf8');
+      const inter = fs.readFileSync(GDF('interactable.gd'), 'utf8');
+      const ui = fs.readFileSync(GDF('town_ui.gd'), 'utf8');
+      const npc = fs.readFileSync(GDF('npc.gd'), 'utf8');
+      const chal = fs.readFileSync(GDF('challenger.gd'), 'utf8');
 
       ok(/extends CanvasLayer/.test(speech) && /get_canvas_transform\(\)/.test(speech),
         'the line is drawn over the speaker — a layer that PROJECTS, not a Label in the world',
@@ -558,7 +586,7 @@ const server = http.createServer((req, res) => {
         '…a bubbled one-liner leaves the box LOOKING idle, so the prompt does not blink out');
       /* ⛑ REWORDED 2026-09-04, not weakened. speaker() answered "who is talking". */
       ok(/func speaking\(who: Node2D\) -> bool:/.test(
-        fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8')),
+        fs.readFileSync(GDF('speech.gd'), 'utf8')),
         '…a speaker can be asked about, one at a time');
       /* ⚠⚠ THE BOX IS NOT DEAD CODE. */
       ok(/_ui\.say\("Word travels/.test(zone) && /func _bubble\(from: Node2D/.test(ui),
@@ -584,7 +612,7 @@ const server = http.createServer((req, res) => {
         '…and so is the footstep, or the cadence is 15 a second');
 
       /* ══ 6 · SHOGI ISLAND, BY BOAT ══ */
-      const isl = fs.readFileSync(path.join(GD, 'island.gd'), 'utf8');
+      const isl = fs.readFileSync(GDF('island.gd'), 'utf8');
       /* ⛑⛑ 2026-09-03: this check asserted the OPPOSITE for one day. Do not restore it. */
       /* his: "let's open up the japanese games on Shogi island - it's time - let's just do it." */
       ok(/\burl\s*=\s*"\/games\/shogi-island\/"/.test(isl),
@@ -593,20 +621,20 @@ const server = http.createServer((req, res) => {
 
       /* ══ 6c · THE CROSSING - YOU ROW THERE ══ */
       /* his: "when you get the oars to go to shogi island - can you make a dock on each side? so we don't teleport there, we row there." */
-      const seaAt = path.join(GD, 'sea.gd');
-      ok(fs.existsSync(seaAt) && fs.existsSync(path.join(GD, 'sea.tscn')),
+      const seaAt = GDF('sea.gd');
+      ok(fs.existsSync(seaAt) && fs.existsSync(GDF('sea.tscn')),
         'the crossing is a room of its own');
       const sea = fs.existsSync(seaAt) ? fs.readFileSync(seaAt, 'utf8') : '';
       ok(/class_name SeaCrossing\s*\nextends TownZone/.test(sea),
         '\u2026a TownZone like every other room, so the HUD, the journal and the pad come free');
-      ok(/boat\.scene_path = "res:\/\/sea\.tscn"/.test(town)
-         && !/scene_path = "res:\/\/island\.tscn"/.test(town),
+      ok(/boat\.scene_path = "res:\/\/rooms\/sea\.tscn"/.test(town)
+         && !/scene_path = "res:\/\/rooms\/island\.tscn"/.test(town),
         'the town rowboat opens the WATER, and nothing in town opens the island directly');
-      ok(/back\.scene_path = "res:\/\/sea\.tscn"/.test(isl)
-         && !/scene_path = "res:\/\/town\.tscn"/.test(isl),
+      ok(/back\.scene_path = "res:\/\/rooms\/sea\.tscn"/.test(isl)
+         && !/scene_path = "res:\/\/town\/town\.tscn"/.test(isl),
         '\u2026and the island rows back into the same water, not straight home');
-      ok(/scene_path = "res:\/\/town\.tscn"/.test(sea)
-         && /scene_path = "res:\/\/island\.tscn"/.test(sea),
+      ok(/scene_path = "res:\/\/town\/town\.tscn"/.test(sea)
+         && /scene_path = "res:\/\/rooms\/island\.tscn"/.test(sea),
         '\u2026which leaves the crossing as the only room that opens either end');
 
       /* ══ THE FOUR LANDING POINTS, EACH DERIVED AGAINST THE OTHER FILE ══ */
@@ -715,7 +743,7 @@ const server = http.createServer((req, res) => {
       ok(/"who": "Matsu"/.test(roster) && !/Shogi Island",\s*"key"/.test(roster),
         '…and the d-pawn belongs to whoever\'s game wins it');
       /* ⚠⚠ MEASURED, NOT ASSUMED: Godot's built-in font has no kana. */
-      const fontAt = path.join(GD, 'kaede_jp.ttf');
+      const fontAt = GDF('kaede_jp.ttf');
       ok(fs.existsSync(fontAt), 'a font that can draw kana ships with the town');
       if (fs.existsSync(fontAt)) {
         ok(fs.statSync(fontAt).size < 200 * 1024,
@@ -758,12 +786,12 @@ const server = http.createServer((req, res) => {
       ok(/url = "\/games\/reading-room\/"/.test(isl) && !/url = "\/games\/reading-room\/"/.test(town2),
         'the Reading Room is a building on Shogi Island, and no longer in town');
       /* ⚠⚠ EVERY SITE URL THE TOWN OPENS, PULLED OUT OF THE TOWN. */
-      const arc = fs.readFileSync(path.join(GD, 'arcade.gd'), 'utf8');
-      const park = fs.readFileSync(path.join(GD, 'park.gd'), 'utf8');
-      const pit = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
-      const stair = fs.readFileSync(path.join(GD, 'stairwell.gd'), 'utf8');
+      const arc = fs.readFileSync(GDF('arcade.gd'), 'utf8');
+      const park = fs.readFileSync(GDF('park.gd'), 'utf8');
+      const pit = fs.readFileSync(GDF('depths.gd'), 'utf8');
+      const stair = fs.readFileSync(GDF('stairwell.gd'), 'utf8');
       /* ⭐ THE RINGS OPEN SITE GAMES SINCE 2026-10-03; the parked Arcade opens nothing. */
-      const rings = fs.readFileSync(path.join(GD, 'portal.gd'), 'utf8');
+      const rings = fs.readFileSync(GDF('portal.gd'), 'utf8');
       /* ⛑⛑ AND THE SPELLINGS CHANGED UNDER IT, 2026-09-04. */
       const doors = [...(isl + town2 + rings + park + pit + stair + gs)
         .matchAll(/(?:\burl = |"url": |\b[A-Z_]*URL :?= )"(\/[^"]+)"/g)]
@@ -835,9 +863,9 @@ const server = http.createServer((req, res) => {
       ok(cover && cover.size > 200, 'the font\'s cmap is readable', cover ? cover.size + ' codepoints' : 'unreadable');
       if (cover) {
         const said = new Set();
-        for (const f of fs.readdirSync(GD)) {
+        for (const f of GD_LIST) {
           if (!f.endsWith('.gd')) continue;
-          for (const ch of fs.readFileSync(path.join(GD, f), 'utf8')) {
+          for (const ch of fs.readFileSync(GDF(f), 'utf8')) {
             const o = ch.codePointAt(0);
             if ((o >= 0x3000 && o <= 0x30FF) || (o >= 0x4E00 && o <= 0x9FFF)) said.add(ch);
           }
@@ -863,9 +891,9 @@ const server = http.createServer((req, res) => {
 
       /* ══ 8 · TWO MOUTHS AT ONCE ══ */
       /* his: "find a way to have the user's character dialogue in white, above the character, without overlapping dialogue. the goodbye quote can end the conversation, but the user can move as well with the response of the character remaining visible for the proper amount of time." */
-      const sp = fs.readFileSync(path.join(GD, 'speech.gd'), 'utf8');
-      const tui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
-      const inter = fs.readFileSync(path.join(GD, 'interactable.gd'), 'utf8');
+      const sp = fs.readFileSync(GDF('speech.gd'), 'utf8');
+      const tui = fs.readFileSync(GDF('town_ui.gd'), 'utf8');
+      const inter = fs.readFileSync(GDF('interactable.gd'), 'utf8');
       ok(/var _bubbles: Array/.test(sp) && /func _find\(who: Node2D\) -> Bubble:/.test(sp),
         'Speech holds MORE THAN ONE bubble — you and them, on screen together');
       ok(/func _unstack\(/.test(sp) && /up\.position\.y = maxf\(_top\(k\), want\)/.test(sp),
@@ -902,8 +930,8 @@ const server = http.createServer((req, res) => {
 
       /* ══ 9 · A ROOM WITH EDGES, WALLS AND A WAY OUT ══ */
       /* his: "limit the space on the inside of the assembly so you can't endlessly walk" */
-      const hall = fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8');
-      const xit = fs.readFileSync(path.join(GD, 'exit_door.gd'), 'utf8');
+      const hall = fs.readFileSync(GDF('hall.gd'), 'utf8');
+      const xit = fs.readFileSync(GDF('exit_door.gd'), 'utf8');
       ok(/world_bounds = ROOM\.grow\(-WALL_T\)/.test(hall),
         'the Assembly has an edge — you could walk off it into flat violet for eight seconds');
       ok(/static func draw_walls\(/.test(zone),
@@ -948,7 +976,7 @@ const server = http.createServer((req, res) => {
         '…and a room whose subject is on the back wall can aim the camera up at it');
 
       /* ══ 11 · THREE PUZZLES, AND A KEY TO TEST THEM WITH ══ */
-      const dev = fs.readFileSync(path.join(GD, 'dev_referee.gd'), 'utf8');
+      const dev = fs.readFileSync(GDF('dev_referee.gd'), 'utf8');
       ok(/func puzzle_report\(clean: bool/.test(gs),
         'ONE path settles a puzzle, won or lost');
       ok(/puzzle_report\(int\(rec\.get\("c", 0\)\) == 1/.test(gs),
@@ -987,9 +1015,9 @@ const server = http.createServer((req, res) => {
       const bareGd = (src) => src.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
       ok(!/arcade\.tscn/.test(town2) && !/ArcadeFront|ARCADE_AT|_furnish_arcade/.test(bareGd(town2)),
         'nothing on the map opens the Arcade, and its front and its lot went with it');
-      ok(fs.existsSync(path.join(GD, 'arcade.tscn')) && /PARKED, NOT DELETED/.test(arc),
+      ok(fs.existsSync(GDF('arcade.tscn')) && /PARKED, NOT DELETED/.test(arc),
         '…and the room is PARKED, not deleted — and its own first line says so');
-      ok(!/Arcade\.CABS/.test(bareGd(fs.readFileSync(path.join(GD, 'paper.gd'), 'utf8')) + bareGd(town2)),
+      ok(!/Arcade\.CABS/.test(bareGd(fs.readFileSync(GDF('paper.gd'), 'utf8')) + bareGd(town2)),
         '…and nothing on the map still reads its machine list');
       const REG = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-games-data.js'), 'utf8');
       const live = new Set([...REG.matchAll(/^\s*\{ slug:'([a-z-]+)'(?![^\n]*cat:'terminated')/gm)]
@@ -1005,9 +1033,9 @@ const server = http.createServer((req, res) => {
          couple times and goes into the portal". Driven end to end by a probe: both trips out and
          back, two turns each, his feet on the ring with an arrow key held down. */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-        const has = (f) => fs.existsSync(path.join(GD, f));
+        const has = (f) => fs.existsSync(GDF(f));
         const por = has('portal.gd') ? rdc('portal.gd') : '';
         const cb = has('chessboard.gd') ? rdc('chessboard.gd') : '';
         const tw = rdc('town.gd'), hm = rdc('home.gd'), pl = rdc('player.gd');
@@ -1034,7 +1062,7 @@ const server = http.createServer((req, res) => {
         ok(/_climb\(delta\)/.test(fnGd(pl, '_process')) && /if _rising >= SINK_SECS:\s*\n\s*_rising = -1\.0\s*\n\s*_warp = -1\.0/.test(fnGd(pl, '_climb'))
           && !/_warp = -1/.test(fnGd(pl, 'rise')),
           '…and no key moves him until he is whole  (_warp clears at the top of the climb, never the bottom)');
-        ok(/back\.scene_path = GameState\.portal_from if GameState\.portal_from != "" else "res:\/\/home\.tscn"/.test(cb)
+        ok(/back\.scene_path = GameState\.portal_from if GameState\.portal_from != "" else "res:\/\/rooms\/home\.tscn"/.test(cb)
           && /var into_world := GameState\.is_world\(scene_path\)/.test(por)
           && /if into_world and here != null:\s*\n\s*GameState\.portal_from/.test(por),
           '…and the board\'s own portal goes back where you came in, home if nothing says');
@@ -1047,7 +1075,7 @@ const server = http.createServer((req, res) => {
          attack slowly in their patterns, and my gun upgrades over time"). Driven by a probe: 32
          checks, 7 mutations. Soaked: standing still dies in 56-104s, a reacting player 166-495s. */
       {
-        const cb = fs.readFileSync(path.join(GD, 'chessboard.gd'), 'utf8').replace(/\r\n/g, '\n')
+        const cb = fs.readFileSync(GDF('chessboard.gd'), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         ok(/var sq := Vector2i\(f, 0\)/.test(fnGd(cb, '_spawn')) && /z\.at = open\[/.test(fnGd(cb, '_spawn')),
           '⭐ chess zombies rise on the FAR rank  (his: "from the opposite side of the board")');
@@ -1074,15 +1102,15 @@ const server = http.createServer((req, res) => {
          either one. Think Happy Gilmore and his happy place for the dream option"). Driven by probes
          at four window shapes: 80 checks, 15 mutations. Standing still, sixteen come home in 60-76s. */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-        const has = (f) => fs.existsSync(path.join(GD, f));
+        const has = (f) => fs.existsSync(GDF(f));
         const cb = rdc('chessboard.gd'), por = rdc('portal.gd'), g = rdc('game_state.gd'), hm = rdc('home.gd');
         const dr = has('dream.gd') ? rdc('dream.gd') : '';
         const hbx = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
         const first = (/\{ "id": "first",[\s\S]*?\}/.exec(g) || [''])[0];
-        ok(/"scene": "res:\/\/chessboard\.tscn"/.test(first) && /"dream": "res:\/\/dream\.tscn"/.test(first)
-          && has('dream.tscn') && /path="res:\/\/dream\.gd"/.test(fs.readFileSync(path.join(GD, 'dream.tscn'), 'utf8'))
+        ok(/"scene": "res:\/\/games\/chessboard\.tscn"/.test(first) && /"dream": "res:\/\/games\/dream\.tscn"/.test(first)
+          && has('dream.tscn') && /path="res:\/\/games\/dream\.gd"/.test(fs.readFileSync(GDF('dream.tscn'), 'utf8'))
           && /class_name DreamBoard\s*\nextends PortalBoard/.test(dr),
           '⭐ the first board has two sides: the nightmare, and a dream built on the same board');
         ok(/str\(row\.get\("dream", ""\)\) == path/.test(fnGd(g, 'is_world')),
@@ -1150,7 +1178,7 @@ const server = http.createServer((req, res) => {
          attacked"). Driven by a probe (20 checks) and in Chrome (10). Soaked: standing still dies in
          35-53s, a reacting player 129-457s. ══ */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const cb = rdc('chessboard.gd'), hl = rdc('hall.gd'), pm = rdc('player_model.gd'), pl = rdc('player.gd');
         const C = require('../assets/js/pjcc-chess.js');
@@ -1195,7 +1223,7 @@ const server = http.createServer((req, res) => {
          instead just use the real time the user is in ... We can add a change time zone function as well,
          since some things will only be open during the day"). Driven by a probe: 17 checks. ══ */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const g = rdc('game_state.gd'), clk = rdc('clock.gd'), zn = rdc('zone.gd'), jr = rdc('journal.gd'), pap = rdc('paper.gd');
         const readers = ['bed.gd', 'dog.gd', 'npc.gd', 'zone.gd', 'journal.gd', 'paper.gd', 'town.gd', 'home.gd', 'door.gd']
@@ -1241,13 +1269,13 @@ const server = http.createServer((req, res) => {
          a dash-and-slide run at 12, 30 and 60 fps, every piece soaked alone, the whole game soaked with a
          careful, a reckless, a dropping and a still bot, at noon and at rush hour. ══ */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-        const has = (f) => fs.existsSync(path.join(GD, f));
+        const has = (f) => fs.existsSync(GDF(f));
         const cr = has('crossing.gd') ? rdc('crossing.gd') : '';
         const tw = rdc('town.gd'), g = rdc('game_state.gd'), por = rdc('portal.gd');
-        ok(/"id": "crossing", "name": "Pawn Crossing", "scene": "res:\/\/crossing\.tscn", "free": true/.test(g)
-          && has('crossing.tscn') && /path="res:\/\/crossing\.gd"/.test(fs.readFileSync(path.join(GD, 'crossing.tscn'), 'utf8'))
+        ok(/"id": "crossing", "name": "Pawn Crossing", "scene": "res:\/\/games\/crossing\.tscn", "free": true/.test(g)
+          && has('crossing.tscn') && /path="res:\/\/games\/crossing\.gd"/.test(fs.readFileSync(GDF('crossing.tscn'), 'utf8'))
           && /class_name PawnCrossing\s*\nextends TownZone/.test(cr),
           '⭐ Pawn Crossing is a board world of its own, and free');
         ok(/portal\.pack = "crossing"\s*\n\s*portal\.scene_path = GameState\.pack_scene\("crossing"\)\s*\n\s*portal\.position = SQUARE_BOARD/.test(tw)
@@ -1369,7 +1397,7 @@ const server = http.createServer((req, res) => {
          (49 checks: prices, rent, bounties, favors, the exchange's rails, packs, the booth over 60
          mornings, save/load and merge). These hold the rules that make it not a money printer. */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const g = rdc('game_state.gd'), ch = rdc('challenger.gd'), mo = rdc('money.gd'), po = rdc('portal.gd');
         ok(/if rent_on == today\(\)/.test(fnGd(g, 'collect_rent')) && !/\bday\b/.test(fnGd(g, 'collect_rent'))
@@ -1410,12 +1438,12 @@ const server = http.createServer((req, res) => {
          portal game by the sea"). His picks: the site's engine, both sides vanish, footprints, a
          bot at your level. Driven in Chrome against the real referee + Stockfish: 35 checks. ══ */
       {
-        const rdc = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n')
+        const rdc = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n')
           .split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-        const sb = fs.existsSync(path.join(GD, 'sea_board.gd')) ? rdc('sea_board.gd') : '';
+        const sb = fs.existsSync(GDF('sea_board.gd')) ? rdc('sea_board.gd') : '';
         const g = rdc('game_state.gd');
-        ok(/"id": "sea",\s+"name": "[^"]+",\s+"scene": "res:\/\/sea_board\.tscn",\s+"free": true/.test(g)
-          && fs.existsSync(path.join(GD, 'sea_board.tscn')),
+        ok(/"id": "sea",\s+"name": "[^"]+",\s+"scene": "res:\/\/games\/sea_board\.tscn",\s+"free": true/.test(g)
+          && fs.existsSync(GDF('sea_board.tscn')),
           '⭐ the sea board is its own world, kept whole and free  (no ring opens it since 10-03)');
         ok(sb !== '' && /PJCCTownChess/.test(sb) && /_call\("state\(\)"\)/.test(sb) && /_call\("start\(\)"\)/.test(sb)
           && /_call\("move\(%d, %d\)"/.test(sb)
@@ -1480,10 +1508,10 @@ const server = http.createServer((req, res) => {
 
       /* ══ 14 · THE PARK TABLES ARE A ROOM ══ */
       /* his: "yes do Park Tables and The Depths." */
-      ok(/scene_path = "res:\/\/park\.tscn"/.test(town2)
+      ok(/scene_path = "res:\/\/rooms\/park\.tscn"/.test(town2)
         && !/url = "\/games\/park-tables\/"/.test(town2),
         'the Park Tables is a ROOM, not a link that opens the lobby in a new tab');
-      ok(fs.existsSync(path.join(GD, 'park.tscn')), '…and the scene exists');
+      ok(fs.existsSync(GDF('park.tscn')), '…and the scene exists');
       /* ⭐⭐ THE SAME TRICK THE ARCADE PLAYS ON THE GAMES REGISTRY, aimed at the bench. */
       /* ⚑ MINUS THE CEO (2026-09-21. */
       /* his: "The CEO should be removed" */
@@ -1495,7 +1523,7 @@ const server = http.createServer((req, res) => {
       const ceoYml = /^- key:\s*ceo\s*\n\s*name:[^\n]*\n\s*icon:[^\n]*\n\s*elo:\s*(\d+)/m.exec(yml);   /* ⚠ `.` stops at a CRLF's \r */
       const ceoGd = /const CEO_ELO := (\d+)/.exec(gs);
       ok(!/"key": "ceo"/.test(park) && ceoYml && ceoGd && +ceoYml[1] === +ceoGd[1]
-         && /_ceo\.elo = GameState\.CEO_ELO/.test(fs.readFileSync(path.join(GD, 'hall.gd'), 'utf8')),
+         && /_ceo\.elo = GameState\.CEO_ELO/.test(fs.readFileSync(GDF('hall.gd'), 'utf8')),
         '⛑ the CEO has no park table, and his ONE rating is GameState.CEO_ELO, the bench\'s own',
         (ceoGd ? ceoGd[1] : '?') + ' vs bench ' + (ceoYml ? ceoYml[1] : '?'));
       /* every row, field for field, against the YAML the site prints from. */
@@ -1580,7 +1608,7 @@ const server = http.createServer((req, res) => {
         /ChessArt\.draw_piece\(self, piece, Vector2\(0\.0, (-?[\d.]+)\), ([\d.]+),\s*tint/g)]
         .map((m) => +m[1] - +m[2] / 2);
       const pFeet = /const SEAT_FEET := (-?[\d.]+)/.exec(park);
-      const pTall = /const TALL := ([\d.]+)/.exec(fs.readFileSync(path.join(GD, 'player_model.gd'), 'utf8'));
+      const pTall = /const TALL := ([\d.]+)/.exec(fs.readFileSync(GDF('player_model.gd'), 'utf8'));
       ok(pFeet && pTall && /TownPeople\.draw_person\(self, Vector2\(0\.0, SEAT_FEET\)/.test(park)
          && /SEAT_FEET - TownPlayerModel\.TALL/.test(park),
         'the seated player is measured too, off the model\'s own height',
@@ -1588,7 +1616,7 @@ const server = http.createServer((req, res) => {
       if (pFeet && pTall) pSeats.push(+pFeet[1] - +pTall[1]);
       /* …and a DOG at a table, drawn sitting, not a model: her crown is DOG_SEAT − SIT_TALL × scale. */
       const pDog = /const DOG_SEAT := (-?[\d.]+)/.exec(park), pDogS = /const DOG_SCALE := ([\d.]+)/.exec(park);
-      const pSit = /const SIT_TALL := ([\d.]+)/.exec(fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8'));
+      const pSit = /const SIT_TALL := ([\d.]+)/.exec(fs.readFileSync(GDF('dog.gd'), 'utf8'));
       ok(pDog && pDogS && pSit && /TownDog\.paint_sitting\(self, who, Vector2\(0\.0, DOG_SEAT\), DOG_SCALE/.test(park),
         'a dog at a Pavilion table is measured too');
       if (pDog && pDogS && pSit) pSeats.push(+pDog[1] - +pSit[1] * +pDogS[1]);
@@ -1601,8 +1629,8 @@ const server = http.createServer((req, res) => {
          \u26a0 people_sheet.gd is the OTHER legal caller \u2014 it builds one rig to photograph the
          sheet and frees it again. Anyone else draws from the sheet. */
       {
-        const rigs = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
-          .filter((f) => /TownPlayerModel\.make\(/.test(fs.readFileSync(path.join(GD, f), 'utf8')));
+        const rigs = GD_LIST.filter((f) => f.endsWith('.gd'))
+          .filter((f) => /TownPlayerModel\.make\(/.test(fs.readFileSync(GDF(f), 'utf8')));
         /* \u26a0 lift.gd IS THE THIRD (2026-10-15): it is HIM, up close on the bench, and goes when the lift does. */
         ok(rigs.length === 3 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd') && rigs.includes('lift.gd'),
           '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture  (and the bench press is him)',
@@ -1622,14 +1650,14 @@ const server = http.createServer((req, res) => {
       /* ══ YOU CAN WALK BEHIND THE TABLES — 2026-09-21 ══ */
       /* his: "let's be able to walk behind the tables." */
       {
-        const PL = fs.readFileSync(path.join(GD, 'player.gd'), 'utf8');
+        const PL = fs.readFileSync(GDF('player.gd'), 'utf8');
         const num = (re, src) => { const m = re.exec(src); return m ? +m[1] : NaN; };
         const backY = num(/const BACK_Y := (-?[\d.]+)/, park), camOff = num(/camera_offset = Vector2\(0\.0, (-?[\d.]+)\)/, park);
         const rad = num(/var radius: float = ([\d.]+)/, PL), feet = num(/const FEET := ([\d.]+)/, PL);
         const foot = /const FOOT := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(park);
         const nook = /const NOOK := Vector2\(([\d.]+), ([\d.]+)\)/.exec(park);
-        const dial = /_dial\.position = Vector2\(w - ([\d.]+) \* k, ([\d.]+) \* k\)/.exec(fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8'));
-        const dialH = num(/const DIAL := ([\d.]+)/, fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8'));
+        const dial = /_dial\.position = Vector2\(w - ([\d.]+) \* k, ([\d.]+) \* k\)/.exec(fs.readFileSync(GDF('zone.gd'), 'utf8'));
+        const dialH = num(/const DIAL := ([\d.]+)/, fs.readFileSync(GDF('zone.gd'), 'utf8'));
         const nums = [backY, camOff, rad, feet, dialH, pTall && +pTall[1], pRoom && +pRoom[2]];
         ok(nums.every((n) => Number.isFinite(n)) && foot && nook && dial && pRung,
           'the lane behind the tables is readable from source', nums.join(' '));
@@ -1656,10 +1684,10 @@ const server = http.createServer((req, res) => {
       }
 
       /* ══ 15 · THE DEPTHS IS THE CAMP ABOVE THE SHAFT ══ */
-      ok(/scene_path = "res:\/\/depths\.tscn"/.test(town2)
+      ok(/scene_path = "res:\/\/rooms\/depths\.tscn"/.test(town2)
         && !/shaft\.energy_cost = 20/.test(town2),
         'the shaft is a ROOM, and the energy moved inside with the cage');
-      ok(fs.existsSync(path.join(GD, 'depths.tscn')), '…and the scene exists');
+      ok(fs.existsSync(GDF('depths.tscn')), '…and the scene exists');
       ok(/energy_cost = 20/.test(pit),
         '…charged ONCE, by the cage  (⚠ leaving it on the door too would charge you twice)');
       /* ⭐⭐ REAL SHADOWS — the technique this room exists to show. */
@@ -1682,9 +1710,9 @@ const server = http.createServer((req, res) => {
         '⚠ two mines share a name: the shaft pays ore, the site\'s game pays the g-pawn — and the Arcade is gone (10-03)');
       /* the run has to come back where you came in. */
       ok(/var mine_return: String/.test(gs)
-        && /GameState\.mine_return = "res:\/\/depths\.tscn"/.test(pit),
+        && /GameState\.mine_return = "res:\/\/rooms\/depths\.tscn"/.test(pit),
         'the shaft run knows which door it came through');
-      const mineGd = fs.readFileSync(path.join(GD, 'mine.gd'), 'utf8');
+      const mineGd = fs.readFileSync(GDF('mine.gd'), 'utf8');
       ok(/GameState\.mine_return if GameState\.mine_return != "" else town_scene/.test(mineGd),
         '…and reads it, with the old export still the fallback',
         '⚠ an @export is read from the SCENE FILE — the caller cannot set it');
@@ -1694,7 +1722,7 @@ const server = http.createServer((req, res) => {
       ok(!/stairwell\.tscn/.test(town2) && !/url = "\/games\/the-gauntlet\/"/.test(town2)
         && !/GAUNTLET_AT/.test(town2),
         'no door in the town opens the Gauntlet, and its lot went with it');
-      ok(fs.existsSync(path.join(GD, 'stairwell.tscn')) && /PARKED, NOT DELETED/.test(stair),
+      ok(fs.existsSync(GDF('stairwell.tscn')) && /PARKED, NOT DELETED/.test(stair),
         '…and the room is PARKED, not deleted — and its own first line says so',
         'a stairwell is the inside of a skyscraper; writing it twice is writing it twice');
       /* ⚠⚠ AND THE MAP MUST NOT KEEP A ROAD TO IT. */
@@ -1741,8 +1769,8 @@ const server = http.createServer((req, res) => {
             tooClose.push(homes[i] + ' / ' + homes[j]);
       ok(tooClose.length === 0, '…and no two of them overlap', tooClose[0] || 'all clear');
       /* ⛑ AND THEY ARE ON THE MINIMAP. */
-      const mapSrc = fs.readFileSync(path.join(GD, 'map.gd'), 'utf8');
-      const jrnSrc = fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8');
+      const mapSrc = fs.readFileSync(GDF('map.gd'), 'utf8');
+      const jrnSrc = fs.readFileSync(GDF('journal.gd'), 'utf8');
       ok(/add_to_group\("town_home"\)/.test(town2) && /is_in_group\("town_home"\)/.test(mapSrc)
         && /for h in TownMap\.homes:/.test(jrnSrc),
         '…and every one of them is drawn on the map, unnamed');
@@ -2034,7 +2062,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ 19 · NIGHT ══ */
       /* his: "the town after dark is a different town." */
-      const clk = fs.readFileSync(path.join(GD, 'clock.gd'), 'utf8');
+      const clk = fs.readFileSync(GDF('clock.gd'), 'utf8');
       ok(/^class_name TownClock$/m.test(clk), 'there is a clock');
       /* ⚠⚠ THE WALL CLOCK AND THE GAME'S DAY COUNTER ARE DIFFERENT THINGS. */
       const clkCode = clk.split('\n').filter((l) => !l.trim().startsWith('#')).join('\n');
@@ -2062,9 +2090,9 @@ const server = http.createServer((req, res) => {
       /* ⛑⛑ ENABLED, NEVER ENERGY 0 (2026-10-01): six lights sat enabled at energy 0. Outside, under a
          half-GPU load: 455 doubled frames a minute, 47 with them disabled. */
       const noComments = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-      const parked = fs.readdirSync(GD).filter((f) => f.endsWith('.gd')).filter((f) =>
+      const parked = GD_LIST.filter((f) => f.endsWith('.gd')).filter((f) =>
         /\.energy = (?:0(?:\.0)?\s*(?:#|$|if\b)|[^\n#]*\belse 0(?:\.0)?\b)/m
-          .test(noComments(fs.readFileSync(path.join(GD, f), 'utf8'))));
+          .test(noComments(fs.readFileSync(GDF(f), 'utf8'))));
       ok(parked.length === 0, '…and no light anywhere is parked at energy 0: a dark light is DISABLED',
         parked.join(' · ') || 'every .gd scanned');
       const retimeFn = fnGd(town2, '_retime');
@@ -2078,7 +2106,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ 20 · THE DOG ══ */
       /* his: "the dog is in the town — she follows you, and she finds things." */
-      const dog = fs.readFileSync(path.join(GD, 'dog.gd'), 'utf8');
+      const dog = fs.readFileSync(GDF('dog.gd'), 'utf8');
       ok(/^class_name TownDog$/m.test(dog) && /extends TownChallenger/.test(dog),
         'the dog is a CHALLENGER with legs, not a new kind of thing');
       /* ⚠⚠ NO CHARACTER WAS INVENTED, and this is the check that says so. */
@@ -2171,15 +2199,15 @@ const server = http.createServer((req, res) => {
       /* ⛑ THE STALL IS PARKED 2026-09-30, his: "Remove the hat shop for now". The shop left the
          square; the hats you own stay saved and synced, so it can come back with nothing lost. */
       ok(!/class Stall extends Interactable:/.test(town2) && !/Stall\.new\(\)/.test(town2)
-        && !/"a": "Hats"/.test(fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8')),
+        && !/"a": "Hats"/.test(fs.readFileSync(GDF('journal.gd'), 'utf8')),
         '⛑ the hat stall is parked: gone from the square, and the journal stops counting hats you cannot get');
-      ok(/const HATS := \[/.test(gs) && /GameState\.SCOUT_ORE/.test(fs.readFileSync(path.join(GD, 'market.gd'), 'utf8')),
+      ok(/const HATS := \[/.test(gs) && /GameState\.SCOUT_ORE/.test(fs.readFileSync(GDF('market.gd'), 'utf8')),
         '…the hats stay on the books, and ore still buys something (the Scorebooks)');
       /* ⚠ THE JOURNAL IS NOT ON THIS LIST AND MUST NOT BE ADDED TO IT. */
       const wearers = ['player.gd'];
-      const readsHat = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+      const readsHat = GD_LIST.filter((f) => f.endsWith('.gd'))
         .filter((f) => !wearers.includes(f) && f !== 'game_state.gd')
-        .filter((f) => /GameState\.hat\b/.test(fs.readFileSync(path.join(GD, f), 'utf8')));
+        .filter((f) => /GameState\.hat\b/.test(fs.readFileSync(GDF(f), 'utf8')));
       ok(readsHat.length === 0,
         '…and NOTHING reads what you are wearing except the two things that draw it',
         readsHat.join(' ') || 'cosmetic only');
@@ -2197,8 +2225,8 @@ const server = http.createServer((req, res) => {
 
       /* ══ 25 · THE JOURNAL ══ */
       /* his: "sixteen squares, sixteen different prices, and no single place that lists them." */
-      const jrn = fs.readFileSync(path.join(GD, 'journal.gd'), 'utf8');
-      const pad = fs.readFileSync(path.join(GD, 'touch_pad.gd'), 'utf8');
+      const jrn = fs.readFileSync(GDF('journal.gd'), 'utf8');
+      const pad = fs.readFileSync(GDF('touch_pad.gd'), 'utf8');
       ok(/^class_name TownJournal$/m.test(jrn), 'there is a journal');
       ok(/_journal = TownJournal\.new\(\)/.test(zone) && /add_child\(_journal\)/.test(zone),
         '…and every room builds one  (the board is the same board from any room)',
@@ -2308,8 +2336,8 @@ const server = http.createServer((req, res) => {
         ok(ids.length === 7 && gdIds.join(',') === ids.join(','),
           '⭐⭐ the town names the same seven studies the site sets up',
           gdIds.join(',') + '  vs  ' + ids.join(','));
-        const gdFiles = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
-          .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n');
+        const gdFiles = GD_LIST.filter((f) => f.endsWith('.gd'))
+          .map((f) => fs.readFileSync(GDF(f), 'utf8')).join('\n');
         ok(!STUD.all().some((r) => gdFiles.includes(r.fen)),
           '⚠⚠ and NOT ONE FEN lives in the Godot project  [[godot-starter-code]]');
         const js = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-studies.js'), 'utf8');
@@ -2456,8 +2484,8 @@ const server = http.createServer((req, res) => {
       {
         /* Every room names a bed that exists. */
         const known = ['town', 'night', 'room', 'deep', 'sea'];
-        const named = [...fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
-          .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n')
+        const named = [...GD_LIST.filter((f) => f.endsWith('.gd'))
+          .map((f) => fs.readFileSync(GDF(f), 'utf8')).join('\n')
           .matchAll(/ambient = "([a-z]+)"/g)].map((x) => x[1]);
         ok(named.length >= 3 && named.every((n) => known.includes(n)),
           '…and no room asks for air that does not exist', named.join(' '));
@@ -2509,7 +2537,7 @@ const server = http.createServer((req, res) => {
       {
         /* Everything that draws UI has to be on the lever. */
         for (const [f, src] of [['zone.gd', zone], ['town_ui.gd',
-              fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8')],
+              fs.readFileSync(GDF('town_ui.gd'), 'utf8')],
               ['journal.gd', jrn], ['touch_pad.gd', pad]]) {
           ok(/TownZone\.ui_scale\(/.test(src), '…' + f + ' is on it');
         }
@@ -2523,8 +2551,8 @@ const server = http.createServer((req, res) => {
         /* ⭐⭐ AND IT IS ARITHMETIC, NOT A PROMISE. */
         const BASE = { w: 1152, h: 648 };
         const rects = [];
-        for (const f of fs.readdirSync(GD).filter((x) => x.endsWith('.gd'))) {
-          const src = fs.readFileSync(path.join(GD, f), 'utf8');
+        for (const f of GD_LIST.filter((x) => x.endsWith('.gd'))) {
+          const src = fs.readFileSync(GDF(f), 'utf8');
           const m = /^const (?:ROOM|GROUND_RECT) := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/m.exec(src);
           if (m) rects.push({ f: f, w: parseFloat(m[3]), h: parseFloat(m[4]) });
         }
@@ -2535,8 +2563,8 @@ const server = http.createServer((req, res) => {
                        : rects.length + ' rooms, smallest ' +
                          Math.min(...rects.map((r) => r.w)) + 'x' + Math.min(...rects.map((r) => r.h)));
         /* ⚠ AND THE PROJECT MUST NOT MOVE THAT WINDOW. */
-        const proj = fs.existsSync(path.join(GD, 'project.godot'))
-          ? fs.readFileSync(path.join(GD, 'project.godot'), 'utf8') : '';
+        const proj = fs.existsSync(GDF('project.godot'))
+          ? fs.readFileSync(GDF('project.godot'), 'utf8') : '';
         ok(!/window\/size\/viewport_height/.test(proj),
           '…and nothing has moved the base viewport out from under that 648');
       }
@@ -2554,7 +2582,7 @@ const server = http.createServer((req, res) => {
       ok(/var wrap: bool = TownZone\.ui_scale\(self\) > 1\.4/.test(zone)
         && /"Ore %d"/.test(zone),
         '\u26a0 the stat row folds in two when the window is narrow  (one row ran under the Journal tab)');
-      ok(/b\.clip_text = true/.test(fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8')),
+      ok(/b\.clip_text = true/.test(fs.readFileSync(GDF('town_ui.gd'), 'utf8')),
         '\u26a0 and a long menu row is clipped rather than bled off the edge of the screen');
       ok(/var narrow: bool = w \/ k < 520\.0/.test(jrn),
         '\u26a0\u26a0 the journal asks "is this narrow" in BASE units, not viewport units',
@@ -2587,11 +2615,11 @@ const server = http.createServer((req, res) => {
       /* his: "Let's make a theater building — deck it out like you did the arcade, and call it replay theater." */
       /* ⛑⛑ IT CAME OFF THE MAP 2026-09-23. */
       /* his: "Let's remove the Replay theater" */
-      const theater = fs.readFileSync(path.join(GD, 'theater.gd'), 'utf8');
+      const theater = fs.readFileSync(GDF('theater.gd'), 'utf8');
       ok(!/TheaterFront/.test(town2) && !/theater\.tscn/.test(town2)
         && !/THEATER_AT/.test(town2),
         'nothing on the map opens the Replay Theater, and its lot went with it');
-      ok(fs.existsSync(path.join(GD, 'theater.tscn')) && /PARKED, NOT DELETED/.test(theater),
+      ok(fs.existsSync(GDF('theater.tscn')) && /PARKED, NOT DELETED/.test(theater),
         '…and the room is PARKED, not deleted — and its own first line says so');
 
       /* ══ 32 · THE RHYTHM ══ */
@@ -2619,7 +2647,7 @@ const server = http.createServer((req, res) => {
         'a price typed on eight seats is a constant that cannot be changed');
       {
         /* the two that price themselves are TWO GAMES, and say so by arithmetic. */
-        const dep = fs.readFileSync(path.join(GD, 'depths.gd'), 'utf8');
+        const dep = fs.readFileSync(GDF('depths.gd'), 'utf8');
         const both = [/energy_cost = 20/.test(dep), /_ceo\.energy_cost = 20/.test(hall)];
         ok(both[0] && both[1], '…and the shaft and the far chair are two of them', '20 = 2 \u00d7 10');
       }
@@ -2734,7 +2762,7 @@ const server = http.createServer((req, res) => {
       /* ══ A MENU ROW IS A THUMB TALL — 2026-09-09 ══ */
       /* his: "the mobile buttons don't really work well… I can't test the park table thing because the buttons work poorly." */
       {
-        const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
+        const ui = fs.readFileSync(GDF('town_ui.gd'), 'utf8');
         ok(/const FINGER_CSS := 44\.0/.test(ui)
           && /maxf\(OPT_H \* k, \(FINGER_CSS \+ GAP_CSS\) \* _css_unit\(\)\)/.test(ui),
           '⛑⛑ a conversation row is at least 44 CSS px of thumb',
@@ -2800,8 +2828,8 @@ const server = http.createServer((req, res) => {
       /* ══ THE BOTTOM LINE IS FOUR KEYS, AND THEN IT IS GONE ══ */
       /* his: "Remove the 'the road runs south' — I don't even know what that means. WASD, arrows, Enter, and Spacebar should be the only text on the bottom, and it should disappear after a moment." */
       {
-        const zone = fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8');
-        const ui = fs.readFileSync(path.join(GD, 'town_ui.gd'), 'utf8');
+        const zone = fs.readFileSync(GDF('zone.gd'), 'utf8');
+        const ui = fs.readFileSync(GDF('town_ui.gd'), 'utf8');
         ok(/return "WASD  ·  Arrows  ·  Enter  ·  Spacebar"/.test(zone),
           '⛑⛑ the hint names the four keys and nothing else');
         ok(/TouchPad\.probably_touch\(\)/.test(fnGd(zone, 'default_hint')),
@@ -2809,7 +2837,7 @@ const server = http.createServer((req, res) => {
           'naming four keys to somebody holding a piece of glass is the one thing this '
           + 'function has always refused to do');
         const suffix = ['academy', 'arcade', 'depths', 'island', 'park', 'sea', 'stairwell', 'town']
-          .filter((z) => /default_hint\(\) \+/.test(fs.readFileSync(path.join(GD, z + '.gd'), 'utf8')));
+          .filter((z) => /default_hint\(\) \+/.test(fs.readFileSync(GDF(z + '.gd'), 'utf8')));
         ok(suffix.length === 0,
           '   and no zone appends a wayfinding aside to it any more',
           suffix.length ? suffix.join(', ') + ' still do'
@@ -2909,12 +2937,12 @@ const server = http.createServer((req, res) => {
           'five squares right is four moves, and "4 of 6" would be a lie');
       }
       {
-        const sec = fs.readFileSync(path.join(GD, 'secret.gd'), 'utf8');
-        const scn = fs.readFileSync(path.join(GD, 'secret.tscn'), 'utf8');
+        const sec = fs.readFileSync(GDF('secret.gd'), 'utf8');
+        const scn = fs.readFileSync(GDF('secret.tscn'), 'utf8');
         ok(/class_name SecretRoom\s*\n/.test(sec) && /extends TownZone/.test(sec)
-          && /path="res:\/\/secret\.gd"/.test(scn),
+          && /path="res:\/\/rooms\/secret\.gd"/.test(scn),
           'the room behind the west wall exists, and its scene loads it');
-        ok(/scene_path = "res:\/\/secret\.tscn"/.test(hall)
+        ok(/scene_path = "res:\/\/rooms\/secret\.tscn"/.test(hall)
           && /_secret\.visible = false/.test(hall),
           '⚠⚠ …and the door is INVISIBLE until the opening is set, not locked',
           'a door you can see and cannot open is a puzzle announcing itself');
@@ -2924,7 +2952,7 @@ const server = http.createServer((req, res) => {
         ok(/if found and not _secret\.visible:/.test(hall),
           '⚠ the line is said ONCE',
           'a banner every time you walk past a door you have found is the room nagging you');
-        ok(/scene_path = "res:\/\/hall\.tscn"/.test(sec) && /TownExit\.new\(\)/.test(sec),
+        ok(/scene_path = "res:\/\/rooms\/hall\.tscn"/.test(sec) && /TownExit\.new\(\)/.test(sec),
           '…and there is a way out of it');
         const stone = sec.slice(sec.indexOf('func _draw_stone'));
         ok(/for slot in GameState\.PIRC:/.test(stone) && /ChessArt\.draw_piece/.test(stone),
@@ -3035,7 +3063,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ 38 · THE TRIBUNE, THE SUN, THE CLOCK AND THE DRAIN (2026-09-14) ══ */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const clk8 = code(rd('clock.gd')), pap8 = code(rd('paper.gd')), zn8 = code(rd('zone.gd'));
         const gs8 = code(rd('game_state.gd')), twn8 = code(rd('town.gd')), jr8 = code(rd('journal.gd'));
@@ -3108,7 +3136,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ 37 · THE PAPER, THE CALENDAR, THE CAMERA, THE DAILY, THE POST, THE MARKET, THE MAP ══ */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const hap = code(rd('haptics.gd')), aud = code(rd('town_audio.gd')), gst = code(rd('game_state.gd'));
         const zn = code(rd('zone.gd')), twn = code(rd('town.gd')), pap = code(rd('paper.gd'));
@@ -3207,7 +3235,7 @@ const server = http.createServer((req, res) => {
           'snow falls only on a day the site sky is snowing');
         ok(/z\.outdoors and TownSeason\.now\(\) == TownSeason\.WINTER/.test(fnGd(dor, '_draw')),
           '…and lies on roofs outdoors only');
-        const outdoorsSet = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+        const outdoorsSet = GD_LIST.filter((f) => f.endsWith('.gd'))
           .filter((f) => /^\s*outdoors = true/m.test(code(rd(f))));
         ok(outdoorsSet.join() === 'town.gd', '…where the town is the one place that is outdoors', outdoorsSet.join());
         ok(/if TownSeason\.december\(\):\s*\n\s*var tree := SeasonArt\.FirTree\.new\(\)/.test(twn),
@@ -3358,7 +3386,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ 36 · A PHONE CAN READ THE TOWN, AND A SAVE CANNOT EAT ITSELF (2026-09-14) ══ */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const mineG = code(rd('mine.gd')), spc = code(rd('speech.gd')), zn = code(rd('zone.gd'));
         const cardG = code(rd('npc_card.gd')), tuiG = code(rd('town_ui.gd')), plG = code(rd('player.gd'));
@@ -3417,7 +3445,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ 39 · THE STORY PICKS (2026-09-21) ══ */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const npcG = code(rd('npc.gd')), dogG = code(rd('dog.gd')), townG = code(rd('town.gd'));
         const zoneG = code(rd('zone.gd')), gsG = code(rd('game_state.gd')), parkG = code(rd('park.gd'));
@@ -3936,7 +3964,7 @@ const server = http.createServer((req, res) => {
       }
       /* ══ 36 · 2026-09-21 — HIS BATCH: WALK2, WALK-IN DOORS, SOLID TOWN, HOME, THE MOVE ══ */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const pm = code(rd('player_model.gd')), dr = code(rd('door.gd')), ex = code(rd('exit_door.gd'));
         const np = code(rd('npc.gd')), dg = code(rd('dog.gd')), pl = code(rd('player.gd'));
@@ -3957,7 +3985,7 @@ const server = http.createServer((req, res) => {
            landed. Both files are generated into this folder, so the bake must not predate the
            export. ⚠ Re-bake with the sheet probe, then `npm run gen:checkertown`. */
         {
-          const glb = path.join(GD, 'nate.glb'), png = path.join(GD, 'people_idle.png');
+          const glb = GDF('nate.glb'), png = GDF('people_idle.png');
           const hasBoth = fs.existsSync(glb) && fs.existsSync(png);
           const gm = hasBoth ? fs.statSync(glb).mtimeMs : 0;
           const pmt = hasBoth ? fs.statSync(png).mtimeMs : 0;
@@ -4041,11 +4069,11 @@ const server = http.createServer((req, res) => {
           gr ? 'edge ' + (+gr[1] + +gr[3]) + ', sand ends ' + (camp[0] + 360) + ', water ends ' + (+wr[1] + +wr[3]) : '?');
 
         const ch = tw.slice(tw.indexOf('class CheckerHome extends TownDoor:'));
-        ok(/TownProp\.make\("res:\/\/checker\.glb"/.test(ch) && /sign_text = " "/.test(ch)
-           && /solid = false/.test(ch) && /aim = -1\.0/.test(ch) && /scene_path = "res:\/\/home\.tscn"/.test(tw)
-           && fs.existsSync(path.join(GD, 'home.tscn')) && fs.existsSync(path.join(GD, 'checker.glb')),
+        ok(/TownProp\.make\("res:\/\/art\/checker\.glb"/.test(ch) && /sign_text = " "/.test(ch)
+           && /solid = false/.test(ch) && /aim = -1\.0/.test(ch) && /scene_path = "res:\/\/rooms\/home\.tscn"/.test(tw)
+           && fs.existsSync(GDF('home.tscn')) && fs.existsSync(GDF('checker.glb')),
           '⭐ Nate\'s home is HIS checker, nothing added outside, and you walk onto it to go in');
-        ok(/\{ name: 'Checker', out: 'assets\/models\/checker\.glb', godot: 'checker\.glb' \}/.test(GM),
+        ok(/\{ name: 'Checker', out: 'assets\/models\/checker\.glb', godot: 'art\/checker\.glb' \}/.test(GM),
           '…and gen:models carries the checker into the game, the way it carries him');
         const cr = code(rd('checker_room.gd'));
         ok(/const ROOM := Rect2\(-576\.0, -330\.0, 1152\.0, 660\.0\)/.test(cr) && /world_bounds = FLOOR/.test(cr)
@@ -4054,7 +4082,7 @@ const server = http.createServer((req, res) => {
       }
       /* ══ 37 · 2026-09-22 — THE DAY STARTS AND ENDS AT HOME, AND MAXWELL HAS ONE TOO ══ */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const tw = code(rd('town.gd')), pr = code(rd('prop_model.gd')), hm = code(rd('home.gd'));
         /* the bed is the only way to turn the day over. */
@@ -4066,7 +4094,7 @@ const server = http.createServer((req, res) => {
         /* ⭐ THE MIRROR CARRIES project.godot SINCE 2026-09-22. */
         /* his: "add the boot check to private" */
         const mirror = /run\/main_scene="([^"]+)"/.exec(rd('project.godot'));
-        ok(mirror && mirror[1] === 'res://home.tscn',
+        ok(mirror && mirror[1] === 'res://rooms/home.tscn',
           '…and the game BOOTS in the house', mirror ? mirror[1] : 'no main_scene in the mirror');
         /* ⚠⚠ AND THE TWO COPIES MUST AGREE — a mirror that drifts is a gate reading last week. */
         const pg = path.join(process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town',
@@ -4102,7 +4130,7 @@ const server = http.createServer((req, res) => {
           h && Math.abs(x - h[0]) < 230 && Math.abs(y - h[1]) < 126));
         ok(onTop.length === 0, '…and no neighbor\'s checker is parked on top of either of them',
           onTop.map((p) => p.join(',')).join(' · ') || otherLots.length + ' lots, all clear');
-        ok(/his\.scene_path = "res:\/\/maxwell\.tscn"/.test(tw) && fs.existsSync(path.join(GD, 'maxwell.tscn'))
+        ok(/his\.scene_path = "res:\/\/rooms\/maxwell\.tscn"/.test(tw) && fs.existsSync(GDF('maxwell.tscn'))
            && /extends CheckerRoom/.test(mh) && /_furnish_room/.test(mh),
           '…and it OPENS: a room like Nate\'s, out of the same shell');
         ok(!/TownBed/.test(mh) && /class Bunk extends Node2D:/.test(mh),
@@ -4119,7 +4147,7 @@ const server = http.createServer((req, res) => {
       }
       /* ══ 35 · ONE REAL VOICE LINE EACH ══ */
       {
-        const vc = fs.readFileSync(path.join(GD, 'town_voice.gd'), 'utf8');
+        const vc = fs.readFileSync(GDF('town_voice.gd'), 'utf8');
         ok(/^class_name TownVoice$/m.test(vc), 'there is somewhere for a recording to plug in');
         ok(/if ResourceLoader\.exists\(path\)/.test(vc),
           '\u26a0\u26a0 …and it asks before it loads',
@@ -4129,7 +4157,7 @@ const server = http.createServer((req, res) => {
         ok(/not GameState\.sound_on/.test(vc), '\u26a0 and the mute silences it like everything else');
         ok(/v\.hello\(who\)/.test(npc), '\u2026a greeting plays when somebody opens their mouth');
         /* ⚠⚠ NO AUDIO SHIPS TODAY, and the whole design rests on that being true. */
-        const voiceDir = path.join(GD, 'voice');
+        const voiceDir = GDF('voice');
         const files = fs.existsSync(voiceDir)
           ? fs.readdirSync(voiceDir).filter((f) => /\.ogg$/i.test(f)) : [];
         ok(true, '\u2026and today the folder holds ' + files.length + ' recording(s)',
@@ -4138,8 +4166,8 @@ const server = http.createServer((req, res) => {
         const scriptPath = path.join(ROOT, 'private/docs/VOICE-SCRIPT.md');
         if (fs.existsSync(scriptPath)) {
           const doc = fs.readFileSync(scriptPath, 'utf8');
-          const all = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
-            .map((f) => fs.readFileSync(path.join(GD, f), 'utf8')).join('\n');
+          const all = GD_LIST.filter((f) => f.endsWith('.gd'))
+            .map((f) => fs.readFileSync(GDF(f), 'utf8')).join('\n');
           const speaks = new Set();
           [...all.matchAll(/\.who = "([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
           [...all.matchAll(/_add_challenger\("([^"]+)"/g)].forEach((m) => speaks.add(m[1]));
@@ -4162,7 +4190,7 @@ const server = http.createServer((req, res) => {
       /* ══ 38 · 2026-09-24 — HIS BATCH: THE ROWBOAT, THE DOGS' HOURS, ROUND ROOMS ══ */
       /* his: "The rowboat doesn't work - the screen just glitches; my user got stuck in between screens back and forth. Make sure no door can do that." */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const code = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
         const dr = code(rd('door.gd')), dg = code(rd('dog.gd')), tw = code(rd('town.gd'));
         const cr = code(rd('checker_room.gd')), hm = code(rd('home.gd')), mx = code(rd('maxwell_home.gd'));
@@ -4351,13 +4379,13 @@ const server = http.createServer((req, res) => {
         /* his: "I made a fridge and a rug for my checker home in blender - can you add them in please?" */
         {
           const gmSrc = fs.readFileSync(path.join(ROOT, 'tests/gen-models.js'), 'utf8');
-          const gone = ['fridge', 'rug'].filter((n) => !fs.existsSync(path.join(GD, n + '.glb')));
-          ok(/\{ name: 'Fridge', godot: 'fridge\.glb' \}/.test(gmSrc) && /\{ name: 'Rug', godot: 'rug\.glb' \}/.test(gmSrc)
+          const gone = ['fridge', 'rug'].filter((n) => !fs.existsSync(GDF(n + '.glb')));
+          ok(/\{ name: 'Fridge', godot: 'art\/fridge\.glb' \}/.test(gmSrc) && /\{ name: 'Rug', godot: 'art\/rug\.glb' \}/.test(gmSrc)
              && gone.length === 0,
             '⭐ his fridge and rug ride gen:models into the game  (game only — no `out`, nothing on the site)',
             gone.length ? 'missing from the mirror: ' + gone.join(', ') + '.glb — npm run gen:models -- Fridge Rug' : 'both .glb in the mirror');
-          ok(/TownProp\.make\("res:\/\/fridge\.glb", TownPlayerModel\.TILT,/.test(hm)
-             && /TownProp\.make\("res:\/\/rug\.glb", rad_to_deg\(asin\(RY \/ RX\)\),/.test(hm)
+          ok(/TownProp\.make\("res:\/\/art\/fridge\.glb", TownPlayerModel\.TILT,/.test(hm)
+             && /TownProp\.make\("res:\/\/art\/rug\.glb", rad_to_deg\(asin\(RY \/ RX\)\),/.test(hm)
              && /_rug\.draw_on\(self, Rect2\(RUG_AT - d \* 0\.5, d\)\)/.test(hm),
             '…the fridge stood at the PEOPLE\'S angle, the rug lying at the FLOOR\'S',
             'a rug at 14° is a sliver; a fridge at the floor\'s 34° shows its roof');
@@ -4366,7 +4394,7 @@ const server = http.createServer((req, res) => {
         /* ══ light through the window · the board up close · the other two dogs · his gear — 2026-10-09 ══ */
         /* his: "Can we make some light shine in to my checker house?  And let's have a way to zoom in to my board in the house so we can teach the dogs.   I can try and teach the other dogs but they fail hilariously (come back in to the room and instead of a piece moved properly, the pieces are on the floor).  Add some weightlifting equipment, running shoes, and rollerblades" */
         {
-          const bv = fs.existsSync(path.join(GD, 'board_view.gd')) ? code(rd('board_view.gd')) : '';
+          const bv = fs.existsSync(GDF('board_view.gd')) ? code(rd('board_view.gd')) : '';
           const gs2 = code(rd('game_state.gd')), ui2 = code(rd('town_ui.gd'));
           const hb2 = hm.slice(hm.indexOf('class HomeBoard extends Interactable:'));
           const day = cr.slice(cr.indexOf('class Daylight extends Node2D:'));
@@ -4567,7 +4595,7 @@ const server = http.createServer((req, res) => {
         /* his: "Let's work on how to engage someone easier on the mobile - it's a little hard to do.  Then, I'll want things to exclaim or glow when they have a new action to take, or if something has changed, like a letter in the mailbox or the at-home chess board." */
         {
           const padG = code(rd('touch_pad.gd')), ply = code(rd('player.gd')), itr = code(rd('interactable.gd'));
-          const ntc = fs.existsSync(path.join(GD, 'notice.gd')) ? code(rd('notice.gd')) : '';
+          const ntc = fs.existsSync(GDF('notice.gd')) ? code(rd('notice.gd')) : '';
           const znN = code(rd('zone.gd')), npcN = code(rd('npc.gd')), chN = code(rd('challenger.gd'));
           const mbN = code(rd('mailbox.gd')), papN = code(rd('paper.gd')), gsN = code(rd('game_state.gd'));
           const crsN = code(rd('crossing.gd')), mineN = code(rd('mine.gd')), spN = code(rd('speech.gd'));
@@ -4659,7 +4687,7 @@ const server = http.createServer((req, res) => {
             '⚠ a mark\'s place is an offset in the world, like speech_top()',
             'the board at home is scaled: through to_global() its mark hung off the top of the room');
           /* ⚠⚠ WHO CAN BE MARKED IS A LIST ON PURPOSE: a mark that never clears is furniture. */
-          const marked = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && /\n\t*func news\(\) -> String:/.test(code(rd(f)))).sort();
+          const marked = GD_LIST.filter((f) => f.endsWith('.gd') && /\n\t*func news\(\) -> String:/.test(code(rd(f)))).sort();
           ok(marked.join(' ') === 'challenger.gd home.gd interactable.gd mailbox.gd npc.gd paper.gd',
             '⚠⚠ what can be marked is these and nothing else: the post, the board at home, people, the paper',
             marked.join(' '));
@@ -4728,7 +4756,7 @@ const server = http.createServer((req, res) => {
           {
             /* every file that makes a Button, found, not listed */
             /* ⚠ A PAD'S BUTTON PRESS IS NOT A BUTTON ON THE GLASS: pad.gd makes `InputEventJoypadButton`s. */
-            const makers = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && /Button\.new\(\)/.test(code(rd(f)).replace(/InputEventJoypadButton\.new\(\)/g, '')));
+            const makers = GD_LIST.filter((f) => f.endsWith('.gd') && /Button\.new\(\)/.test(code(rd(f)).replace(/InputEventJoypadButton\.new\(\)/g, '')));
             const flat = makers.filter((f) => /Vector2\([^()\n]*, 44\.0 \* _?k\)|= 44\.0 \* _?k\s*$/m.test(code(rd(f))));
             const off = makers.filter((f) => f !== 'town_ui.gd' && !/TownUI\.finger\(self\)/.test(code(rd(f))));
             ok(makers.length >= 7 && flat.length === 0 && off.length === 0,
@@ -4952,7 +4980,7 @@ const server = http.createServer((req, res) => {
 
           /* ── 4 · whose mouth the line is in ── */
           {
-            const all = fs.readdirSync(GD).filter((f) => f.endsWith('.gd')).filter((f) => /took one off me/.test(code(rd(f))));
+            const all = GD_LIST.filter((f) => f.endsWith('.gd')).filter((f) => /took one off me/.test(code(rd(f))));
             ok(/play\["text"\] = "Another game\? — you already took one off %s\." % who/.test(chE)
                && /return "You already took one off %s\." % who/.test(fnGd(gsE, 'sit_down')) && all.length === 0,
               '⛑ "you already took one off MAXWELL": the row is in your mouth, and "off me" said he had beaten you',
@@ -5125,7 +5153,7 @@ const server = http.createServer((req, res) => {
             const block2 = gsR.slice(gsR.indexOf('const REPAIRS := ['), gsR.indexOf('\n]', gsR.indexOf('const REPAIRS := [')));
             const rows = [...block2.matchAll(/\{ "id": "([a-z]+)",[^\n]*"likes": \[([^\]]*)\] \}/g)].map((m) => ({ id: m[1], likes: (m[2].match(/"([^"]+)"/g) || []).map((s) => s.slice(1, -1)) }));
             /* everybody named must be somebody who stands in the game: a heart for a typo is a heart for nobody */
-            const everyGd = fs.readdirSync(GD).filter((f) => f.endsWith('.gd')).map((f) => code(rd(f))).join('\n');
+            const everyGd = GD_LIST.filter((f) => f.endsWith('.gd')).map((f) => code(rd(f))).join('\n');
             const real = (n) => new RegExp('_add_challenger\\("' + n + '"|\\.who = "' + n + '"|"who": "' + n + '"').test(everyGd);
             const ghosts = [...new Set(rows.flatMap((r) => r.likes))].filter((n) => !real(n));
             ok(rows.length === 9 && rows.filter((r) => r.likes.length > 0).length >= 8 && ghosts.length === 0,
@@ -5164,7 +5192,7 @@ const server = http.createServer((req, res) => {
         {
           const pdC = code(rd('pad.gd')), plC = code(rd('player.gd')), jrC = code(rd('journal.gd')), uiC = code(rd('town_ui.gd'));
           const znC = code(rd('zone.gd')), crC = code(rd('crossing.gd')), prj = rd('project.godot');
-          ok(/\[autoload\][\s\S]*?\nPad="\*res:\/\/pad\.gd"/.test(prj), '⭐ the pad\'s script is loaded with the game  (an autoload, so every room can ask it)');
+          ok(/\[autoload\][\s\S]*?\nPad="\*res:\/\/core\/pad\.gd"/.test(prj), '⭐ the pad\'s script is loaded with the game  (an autoload, so every room can ask it)');
           /* ── which make of pad: the list is the game's, the names are real browsers' ── */
           const marks = JSON.parse(((/const MARKS := (\[[^\]]*\])/.exec(pdC) || [0, '[]'])[1]));
           const isNin = (id) => marks.some((m) => id.toLowerCase().includes(m));
@@ -5462,7 +5490,7 @@ const server = http.createServer((req, res) => {
             '⭐ he floats up off it, then blasts off out of the window, a streak to the floor; nothing moves him or answers a key meanwhile');
           ok(/elif _lift >= HOVER_SECS \+ BLAST_SECS \+ STRANDED_SECS:\s*_lift = -1\.0\s*_drop = 0\.0/.test(plC),
             '⛑ …and a lift-off that never changes the scene comes back down  (or he hangs out of sight, unable to move)');
-          ok(/TownPlayer\.dropping = true/.test(fnGd(spC, 'come_back')) && /const BACK_TO := "res:\/\/home\.tscn"/.test(spC)
+          ok(/TownPlayer\.dropping = true/.test(fnGd(spC, 'come_back')) && /const BACK_TO := "res:\/\/rooms\/home\.tscn"/.test(spC)
              && /if dropping:\s*dropping = false\s*_drop = 0\.0/.test(fnGd(plC, '_ready'))
              && /var d := 1\.0 - minf\(_drop \/ DROP_SECS, 1\.0\)\s*return BLAST_HIGH \* d \* d/.test(fnGd(plC, '_air')),
             '⭐ …and back from space he comes down out of the sky onto the cushion, slowing as he lands');
@@ -5589,7 +5617,7 @@ const server = http.createServer((req, res) => {
             /else if \(k\.x > ([\d.]+) && k\.x < ([\d.]+) && k\.y > ([\d.]+)\) \{\s*\n\s*c = hair \*/.exec(dressSrc),
             /else if \(k\.y < ([\d.]+) && k\.z < ([\d.]+)\) \{\s*\n\s*c = cap \*/.exec(dressSrc),
           ];
-          const sheetPng = fs.existsSync(path.join(GD, 'people_idle.png')) ? readPng(path.join(GD, 'people_idle.png')) : null;
+          const sheetPng = fs.existsSync(GDF('people_idle.png')) ? readPng(GDF('people_idle.png')) : null;
           const share = { shirt: 0, hair: 0, cap: 0, skin: 0, n: 0 };
           if (sheetPng && sheetPng.bpp === 4 && band.every(Boolean)) {
             const p = sheetPng.px;
@@ -5641,7 +5669,7 @@ const server = http.createServer((req, res) => {
              && /TownPeople\.draw_person\(self, Vector2\.ZERO, _facing\(\), _phase, false, 18\.75, _build\)/.test(cbP),
             '…the six at the tables and Murphy at the nightmare\'s board the same way, in the same clothes');
           /* ⚠ A DOG'S IS ITS COAT (dog.gd), and that one assignment is the only other one there may be. */
-          const byHand = fs.readdirSync(GD).filter((f) => f.endsWith('.gd') && f !== 'npc.gd' && f !== 'dog.gd')
+          const byHand = GD_LIST.filter((f) => f.endsWith('.gd') && f !== 'npc.gd' && f !== 'dog.gd')
             .filter((f) => /\.body_color = /.test(code(rd(f))));
           ok(byHand.length === 0 && !/TownPeople\.dress/.test(plP + dg)
              && (dg.match(/\.body_color = /g) || []).length === 1 && /dog\.body_color = coat\[0\]/.test(dg),
@@ -5676,7 +5704,7 @@ const server = http.createServer((req, res) => {
           };
 
           /* ── the name ── */
-          const stale = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+          const stale = GD_LIST.filter((f) => f.endsWith('.gd'))
             .filter((f) => /"Crockett"/.test(code(rd(f)).replace(/const RENAMED := \{[^}]*\}/, '')));
           ok(stale.length === 0 && /"Milo": \{ "key": "crockett", "elo": 750/.test(dg) && !/"key": "milo"/.test(dg + gsM + pkM),
             '⛑ he is MILO: nothing the game can show says Crockett, and his bench key did not move',
@@ -6080,7 +6108,7 @@ const server = http.createServer((req, res) => {
          His: "I'm going to use the plotline to PJCC to build Checker Town - the Game."
          Scope the same day: Episode 1 end to end, and beats fire on what you already do. */
       {
-        const rd = (f) => fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n');
+        const rd = (f) => fs.readFileSync(GDF(f), 'utf8').replace(/\r\n/g, '\n');
         const st = rd('story.gd'), bt = rd('beat.gd');
         const znS = rd('zone.gd'), gsS = rd('game_state.gd');
 
@@ -6120,7 +6148,7 @@ const server = http.createServer((req, res) => {
         {
           /* ⚠ COMMENTS DON'T COUNT — beat.gd and game_state.gd both NAME the table in prose. */
           const bare = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
-          const askers = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+          const askers = GD_LIST.filter((f) => f.endsWith('.gd'))
             .filter((f) => f !== 'story.gd' && /TownStory\./.test(bare(rd(f))));
           ok(askers.length === 1 && askers[0] === 'zone.gd',
             '⛑⛑ only zone.gd reads the story — no door, no lesson and no boat asks it for permission',
@@ -6217,7 +6245,7 @@ const server = http.createServer((req, res) => {
             '⚠ a person repaints only when their CELL changes, not every frame  (npc.gd is explicit about that cost)');
           /* ⛑⛑ THE ONE THING THAT BREAKS A SHARED SHEET. */
           {
-            const tinters = fs.readdirSync(GD).filter((f) => f.endsWith('.gd'))
+            const tinters = GD_LIST.filter((f) => f.endsWith('.gd'))
               .filter((f) => /\.apply_tint\(/.test(bare(rd(f))));
             /* ⚠ lift.gd tints HIM: his own body, on the bench */
             ok(tinters.length >= 1 && tinters.every((f) => f === 'player.gd' || f === 'lift.gd') && tinters.includes('player.gd'),
@@ -6383,10 +6411,10 @@ const server = http.createServer((req, res) => {
                           : seams.length + ' seams, every mouth reaches the clamp');
           }
           /* ⛑⛑ THE BUG THAT MADE THE FIRST SEAM DO NOTHING AT ALL. */
-          ok(/scene_path = "res:\/\/town\.tscn"/.test(twn.slice(twn.indexOf('class TownSeam'))),
+          ok(/scene_path = "res:\/\/town\/town\.tscn"/.test(twn.slice(twn.indexOf('class TownSeam'))),
             '⛑⛑ a seam carries a scene_path even though interact() ignores it',
             'TownDoor._physics_process early-returns on an empty one, so it never arms or fires');
-          ok(/GameState\.reentry\.erase\("res:\/\/town\.tscn"\)/.test(twn),
+          ok(/GameState\.reentry\.erase\("res:\/\/town\/town\.tscn"\)/.test(twn),
             '⚠⚠ …and it erases the door note, because all five windows are ONE scene file');
           /* ⚠⚠ ORDER: capture the minimap, then cull, then add the seams. */
           const fur = fnGd(twn, '_furnish');
@@ -6507,10 +6535,10 @@ const server = http.createServer((req, res) => {
            still fills with people, off ImageTextures instead of AtlasTextures. */
         {
           const sh = rd('people_sheet.gd');
-          ok(/const SHEET := "res:\/\/people_idle\.png"/.test(sh)
-            && fs.existsSync(path.join(GD, 'people_idle.png')),
+          ok(/const SHEET := "res:\/\/art\/people_idle\.png"/.test(sh)
+            && fs.existsSync(GDF('people_idle.png')),
             '⭐ the idle bank ships as one atlas instead of 64 readbacks at load');
-          ok(fs.existsSync(path.join(GD, 'people_idle.png.import')),
+          ok(fs.existsSync(GDF('people_idle.png.import')),
             '⚠ …and its .import rides along, or the export has a PNG nothing can load');
           const rdy = fnGd(sh, '_ready');
           ok(/if _load_sheet\(\):\s*\n\s*return/.test(rdy) && /_bake_all\(\)/.test(rdy),

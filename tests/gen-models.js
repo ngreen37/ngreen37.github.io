@@ -19,11 +19,12 @@ const BLEND_DIR = process.env.BLEND_DIR || path.join(os.homedir(), 'Desktop', 'B
 // Documents/ is a model the next rebuild loses.
 const MODELS = [
   { name: 'Altar', out: 'assets/models/gambit-altar.glb' },
-  { name: 'Checker', out: 'assets/models/checker.glb', godot: 'checker.glb' },
-  { name: 'Nate', out: 'assets/models/nate.glb', godot: 'nate.glb' },
+  // `godot` is the path inside the game: its models live in art/ (2026-10-19).
+  { name: 'Checker', out: 'assets/models/checker.glb', godot: 'art/checker.glb' },
+  { name: 'Nate', out: 'assets/models/nate.glb', godot: 'art/nate.glb' },
   // ⭐ NO `out`: furniture for his checker, and nothing on the site shows it.
-  { name: 'Fridge', godot: 'fridge.glb' },
-  { name: 'Rug', godot: 'rug.glb' },
+  { name: 'Fridge', godot: 'art/fridge.glb' },
+  { name: 'Rug', godot: 'art/rug.glb' },
 ];
 
 const CT_PROJECT = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
@@ -87,7 +88,7 @@ for (const m of MODELS) {
   if (only.length && !only.includes(m.name.toLowerCase())) continue;
   const src = newestSave(m.name);
   if (!src) { console.error(`✗ ${m.name}: no ${m.name}_N.blend in ${BLEND_DIR}`); failed++; continue; }
-  const out = m.out ? path.join(ROOT, m.out) : path.join(os.tmpdir(), 'gen-models-' + m.godot);
+  const out = m.out ? path.join(ROOT, m.out) : path.join(os.tmpdir(), 'gen-models-' + path.basename(m.godot));
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const log = execFileSync(blender, ['-b', src, '--factory-startup', '--python',
     path.join(__dirname, 'blender-export.py'), '--', out], { encoding: 'utf8' });
