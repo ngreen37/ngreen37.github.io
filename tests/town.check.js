@@ -4122,18 +4122,10 @@ const server = http.createServer((req, res) => {
           'his: "each day start and end inside the checker home"');
         ok(/var bed := TownBed\.new\(\)/.test(hm) && !/GameState\.sleep|func sleep\(/.test(rd('bed.gd') + rd('game_state.gd')),
           '…and the only bed in the game is in that house — the dreams are there; the day itself turns at midnight  (his, 2026-10-03)');
-        /* ⭐ THE MIRROR CARRIES project.godot SINCE 2026-09-22. */
         /* his: "add the boot check to private" */
-        const mirror = /run\/main_scene="([^"]+)"/.exec(rd('project.godot'));
-        ok(mirror && mirror[1] === 'res://rooms/home.tscn',
-          '…and the game BOOTS in the house', mirror ? mirror[1] : 'no main_scene in the mirror');
-        /* ⚠⚠ AND THE TWO COPIES MUST AGREE — a mirror that drifts is a gate reading last week. */
-        const pg = path.join(process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town',
-          'project.godot');
-        const his = fs.existsSync(pg) ? /run\/main_scene="([^"]+)"/.exec(fs.readFileSync(pg, 'utf8')) : null;
-        ok(!his || (mirror && his[1] === mirror[1]),
-          '…and his project boots the same scene the mirror claims',
-          his ? 'his ' + his[1] + ' · mirror ' + (mirror ? mirror[1] : '?') : 'his project is not on this machine');
+        const boot = /run\/main_scene="([^"]+)"/.exec(rd('project.godot'));
+        ok(boot && boot[1] === 'res://rooms/home.tscn',
+          '…and the game BOOTS in the house', boot ? boot[1] : 'no main_scene in project.godot');
         const mh = code(rd('maxwell_home.gd'));
         const at = (n) => { const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(tw); return m ? [+m[1], +m[2]] : null; };
         const red = at('HOME_AT'), black = at('MAX_HOME_AT');
@@ -4414,7 +4406,7 @@ const server = http.createServer((req, res) => {
           ok(/\{ name: 'Fridge', godot: 'art\/fridge\.glb' \}/.test(gmSrc) && /\{ name: 'Rug', godot: 'art\/rug\.glb' \}/.test(gmSrc)
              && gone.length === 0,
             '⭐ his fridge and rug ride gen:models into the game  (game only — no `out`, nothing on the site)',
-            gone.length ? 'missing from the mirror: ' + gone.join(', ') + '.glb — npm run gen:models -- Fridge Rug' : 'both .glb in the mirror');
+            gone.length ? 'missing from the game: ' + gone.join(', ') + '.glb — npm run gen:models -- Fridge Rug' : 'both .glb in art/');
           ok(/TownProp\.make\("res:\/\/art\/fridge\.glb", TownPlayerModel\.TILT,/.test(hm)
              && /TownProp\.make\("res:\/\/art\/rug\.glb", rad_to_deg\(asin\(RY \/ RX\)\),/.test(hm)
              && /_rug\.draw_on\(self, Rect2\(RUG_AT - d \* 0\.5, d\)\)/.test(hm),
