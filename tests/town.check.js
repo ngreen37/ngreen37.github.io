@@ -406,7 +406,8 @@ const server = http.createServer((req, res) => {
     ok(errs.length === 0, 'no page errors', errs.join(' | '));
 
     /* ══ 4 · the Godot half asks, and the stand-in is off on web ══ */
-    const GD = path.join(ROOT, 'private/docs/godot/chess_town');
+    /* ⚠ THE GAME ITSELF, not a copy: the mirror in private/docs/godot/ was retired 2026-10-19. */
+    const GD = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
     if (fs.existsSync(GD)) {
       const gs = fs.readFileSync(path.join(GD, 'game_state.gd'), 'utf8');
       const zone = fs.readFileSync(path.join(GD, 'zone.gd'), 'utf8');
@@ -4128,8 +4129,7 @@ const server = http.createServer((req, res) => {
         ok(/not GameState\.sound_on/.test(vc), '\u26a0 and the mute silences it like everything else');
         ok(/v\.hello\(who\)/.test(npc), '\u2026a greeting plays when somebody opens their mouth');
         /* ⚠⚠ NO AUDIO SHIPS TODAY, and the whole design rests on that being true. */
-        const ogg = fs.existsSync(path.join(GD, '..', '..', '..', '..', 'assets/games/checker-town'));
-        const voiceDir = path.join(ROOT, 'private/docs/godot/chess_town/voice');
+        const voiceDir = path.join(GD, 'voice');
         const files = fs.existsSync(voiceDir)
           ? fs.readdirSync(voiceDir).filter((f) => /\.ogg$/i.test(f)) : [];
         ok(true, '\u2026and today the folder holds ' + files.length + ' recording(s)',
@@ -6100,7 +6100,7 @@ const server = http.createServer((req, res) => {
               '⭐⭐ the monologue in the game is HIS line, verbatim from private/_pjcc/notes.md',
               mono ? '"' + mono.slice(0, 48) + '…"' : 'no first line');
           }
-          ok(/PLACEHELD/.test(st) && /MEANT TO BE\s*\n# THROWN AWAY/.test(st),
+          ok(/PLACEHELD/.test(st) && /MEANT TO BE\s+(?:#\s+)?THROWN AWAY/.test(st),
             '⚠⚠ …and every other line says PLACEHELD, so a later session cannot mistake filler for his voice');
         }
 
@@ -6582,7 +6582,7 @@ const server = http.createServer((req, res) => {
       }
       }
     } else {
-      ok(false, 'the Godot copy is missing from private/docs/godot/chess_town');
+      ok(false, 'the Godot project is missing from ' + GD);
     }
   } finally {
     await browser.close();

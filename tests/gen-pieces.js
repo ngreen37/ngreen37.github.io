@@ -24,7 +24,6 @@ const MIRROR = path.join(ROOT, 'private/docs/godot/tournament_board');
 // floor line out of the frame and stands the piece on it. Same bytes, same folder name, two
 // readings — which is only safe because the camera is a constant. [[accuracy-above-all]]
 const TOWN = process.env.CHECKER_TOWN || 'C:/Users/Nate/Documents/checker-town';
-const TOWN_MIRROR = path.join(ROOT, 'private/docs/godot/chess_town');
 
 // ⚠⚠ THE CAMERA NEVER MOVES; THIS COLUMN IS WHAT MAKES A PAWN SHORTER THAN A KING.
 // piece_node.gd fits the LONGEST side of each texture to the square, so art cropped to each
@@ -149,8 +148,7 @@ function mipmap(dir, name) {
 // failure: this has to run on a machine with no Tournament Board checked out.
 function place(png, name) {
   const notes = [];
-  for (const [label, dir] of [['board', BOARD], ['mirror', MIRROR],
-      ['town', TOWN], ['town mirror', TOWN_MIRROR]]) {
+  for (const [label, dir] of [['board', BOARD], ['mirror', MIRROR], ['town', TOWN]]) {
     if (!fs.existsSync(dir)) { notes.push(`(no ${label} at ${dir})`); continue; }
     const dest = path.join(dir, 'pieces', name + '.png');
     fs.mkdirSync(path.dirname(dest), { recursive: true });

@@ -27,7 +27,6 @@ const MODELS = [
 ];
 
 const CT_PROJECT = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
-const CT_MIRROR = path.join(ROOT, 'private/docs/godot/chess_town');
 
 function findBlender() {
   if (process.env.BLENDER) return process.env.BLENDER;
@@ -66,7 +65,7 @@ function newestSave(name) {
 // failure: this script has to run on a machine that has no Checker Town checked out.
 function toGodot(out, rel) {
   const notes = [];
-  for (const [label, dir] of [['project', CT_PROJECT], ['mirror', CT_MIRROR]]) {
+  for (const [label, dir] of [['project', CT_PROJECT]]) {
     if (!fs.existsSync(dir)) { notes.push(`(no ${label} at ${dir})`); continue; }
     const dest = path.join(dir, rel);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
