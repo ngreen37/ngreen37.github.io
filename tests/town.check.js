@@ -422,14 +422,45 @@ const server = http.createServer((req, res) => {
         }
       })(GD);
       const GDF = (f) => GD_INDEX.get(f) || path.join(GD, f);
-      const GD_LIST = [...GD_INDEX.keys()].sort();
+      /* ⚠ town.gd IS READ WHOLE: its inner classes live in town/parts/ (2026-10-19) and are folded back in at the
+         line that preloads each, so every check sees one town.gd and the parts are not listed on their own.
+         split_town.py proved the fold gives back the original text. */
+      const readRaw = fs.readFileSync;
+      const IN_PARTS = path.join('town', 'parts') + path.sep;
+      const GD_ALL = [...GD_INDEX.keys()].sort();
+      const GD_LIST = GD_ALL.filter((n) => !GD_INDEX.get(n).includes(IN_PARTS));
+      const TOWN_GD = path.resolve(GDF('town.gd'));
+      const PRELOAD = /^const (\w+) := preload\("res:\/\/town\/parts\/(\w+\.gd)"\)$/gm;
+      const townWhole = () => {
+        const text = readRaw.call(fs, TOWN_GD, 'utf8').replace(/\r\n/g, '\n');
+        const inner = [...text.matchAll(PRELOAD)].map((m) => m[1]);
+        if (!inner.length) return text;
+        const qual = new RegExp('CheckerTown\\.(' + inner.join('|') + ')\\b', 'g');
+        return text.replace(PRELOAD, (all, name, file) => {
+          const pl = readRaw.call(fs, GDF(file), 'utf8').replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n');
+          let k = 0;
+          while (pl[k].startsWith('#')) k++;
+          let base = pl[k].slice('extends '.length);
+          const bm = base.match(/^"res:\/\/town\/parts\/(\w+)\.gd"$/);
+          if (bm) base = inner.find((n) => n.toLowerCase() === bm[1].replace(/_/g, ''));
+          return pl.slice(0, k).concat(['class ' + name + ' extends ' + base + ':'],
+            pl.slice(k + 1).map((l) => (l === '' ? l : '\t' + l.replace(qual, '$1')))).join('\n');
+        });
+      };
+      fs.readFileSync = function (p, ...rest) {
+        if (typeof p === 'string' && path.resolve(p) === TOWN_GD) {
+          const whole = townWhole();
+          return rest.length ? whole : Buffer.from(whole, 'utf8');
+        }
+        return readRaw.call(fs, p, ...rest);
+      };
       ok(GD_DUPS.length === 0, 'every file in the game has a name of its own, so a check can find it by name',
         GD_DUPS.join(' '));
       /* ⚠ A DOOR TO A MOVED SCENE SILENTLY DOES NOTHING, so every typed path must name a file that is there. */
       {
         const dead = [];
-        for (const f of GD_LIST.filter((n) => /\.(gd|tscn|godot)$/.test(n))) {
-          for (const m of fs.readFileSync(GDF(f), 'utf8')
+        for (const f of GD_ALL.filter((n) => /\.(gd|tscn|godot)$/.test(n))) {
+          for (const m of readRaw.call(fs, GDF(f), 'utf8')
             .matchAll(/res:\/\/([A-Za-z0-9_\/.\-]+\.(?:gd|tscn|tres|glb|png|ttf|ogg|svg|gdshader))/g)) {
             if (!fs.existsSync(path.join(GD, m[1]))) dead.push(f + ' -> res://' + m[1]);
           }
