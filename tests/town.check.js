@@ -471,6 +471,37 @@ const server = http.createServer((req, res) => {
       const dial = (name, orConst) => (TUNED[name] ? tune(TUNED[name]) : orConst(name));
       /* ⚠ EVERYBODY'S WORDS ARE people/lines/<who>.txt (2026-10-19), read by the game's own rules (core/lines.gd):
          a [heading], one line a row, a row starting # a note. words(who)[heading] is what the game says. */
+      /* ⚠ HIS HOME IS LAID OUT IN THE EDITOR (step 6, 2026-10-19): a Marker2D under Layout in home.tscn places each
+         piece, and home.gd's number is only the fallback for a missing marker (NateHome.where). A position a check
+         reads off home.gd is read off the marker first. */
+      const HOME_PIECES = { BED_AT: 'Bed', DOG_BED_AT: 'PrincessBed', BOARD_AT: 'Board', MILO_BED_AT: 'MiloBed', ARGUS_BED_AT: 'ArgusBed', MILO_BOARD_AT: 'MiloBoard', ARGUS_BOARD_AT: 'ArgusBoard', FRIDGE_AT: 'Fridge', RUG_AT: 'Rug', RACK_AT: 'Rack', MAT_AT: 'Mat', SHOES_AT: 'Shoes', BLADES_AT: 'Blades', STAND_AT: 'Nightstand', CUSHION_AT: 'Cushion' };
+      const HOME_TSCN = readRaw.call(fs, GDF('home.tscn'), 'utf8').replace(/\r\n/g, '\n');
+      const marker = (piece) => {
+        const at = HOME_TSCN.indexOf('[node name="' + piece + '" type="Marker2D" parent="Layout"]');
+        if (at < 0) return null;
+        const next = HOME_TSCN.indexOf('\n[', at + 1), body = HOME_TSCN.slice(at, next < 0 ? undefined : next);
+        const m = /\nposition = Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(body);
+        return m ? { x: +m[1], y: +m[2] } : { x: 0, y: 0 };
+      };
+      const layoutAt = (src, name) => (/class_name NateHome/.test(src) && HOME_PIECES[name] ? marker(HOME_PIECES[name]) : null);
+      {
+        const hg = readRaw.call(fs, GDF('home.gd'), 'utf8').replace(/\r\n/g, '\n');
+        const lay = readRaw.call(fs, GDF('home_layout.gd'), 'utf8').replace(/\r\n/g, '\n');
+        const missing = Object.values(HOME_PIECES).filter((p) => !marker(p));
+        const unread = Object.entries(HOME_PIECES).filter(([c, p]) => !hg.includes('where("' + p + '", ' + c + ')')).map(([, p]) => p);
+        ok(/\[node name="Layout" type="Node2D" parent="\."\]\nscript = ExtResource\(/.test(HOME_TSCN) && /path="res:\/\/rooms\/home_layout\.gd"/.test(HOME_TSCN)
+           && missing.length === 0 && unread.length === 0
+           && /func where\(piece: String, fallback: Vector2\) -> Vector2:\s*\n\s*var m := get_node_or_null\("Layout\/" \+ piece\) as Node2D\s*\n\s*return m\.position if m != null else fallback/.test(hg),
+          '⭐ his home is laid out in the editor: a marker under Layout in home.tscn for every piece, and home.gd places each at its marker  (the code\u2019s number is only the fallback)',
+          (missing.length ? 'no marker: ' + missing.join(' ') : Object.keys(HOME_PIECES).length + ' markers') + (unread.length ? '; not read: ' + unread.join(' ') : ''));
+        ok(/^@tool/.test(lay) && /func _draw\(\) -> void:\s*\n\s*if not Engine\.is_editor_hint\(\):\s*\n\s*return/.test(lay)
+           && Object.values(HOME_PIECES).every((p) => lay.includes('"' + p + '"')),
+          '…and the Layout draws each piece\u2019s name and size in the editor only  (the game draws nothing for it)');
+        /* ⚠ ON THE FLOOR: a piece dragged past the round wall is a bug, wherever else he puts it. */
+        const ROOM = { mx: 0, my: 5, rx: 500, ry: 278 };
+        const off = Object.values(HOME_PIECES).filter((p) => { const q = marker(p); return q && ((q.x - ROOM.mx) / ROOM.rx) ** 2 + ((q.y - ROOM.my) / ROOM.ry) ** 2 > 1; });
+        ok(off.length === 0, '⚠ …and every marker stands on the floor, inside the round wall', off.join(' ') || 'all ' + Object.keys(HOME_PIECES).length + ' inside');
+      }
       const LINES_DIR = path.join(GD, 'people', 'lines');
       const LINES_ALL = fs.existsSync(LINES_DIR) ? fs.readdirSync(LINES_DIR).filter((f) => f.endsWith('.txt')).sort() : [];
       const words = (who) => {
@@ -737,6 +768,7 @@ const server = http.createServer((req, res) => {
 
       /* ══ THE FOUR LANDING POINTS, EACH DERIVED AGAINST THE OTHER FILE ══ */
       const v2 = (src, name) => {
+        const h = layoutAt(src, name); if (h) return h;
         const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
         return m ? { x: +m[1], y: +m[2] } : null;
       };
@@ -3940,7 +3972,7 @@ const server = http.createServer((req, res) => {
            && /c\[2\]/.test(fnGd(dogG, 'paint_bed')),
           '\u2026painted out of TownDog.COATS \u2014 whose bed it is can be SEEN, in coat and collar',
           'a hex typed in a room file is the shade that survives the next repaint of a dog');
-        const bedsFor = [...homeG.matchAll(/\[([A-Z_]+_BED_AT), "(\w+)"\]/g)].map((m) => m[2]);
+        const bedsFor = [...homeG.matchAll(/\[where\("\w+", ([A-Z_]+_BED_AT)\), "(\w+)"\]/g)].map((m) => m[2]);
         ok(bedsFor.join(' ') === 'Princess Milo Argus',
           '\u2026and all three dogs have one in Nate\u2019s checker', bedsFor.join(', ') || 'none');
         /* ⚠⚠ MAXWELL'S IS A CUSHION, NOT A BED YOU SLEEP IN. */
@@ -3952,20 +3984,21 @@ const server = http.createServer((req, res) => {
         /* ⚠ SPLIT ON LINES, NOT ON COMMAS. */
         const legs = hm2
           ? hm2[1].split('\n').map((l) => l.trim().replace(/,$/, '')).filter(Boolean) : [];
-        ok(legs.length === 4 && legs.every((l) => /^[A-Z_]+_AT \+ Vector2\(/.test(l)),
+        ok(legs.length === 4 && legs.every((l) => /^where\("\w+", [A-Z_]+_AT\) \+ Vector2\(/.test(l)),
           '⭐ she has four places to be, every one read off the furniture that is there',
           legs.join(' \u00b7 ') || 'no haunts');
-        ok(legs.filter((l) => /BED_AT \+/.test(l)).length === 3
-           && legs.some((l) => /^BOARD_AT \+/.test(l)),
+        ok(legs.filter((l) => /_BED_AT\) \+/.test(l)).length === 3
+           && legs.some((l) => /^where\("Board", BOARD_AT\) \+/.test(l)),
           '\u2026the three beds and the board  (his: "the beds, or \u2026 the table to learn chess")');
         const v2h = (src, name) => {
+          const h = layoutAt(src, name); if (h) return h;
           const m = new RegExp('const ' + name + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
           return m ? { x: +m[1], y: +m[2] } : null;
         };
         const fm = /const FLOOR := Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(bedRoom);
         const floor = fm ? { x: +fm[1], y: +fm[2], w: +fm[3], h: +fm[4] } : null;
         const spotOf = (leg) => {
-          const m = /^([A-Z_]+_AT) \+ Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(leg);
+          const m = /^where\("\w+", ([A-Z_]+_AT)\) \+ Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(leg);
           const base = m && v2h(homeG, m[1]);
           return base ? { x: base.x + +m[2], y: base.y + +m[3] } : null;
         };
@@ -4039,7 +4072,7 @@ const server = http.createServer((req, res) => {
         /* \u26a0\u26a0 "ONLY THEIR OWN" IS THE LIST, NOT A BRANCH. */
         const free = fnGd(dogG, '_free');
         ok(/var choosy := haunts\.size\(\) > 1/.test(am) && /d != self and d\.visible/.test(free)
-           && /_lodger\("Milo", MILO_BED_AT\)/.test(homeG)
+           && /_lodger\("Milo", where\("MiloBed", MILO_BED_AT\)\)/.test(homeG)
            && /d\.haunts = PackedVector2Array\(\[at\]\)/.test(homeG),
           '\u2b50 she takes any cushion that is FREE, and the other two only ever their own',
           'the owner never yields: one haunt each, so there is nothing for them to check');
@@ -4397,9 +4430,10 @@ const server = http.createServer((req, res) => {
           for (const m of src.matchAll(/_solid\((\w+), Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/g)) {
             const av = new RegExp('const ([A-Z_]+) := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)', 'g');
             let at = null;
-            const want = new RegExp(m[1] + '\\.position = ([A-Z_]+)').exec(src);
+            const want = new RegExp(m[1] + '\\.position = (?:where\\("\\w+", )?([A-Z_]+)').exec(src);
             if (!want) { outside.push(name_ + ':' + m[1] + ' has no position'); continue; }
-            for (const c of src.matchAll(av)) if (c[1] === want[1]) at = { x: +c[2], y: +c[3] };
+            at = layoutAt(src, want[1]);
+            if (!at) for (const c of src.matchAll(av)) if (c[1] === want[1]) at = { x: +c[2], y: +c[3] };
             if (!at) { outside.push(name_ + ':' + m[1] + ' has no ' + want[1]); continue; }
             const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(src) || [0, 1])[1];
             const corners = [[+m[2], +m[3]], [+m[2] + +m[4], +m[3]],
@@ -4473,7 +4507,7 @@ const server = http.createServer((req, res) => {
             gone.length ? 'missing from the game: ' + gone.join(', ') + '.glb — npm run gen:models -- Fridge Rug' : 'both .glb in art/');
           ok(/TownProp\.make\("res:\/\/art\/fridge\.glb", TownPlayerModel\.TILT,/.test(hm)
              && /TownProp\.make\("res:\/\/art\/rug\.glb", rad_to_deg\(asin\(RY \/ RX\)\),/.test(hm)
-             && /_rug\.draw_on\(self, Rect2\(RUG_AT - d \* 0\.5, d\)\)/.test(hm),
+             && /_rug\.draw_on\(self, Rect2\(where\("Rug", RUG_AT\) - d \* 0\.5, d\)\)/.test(hm),
             '…the fridge stood at the PEOPLE\'S angle, the rug lying at the FLOOR\'S',
             'a rug at 14° is a sliver; a fridge at the floor\'s 34° shows its roof');
         }
@@ -4494,6 +4528,7 @@ const server = http.createServer((req, res) => {
             return b < 0 ? rest : rest.slice(0, b);
           };
           const v2 = (src, n) => {
+            const h = layoutAt(src, n); if (h) return h;
             const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
             return m ? { x: +m[1], y: +m[2] } : null;
           };
@@ -4547,8 +4582,8 @@ const server = http.createServer((req, res) => {
           /* ── his gear ── */
           ok(/class Rack extends Node2D:/.test(hm) && /class FloorWeights extends Node2D:/.test(hm)
              && /class Shoes extends Node2D:/.test(hm) && /class Blades extends Node2D:/.test(hm)
-             && /rack\.position = RACK_AT/.test(hm) && /_solid\(rack, Rect2\(/.test(hm)
-             && /\[FloorWeights\.new\(\), MAT_AT\], \[shoes, SHOES_AT\], \[blades, BLADES_AT\]/.test(hm),
+             && /rack\.position = where\("Rack", RACK_AT\)/.test(hm) && /_solid\(rack, Rect2\(/.test(hm)
+             && /\[FloorWeights\.new\(\), where\("Mat", MAT_AT\)\], \[shoes, where\("Shoes", SHOES_AT\)\], \[blades, where\("Blades", BLADES_AT\)\]/.test(hm),
             '⭐ a bench and a bar, weights on a mat, his running shoes and his rollerblades are in the checker',
             'the bench presses, the shoes and the rollerblades go on (10-15); the weights are scenery; only the rack is solid');
           const gear = ['RACK_AT', 'MAT_AT', 'SHOES_AT', 'BLADES_AT'].map((n) => [n, v2(hm, n)]);
@@ -4644,7 +4679,7 @@ const server = http.createServer((req, res) => {
           const boardAt = v2(hm, 'BOARD_AT'), argusAt = v2(hm, 'ARGUS_BED_AT');
           const boxes = [];
           for (const m of hm.matchAll(/_solid\((\w+), Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/g)) {
-            const want = new RegExp(m[1] + '\\.position = ([A-Z_]+)').exec(hm);
+            const want = new RegExp(m[1] + '\\.position = (?:where\\("\\w+", )?([A-Z_]+)').exec(hm);
             const at = want && v2(hm, want[1]);
             const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(hm) || [0, 1])[1];
             if (at) boxes.push({ x: at.x + +m[2] * sc, y: at.y + +m[3] * sc, w: +m[4] * sc, h: +m[5] * sc });
@@ -4666,7 +4701,7 @@ const server = http.createServer((req, res) => {
             '…Milo\'s scatter lies on open floor: inside the disc, under no furniture, on no cushion and off both boards',
             hidden.length || clumped.length ? hidden.concat(clumped).map((p) => p.x + ',' + p.y).join(' ')
               : scat.length + ' spots against ' + covers.length + ' things, none within a piece of another');
-          const rowM = /_floor_piece\(ARGUS_BED_AT \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
+          const rowM = /_floor_piece\(where\("ArgusBed", ARGUS_BED_AT\) \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
           const rowN = ((/const ROW := "(\w+)"/.exec(hm) || [0, ''])[1]).length;
           const rowEnds = rowM && argusAt
             ? [0, rowN - 1].map((i) => ({ x: argusAt.x + +rowM[1] + +rowM[2] * i, y: argusAt.y + +rowM[3] })) : [];
@@ -5430,7 +5465,7 @@ const server = http.createServer((req, res) => {
           const numPl = (name) => dial(name, (x) => +(new RegExp('const ' + x + ' := ([\\d.]+)').exec(plC) || [])[1]);
           const lift = fnGd(lfC, '_lift'), press = fnGd(lfC, '_press'), rep = fnGd(lfC, '_rep');
           /* ── the bench ── */
-          ok(/class BenchPress extends Interactable:/.test(hmC) && /var bench := BenchPress\.new\(\)\s*bench\.rack = rack\s*bench\.position = RACK_AT/.test(hmC)
+          ok(/class BenchPress extends Interactable:/.test(hmC) && /var bench := BenchPress\.new\(\)\s*bench\.rack = rack\s*bench\.position = where\("Rack", RACK_AT\)/.test(hmC)
              && /var lift := LiftView\.new\(\)[\s\S]{0,200}p\.visible = false\s*lift\.closed\.connect\(func\(_reps: int, failed: bool\) -> void:\s*if is_instance_valid\(p\):\s*p\.visible = true\s*if failed:\s*NateHome\.spilled = true/.test(hmC)
              && /if GameState\.energy < Tuning\.now\(\)\.lift_rep_cost:\s*say\(/.test(hmC),
             '⭐ A at the rack in his home lies him down on the bench  (he stands back up when the set is over; an empty bar is too tired to lift)');
@@ -5484,7 +5519,7 @@ const server = http.createServer((req, res) => {
           /* ── what is on his feet ── */
           ok(/class GearSpot extends Interactable:/.test(hmC) && /GameState\.gear = "" if GameState\.gear == kind else kind/.test(hmC)
              && /for n in get_tree\(\)\.get_nodes_in_group\("town_gear"\):/.test(hmC)
-             && /\[shoes, SHOES_AT, "runners", "running shoes"\], \[blades, BLADES_AT, "skates", "rollerblades"\]/.test(hmC)
+             && /\[shoes, where\("Shoes", SHOES_AT\), "runners", "running shoes"\], \[blades, where\("Blades", BLADES_AT\), "skates", "rollerblades"\]/.test(hmC)
              && /if GameState\.gear == "skates":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw'))
              && /if GameState\.gear == "runners":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Shoes')), '_draw')),
             '⭐ A at the rollerblades or the running shoes by his door puts that pair on, the other off  (a pair is gone from the floor while he wears it)');
@@ -5549,14 +5584,14 @@ const server = http.createServer((req, res) => {
             }
             return out.join('\n');
           };
-          const v2 = (src, name) => (new RegExp('const ' + name + ' := Vector2\\(([-\\d.]+), ([-\\d.]+)\\)').exec(src) || [0, NaN, NaN]).slice(1, 3).map(Number);
+          const v2 = (src, name) => { const h = layoutAt(src, name); return h ? [h.x, h.y] : (new RegExp('const ' + name + ' := Vector2\\(([-\\d.]+), ([-\\d.]+)\\)').exec(src) || [0, NaN, NaN]).slice(1, 3).map(Number); };
           /* ── the nightstand and the lamp ── */
           const ns = cls(hmC, 'Nightstand'), stand = v2(hmC, 'STAND_AT'), bed = v2(hmC, 'BED_AT'), dogBed = v2(hmC, 'DOG_BED_AT');
           ok(/_pool = _light\(CheckerRoom\.Daylight\.SCENERY, GLOW\)\s*_touch = _light\(CheckerRoom\.Daylight\.LIVING, GLOW \* CheckerRoom\.Daylight\.TOUCH\)/.test(ns)
              && /l\.range_item_cull_mask = mask/.test(ns) && /_pool\.enabled = lit\s*_touch\.enabled = lit/.test(ns)
              && /func interact\(_player: Node\) -> void:\s*lit = not lit\s*_words\(\)/.test(ns)
              && /relabel\("Turn off the lamp" if lit else "Turn on the lamp"\)/.test(ns)
-             && /var stand := Nightstand\.new\(\)\s*stand\.position = STAND_AT[\s\S]*?_solid\(stand, Rect2\(-18\.0, -12\.0, 36\.0, 24\.0\)\)/.test(hmC)
+             && /var stand := Nightstand\.new\(\)\s*stand\.position = where\("Nightstand", STAND_AT\)[\s\S]*?_solid\(stand, Rect2\(-18\.0, -12\.0, 36\.0, 24\.0\)\)/.test(hmC)
              && stand[0] - 18 > bed[0] + 34 && stand[0] + 18 < dogBed[0] - 40,
             '⭐ a nightstand and a lamp by the bed  (his); A switches it, and its light is ADDED: the furniture takes it, the living a third, off is off',
             'the stand ' + (stand[0] - 18) + ' to ' + (stand[0] + 18) + ', the bed to ' + (bed[0] + 34) + ', Princess\'s cushion from ' + (dogBed[0] - 40));
@@ -5565,7 +5600,7 @@ const server = http.createServer((req, res) => {
           const rugW = +(/const RUG_W := ([\d.]+)/.exec(hmC) || [])[1], board = v2(hmC, 'BOARD_AT'), rack = v2(hmC, 'RACK_AT');
           ok(/relabel\("Meditate"\)/.test(ms) && /GameState\.reentry\[here\.scene_file_path\] = global_position/.test(ms)
              && /you\.launch\(\)\s*await you\.launched/.test(ms) && /change_scene_to_file\(OuterSpace\.SCENE\)/.test(ms) && /TownFade\.cross\(self, go\)/.test(ms)
-             && /var seat := MeditateSpot\.new\(\)\s*seat\.position = CUSHION_AT/.test(hmC)
+             && /var seat := MeditateSpot\.new\(\)\s*seat\.position = where\("Cushion", CUSHION_AT\)/.test(hmC)
              && cush[0] - 30 > rug[0] + rugW / 2 && cush[0] + 30 < fridge[0] - 30 && cush[1] + 13 < rack[1] - 28 && cush[1] - 13 > board[1] + 16 * 1.8,
             '⭐ a spot to meditate  (his), on the open floor between the rug, the fridge, the rack and Princess\'s board: A sends him up and off to space',
             'the mat ' + (cush[0] - 30) + ' to ' + (cush[0] + 30) + ' across, ' + (cush[1] - 13) + ' to ' + (cush[1] + 13) + ' down');
@@ -5786,6 +5821,7 @@ const server = http.createServer((req, res) => {
             return b < 0 ? rest : rest.slice(0, b);
           };
           const v2M = (src, n) => {
+            const h = layoutAt(src, n); if (h) return h;
             const m = new RegExp('const ' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(src);
             return m ? { x: +m[1], y: +m[2] } : null;
           };
@@ -5798,7 +5834,7 @@ const server = http.createServer((req, res) => {
             stale.length ? 'still "Crockett" in: ' + stale.join(' ') : 'the site\'s seat, his square and every stamp are kept by `crockett`');
           ok(/\{ "p": "p", "who": "Milo",\s+"key": "crockett",/.test(gsM) && /"say": "Milo stands on his square/.test(gsM)
              && /\{ "key": "crockett", "who": "Milo", "elo": 750,\s+"piece": "n" \}/.test(pkM)
-             && /_lane_dog\("Milo", /.test(tw) && /_lodger\("Milo", MILO_BED_AT\)/.test(hm),
+             && /_lane_dog\("Milo", /.test(tw) && /_lodger\("Milo", where\("MiloBed", MILO_BED_AT\)\)/.test(hm),
             '…on his square, on his rung, on the lane and on his own cushion');
           ok(/const RENAMED := \{ "Crockett": "Milo" \}/.test(gsM)
              && /by_name\[now\] = maxi\(int\(by_name\.get\(now, 0\)\), int\(by_name\[was\]\)\)\s*\n\s*by_name\.erase\(was\)/.test(fnGd(gsM, '_renamed'))
@@ -5838,7 +5874,7 @@ const server = http.createServer((req, res) => {
           const lowSc = +(/low\.scale = Vector2\(([\d.]+), ([\d.]+)\)/.exec(hm) || [0, 0])[1];
           const lowR = +(/low\.radius = ([\d.]+)/.exec(hm) || [0, 0])[1];
           const beds = { Princess: v2M(hm, 'DOG_BED_AT'), Milo: v2M(hm, 'MILO_BED_AT'), Argus: v2M(hm, 'ARGUS_BED_AT') };
-          ok(/for spot in \[\[MILO_BOARD_AT, "Milo"\], \[ARGUS_BOARD_AT, "Argus"\]\]:\s*\n\s*var low := HomeBoard\.new\(\)\s*\n\s*low\.dog = spot\[1\]/.test(hm)
+          ok(/for spot in \[\[where\("MiloBoard", MILO_BOARD_AT\), "Milo"\], \[where\("ArgusBoard", ARGUS_BOARD_AT\), "Argus"\]\]:\s*\n\s*var low := HomeBoard\.new\(\)\s*\n\s*low\.dog = spot\[1\]/.test(hm)
              && /var dog := "Princess"/.test(hbM) && (hm.match(/HomeBoard\.new\(\)/g) || []).length === 2
              && !/_solid\(low/.test(hm) && /prompt_text = "%s's board" % dog/.test(fnInM(hbM, '_ready_extra')),
             '⭐ three boards, one for each dog: hers on the table, theirs on the floor and never a wall',
@@ -5862,13 +5898,13 @@ const server = http.createServer((req, res) => {
           const topM = +(/func speech_top\(\) -> float:\s*\n\s*return (-?[\d.]+) \* scale\.y/.exec(hbM) || [0, 0])[1];
           const markR = num(code(rd('notice.gd')), 'R');
           const fp = num(hm, 'FLOOR_PIECE');
-          const rowM2 = /_floor_piece\(ARGUS_BED_AT \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
+          const rowM2 = /_floor_piece\(where\("ArgusBed", ARGUS_BED_AT\) \+ Vector2\((-?[\d.]+) \+ ([\d.]+) \* float\(i\), (-?[\d.]+)\)/.exec(hm);
           const rowN2 = ((/const ROW := "(\w+)"/.exec(hm) || [0, ''])[1]).length;
           const rowBox = rowM2 && beds.Argus ? { x: beds.Argus.x + +rowM2[1] - fp / 2, y: beds.Argus.y + +rowM2[3] - fp / 2,
             w: +rowM2[2] * (rowN2 - 1) + fp, h: fp } : null;
           const solids = [];
           for (const m of hm.matchAll(/_solid\((\w+), Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)\)/g)) {
-            const want = new RegExp(m[1] + '\\.position = ([A-Z_]+)').exec(hm);
+            const want = new RegExp(m[1] + '\\.position = (?:where\\("\\w+", )?([A-Z_]+)').exec(hm);
             const at = want && v2M(hm, want[1]);
             const sc = +(new RegExp(m[1] + '\\.scale = Vector2\\(([\\d.]+),').exec(hm) || [0, 1])[1];
             if (at) solids.push({ x: at.x + +m[2] * sc, y: at.y + +m[3] * sc, w: +m[4] * sc, h: +m[5] * sc });
