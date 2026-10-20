@@ -4051,10 +4051,11 @@ const server = http.createServer((req, res) => {
         /* ══ SLOWLY, WHICH IS A DIFFERENT NUMBER FROM HER FOLLOW SPEED ══ */
         const amble = +(/const AMBLE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
         /* ⚑ DERIVED, NOT READ, SINCE 09-23. */
-        const trot = SPD * tf;
-        ok(amble > 0 && trot > 0 && amble < trot * 0.3,
-          '⭐ she AMBLES indoors \u2014 a fraction of the speed she catches you up at',
-          amble + ' u/s against a trot of ' + trot);
+        /* ⚠ HELD AT THE WALK SLIDER'S LOW END, her slowest trot, so no walk he sets stops a push. */
+        const trot = (tuneRange('walk_speed') || [NaN])[0] * tf;
+        ok(amble > 0 && trot > 0 && amble < trot * 0.5,
+          '⭐ she AMBLES indoors \u2014 under half the speed she catches you up at, however slow he walks',
+          amble + ' u/s against her slowest trot, ' + trot + '  (at his walk: ' + Math.round(SPD * tf) + ')');
         ok(/var speed: float = pace if pace > 0\.0 else trot\(\) \* \(1\.6 if d > RUN_AT/.test(dogG),
           '\u2026and an amble never breaks into a run, the way the catch-up gait does');
         const am = fnGd(dogG, '_amble');
@@ -5474,11 +5475,13 @@ const server = http.createServer((req, res) => {
              && /var trig := Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_LEFT\) > 0\.5 and Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_RIGHT\) > 0\.5/.test(fnGd(pdC, 'squeezed'))
              && /return trig or held/.test(fnGd(pdC, 'squeezed')),
             '⭐ pressing nothing lowers the bar, and both triggers held press it up  (both shoulders as well: he called them L and R)');
+          /* ⚠ HELD AT THE SLIDERS' ENDS: the weakest fresh press beats the heaviest load, so no pair he sets stops a push. */
           const fresh = numL('FORCE') * (1 - numL('DIP')), load = numL('LOAD');
+          const heavy = tuneRange('lift_load'), weakest = (tuneRange('lift_force') || [NaN])[0] * (1 - numL('DIP'));
           ok(/_grit \+= tune\.lift_mash/.test(fnGd(lfC, '_mash')) && /_grit \*= exp\(-delta \/ GRIT_LIFE\)/.test(press)
-             && fresh > load,
+             && !!heavy && weakest > heavy[1],
             '⭐ he tires a rep at a time until the triggers alone stall at the sticking point, and A mashed gets the last ones up  (the push from A fades by a share: at a flat rate it ran out between presses)',
-            'fresh ' + fresh.toFixed(2) + ' against a load of ' + load + ', ' + (fresh * (1 - 7 * numL('TIRE_REP'))).toFixed(2) + ' seven reps in');
+            'the weakest fresh press ' + weakest.toFixed(2) + ' against the heaviest load ' + (heavy && heavy[1]) + '  (his: ' + fresh.toFixed(2) + ' against ' + load + ', ' + (fresh * (1 - 7 * numL('TIRE_REP'))).toFixed(2) + ' seven reps in)');
           ok(/if _h >= 0\.97 and _deep < 0\.97:\s*_rep\(\)/.test(press) && /if depth < tune\.lift_counts:/.test(rep)
              && /var part := 0\.5 \+ 0\.5 \* clampf\(\(depth - tune\.lift_counts\) \/ \(FULL - tune\.lift_counts\), 0\.0, 1\.0\)/.test(rep)
              && /_gain \+= tune\.lift_rep_gain \* part \* _worth/.test(rep) && numL('FULL') >= 0.9,
@@ -5527,9 +5530,9 @@ const server = http.createServer((req, res) => {
              && /velocity = head \* move_toward\(spd, speed \* top \* push, speed \* tune\.skate_push \* _delta\)/.test(plC)
              && /var top := tune\.skate_top if GameState\.tire\(_delta\) else 1\.0/.test(plC)
              && /return GameState\.gear == "skates" and roams_here\(\)/.test(fnGd(plC, 'skating'))
-             && numPl('SKATE_TOP') > 1.0 && numPl('SKATE_TOP') <= 1.5 && numPl('SKATE_TURN') >= 6,
+             && !!tuneRange('skate_top') && tuneRange('skate_top')[0] > 1.0 && tuneRange('skate_top')[1] <= 1.5 && !!tuneRange('skate_turn') && tuneRange('skate_turn')[0] >= 6,
             '⭐ on rollerblades he glides and turns tight, no faster than he ought, and a push costs what running does  (his: "the turns are too rounded and the top speed is significantly too high")',
-            numPl('SKATE_TOP') + '× the walk, turning ' + numPl('SKATE_TURN') + ' radians a second');
+            'its sliders: ' + (tuneRange('skate_top') || []).join(' to ') + '× the walk (tired, 1.0), turning ' + (tuneRange('skate_turn') || []).join(' to ') + ' radians a second  (his: ' + numPl('SKATE_TOP') + ', ' + numPl('SKATE_TURN') + ')');
           ok(/if runners and dir\.length_squared\(\) > 0\.001:\s*run = tune\.run_share if GameState\.tire\(_delta\) else 1\.0/.test(plC)
              && /return GameState\.gear == "runners" and roams_here\(\)/.test(fnGd(plC, 'in_runners')),
             '⭐ in his running shoes every step is a run, at a run\'s cost  (his pick)');
