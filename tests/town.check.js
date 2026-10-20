@@ -454,6 +454,73 @@ const server = http.createServer((req, res) => {
         }
         return readRaw.call(fs, p, ...rest);
       };
+      /* ⚠ THE DIALS ARE core/tuning.tres (2026-10-19): he sets them in the Inspector and Tuning.now() reads them. The
+         gate holds a slider's ends (tuning.gd's @export_range), never the value between them, because a slider he
+         moves must not stop a push. A const NAME a check still says is read off the dial it became (TUNED). */
+      const TUNE_GD = readRaw.call(fs, GDF('tuning.gd'), 'utf8').replace(/\r\n/g, '\n');
+      const TUNE_RES = readRaw.call(fs, GDF('tuning.tres'), 'utf8').replace(/\r\n/g, '\n');
+      const tune = (n) => {
+        const m = new RegExp('^' + n + ' = (-?[\\d.]+)$', 'm').exec(TUNE_RES) || new RegExp('var ' + n + ' := (-?[\\d.]+)').exec(TUNE_GD);
+        return m ? +m[1] : NaN;
+      };
+      const tuneRange = (n) => {
+        const m = new RegExp('@export_range\\((-?[\\d.]+), (-?[\\d.]+)[^)]*\\) var ' + n + ' :=').exec(TUNE_GD);
+        return m ? [+m[1], +m[2]] : null;
+      };
+      const TUNED = { SPEED: 'walk_speed', RUN_SPEED: 'run_share', RUN_GRACE: 'run_grace', SKATE_TOP: 'skate_top', SKATE_PUSH: 'skate_push', SKATE_COAST: 'skate_coast', SKATE_TURN: 'skate_turn', SKATE_STRIDE: 'skate_stride', JUMP_SECS: 'jump_secs', JUMP_HIGH: 'jump_high', CAM_TRAIL: 'camera_trail', LOOK_REACH: 'look_reach', LOOK_RATE: 'look_rate', ENERGY_CAP: 'energy_cap', GAME_COST: 'game_cost', DRAIN_MINUTES: 'drain_minutes', RUN_TIRES_SECS: 'run_tires_secs', FULL_SETS: 'lift_full_sets', LOWER: 'lift_lower', FORCE: 'lift_force', LOAD: 'lift_load', MASH: 'lift_mash', PINNED: 'lift_pinned', RESTING: 'lift_resting', COUNTS: 'lift_counts', REP_GAIN: 'lift_rep_gain', REP_COST: 'lift_rep_cost', FAIL_COST: 'lift_fail_cost', LATE: 'lift_late', GALLOP: 'knight_gallop', HOLD_SECS: 'knight_hold_secs', WAIT_SECS: 'knight_wait_secs', GONE_AT: 'knight_gone_at', AGAIN_SECS: 'knight_again_secs' };
+      const dial = (name, orConst) => (TUNED[name] ? tune(TUNED[name]) : orConst(name));
+      /* ⚠ EVERYBODY'S WORDS ARE people/lines/<who>.txt (2026-10-19), read by the game's own rules (core/lines.gd):
+         a [heading], one line a row, a row starting # a note. words(who)[heading] is what the game says. */
+      const LINES_DIR = path.join(GD, 'people', 'lines');
+      const LINES_ALL = fs.existsSync(LINES_DIR) ? fs.readdirSync(LINES_DIR).filter((f) => f.endsWith('.txt')).sort() : [];
+      const words = (who) => {
+        const f = path.join(LINES_DIR, who.toLowerCase().replace(/ /g, '_') + '.txt'), out = {};
+        if (!fs.existsSync(f)) return out;
+        let h = '';
+        for (const raw of readRaw.call(fs, f, 'utf8').split('\n')) {
+          const row = raw.trim();
+          if (row === '' || row.startsWith('#')) continue;
+          if (row.startsWith('[') && row.endsWith(']') && !row.includes(' ')) { h = row.slice(1, -1); out[h] = out[h] || []; continue; }
+          if (h) out[h].push(row);
+        }
+        return out;
+      };
+      {
+        const lc = readRaw.call(fs, GDF('lines.gd'), 'utf8').replace(/\r\n/g, '\n');
+        const empty = LINES_ALL.filter((f) => Object.values(words(f.replace(/\.txt$/, ''))).every((rows) => rows.length === 0));
+        ok(/^class_name Lines/m.test(lc) && /static func list\(who: String, heading: String\) -> Array\[String\]:/.test(lc)
+           && /if not FileAccess\.file_exists\(path\):\s*\n\s*return out/.test(lc) && LINES_ALL.length >= 15 && empty.length === 0,
+          '⭐ everybody\u2019s words are one file each in people/lines/, read by name  (a missing file is a quiet person, not a stopped game)',
+          LINES_ALL.length + ' files' + (empty.length ? '; nothing under any heading: ' + empty.join(' ') : ''));
+        const codeish = LINES_ALL.filter((f) => /^\s*(func |var |const |extends |@|\w+ := )/m.test(readRaw.call(fs, path.join(LINES_DIR, f), 'utf8')));
+        ok(codeish.length === 0, '…and they hold words only: headings, notes and lines', codeish.join(' ') || LINES_ALL.join(' '));
+        ok(/include_filter="people\/lines\/\*\.txt"/.test(readRaw.call(fs, GDF('export_presets.cfg'), 'utf8')),
+          '⚠ …and the web build carries them  (a .txt is not a resource, so export_presets.cfg lists them)');
+        const typed = GD_ALL.filter((n) => /\.gd$/.test(n)).filter((n) => /\.(lines|board_lines) = \[\s*"|\.(local_line|self_line|razz_line|before_line|part_line) = "/
+          .test(readRaw.call(fs, GDF(n), 'utf8')));
+        ok(typed.length === 0, '⚠ …and no script types a person\u2019s words where they stand any more', typed.join(' ') || 'none do');
+      }
+      {
+        const dials = [...TUNE_GD.matchAll(/^@export_range\(([^)]*)\) var (\w+) := (-?[\d.]+)/gm)].map((m) => m[2]);
+        const keys = [...TUNE_RES.matchAll(/^(\w+) = /gm)].map((m) => m[1]).filter((k) => k !== 'script');
+        const out = dials.filter((k) => { const v = tune(k), r = tuneRange(k); return !r || !(v >= r[0] && v <= r[1]); });
+        const stray = keys.filter((k) => !dials.includes(k));
+        ok(/^class_name Tuning\nextends Resource/m.test(TUNE_GD) && /static func now\(\) -> Tuning:[\s\S]*?_now = Tuning\.new\(\)/.test(TUNE_GD)
+           && /path="res:\/\/core\/tuning\.gd"/.test(TUNE_RES) && /script = ExtResource\(/.test(TUNE_RES)
+           && dials.length >= 30 && out.length === 0 && stray.length === 0,
+          '⭐ the dials are one file he sets in the Inspector: each one a slider, each value inside its slider  (a missing file plays on the defaults)',
+          dials.length + ' dials' + (out.length ? '; outside their slider: ' + out.join(' ') : '') + (stray.length ? '; not a dial: ' + stray.join(' ') : ''));
+        const top = tuneRange('skate_top'), turn = tuneRange('skate_turn');
+        ok(top && top[1] <= 1.5 && turn && turn[0] >= 6,
+          '⛑ his two calls are the skating sliders\u2019 own ends: top speed at most 1.5\u00d7 the walk, turning at least 6 a second  (his: "the turns are too rounded and the top speed is significantly too high")',
+          'skate_top ' + top + ' · skate_turn ' + turn);
+        const homes = { 'player.gd': Object.keys(TUNED), 'dog.gd': ['TROT'], 'knight.gd': Object.keys(TUNED),
+          'lift.gd': Object.keys(TUNED), 'game_state.gd': Object.keys(TUNED) };
+        const still = Object.entries(homes).filter(([f, names]) =>
+          new RegExp('^const (' + names.join('|') + ') := -?[\\d.]', 'm').test(readRaw.call(fs, GDF(f), 'utf8'))).map(([f]) => f);
+        ok(still.length === 0, '\u26a0 …and no dial is still a constant where it used to live: one number, one place',
+          still.join(' ') || 'player, dog, knight, lift and game_state read the dials');
+      }
       ok(GD_DUPS.length === 0, 'every file in the game has a name of its own, so a check can find it by name',
         GD_DUPS.join(' '));
       /* ⚠ A DOOR TO A MOVED SCENE SILENTLY DOES NOTHING, so every typed path must name a file that is there. */
@@ -852,19 +919,18 @@ const server = http.createServer((req, res) => {
         && !/const WORDS :=/.test(gs) && !/func learn_word\(/.test(gs),
         'nobody in the town runs a vocabulary drill any more',
         '⚠ SHAPES, NOT THE WORD "teaches_words" — the comment recording the removal says it');
-      const kline = /kaede\.lines = \[([\s\S]*?)\]/.exec(acad);
-      const mline = /matsu\.lines = \[([\s\S]*?)\]/.exec(isl);
+      const kLines = words('Kaede').lines || [], mLines = words('Matsu').lines || [];
       /* ⚠ EVERY LINE, NOT FOUR OF THEM. */
-      const kEntries = kline ? (kline[1].match(/"/g) || []).length / 2 : 0;
-      const kBoth = kline ? (kline[1].match(/ — /g) || []).length : 0;
+      const kEntries = kLines.length;
+      const kBoth = kLines.filter((l) => l.includes(' — ')).length;
       ok(kEntries >= 4 && kBoth === kEntries,
         'Kaede says it in Japanese and then in English, on every line she has',
         kBoth + ' of ' + kEntries);
       /* ⭐⭐ EXACTLY ONE, AND THE COUNT IS THE POINT. */
       /* his: "a TINY bit of English" */
-      ok(!!mline && (mline[1].match(/ — /g) || []).length === 1,
+      ok(mLines.length > 0 && mLines.filter((l) => l.includes(' — ')).length === 1 && mLines[mLines.length - 1].includes(' — '),
         '…and Matsu cracks by exactly one English word, at the top of the hearts ladder',
-        mline ? (mline[1].match(/ — /g) || []).length + ' of his lines carry any' : 'no lines');
+        mLines.length ? mLines.filter((l) => l.includes(' — ')).length + ' of his lines carry any' : 'no lines');
 
       /* ⭐⭐ THE FONT COVERS WHAT THE SCRIPTS SAY. */
       const cover = (() => {
@@ -895,7 +961,7 @@ const server = http.createServer((req, res) => {
       if (cover) {
         const said = new Set();
         for (const f of GD_LIST) {
-          if (!f.endsWith('.gd')) continue;
+          if (!f.endsWith('.gd') && !LINES_ALL.includes(f)) continue;
           for (const ch of fs.readFileSync(GDF(f), 'utf8')) {
             const o = ch.codePointAt(0);
             if ((o >= 0x3000 && o <= 0x30FF) || (o >= 0x4E00 && o <= 0x9FFF)) said.add(ch);
@@ -1195,7 +1261,7 @@ const server = http.createServer((req, res) => {
           '⭐ the gate\'s line is HIS, verbatim off the Chess City page', granted);
         ok(dr !== '' && !/\.who = |open_talk\(|\.say\(|show_over\(/.test(dr),
           '⚠ nobody speaks in the dream and no person is in it  (what is in his happy place is his)');
-        const over = (/"over": \["([^"]+)"\]/.exec(cb) || [])[1] || '';
+        const over = (words('Murphy').nightmare_over || [])[0] || '';
         ok(over !== '' && fs.readFileSync(path.join(ROOT, '_characters/murphy.md'), 'utf8').includes(over)
           && /_heckle\("over", true\)/.test(fnGd(cb, '_on_hit')),
           '⭐ the last word in the nightmare is Murphy\'s own catchphrase, and it is never held back', over);
@@ -1533,9 +1599,9 @@ const server = http.createServer((req, res) => {
         ok(T.move(sq('a2'), sq('a3')) === 'over' && T.start() === 'ok' && st().ply === 0 && st().gid !== end.gid,
           '…a finished game takes no moves, and start() sets up a new one');
       }
-      ok(/const SPEED := 525\.0/.test(player) && /@export var speed: float = SPEED/.test(player),
-        'the feet are down to 525  (⛑ 700 → 525 on 09-23, his: "can you slow me down 25%?")',
-        '⚠ a const, not just an export default — TownDog.TROT reads it, see §36b');
+      ok(/var speed: float = Tuning\.now\(\)\.walk_speed/.test(player) && tune('walk_speed') > 0,
+        'the feet go at the dials\u2019 walk_speed  (his: "can you slow me down 25%?")',
+        'walk_speed ' + tune('walk_speed') + ' \u2014 TownDog.trot() reads it too, see §36b');
 
       /* ══ 14 · THE PARK TABLES ARE A ROOM ══ */
       /* his: "yes do Park Tables and The Depths." */
@@ -1719,7 +1785,7 @@ const server = http.createServer((req, res) => {
         && !/shaft\.energy_cost = 20/.test(town2),
         'the shaft is a ROOM, and the energy moved inside with the cage');
       ok(fs.existsSync(GDF('depths.tscn')), '…and the scene exists');
-      ok(/energy_cost = 20/.test(pit),
+      ok(/energy_cost = Tuning\.now\(\)\.mine_cost/.test(pit),
         '…charged ONCE, by the cage  (⚠ leaving it on the door too would charge you twice)');
       /* ⭐⭐ REAL SHADOWS — the technique this room exists to show. */
       ok(/shadow_enabled = true/.test(pit) && /LightOccluder2D\.new\(\)/.test(pit)
@@ -2654,33 +2720,32 @@ const server = http.createServer((req, res) => {
         '…and the room is PARKED, not deleted — and its own first line says so');
 
       /* ══ 32 · THE RHYTHM ══ */
-      ok(/const ENERGY_CAP := 100/.test(gs) && /const GAME_COST := 10/.test(gs),
-        'the two numbers that decide how long the campaign takes are in one place');
+      ok(tune('energy_cap') > 0 && tune('game_cost') > 0 && /var energy_cap: int = Tuning\.now\(\)\.energy_cap/.test(gs),
+        'the two numbers that decide how long the campaign takes are in one place: the dials',
+        tune('energy_cap') + ' / ' + tune('game_cost'));
       {
         /* ⚠ A NUMBER IN A COMMENT IS NOT A MEASUREMENT. */
-        const rows = [...gs.matchAll(/^#\s+(\d+) \/ (\d+)\s+(\d+)\s/gm)]
+        const rows = [...TUNE_GD.matchAll(/^##\s+(\d+) \/ (\d+)\s+(\d+)\s/gm)]
           .map((m) => [+m[1], +m[2], +m[3]]);
         const wrong = rows.filter((r) => Math.floor(r[0] / r[1]) !== r[2]);
         ok(rows.length === 4 && wrong.length === 0,
           '…and every row of the table beside them divides out',
           wrong.length ? wrong.map((r) => r[0] + '/' + r[1] + '\u2260' + r[2]).join(' ')
                        : rows.length + ' rows, all true');
-        const today = rows[0];
-        ok(today && today[0] === 100 && today[1] === 10,
-          '…and the first row is the one the game is actually set to');
       }
       ok(!/"energy_cap": energy_cap/.test(gs),
         '\u26a0\u26a0 the cap is NOT saved, so lowering it takes effect on the next load',
         'it used to be, which meant his pick would have looked like it did nothing');
       ok(/@export var energy_cost: int = -1/.test(chal)
-        && /return GameState\.GAME_COST if energy_cost < 0 else energy_cost/.test(chal),
+        && /return Tuning\.now\(\)\.game_cost if energy_cost < 0 else energy_cost/.test(chal),
         '\u26a0 every bench seat charges the standard price rather than a literal 10',
         'a price typed on eight seats is a constant that cannot be changed');
       {
-        /* the two that price themselves are TWO GAMES, and say so by arithmetic. */
+        /* the two that price themselves are dials of their own: two games each, today. */
         const dep = fs.readFileSync(GDF('depths.gd'), 'utf8');
-        const both = [/energy_cost = 20/.test(dep), /_ceo\.energy_cost = 20/.test(hall)];
-        ok(both[0] && both[1], '…and the shaft and the far chair are two of them', '20 = 2 \u00d7 10');
+        const both = [/energy_cost = Tuning\.now\(\)\.mine_cost/.test(dep), /_ceo\.energy_cost = Tuning\.now\(\)\.ceo_cost/.test(hall)];
+        ok(both[0] && both[1] && tune('mine_cost') >= 0 && tune('ceo_cost') >= 0,
+          '…and the shaft and the far chair price themselves off dials of their own', tune('mine_cost') + ' and ' + tune('ceo_cost'));
       }
       ok(/func games_left\(\) -> int:/.test(gs) && /games_left\(\)/.test(jrn),
         '\u2b50 and the journal prints how many you have left today',
@@ -3156,12 +3221,12 @@ const server = http.createServer((req, res) => {
           && !/time_text|clock_text/.test(fnGd(zn8, '_paint_hud')),
           '⚠⚠ …under the Journal tab and NOT in the row: on a 390-wide phone the row has no room left (measured 970 and 791 against a tab at 761)');
 
-        ok(/const DRAIN_MINUTES := \d+/.test(gs8) && /_drain\(_poll\.wait_time\)/.test(fnGd(gs8, '_tick')),
+        ok(tune('drain_minutes') > 0 && /_drain\(_poll\.wait_time\)/.test(fnGd(gs8, '_tick')),
           'energy drains with the clock, on the tick that already runs');
         const dr = fnGd(gs8, '_drain');
-        ok(/if energy <= 0:\s*\n\s*return/.test(dr) && /energy -= 1/.test(dr) && /if energy % GAME_COST == 0:\s*\n\s*save_state\(\)/.test(dr),
+        ok(/if energy <= 0:\s*\n\s*return/.test(dr) && /energy -= 1/.test(dr) && /if energy % tune\.game_cost == 0:\s*\n\s*save_state\(\)/.test(dr),
           '⚠ …never below empty, and saved only when a game\'s worth is gone: every save banks a row on the site');
-        ok(/GameState\.DRAIN_MINUTES/.test(jr8) && /TownClock\.sun\(\)/.test(jr8),
+        ok(/Tuning\.now\(\)\.drain_minutes/.test(jr8) && /TownClock\.sun\(\)/.test(jr8),
           '…and the journal says so, along with sunrise and sunset');
       }
 
@@ -3520,10 +3585,10 @@ const server = http.createServer((req, res) => {
         ok(/npc\.razz_line if npc\.animal else/.test(zoneG) && /if TownDog\.is_animal\(who\):/.test(zoneG),
           '…and a dog’s razz goes out without quotes, even from another room');
 
-        const before = /const BEFORE := \{([\s\S]*?)\n\}/.exec(townG);
-        const bKeys = before ? [...before[1].matchAll(/^\s*"([^"]+)":/gm)].map((m) => m[1]) : [];
+        /* the people with a [before] line, by file name (lower case) */
+        const bKeys = LINES_ALL.map((f) => f.replace(/\.txt$/, '')).filter((f) => (words(f).before || []).length > 0);
         ok(/if before_line != "" and SMALL_TALK\.has\(who\):\s*\n\s*rows\.append\(\{ "id": "before", "text": "What was it like before\?" \}\)/.test(npcG)
-          && bKeys.length >= 6 && bKeys.every((k) => !animals.includes(k)),
+          && bKeys.length >= 6 && bKeys.every((k) => !animals.map((a) => a.toLowerCase()).includes(k)),
           '⭐ "What was it like before?" — a row where somebody remembers, and no animal remembers aloud',
           bKeys.join(', '));
         /* ══ TWO ROWS, TWO PEOPLE — 2026-09-24 ══ */
@@ -3540,8 +3605,9 @@ const server = http.createServer((req, res) => {
           '⚠ a menu with one row left is a character with nothing to say');
         /* ⚠⚠ A LIST OF NAMES, NOT A DELETION. Every line he wrote is still in the files; one
            word puts a character back. Deleting them would make this reversal a rewrite. */
-        const stillThere = ['Maxwell', 'Kedar', 'Robert', 'Vince'].filter((n) => bKeys.includes(n));
-        ok(stillThere.length === 4 && /local_line = /.test(townG),
+        const stillThere = ['Maxwell', 'Kedar', 'Robert', 'Vince'].filter((n) => bKeys.includes(n.toLowerCase())
+          && (words(n).local || []).length > 0);
+        ok(stillThere.length === 4,
           '…and nobody\'s words were deleted to do it  [[text-changes-need-approval]]',
           stillThere.join(', ') + ' still have their before-lines on file');
 
@@ -3645,7 +3711,7 @@ const server = http.createServer((req, res) => {
 
         /* #7 — Maxwell greets you off the board, not off the hearts. */
         ok(/_board_line\(\) if not board_lines\.is_empty\(\) else _line_for\(hearts\)/.test(npcG)
-          && /maxwell\.board_lines = \[/.test(townG) && /GameState\.army_count\(\)/.test(fnGd(npcG, '_board_line')),
+          && (words('Maxwell').board || []).length >= 3 && /GameState\.army_count\(\)/.test(fnGd(npcG, '_board_line')),
           '⭐ Maxwell’s greeting reads how far your board has got');
         /* ⚠⚠ THE DOCK IS STILL HERS, IT IS JUST WINDOW-GATED NOW (2026-09-28). She waits at the
            Assembly, which is in the NORTH, and the dock is in the SOUTH — so in that window she
@@ -3707,7 +3773,7 @@ const server = http.createServer((req, res) => {
         const reps = [...block(gsG, 'const REPAIRS := [').matchAll(/\{ "id": "([a-z]+)",\s+"name": "[^"]+",\s+"ore": (\d+),\s+"likes": \[[^\]]*\] \}/g)].map((m) => m[1]);
         const maxw = townG.slice(townG.indexOf('class Maxwell extends TownChallenger:'), townG.indexOf('class Fix extends Node2D:'));
         const placed = (id) => new RegExp('"' + id + '"\\]').test(townG) || new RegExp('fix_id = "' + id + '"').test(townG);
-        const unplaced = reps.filter((id) => !placed(id) || !new RegExp('"' + id + '": "').test(maxw));
+        const unplaced = reps.filter((id) => !placed(id) || !(words('Maxwell')['fix_' + id] || []).length);
         ok(reps.length >= 5 && unplaced.length === 0,
           '⭐ every repair Maxwell offers is drawn in the town and has his line',
           unplaced.length ? 'MISSING: ' + unplaced.join(' ') : reps.join(' '));
@@ -3723,19 +3789,16 @@ const server = http.createServer((req, res) => {
            the exact bug that moved PART_LINES into GameState. */
         const placedIn = townG + acadG + islG;
         const people = new Set([...placedIn.matchAll(/_add_challenger\("([^"]+)"|\.who = "([^"]+)"/g)].map((m) => m[1] || m[2]));
-        const pl = /const PART_LINES := \{([\s\S]*?)\n\}/.exec(gsG);
-        const bad = parts.filter((p) => animals.includes(p.who) || !people.has(p.who)
-          || !pl || !new RegExp('"' + p.who + '": "').test(pl[1]));
+        const bad = parts.filter((p) => animals.includes(p.who) || !people.has(p.who) || !(words(p.who).part || []).length);
         ok(parts.length === 6 && bad.length === 0,
           '⭐ six parts, each from a person standing somewhere you can walk to, each with their words',
           bad.length ? 'BAD: ' + bad.map((p) => p.who).join(' ') : parts.map((p) => p.who + ':' + p.id).join(' '));
         /* ⚠⚠ ONE TABLE, READ BY BOTH ROOMS. town.gd hands these out by walking its OWN
            children; a second copy of Robert's sentence in academy.gd is how the two drift. */
-        ok(!/const PART_LINES := \{/.test(townG) && /GameState\.PART_LINES\[who\]/.test(townG)
-          && /GameState\.PART_LINES\.get\("Robert"/.test(acadG)
-          && !/rob\.part_line = "[A-Z]/.test(acadG),
-          '…and Robert\'s reaches him in the Academy out of the SAME table, not a copy of it',
-          '⚠ town.gd walks its own children — a giver in another scene silently got the fallback');
+        ok(/get: return Lines\.one\(who, "part", _w_part\)/.test(npcG) && !/PART_LINES/.test(townG + acadG + gsG)
+          && !/part_line = /.test(townG + acadG),
+          '…and Robert\'s reaches him in the Academy out of his own file, read by name in any room',
+          '⚠ town.gd once walked its own children, and a giver in another scene silently got the fallback');
         const robert = parts.find((p) => p.who === 'Robert');
         ok(robert && !/plank|wood|timber|nail|tool|hammer|carpent|beam|saw/i.test(robert.id + ' ' + robert.name),
           '⚠⚠ …and Robert’s part is nothing wooden and nothing a carpenter holds',
@@ -3781,7 +3844,8 @@ const server = http.createServer((req, res) => {
         ok(/Pavilion\.SEATS \+ Pavilion\.OFF/.test(uw) && /GameState\.CEO_ELO/.test(uw) && !/2400|1800|1400/.test(uw) && /\/ 400\.0/.test(uw),
           '…every rating he quotes is read off the Pavilion’s own table, through Elo’s 400',
           '⚠ a second copy of the seat ratings is a bookmaker quoting last season’s odds');
-        ok(/if me <= 0:\s*\n\s*return "No history/.test(uw) && /P\.puzzleRating\(\)\.rating/.test(fnGd(gsG, 'site_rating')),
+        ok(/if me <= 0:\s*\n\s*return Lines\.one\("Murphy", "quote_unrated"\)/.test(uw)
+          && /^No history/.test((words('Murphy').quote_unrated || [''])[0]) && /P\.puzzleRating\(\)\.rating/.test(fnGd(gsG, 'site_rating')),
           '…yours is the only number the site keeps, and with none he writes no policy');
 
         /* #8 — the board by the bed. */
@@ -3929,10 +3993,10 @@ const server = http.createServer((req, res) => {
         /* ══ SHE RANGES AHEAD OF HIM NOW ══ */
         /* his: "can you slow me down 25%? And have Princess drift ahead of me and kind of move on her own using a randomizer function." */
         const plyG = rd('player.gd');
-        const SPD = +(/const SPEED := ([\d.]+)/.exec(plyG) || [0, 0])[1];
-        const tf = +(/const TROT := TownPlayer\.SPEED \* ([\d.]+)/.exec(dogG) || [0, 0])[1];
-        ok(SPD > 0 && tf > 0 && tf < 0.9,
-          '⭐ her trot is a FRACTION OF HIS SPEED, read off TownPlayer.SPEED',
+        const SPD = tune('walk_speed');
+        const tf = +(/const TROT_SHARE := ([\d.]+)/.exec(dogG) || [0, 0])[1];
+        ok(SPD > 0 && tf > 0 && tf < 0.9 && /static func trot\(\) -> float: return Tuning\.now\(\)\.walk_speed \* TROT_SHARE/.test(dogG),
+          '⭐ her trot is a FRACTION OF HIS WALK, read off the dials',
           SPD + ' x ' + tf + ' = ' + Math.round(SPD * tf) + ' u/s');
         ok(tf * 1.6 > 1.05,
           '\u2026and her run is faster than he walks, or she can never get in front at all',
@@ -3942,7 +4006,7 @@ const server = http.createServer((req, res) => {
         ok(!!leadM && settle > 0 && +leadM[1] > settle,
           '\u2026and the nearest spot she picks is further ahead than she can ever lag',
           leadM ? 'nearest ' + leadM[1] + ' against a ' + settle + '-unit band' : 'no LEAD');
-        ok(/var pace: float = TROT \* 1\.6 if global_position\.distance_to\(spot\) > SETTLE else TROT/.test(dogG),
+        ok(/var pace: float = trot\(\) \* 1\.6 if global_position\.distance_to\(spot\) > SETTLE else trot\(\)/.test(dogG),
           '\u2026she runs until she REACHES her spot, not until she is near RUN_AT of it',
           'RUN_AT is 260 wide and a trot loses ground every frame inside it');
         ok(/var aim := _cast\.rotated\(head\.angle\(\)\)/.test(dogG)
@@ -3958,7 +4022,7 @@ const server = http.createServer((req, res) => {
         ok(amble > 0 && trot > 0 && amble < trot * 0.3,
           '⭐ she AMBLES indoors \u2014 a fraction of the speed she catches you up at',
           amble + ' u/s against a trot of ' + trot);
-        ok(/var speed: float = pace if pace > 0\.0 else TROT \* \(1\.6 if d > RUN_AT/.test(dogG),
+        ok(/var speed: float = pace if pace > 0\.0 else trot\(\) \* \(1\.6 if d > RUN_AT/.test(dogG),
           '\u2026and an amble never breaks into a run, the way the catch-up gait does');
         const am = fnGd(dogG, '_amble');
         ok(/if not _walk_to\(haunts\[_haunt\], [\d.]+, delta, AMBLE\):\s*\n\s*return false/.test(am)
@@ -5058,7 +5122,7 @@ const server = http.createServer((req, res) => {
             const prac = fnGd(gsE, 'puzzle_practice');
             ok(/open_url\(PUZZLE_URL\)/.test(prac) && !/oars|puz\b|puz\[/.test(prac),
               '   …through the same door, with no run started and none touched');
-            const said = [/"puzzle": "([^"]+)"/.exec(chE), /"id": "puzzle",[^\n]*"text": "([^"]+)"/.exec(gsE), /"puzzle":\s*return "([^"]+)"/.exec(fnGd(gsE, 'favor_line'))].map((m) => (m ? m[1] : ''));
+            const said = [[0, (words('anyone').favor_puzzle || [''])[0]], /"id": "puzzle",[^\n]*"text": "([^"]+)"/.exec(gsE), /"puzzle":\s*return "([^"]+)"/.exec(fnGd(gsE, 'favor_line'))].map((m) => (m ? m[1] : ''));
             ok(said.every((s) => /Puzzle Champ's puzzles/.test(s) && !/site/.test(s)),
               '   and the three lines that send you there name HIM, not "the site"', said.join(' | '));
           }
@@ -5294,15 +5358,15 @@ const server = http.createServer((req, res) => {
 
           /* ── the six other buttons: running, the view — 2026-10-14 ── */
           /* his: "running should cost a little energy.  I like your idea: go for it" */
-          const gsC = code(rd('game_state.gd')), numPl = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(plC) || [])[1];
-          const numGs = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(gsC) || [])[1];
+          const gsC = code(rd('game_state.gd')), numPl = (name) => dial(name, (x) => +(new RegExp('const ' + x + ' := ([\\d.]+)').exec(plC) || [])[1]);
+          const numGs = (name) => dial(name, (x) => +(new RegExp('const ' + x + ' := ([\\d.]+)').exec(gsC) || [])[1]);
           const plIn = fnGd(plC, '_unhandled_input'), plPh = fnGd(plC, '_physics_process'), plView = fnGd(plC, '_pad_view');
-          ok(/if _run_on:\s*if dir\.length_squared\(\) < 0\.001:\s*_run_still \+= _delta\s*if _run_still > RUN_GRACE:\s*_run_on = false\s*else:\s*_run_still = 0\.0\s*if not GameState\.tire\(_delta\):\s*_run_on = false\s*var run := RUN_SPEED if _run_on else 1\.0[\s\S]*?else:\s*_skate_push = false\s*velocity = dir\.normalized\(\) \* speed \* push \* run/.test(plPh)
+          ok(/if _run_on:\s*if dir\.length_squared\(\) < 0\.001:\s*_run_still \+= _delta\s*if _run_still > tune\.run_grace:\s*_run_on = false\s*else:\s*_run_still = 0\.0\s*if not GameState\.tire\(_delta\):\s*_run_on = false\s*var run := tune\.run_share if _run_on else 1\.0[\s\S]*?else:\s*_skate_push = false\s*velocity = dir\.normalized\(\) \* speed \* push \* run/.test(plPh)
              && /if Pad\.hit\(event, JOY_BUTTON_LEFT_STICK\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_run_on = not _run_on and roams_here\(\)/.test(plIn)
              && numPl('RUN_SPEED') >= 1.2 && numPl('RUN_SPEED') <= 2 && numPl('RUN_GRACE') > 0 && numPl('RUN_GRACE') <= 1,
             '⭐ a click of the left stick runs, for as long as you keep moving: stand still and it is over',
             numPl('RUN_SPEED') + '× the walk, over after ' + numPl('RUN_GRACE') + ' s still');
-          ok(/_run_s \+= seconds\s*if _run_s >= RUN_TIRES_SECS:\s*_run_s -= RUN_TIRES_SECS\s*energy = maxi\(0, energy - 1\)\s*energy_changed\.emit\(energy, energy_cap\)\s*if energy % GAME_COST == 0:\s*save_state\(\)\s*return energy > 0/.test(fnGd(gsC, 'tire'))
+          ok(/_run_s \+= seconds\s*if _run_s >= tune\.run_tires_secs:\s*_run_s -= tune\.run_tires_secs\s*energy = maxi\(0, energy - 1\)\s*energy_changed\.emit\(energy, energy_cap\)\s*if energy % tune\.game_cost == 0:\s*save_state\(\)\s*return energy > 0/.test(fnGd(gsC, 'tire'))
              && numGs('RUN_TIRES_SECS') >= 10 && numGs('RUN_TIRES_SECS') <= 120,
             '⭐ running costs a little energy, and an empty bar ends the run', 'a point for every ' + numGs('RUN_TIRES_SECS') + ' s of running');
           ok(/if _in_talk\(\):\s*velocity = Vector2\.ZERO\s*_goal = null\s*_run_on = false/.test(plPh),
@@ -5325,7 +5389,7 @@ const server = http.createServer((req, res) => {
              && numP('ZOOM_OUT') >= 0.5 && numP('ZOOM_OUT') < 1 && numP('ZOOM_IN') > 1 && numP('ZOOM_IN') <= 2,
             '⭐ ZL pulls the view out and ZR brings it in, and the room\'s own fit still wins: out never shows past its edge or its cap',
             'from ' + numP('ZOOM_OUT') + ' to ' + numP('ZOOM_IN') + ' of the room\'s fit');
-          ok(/var lv := Pad\.look\(\)\s*if lv != Vector2\.ZERO:\s*var reach := get_viewport_rect\(\)\.size \* LOOK_REACH \/ _cam\.zoom\.x\s*_look = \(_look \+ lv \* reach \* LOOK_RATE \* delta\)\.clamp\(-reach, reach\)\s*_cam\.position = cam_offset \+ _look/.test(plView)
+          ok(/var lv := Pad\.look\(\)\s*if lv != Vector2\.ZERO:\s*var reach := get_viewport_rect\(\)\.size \* tune\.look_reach \/ _cam\.zoom\.x\s*_look = \(_look \+ lv \* reach \* tune\.look_rate \* delta\)\.clamp\(-reach, reach\)\s*_cam\.position = cam_offset \+ _look/.test(plView)
              && !/_cam\.offset/.test(plC) && numPl('LOOK_REACH') > 0 && numPl('LOOK_REACH') <= 0.5,
             '⛑ the right stick looks ahead by moving the CAMERA, never its offset  (an offset shows what is past the map\'s edge), and only so far',
             numPl('LOOK_REACH') + ' of the screen');
@@ -5336,7 +5400,7 @@ const server = http.createServer((req, res) => {
           /* his: "waving and moving at the same time causes a funny instance of legs not moving and the character
              gliding while moving - can we make it so he can't wave and move at the same time?" */
           const pmC = code(rd('player_model.gd'));
-          ok(/if _model != null and _model\.waving\(\) and roams_here\(\):\s*velocity = velocity\.move_toward\(Vector2\.ZERO, speed \* SKATE_COAST \* _delta\) if skating\(\) else Vector2\.ZERO\s*_run_on = false/.test(plPh)
+          ok(/if _model != null and _model\.waving\(\) and roams_here\(\):\s*velocity = velocity\.move_toward\(Vector2\.ZERO, speed \* tune\.skate_coast \* _delta\) if skating\(\) else Vector2\.ZERO\s*_run_on = false/.test(plPh)
              && /if _model\.celebrate\(\) and roams_here\(\):\s*velocity = Vector2\.ZERO/.test(fnGd(plC, 'celebrate')),
             '⭐ he stops to wave and walks on when it is done, stopped by the press itself  (a fast screen draws a frame before the next physics step)');
           ok(/var walking := moved > 0\.0001\s*if _wave and walking:\s*_emote = 0\.0\s*_wave = false/.test(fnGd(pmC, 'advance'))
@@ -5362,39 +5426,39 @@ const server = http.createServer((req, res) => {
           const lfC = code(rd('lift.gd')), hmC = code(rd('home.gd')), pmC = code(rd('player_model.gd')), plC = code(rd('player.gd'));
           const pdC = code(rd('pad.gd')), dgC = code(rd('dog.gd')), gsC = code(rd('game_state.gd')), twC = code(rd('town.gd'));
           const tpC = code(rd('touch_pad.gd')), znC2 = code(rd('zone.gd'));
-          const numL = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(lfC) || [])[1];
-          const numPl = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(plC) || [])[1];
+          const numL = (name) => dial(name, (x) => +(new RegExp('const ' + x + ' := ([\\d.]+)').exec(lfC) || [])[1]);
+          const numPl = (name) => dial(name, (x) => +(new RegExp('const ' + x + ' := ([\\d.]+)').exec(plC) || [])[1]);
           const lift = fnGd(lfC, '_lift'), press = fnGd(lfC, '_press'), rep = fnGd(lfC, '_rep');
           /* ── the bench ── */
           ok(/class BenchPress extends Interactable:/.test(hmC) && /var bench := BenchPress\.new\(\)\s*bench\.rack = rack\s*bench\.position = RACK_AT/.test(hmC)
              && /var lift := LiftView\.new\(\)[\s\S]{0,200}p\.visible = false\s*lift\.closed\.connect\(func\(_reps: int, failed: bool\) -> void:\s*if is_instance_valid\(p\):\s*p\.visible = true\s*if failed:\s*NateHome\.spilled = true/.test(hmC)
-             && /if GameState\.energy < LiftView\.REP_COST:\s*say\(/.test(hmC),
+             && /if GameState\.energy < Tuning\.now\(\)\.lift_rep_cost:\s*say\(/.test(hmC),
             '⭐ A at the rack in his home lies him down on the bench  (he stands back up when the set is over; an empty bar is too tired to lift)');
-          ok(/var v: float = clampf\(up, -LOWER, 1\.0\) if _push else -LOWER/.test(press)
+          ok(/var v: float = clampf\(up, -tune\.lift_lower, 1\.0\) if _push else -tune\.lift_lower/.test(press)
              && /return Pad\.squeezed\(\) or Input\.is_action_pressed\("ui_up"\) or _mouse or _touches > 0/.test(fnGd(lfC, '_pushing'))
              && /var trig := Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_LEFT\) > 0\.5 and Input\.get_joy_axis\(_device, JOY_AXIS_TRIGGER_RIGHT\) > 0\.5/.test(fnGd(pdC, 'squeezed'))
              && /return trig or held/.test(fnGd(pdC, 'squeezed')),
             '⭐ pressing nothing lowers the bar, and both triggers held press it up  (both shoulders as well: he called them L and R)');
           const fresh = numL('FORCE') * (1 - numL('DIP')), load = numL('LOAD');
-          ok(/_grit \+= MASH/.test(fnGd(lfC, '_mash')) && /_grit \*= exp\(-delta \/ GRIT_LIFE\)/.test(press)
-             && fresh > load && fresh * (1 - 7 * numL('TIRE_REP')) < load,
+          ok(/_grit \+= tune\.lift_mash/.test(fnGd(lfC, '_mash')) && /_grit \*= exp\(-delta \/ GRIT_LIFE\)/.test(press)
+             && fresh > load,
             '⭐ he tires a rep at a time until the triggers alone stall at the sticking point, and A mashed gets the last ones up  (the push from A fades by a share: at a flat rate it ran out between presses)',
             'fresh ' + fresh.toFixed(2) + ' against a load of ' + load + ', ' + (fresh * (1 - 7 * numL('TIRE_REP'))).toFixed(2) + ' seven reps in');
-          ok(/if _h >= 0\.97 and _deep < 0\.97:\s*_rep\(\)/.test(press) && /if depth < COUNTS:/.test(rep)
-             && /var part := 0\.5 \+ 0\.5 \* clampf\(\(depth - COUNTS\) \/ \(FULL - COUNTS\), 0\.0, 1\.0\)/.test(rep)
-             && /_gain \+= REP_GAIN \* part \* _worth/.test(rep) && numL('COUNTS') === 0.75 && numL('FULL') >= 0.9,
+          ok(/if _h >= 0\.97 and _deep < 0\.97:\s*_rep\(\)/.test(press) && /if depth < tune\.lift_counts:/.test(rep)
+             && /var part := 0\.5 \+ 0\.5 \* clampf\(\(depth - tune\.lift_counts\) \/ \(FULL - tune\.lift_counts\), 0\.0, 1\.0\)/.test(rep)
+             && /_gain \+= tune\.lift_rep_gain \* part \* _worth/.test(rep) && numL('FULL') >= 0.9,
             '⭐ a rep counts lowered at least 75% of the way, and gains its whole worth only from his chest  (his)');
-          ok(/GameState\.burn\(REP_COST\)/.test(rep) && /GameState\.burn\(FAIL_COST\)\s*_go\("fall"\)/.test(press)
-             && numL('FAIL_COST') > numL('REP_COST') && /if GameState\.energy <= 0:\s*_s = 0\.0/.test(rep),
+          ok(/GameState\.burn\(tune\.lift_rep_cost\)/.test(rep) && /GameState\.burn\(tune\.lift_fail_cost\)\s*_go\("fall"\)/.test(press)
+             && /if GameState\.energy <= 0:\s*_s = 0\.0/.test(rep),
             '⭐ every rep costs energy and a failed set costs more  (an empty bar has nothing left to press with)', 'a rep ' + numL('REP_COST') + ', a fall ' + numL('FAIL_COST') + ' more');
           ok(/_stuck = _stuck \+ delta if _push and up <= 0\.0 and _h < 0\.96 else 0\.0/.test(press)
-             && /if _stuck >= PINNED or _rest >= RESTING:/.test(press) && /if _lifted:\s*GameState\.set_done\(_gain\)/.test(fnGd(lfC, '_end')),
+             && /if _stuck >= tune\.lift_pinned or _rest >= tune\.lift_resting:/.test(press) && /if _lifted:\s*GameState\.set_done\(_gain\)/.test(fnGd(lfC, '_end')),
             '   …a bar that will not move any more, wherever it stalled, is a failed set; any set off the rack is counted');
-          ok(/return pow\(0\.5, float\(maxi\(0, sets_today\(\) - FULL_SETS \+ 1\)\)\)/.test(fnGd(gsC, 'set_worth')) && /const FULL_SETS := 3/.test(gsC)
+          ok(/return pow\(0\.5, float\(maxi\(0, sets_today\(\) - tune\.lift_full_sets \+ 1\)\)\)/.test(fnGd(gsC, 'set_worth')) && tune('lift_full_sets') >= 1
              && /var health := HEALTH_CAP \* 0\.5/.test(gsC) && /health = clampf\(health \+ gain, 0\.0, HEALTH_CAP\)/.test(fnGd(gsC, 'set_done'))
              && /"health": health, "lift_day": lift_day, "lift_sets": lift_sets/.test(fnGd(gsC, 'save_state'))
              && !/"health"/.test(fnGd(gsC, 'push_to_site'))
-             && /_s = maxf\(0\.4, 1\.0 - LATE \* float\(late\)\)/.test(fnGd(lfC, '_ready')),
+             && /_s = maxf\(0\.4, 1\.0 - tune\.lift_late \* float\(late\)\)/.test(fnGd(lfC, '_ready')),
             '⭐ a set adds to his health, a meter that starts in the middle; after three a day each is worth half the last, and he fails sooner  (kept here, not on his account)');
           ok(/"Energy %d\/%d" \+ sep \+ "Health %d\/%d"/.test(fnGd(znC2, '_paint_hud')) && /GameState\.health_changed\.connect/.test(znC2),
             '   …and the health is on the top row beside the energy');
@@ -5424,14 +5488,14 @@ const server = http.createServer((req, res) => {
              && /if GameState\.gear == "skates":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw'))
              && /if GameState\.gear == "runners":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Shoes')), '_draw')),
             '⭐ A at the rollerblades or the running shoes by his door puts that pair on, the other off  (a pair is gone from the floor while he wears it)');
-          ok(/head = head\.rotated\(clampf\(head\.angle_to\(aim\), -SKATE_TURN \* _delta, SKATE_TURN \* _delta\)\)/.test(plC)
-             && /velocity = head \* move_toward\(spd, speed \* top \* push, speed \* SKATE_PUSH \* _delta\)/.test(plC)
-             && /var top := SKATE_TOP if GameState\.tire\(_delta\) else 1\.0/.test(plC)
+          ok(/head = head\.rotated\(clampf\(head\.angle_to\(aim\), -tune\.skate_turn \* _delta, tune\.skate_turn \* _delta\)\)/.test(plC)
+             && /velocity = head \* move_toward\(spd, speed \* top \* push, speed \* tune\.skate_push \* _delta\)/.test(plC)
+             && /var top := tune\.skate_top if GameState\.tire\(_delta\) else 1\.0/.test(plC)
              && /return GameState\.gear == "skates" and roams_here\(\)/.test(fnGd(plC, 'skating'))
-             && numPl('SKATE_TOP') > 1.0 && numPl('SKATE_TOP') <= 1.5 && numPl('SKATE_TURN') >= 6 && numPl('SKATE_COAST') < numPl('SKATE_PUSH'),
+             && numPl('SKATE_TOP') > 1.0 && numPl('SKATE_TOP') <= 1.5 && numPl('SKATE_TURN') >= 6,
             '⭐ on rollerblades he glides and turns tight, no faster than he ought, and a push costs what running does  (his: "the turns are too rounded and the top speed is significantly too high")',
             numPl('SKATE_TOP') + '× the walk, turning ' + numPl('SKATE_TURN') + ' radians a second');
-          ok(/if runners and dir\.length_squared\(\) > 0\.001:\s*run = RUN_SPEED if GameState\.tire\(_delta\) else 1\.0/.test(plC)
+          ok(/if runners and dir\.length_squared\(\) > 0\.001:\s*run = tune\.run_share if GameState\.tire\(_delta\) else 1\.0/.test(plC)
              && /return GameState\.gear == "runners" and roams_here\(\)/.test(fnGd(plC, 'in_runners')),
             '⭐ in his running shoes every step is a run, at a run\'s cost  (his pick)');
           ok(/var att := BoneAttachment3D\.new\(\)\s*att\.bone_name = "Foot\." \+ side/.test(fnGd(pmC, '_build_gear'))
@@ -5440,7 +5504,7 @@ const server = http.createServer((req, res) => {
             '   …the pair is on his feet, and a new day wakes him in his own shoes');
           /* ── a jump ── */
           ok(/if \(\(jb != null and jb\.pressed and event\.is_action_pressed\("ui_cancel"\)\) or \(k != null and k\.pressed and not k\.echo and k\.keycode == KEY_SHIFT\)\) and can_jump\(\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*jump\(\)/.test(fnGd(plC, '_unhandled_input'))
-             && /if can_jump\(\):\s*_jump = 0\.0/.test(fnGd(plC, 'jump')) && /return 4\.0 \* JUMP_HIGH \* u \* \(1\.0 - u\)/.test(fnGd(plC, 'hop'))
+             && /if can_jump\(\):\s*_jump = 0\.0/.test(fnGd(plC, 'jump')) && /return 4\.0 \* tune\.jump_high \* u \* \(1\.0 - u\)/.test(fnGd(plC, 'hop'))
              && /_model\.draw_on\(self, Vector2\(0\.0, FEET\), 0\.0 if floating else radius \* 1\.25, _shrink, hop\(\) \+ air\)/.test(plC)
              && /if pad != null and pad\.take_jump\(\):\s*jump\(\)/.test(plC) && /var jt := "JUMP"/.test(tpC),
             '⭐ B jumps, in any shoes or none  (Shift on keys, JUMP on the glass; his: "We\'ll be able to jump using skates, shoes, or default as well")');
@@ -5544,7 +5608,7 @@ const server = http.createServer((req, res) => {
              && /func talking_with\(\) -> Node2D:\s*return _from if _mode == TALK else null/.test(uiC),
             '⭐ the White Knight  (his): a conversation with somebody ends, or a game comes back, and he gallops up to rescue you from it');
           ok(!/StaticBody2D|_solid\(/.test(knC) && /if _pending != "" and _quiet\(\):/.test(knC) && /func quiet\(\) -> bool:\s*return _mode == IDLE/.test(uiC)
-             && /static var _last_us/.test(knC) && +(/const AGAIN_SECS := ([\d.]+)/.exec(knC) || [])[1] >= 60
+             && /static var _last_us/.test(knC) && tune('knight_again_secs') >= 60
              && /if slot == -4 or who == "":\s*return/.test(fnGd(knC, '_on_result')) && /return p\.clamp\(b\.position, b\.end\)/.test(fnGd(knC, '_inside')),
             '⛑ …and never in the way: not solid, says his piece only when the box is quiet, rare, never over a study, and inside the window\'s walls');
           ok(/var side := -signf\(near\.x - you\.global_position\.x\)[\s\S]*?_to = _inside\(you\.global_position \+ Vector2\(side \* 105\.0, 24\.0\)\)/.test(fnGd(knC, '_come'))
