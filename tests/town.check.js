@@ -1819,9 +1819,11 @@ const server = http.createServer((req, res) => {
       {
         const rigs = GD_LIST.filter((f) => f.endsWith('.gd'))
           .filter((f) => /TownPlayerModel\.make\(/.test(fs.readFileSync(GDF(f), 'utf8')));
-        /* \u26a0 lift.gd IS THE THIRD (2026-10-15): it is HIM, up close on the bench, and goes when the lift does. */
-        ok(rigs.length === 3 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd') && rigs.includes('lift.gd'),
-          '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture  (and the bench press is him)',
+        /* \u26a0 lift.gd IS THE THIRD (2026-10-15): it is HIM, up close on the bench, and goes when the lift does.
+           \u26a0 character_select.gd IS THE FOURTH (2026-10-23): a portrait of each person you can play, while the cards are up. */
+        ok(rigs.length === 4 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd') && rigs.includes('lift.gd')
+           && rigs.includes('character_select.gd'),
+          '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture  (and the bench press is him, the cards who you can play)',
           rigs.length ? 'builds one: ' + rigs.join(', ') : 'nobody builds one at all');
       }
 
@@ -4756,8 +4758,9 @@ const server = http.createServer((req, res) => {
           const covers = miloAt && argusBoardAt && lowS
             ? boxes.concat([pic(miloAt), pic(argusBoardAt)], cush.map(([, c]) => ({ x: c.x - 40, y: c.y - 20, w: 80, h: 40 }))) : [];
           const hidden = scat.filter((p) => ell(p.x, p.y) > 0.92 || covers.some((bx) => inBox(p, bx)));
-          const clumped = scat.filter((p, i) => scat.some((q, j) => j < i && Math.hypot(p.x - q.x, p.y - q.y) < 30));
-          ok(boxes.length >= 4 && covers.length === boxes.length + 5 && scat.length >= 10 && hidden.length === 0 && clumped.length === 0,
+          const piece = num(hm, 'FLOOR_PIECE');
+          const clumped = scat.filter((p, i) => scat.some((q, j) => j < i && Math.hypot(p.x - q.x, p.y - q.y) < piece));
+          ok(boxes.length >= 4 && covers.length === boxes.length + 5 && scat.length >= 10 && piece > 0 && hidden.length === 0 && clumped.length === 0,
             '…Milo\'s scatter lies on open floor: inside the disc, under no furniture, on no cushion and off both boards',
             hidden.length || clumped.length ? hidden.concat(clumped).map((p) => p.x + ',' + p.y).join(' ')
               : scat.length + ' spots against ' + covers.length + ' things, none within a piece of another');
@@ -4945,9 +4948,9 @@ const server = http.createServer((req, res) => {
               '⛑ …and every file that makes a button asks it  (the Journal\'s nine, the corner tab, the paper, the telescope, the camera, the board)',
               makers.length + ' files make buttons; still 44 * k: ' + (flat.join(' ') || 'none') + '; never ask: ' + (off.join(' ') || 'none'));
           }
-          ok(/_btns\[i\]\.size = Vector2\(bw, bh\)/.test(jrS) && /_sound\.size = Vector2\(w2, bh\)/.test(jrS)
+          ok(/_btns\[i\]\.size = Vector2\(bw, bh\)/.test(jrS) && /_sound\.size = Vector2\(w2, bh\)/.test(jrS) && /_who\.size = Vector2\(w2, bh\)/.test(jrS)
              && /_btns\[TABS\.size\(\)\]\.size = Vector2\(w2, bh\)/.test(jrS) && /zb\.size = Vector2\(zw, bh\)/.test(jrS),
-            '   the Journal: its four tabs, Sound, Close and the three time-zone buttons');
+            '   the Journal: its four tabs, Character, Sound, Close and the three time-zone buttons');
           {
             /* ⚠ ON A DESKTOP NOTHING MOVES: a thumb there is 44, and each new sum is the old number. */
             const row = n1(/var row2: float = 50\.0 \* k \+ \(\(bh \+ ([\d.]+) \* k\) if narrow else 0\.0\)/, jrS);
@@ -5576,9 +5579,9 @@ const server = http.createServer((req, res) => {
             '⛑ the lift owns every button and key while it is up  (the Journal opens on the top button whatever covers the room)');
           ok(/mb\.button_index == MOUSE_BUTTON_LEFT and mb\.device != InputEvent\.DEVICE_ID_EMULATION/.test(fnGd(lfC, '_input')),
             '⛑ …and a finger counts once  (Godot copies every touch into a click, and the copy was a second mash per tap)');
-          ok(/_body = TownPlayerModel\.make\(PX, 0\.0\)/.test(lfC) && /var ik := TwoBoneIK3D\.new\(\)/.test(fnGd(pmC, 'lie_back'))
+          ok(/_body = TownPlayerModel\.make\(PX, 0\.0, GameState\.character\)/.test(lfC) && /var ik := TwoBoneIK3D\.new\(\)/.test(fnGd(pmC, 'lie_back'))
              && /\["Upper_Arm\.L", "Lower_Arm\.L", "Hand\.L"\]/.test(pmC) && /\["UpperLeg\.R", "LowerLeg\.R", "Foot\.R"\]/.test(pmC),
-            '⭐ it is HIM on the bench, side on, his hands on the bar and his feet on the floor by IK  (a level camera, so the bar\'s two plates are one)');
+            '⭐ it is HIM on the bench (or her: whoever you play), side on, hands on the bar and feet on the floor by IK  (a level camera, so the bar\'s two plates are one)');
           /* ── what is on his feet ── */
           ok(/class GearSpot extends Interactable:/.test(hmC) && /GameState\.body\.gear = "" if GameState\.body\.gear == kind else kind/.test(hmC)
              && /for n in get_tree\(\)\.get_nodes_in_group\("town_gear"\):/.test(hmC)
@@ -5712,6 +5715,92 @@ const server = http.createServer((req, res) => {
           ok(/var side := -signf\(near\.x - you\.global_position\.x\)[\s\S]*?_to = _inside\(you\.global_position \+ Vector2\(side \* 105\.0, 24\.0\)\)/.test(fnGd(knC, '_come'))
              && /TownPeople\.dress\(self, WhiteKnight\.WHO, ""\)/.test(cls(knC, 'Rider')) && /"White Knight": "eef0f4"/.test(ppC),
             '⭐ …he stops right beside you on your other side from them, a white rider on a white horse  (halfway between you he stood on you both)');
+        }
+
+        /* ══ who you play, the dogs' boards, space thinned out and jellyfish — 2026-10-23 ══ */
+        /* his: "the dog boards cover too much area in the checker house - let's make that smaller so it's less in-your-face.
+           The meditation is cool but let's cut the amount of pieces in half.  Too many floating things.  But then let's add
+           some jellyfish.  Let's make a select a character mode that occurs at the beginning of the game but is also an
+           option mid-game to switch between characters.  Make a new character named Natalie.  When you play as Natalie, the
+           white knight acts as he does now.  When you play as Nate, he does his thing a tiny bit but mostly just comes around
+           to bro down.  Keep it extremely subtle but still noticeable" */
+        {
+          const pmW = code(rd('player_model.gd')), plW = code(rd('player.gd')), csW = code(rd('character_select.gd'));
+          const gsW = code(rd('game_state.gd')), znW = code(rd('zone.gd')), jrW = code(rd('journal.gd'));
+          const knW = code(rd('knight.gd')), spW = code(rd('space.gd')), ppW = code(rd('people_sheet.gd'));
+          /* ── two people to play ── */
+          const playable = [...((/const PLAYABLE := \{([^}]*)\}/.exec(pmW) || [0, ''])[1]).matchAll(/"(\w+)": "([^"]+)"/g)].map((m) => m[1]);
+          const makeF = fnGd(pmW, 'make');
+          ok(playable.includes('nate') && playable.includes('natalie')
+             && /static func make\(px: int = 0, tilt: float = TILT, who: String = "nate"\) -> TownPlayerModel:/.test(pmW)
+             && /var own := "res:\/\/art\/%s\.glb" % who\s*\n\s*var path := own if ResourceLoader\.exists\(own\) else MODEL_PATH/.test(makeF)
+             && /if path == MODEL_PATH and LOOKS\.has\(who\):\s*\n\s*vp\._dress\(LOOKS\[who\]\)/.test(makeF)
+             && /"natalie": \{/.test((/const LOOKS := \{([\s\S]*?)\n\}/.exec(pmW) || [0, ''])[1]),
+            '⭐ two people to play, Nate and Natalie  (his): art/<who>.glb is that person once it exists, until then nate.glb repainted',
+            playable.join(' · ') || 'none');
+          ok(/TownPlayerModel\.make\(CELL\)/.test(ppW) && !/GameState\.character/.test(ppW),
+            '⚠ …and the townsfolk are never her: their one rig is baked off nate.glb as it ships',
+            'make() builds "nate" unless it is told otherwise, and people_sheet.gd never tells it');
+          const dressF = fnGd(pmW, '_dress'), hairF = fnGd(pmW, '_build_hair');
+          ok(/mi\.mesh = _without_cap\(mi\.mesh\)/.test(dressF) && /src\.duplicate\(\) as StandardMaterial3D/.test(dressF)
+             && /mi\.set_surface_override_material\(i, m\)/.test(dressF)
+             && /if mat != null and mat\.resource_name == "eye":/.test(fnGd(pmW, '_without_cap'))
+             && /if _top\(up, t\) != big:/.test(fnGd(pmW, '_drop_biggest'))
+             && /att\.bone_name = "Head"/.test(hairF) && !/global_transform/.test(hairF + fnGd(pmW, '_in_pivot')),
+            '⭐ …Natalie is his rig with the cap off and long hair held to the head bone, her paint on a copy  (the GLB\'s mesh and paint are everybody\'s)',
+            '⚠ the cap and the eyes are one paint: the cap is its biggest piece, the eyes the two little ones');
+          /* ── the body on screen ── */
+          ok(/_model = _make_model\(\)/.test(fnGd(plW, '_ready')) && /GameState\.character_changed\.connect\(_swap_model\.unbind\(1\)\)/.test(fnGd(plW, '_ready'))
+             && /var m := TownPlayerModel\.make\(0, TownPlayerModel\.TILT, GameState\.character\)/.test(fnGd(plW, '_make_model'))
+             && /if _model == null:\s*\n\s*return/.test(fnGd(plW, '_swap_model')),
+            '⭐ the player wears whoever you play, and a change swaps the body where you stand  (not in the boat, which put its body away)');
+          /* ── this device's ── */
+          const pushW = gsW.slice(gsW.indexOf('func push_to_site'), gsW.indexOf('func pull_from_site'));
+          ok(/"character": character/.test(fnGd(gsW, 'save_state'))
+             && /character = str\(d\.get\("character", "nate"\)\)\s*\n\s*if not TownPlayerModel\.PLAYABLE\.has\(character\):\s*\n\s*character = "nate"/.test(fnGd(gsW, 'load_state'))
+             && pushW.length > 0 && !/character/.test(pushW + fnGd(gsW, 'merge_in'))
+             && /if who == character or not TownPlayerModel\.PLAYABLE\.has\(who\):\s*\n\s*return/.test(fnGd(gsW, 'set_character')),
+            '⚠ who you play is this device\'s, like the mute: saved, checked on the way in, never pushed or merged');
+          /* ── the cards ── */
+          ok(/if not CharacterSelect\.asked and not is_fight\(\):\s*\n\s*CharacterSelect\.open\(self\)\.closed\.connect\(_story\)\s*\n\s*_story\(\)/.test(fnGd(znW, '_ready'))
+             && /static var asked := false/.test(csW) && /asked = true/.test(fnGd(csW, '_ready')) && /add_to_group\("town_cover"\)/.test(fnGd(csW, '_ready')),
+            '⭐ the cards come up at the start of the game  (his): once a session, at the first room that is not a fight, a cover the story waits under');
+          const closeC = fnGd(csW, '_close');
+          ok(closeC.indexOf('remove_from_group("town_cover")') >= 0 && closeC.indexOf('remove_from_group("town_cover")') < closeC.indexOf('closed.emit()')
+             && /TownZone\.uncovered\(\)/.test(closeC),
+            '⚠⚠ …out of the cover BEFORE they say they are shut: the story asks for a cover, and the cards are not freed yet',
+            'otherwise the beat due as the cards close never plays');
+          ok(/_who = _button\("Character", func\(\) -> void: _pick_character\(\)\)/.test(jrW)
+             && /close\(\)\s*\n\s*CharacterSelect\.open\(get_tree\(\)\.current_scene\)/.test(fnGd(jrW, '_pick_character'))
+             && /elif _open and Pad\.hit\(event, Pad\.LEFT\):\s*\n\s*_pick_character\(\)/.test(fnGd(jrW, '_unhandled_input')),
+            '⭐ …and again mid-game  (his): the Journal\'s Character button, or a pad\'s left button while it is open');
+          const inC = fnGd(csW, '_take');
+          ok(/get_viewport\(\)\.set_input_as_handled\(\)/.test(inC) && /_light\(_at - 1\)/.test(inC) && /_light\(_at \+ 1\)/.test(inC)
+             && /_take\(event\)/.test(fnGd(csW, '_unhandled_key_input')) && /_take\(event\)/.test(fnGd(csW, '_unhandled_input')) && !/func _input\(/.test(csW)
+             && /_at = clampi\(i, 0, _ids\.size\(\) - 1\)/.test(fnGd(csW, '_light')) && /b\.pressed\.connect\(_choose\.bind\(i\)\)/.test(csW),
+            '⚠ …every key and pad press stops at the cards (unhandled, so Pad still hears a pad picked up), a stick held over cannot wrap, a tap on a card plays it');
+          /* ── the White Knight's two moods ── */
+          const comeK = fnGd(knW, '_come'), kw = words('White Knight'), nr = tuneRange('knight_nate_every');
+          ok(/_bro = GameState\.character == "nate" and _visits % tune\.knight_nate_every != tune\.knight_nate_every - 1/.test(comeK)
+             && /var pick := Lines\.list\(WHO, "bro" if _bro else kind\)/.test(comeK)
+             && /Lines\.list\(WHO, "bro_thanks" if _bro else "thanks"\)/.test(fnGd(knW, 'interact'))
+             && (kw.bro || []).length >= 1 && (kw.bro_thanks || []).length >= 1 && (kw.talk || []).length >= 1,
+            '⭐ the White Knight rescues Natalie every time, and mostly just comes over to bro down with Nate  (his)',
+            (kw.bro || []).length + ' [bro] lines, ' + (kw.bro_thanks || []).length + ' [bro_thanks]');
+          ok(nr && nr[0] >= 3 && tune('knight_nate_every') >= nr[0],
+            '⛑ …and "mostly" is the slider\'s own low end: his rescue is one visit in ' + (nr ? nr[0] : '?') + ' at the most, never half of them',
+            'knight_nate_every ' + (nr ? nr.join('..') : 'missing'));
+          ok(/var tip := _m\([^)]*\) if _bro else _m\([^)]*\)/.test(fnGd(knW, '_draw')),
+            '⭐ …subtle and still noticeable: come to say hi, his lance rests back on his shoulder');
+          /* ── space: half as many things, and jellyfish ── */
+          const thingsW = fnGd(spW, 'things'), loopAt = thingsW.indexOf('for i in rng.randi_range(0, per):');
+          ok(loopAt >= 0 && thingsW.indexOf('if rng.randf() < JELLY:') > loopAt && /"kind": "j"/.test(thingsW)
+             && num(spW, 'JELLY') > 0 && num(spW, 'JELLY') < 1 && /if kind == "j":\s*\n\s*_jelly\(/.test(fnGd(spW, 'draw_thing')),
+            '⭐ space has jellyfish  (his), some cells and not all, rolled after the things in their cell so a jellyfish never moves a piece');
+          const jellyW = fnGd(spW, '_jelly'), turns = [...jellyW.matchAll(/draw_set_transform\(([^\n]*)\)/g)].map((m) => m[1].trim());
+          ok(turns.length >= 2 && turns.every((t) => /Vector2\.ONE$/.test(t)) && /TownZone\.glow\(\)/.test(jellyW) && !/\bTime\.|rand/.test(jellyW),
+            '⚠ …each one turned, never scaled (a scale thickens its tentacles), glowing, and moved only by the clock it is handed',
+            turns.length + ' transforms');
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
@@ -6444,7 +6533,7 @@ const server = http.createServer((req, res) => {
             '⚠⚠ …and HIS look dials are untouched — MSAA off and supersample 2.0 both measured at NO change',
             'making each viewport cheaper does nothing; rendering fewer of them is the whole fix');
           /* ⭐ THE PLAYER KEEPS HIS OWN LIVE RIG. He is tinted and he is the one you look at. */
-          ok(/UPDATE_ALWAYS/.test(plr) && /TownPlayerModel\.make\(\)/.test(plr),
+          ok(/UPDATE_ALWAYS/.test(plr) && /TownPlayerModel\.make\(0, TownPlayerModel\.TILT, GameState\.character\)/.test(plr),
             '⭐ …and YOUR own model is still live at 60  (his checker runs one and measured clean)');
         }
 
