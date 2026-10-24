@@ -2010,7 +2010,8 @@ const server = http.createServer((req, res) => {
       const fenced = [...(/const FENCED := \[([\s\S]*?)\n\]/.exec(town2) || [0, ''])[1]
         .matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)]
         .map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
-      ok(fenced.length === 3, 'three corners are fenced off', fenced.length + ' rects');
+      /* the north-west corner is the woods since 2026-10-23, a window of its own */
+      ok(fenced.length === 2, 'two corners are fenced off', fenced.length + ' rects');
       const named = {};
       for (const m of town2.matchAll(/const ([A-Z_]+_AT) := Vector2\((-?[\d.]+), (-?[\d.]+)\)/g))
         named[m[1]] = [+m[2], +m[3]];
@@ -5141,7 +5142,7 @@ const server = http.createServer((req, res) => {
               own = Math.max(own, Math.min(...d));
               across = Math.min(across, Math.max(...d));
             }
-            ok(seams >= 8 && Object.keys(rects).length === 5 && own < near && near < across,
+            ok(seams >= 10 && Object.keys(rects).length === 6 && own < near && near < across,
               '⚠ …and that distance sits between every seam\'s own fence and the one opposite it',
               seams + ' seams: furthest from its own edge ' + own + ', nearest opposite edge ' + across + ', SEAM_NEAR ' + near);
           }
@@ -5589,13 +5590,17 @@ const server = http.createServer((req, res) => {
              && /if GameState\.body\.gear == "skates":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw'))
              && /if GameState\.body\.gear == "runners":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Shoes')), '_draw')),
             '⭐ A at the rollerblades or the running shoes by his door puts that pair on, the other off  (a pair is gone from the floor while he wears it)');
+          /* ⚠ TIRED IS A SHARE OF HIS TOP SPEED (2026-10-23, his: "the rollerblading should be a lot slower"): as a flat
+             1.0 the slider had to start above the walk, or tired skating outran fresh. */
+          const tiredShare = numPl('SKATE_TIRED');
           ok(/head = head\.rotated\(clampf\(head\.angle_to\(aim\), -tune\.skate_turn \* _delta, tune\.skate_turn \* _delta\)\)/.test(plC)
-             && /velocity = head \* move_toward\(spd, speed \* top \* push, speed \* tune\.skate_push \* _delta\)/.test(plC)
-             && /var top := tune\.skate_top if GameState\.body\.tire\(_delta\) else 1\.0/.test(plC)
+             && /var want := speed \* top \* push/.test(plC) && /velocity = head \* move_toward\(spd, want, rate\)/.test(plC)
+             && /var top := \(tune\.skate_top if GameState\.body\.tire\(_delta\) else tune\.skate_top \* SKATE_TIRED\) \* drag/.test(plC)
+             && tiredShare > 0 && tiredShare < 1
              && /return GameState\.body\.gear == "skates" and roams_here\(\)/.test(fnGd(plC, 'skating'))
-             && !!tuneRange('skate_top') && tuneRange('skate_top')[0] > 1.0 && tuneRange('skate_top')[1] <= 1.5 && !!tuneRange('skate_turn') && tuneRange('skate_turn')[0] >= 6,
-            '⭐ on rollerblades he glides and turns tight, no faster than he ought, and a push costs what running does  (his: "the turns are too rounded and the top speed is significantly too high")',
-            'its sliders: ' + (tuneRange('skate_top') || []).join(' to ') + '× the walk (tired, 1.0), turning ' + (tuneRange('skate_turn') || []).join(' to ') + ' radians a second  (his: ' + numPl('SKATE_TOP') + ', ' + numPl('SKATE_TURN') + ')');
+             && !!tuneRange('skate_top') && tuneRange('skate_top')[0] > 0 && tuneRange('skate_top')[1] <= 1.5 && !!tuneRange('skate_turn') && tuneRange('skate_turn')[0] >= 6,
+            '⭐ on rollerblades he glides and turns tight, no faster than he ought, tired slower than fresh at any slider, and a push costs what running does  (his: "the turns are too rounded and the top speed is significantly too high")',
+            'its sliders: ' + (tuneRange('skate_top') || []).join(' to ') + '× the walk (tired, ' + tiredShare + ' of it), turning ' + (tuneRange('skate_turn') || []).join(' to ') + ' radians a second  (his: ' + numPl('SKATE_TOP') + ', ' + numPl('SKATE_TURN') + ')');
           ok(/if runners and dir\.length_squared\(\) > 0\.001:\s*run = tune\.run_share if GameState\.body\.tire\(_delta\) else 1\.0/.test(plC)
              && /return GameState\.body\.gear == "runners" and roams_here\(\)/.test(fnGd(plC, 'in_runners')),
             '⭐ in his running shoes every step is a run, at a run\'s cost  (his pick)');
@@ -5621,7 +5626,7 @@ const server = http.createServer((req, res) => {
           /* ── the loop ── */
           const loopR = /const LOOP := Rect2\(([-\d.]+), ([-\d.]+), ([\d.]+), ([\d.]+)\)/.exec(twC) || [], lw = +(/const LOOP_W := ([\d.]+)/.exec(twC) || [])[1];
           const lx = +loopR[1], ly = +loopR[2], lend = lx + +loopR[3], lbot = ly + +loopR[4];
-          ok(/if pr\.intersects\(LOOP\.grow\(LOOP_W\)\):\s*_draw_loop\(\)/.test(fnGd(twC, '_draw'))
+          ok(/if pr\.intersects\(LOOP\.grow\(LOOP_W\)\) or pr\.intersects\(FOREST\):\s*_draw_loop\(pr\)/.test(fnGd(twC, '_draw'))
              && lx + lw / 2 < -260 && ly + lw / 2 < -430 && lend - lw / 2 > 260 && lbot - lw / 2 > -80
              && ly - lw / 2 > -500 && lend + lw / 2 < 334 && lbot + lw / 2 < -20,
             '⭐ a loop of clay runs round the park lawn  (his pick): outside its trees, inside the fence, clear of the road north and above the main road',
@@ -5801,6 +5806,91 @@ const server = http.createServer((req, res) => {
           ok(turns.length >= 2 && turns.every((t) => /Vector2\.ONE$/.test(t)) && /TownZone\.glow\(\)/.test(jellyW) && !/\bTime\.|rand/.test(jellyW),
             '⚠ …each one turned, never scaled (a scale thickens its tentacles), glowing, and moved only by the clock it is handed',
             turns.length + ' transforms');
+        }
+
+        /* ══ the woods: a full trail off the loop, and what is under his wheels there — 2026-10-23 ══ */
+        /* his: "the park trail just goes around the park tables - it's way too small - can you make a full trail that cuts
+           to a new screen?  There are trees and sticks in the way and some gravel in spots, and in general the
+           rollerblading should be a lot slower than it is now" */
+        {
+          const twW = code(rd('town.gd')), plW = code(rd('player.gd')), tbW = code(rd('trail_bit.gd'));
+          const jrW = code(rd('journal.gd'));
+          const V = (s) => [...s.matchAll(/Vector2\((-?[\d.]+), (-?[\d.]+)\)/g)].map((m) => [+m[1], +m[2]]);
+          const block = (name) => (new RegExp('const ' + name + ' := \\[([\\s\\S]*?)\\n\\]').exec(twW) || [0, ''])[1];
+          const T = V(block('TRAIL')), stem = V((/const TRAIL_STEM := \[([^\]]*)\]/.exec(twW) || [0, ''])[1]);
+          const sticks = [...block('STICKS').matchAll(/\[Vector2\((-?[\d.]+), (-?[\d.]+)\), (-?[\d.]+), ([\d.]+)\]/g)].map((m) => ({ at: [+m[1], +m[2]], a: +m[3], len: +m[4] }));
+          const gravel = [...block('GRAVEL').matchAll(/\[Vector2\((-?[\d.]+), (-?[\d.]+)\), (-?[\d.]+)\]/g)].map((m) => ({ at: [+m[1], +m[2]], a: +m[3] }));
+          const trailW = +(/const TRAIL_W := ([\d.]+)/.exec(twW) || [])[1];
+          /* trail_points(), redone: a closed Catmull-Rom curve through TRAIL, eight steps a span */
+          const pts = [];
+          for (let i = 0; i < T.length; i++) {
+            const p0 = T[(i - 1 + T.length) % T.length], p1 = T[i], p2 = T[(i + 1) % T.length], p3 = T[(i + 2) % T.length];
+            for (let s = 0; s < 8; s++) {
+              const t = s / 8;
+              pts.push([0, 1].map((k) => 0.5 * (2 * p1[k] + (p2[k] - p0[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t * t
+                + (3 * p1[k] - p0[k] - 3 * p2[k] + p3[k]) * t * t * t)));
+            }
+          }
+          if (pts.length) pts.push(pts[0]);
+          const seg = (p, a, b) => { const ax = b[0] - a[0], ay = b[1] - a[1], L2 = ax * ax + ay * ay;
+            const t = L2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * ax + (p[1] - a[1]) * ay) / L2)) : 0;
+            return { d: Math.hypot(p[0] - a[0] - ax * t, p[1] - a[1] - ay * t), ang: Math.atan2(ay, ax) }; };
+          const near = (p, line) => { let best = { d: Infinity, ang: 0 };
+            for (let i = 0; i + 1 < line.length; i++) { const r = seg(p, line[i], line[i + 1]); if (r.d < best.d) best = r; } return best; };
+          const turn = (a, b) => { const d = Math.abs(((a - b) % Math.PI + Math.PI) % Math.PI); return Math.min(d, Math.PI - d); };
+          /* ── a window of its own, off the loop ── */
+          const wr = (/"woods":\s*\n\s*return Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(fnGd(twW, 'region_rect')) || []).slice(1).map(Number);
+          const loopY = +(/const LOOP := Rect2\((-?[\d.]+), (-?[\d.]+),/.exec(twW) || [])[2];
+          const sqSeam = /\{ "to": "woods", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(twW);
+          const back = /"woods": \[\s*\n\s*\{ "to": "square", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(twW);
+          ok(wr.length === 4 && /for r in \[[^\]]*"woods"[^\]]*\]:/.test(fnGd(twW, 'region_of')) && sqSeam && back && +sqSeam[1] === +back[1]
+             && stem.length >= 2 && stem[0][1] === loopY && +stem[0][0] === +sqSeam[1] && stem[stem.length - 1][1] < wr[1] + wr[3] - trailW
+             && T.length >= 8 && T[0][0] === stem[stem.length - 1][0] && T[0][1] === stem[stem.length - 1][1],
+            '⭐ a full trail off the loop that cuts to a new screen  (his): it leaves the loop\'s top, goes through the fence and on round the woods, a window of its own',
+            pts.length ? Math.round(pts.slice(1).reduce((a, p, i) => a + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0)) + ' round, the loop is about 1860' : 'no trail');
+          const out = pts.filter((p) => !(p[0] > wr[0] + 47 && p[0] < wr[0] + wr[2] - 47 && p[1] > wr[1] + 47 && p[1] < wr[1] + wr[3] - 47));
+          ok(pts.length > 50 && out.length === 0, '…and the whole of it is inside the woods, clear of its fence',
+            out.length ? out.length + ' points off it: ' + out.slice(0, 2).join(' ') : pts.length + ' points');
+          const fenced = [...((/const FENCED := \[([\s\S]*?)\n\]/.exec(twW) || [0, ''])[1]).matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)].map((m) => m.slice(1).map(Number));
+          const walls = fenced.filter((f) => wr.length && f[0] < wr[0] + wr[2] && wr[0] < f[0] + f[2] && f[1] < wr[1] + wr[3] && wr[1] < f[1] + f[3]);
+          ok(walls.length === 0, '⚠ …and no fenced corner is left standing in it  (the north-west corner WAS the woods\' ground)', walls.join(' ') || 'none');
+          /* ── what lies on it ── */
+          const offS = sticks.filter((s) => { const r = near(s.at, pts); return r.d > 6 || turn(s.a, r.ang) < 0.9; });
+          ok(sticks.length >= 5 && offS.length === 0 && sticks.every((s) => s.len > trailW),
+            '⭐ sticks lie ACROSS the trail, longer than it is wide  (his "sticks in the way")',
+            offS.length ? 'not across it: ' + offS.map((s) => s.at.join(',')).join(' ') : sticks.length + ' sticks');
+          const offG = gravel.filter((g) => { const r = near(g.at, pts); return r.d > 6 || turn(g.a, r.ang) > 0.5; });
+          ok(gravel.length >= 3 && offG.length === 0, '⭐ …and gravel lies on it in spots, along it  (his)',
+            offG.length ? 'not on it: ' + offG.map((g) => g.at.join(',')).join(' ') : gravel.length + ' patches');
+          const tb = fnGd(twW, '_furnish_trees');
+          /* ⚠ THE SECOND LIST: code() strips the comment that names it */
+          const woods = V(tb.slice(tb.indexOf('for at in [', tb.indexOf('for at in [') + 1)));
+          const inWay = woods.filter((p) => near(p, pts).d < trailW / 2);
+          const close = woods.filter((p) => { const d = near(p, pts).d; return d >= trailW / 2 && d < trailW / 2 + 22; });
+          ok(woods.length >= 40 && inWay.length === 3 && close.length === 0,
+            '⭐ …and three trees stand IN the trail  (his "trees in the way"); every other trunk keeps well off it',
+            woods.length + ' trees in the woods, ' + inWay.length + ' in the trail' + (close.length ? ', crowding it: ' + close.join(' ') : ''));
+          /* ── what they do to his wheels ── */
+          const phys = fnGd(plW, '_physics_process');
+          ok(/if skate and rolling and _jump < 0\.0 and _stumble <= 0\.0 and _trips\(was\):\s*\n\s*_trip\(\)/.test(phys)
+             && /func _trip\(\) -> void:\s*\n\s*velocity = Vector2\.ZERO\s*\n\s*_stumble = STUMBLE_SECS/.test(plW)
+             && /_skate_push = dir\.length_squared\(\) > 0\.001 and _stumble <= 0\.0/.test(phys)
+             && /return Geometry2D\.segment_intersects_segment\(a, b, position - half, position \+ half\) != null/.test(fnGd(tbW, 'trips'))
+             && /add_to_group\("skate_ground"\)/.test(tbW),
+            '⭐ on skates a stick stops him dead unless he is in the air: a jump clears it, and he cannot push until he has found his feet');
+          const walkBranch = phys.slice(phys.indexOf('\telse:\n\t\t_skate_push = false'), phys.indexOf('var was := global_position'));
+          ok(phys.indexOf('var drag := _ground()') > phys.indexOf('if skate:') && !/_ground\(\)|drag/.test(walkBranch)
+             && /var rate := speed \* tune\.skate_push \* _delta \/ \(drag if spd > want else 1\.0\)/.test(phys)
+             && /speed \* tune\.skate_coast \/ drag \* _delta/.test(phys) && +(/const GRAVEL_DRAG := ([\d.]+)/.exec(tbW) || [])[1] < 1,
+            '⭐ …and gravel drags at his wheels, grinding him down at once; on foot he walks straight over both',
+            'gravel leaves him ' + (/const GRAVEL_DRAG := ([\d.]+)/.exec(tbW) || [])[1] + ' of his speed');
+          /* ── the map ── */
+          ok(/TownMap\.trails = \[loop_points\(\), PackedVector2Array\(TRAIL_STEM\), trail_points\(\)\]/.test(fnGd(twW, '_furnish'))
+             && /\{ "rect": FOREST, "color": NEEDLES \}/.test(fnGd(twW, '_furnish')) && /for t in TownMap\.trails:/.test(fnGd(jrW, '_paint_map')),
+            '…and the Journal\'s map shows the woods and both trails  (the loop was never on it)');
+          const needles = (/const NEEDLES := Color\("([0-9a-fA-F]{6})"\)/.exec(twW) || [0, '000000'])[1];
+          const [nr, ng] = [parseInt(needles.slice(0, 2), 16), parseInt(needles.slice(2, 4), 16)];
+          ok(ng <= nr, '⚠ …and the woods\' floor is needles, not grass: green stays the lawn\'s and the shore\'s', '#' + needles);
         }
 
         /* ══ nobody in town is your twin — 2026-10-11 ══ */
@@ -6602,9 +6692,11 @@ const server = http.createServer((req, res) => {
         {
           const twn = rd('town.gd');
           const num = (re, src) => { const m = re.exec(src); return m ? m.slice(1).map(Number) : null; };
-          /* Pull the rects straight out of region_rect() and rebuild the partition here. */
+          /* Pull the rects straight out of region_rect() and rebuild the partition here.
+             ⚠ THE WINDOWS ARE region_of()'s OWN LIST, read off it: a sixth (the woods, 2026-10-23) is checked like the rest. */
           const rects = {};
-          for (const key of ['north', 'west', 'east', 'south']) {
+          const ORDER = ((/for r in \[([^\]]*)\]:/.exec(fnGd(twn, 'region_of')) || [0, ''])[1].match(/"(\w+)"/g) || []).map((q) => q.slice(1, -1));
+          for (const key of ORDER) {
             const m = new RegExp('"' + key + '":\\s*\\n\\s*return Rect2\\(([-\\d.]+), ([-\\d.]+), ([-\\d.]+), ([-\\d.]+)\\)').exec(twn);
             if (m) rects[key] = m.slice(1, 5).map(Number);
           }
@@ -6616,10 +6708,10 @@ const server = http.createServer((req, res) => {
             const last = all[all.length - 1];
             if (last) rects.square = last.slice(1, 5).map(Number);
           }
-          ok(Object.keys(rects).length === 5, 'five windows, read out of region_rect()',
+          ok(ORDER.length >= 5 && Object.keys(rects).length === ORDER.length + 1, ORDER.length + 1 + ' windows, read out of region_of() and region_rect()',
             Object.keys(rects).join(' '));
           const inR = (r, p) => r && p[0] >= r[0] && p[0] <= r[0] + r[2] && p[1] >= r[1] && p[1] <= r[1] + r[3];
-          const regionOf = (p) => ['north', 'west', 'east', 'south'].find((k) => inR(rects[k], p)) || 'square';
+          const regionOf = (p) => ORDER.find((k) => inR(rects[k], p)) || 'square';
 
           /* ⛑⛑ THE ORPHAN. Written first as three standalone y/x tests, which filed the house
              at (-700, 690) "south" and left it outside the south rect — in no window at all. */
@@ -6653,7 +6745,7 @@ const server = http.createServer((req, res) => {
               if (!inR(rects[cur], bar) || !inR(rects[m[1]], bar)) bad.push(cur + '->' + m[1] + ' bar');
               if (!inR(rects[m[1]], land)) bad.push(cur + '->' + m[1] + ' landing');
             }
-            ok(n >= 8 && bad.length === 0,
+            ok(n >= 10 && bad.length === 0,
               '⚠⚠ …and every seam stands in BOTH windows, and lands inside the one it opens',
               bad.length ? bad.join(', ') : n + ' seams checked');
 
@@ -6669,6 +6761,8 @@ const server = http.createServer((req, res) => {
             const shut = [];
             for (const s of seams) {
               const r = rects[s.from], a = s.at, z = s.size;
+              /* ⚠ A SEAM OUT OF A WINDOW region_of() DOES NOT LIST is a seam nobody can stand at: red, never a crash */
+              if (!r) { shut.push(s.from + '->' + s.to + ' leaves a window region_of() does not list'); continue; }
               const d = [[a[0] - r[0], 'L'], [r[0] + r[2] - a[0], 'R'],
                          [a[1] - r[1], 'T'], [r[1] + r[3] - a[1], 'B']];
               d.sort((x, y) => x[0] - y[0]);
@@ -6680,7 +6774,7 @@ const server = http.createServer((req, res) => {
               const off = Math.abs(clamp - (vert ? a[0] : a[1]));
               if (off > half) shut.push(s.from + '->' + s.to + ' short by ' + (off - half).toFixed(0));
             }
-            ok(seams.length >= 8 && shut.length === 0,
+            ok(seams.length >= 10 && shut.length === 0,
               '⛑⛑ …and a body pressed against the wall is STILL on the seam\'s mat',
               shut.length ? 'CANNOT CROSS: ' + shut.join(', ')
                           : seams.length + ' seams, every mouth reaches the clamp');
