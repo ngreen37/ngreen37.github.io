@@ -33,6 +33,19 @@ function fn(src, name) {
   return '';
 }
 
+/* An inner class: its header and every line indented under it (fnGd runs on to the end of the class). */
+function clsGd(src, name) {
+  const a = src.indexOf('class ' + name + ' extends');
+  if (a < 0) return '';
+  const lines = src.slice(a).split('\n');
+  const out = [lines[0]];
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() !== '' && !/^[\t ]/.test(lines[i])) break;
+    out.push(lines[i]);
+  }
+  return out.join('\n');
+}
+
 /* The same idea for GDScript: a function is its header plus every line indented under it. */
 function fnGd(src, name) {
   const a = src.indexOf('func ' + name + '(');
@@ -5585,11 +5598,29 @@ const server = http.createServer((req, res) => {
             '⭐ it is HIM on the bench (or her: whoever you play), side on, hands on the bar and feet on the floor by IK  (a level camera, so the bar\'s two plates are one)');
           /* ── what is on his feet ── */
           ok(/class GearSpot extends Interactable:/.test(hmC) && /GameState\.body\.gear = "" if GameState\.body\.gear == kind else kind/.test(hmC)
-             && /for n in get_tree\(\)\.get_nodes_in_group\("town_gear"\):/.test(hmC)
-             && /\[shoes, where\("Shoes", SHOES_AT\), "runners", "running shoes"\], \[blades, where\("Blades", BLADES_AT\), "skates", "rollerblades"\]/.test(hmC)
+             && /\[shoes, where\("Shoes", SHOES_AT\), "runners"\], \[blades, where\("Blades", BLADES_AT\), "skates"\]/.test(hmC)
+             && /const GEAR_NAMES := \{"skates": "rollerblades", "runners": "running shoes"\}/.test(gsC)
              && /if GameState\.body\.gear == "skates":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Blades')), '_draw'))
              && /if GameState\.body\.gear == "runners":\s*return/.test(fnGd(hmC.slice(hmC.indexOf('class Shoes')), '_draw')),
             '⭐ A at the rollerblades or the running shoes by his door puts that pair on, the other off  (a pair is gone from the floor while he wears it)');
+          /* his (2026-10-24): "Both should have an option to take them off anywhere by hitting a button" */
+          ok(/signal gear_changed\(now: String\)/.test(gsC) && /var gear := "":\s*set\(v\):\s*if v == gear:\s*return\s*gear = v\s*gear_changed\.emit\(v\)/.test(gsC)
+             && /GameState\.body\.gear_changed\.connect\(func\(_now: String\) -> void: _words\(\)\)/.test(fnGd(hmC.slice(hmC.indexOf('class GearSpot')), '_ready_extra'))
+             && /GameState\.body\.gear_changed\.connect\(func\(_now: String\) -> void: _gear_changed\(\)\)/.test(znC2)
+             && /refresh_keys\(\)/.test(fnGd(znC2, '_gear_changed')) && /_gear_words\(\)/.test(fnGd(znC2, '_gear_changed')),
+            '⛑ …and every write to his feet says so: the words at both pairs, the bottom line ("click it to run" is a lie in either) and the Take Off button follow it, from his door or anywhere');
+          const gearW = fnGd(znC2, '_gear_words'), offW = fnGd(znC2, 'take_off_gear');
+          ok(/_gear_off = corner_button\(take_off_gear\)/.test(znC2) && /const GEAR_KEY := KEY_T/.test(znC2)
+             && /set_corner\(_gear_off, "Take Off " \+ named\.capitalize\(\) \+ key, g != "" and player != null and player\.afoot\(\)\)/.test(gearW)
+             && /key = "  \(%s\)" % Pad\.word\(Pad\.R\)/.test(gearW) && /key = "  \(T\)"/.test(gearW)
+             && /if was == "" or not _gear_off\.visible/.test(offW) && /GameState\.body\.gear = ""/.test(offW)
+             && /if \(Pad\.hit\(event, Pad\.R\) or \(k != null and k\.pressed and not k\.echo and k\.keycode == TownZone\.GEAR_KEY\)\) \\\s*and z != null and GameState\.body\.gear != "" and afoot\(\) and not _in_talk\(\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*z\.take_off_gear\(\)/.test(fnGd(plC, '_unhandled_input')),
+            '⭐ …and either pair comes off anywhere he walks  (his): a button under the top row says which, and how (T on keys, the right shoulder on a pad); never in space, a boat or a fight');
+          const cornW = fnGd(znC2, '_place_corners');
+          ok(/y = _stat\.position\.y \+ _stat\.get_minimum_size\(\)\.y/.test(cornW) && /y = maxf\(y, _rate\.position\.y \+ _rate\.size\.y\)/.test(cornW)
+             && /b\.custom_minimum_size = Vector2\(0\.0, TownUI\.finger\(self\)\)/.test(cornW) && /b\.offset_top = y/.test(cornW) && !/position = /.test(cornW)
+             && /for b in _corners:\s*if b\.visible and r\.intersects\(b\.get_global_rect\(\)\):\s*return true/.test(fnGd(znC2, 'hud_over')),
+            '⛑ …the buttons under the top row sit under the stat row AND the rating (on a phone the rating is the third line), a thumb tall, anchored by offsets, and no sign draws under one');
           /* ⚠ TIRED IS A SHARE OF HIS TOP SPEED (2026-10-23, his: "the rollerblading should be a lot slower"): as a flat
              1.0 the slider had to start above the walk, or tired skating outran fresh. */
           const tiredShare = numPl('SKATE_TIRED');
@@ -5643,19 +5674,8 @@ const server = http.createServer((req, res) => {
         {
           const hmC = code(rd('home.gd')), plC = code(rd('player.gd')), spC = code(rd('space.gd')), knC = code(rd('knight.gd'));
           const uiC = code(rd('town_ui.gd')), twC = code(rd('town.gd')), ppC = code(rd('people_sheet.gd'));
-          /* an inner class: its header and every line indented under it (fnGd runs on to the end of the class) */
-          const cls = (src, name) => {
-            const a = src.indexOf('class ' + name + ' extends');
-            if (a < 0) return '';
-            const lines = src.slice(a).split('\n');
-            const out = [lines[0]];
-            for (let i = 1; i < lines.length; i++) {
-              if (lines[i].trim() !== '' && !/^[\t ]/.test(lines[i])) break;
-              out.push(lines[i]);
-            }
-            return out.join('\n');
-          };
-          const v2 = (src, name) => { const h = layoutAt(src, name); return h ? [h.x, h.y] : (new RegExp('const ' + name + ' := Vector2\\(([-\\d.]+), ([-\\d.]+)\\)').exec(src) || [0, NaN, NaN]).slice(1, 3).map(Number); };
+          const cls = clsGd;
+          const v2 =(src, name) => { const h = layoutAt(src, name); return h ? [h.x, h.y] : (new RegExp('const ' + name + ' := Vector2\\(([-\\d.]+), ([-\\d.]+)\\)').exec(src) || [0, NaN, NaN]).slice(1, 3).map(Number); };
           /* ── the nightstand and the lamp ── */
           const ns = cls(hmC, 'Nightstand'), stand = v2(hmC, 'STAND_AT'), bed = v2(hmC, 'BED_AT'), dogBed = v2(hmC, 'DOG_BED_AT');
           ok(/_pool = _light\(CheckerRoom\.Daylight\.SCENERY, GLOW\)\s*_touch = _light\(CheckerRoom\.Daylight\.LIVING, GLOW \* CheckerRoom\.Daylight\.TOUCH\)/.test(ns)
@@ -5690,7 +5710,7 @@ const server = http.createServer((req, res) => {
           /* ── space ── */
           const thingsF = fnGd(spC, 'things');
           ok(/draw_rect\(OuterSpace\.view\(self\)\.grow\(64\.0\), Color\.BLACK\)/.test(fnGd(spC, '_draw'))
-             && /world_bounds = Rect2\(\)\s*camera_bounds = Rect2\(\)/.test(spC) && /PieceArt\.draw_piece\(/.test(fnGd(spC, 'draw_thing'))
+             && /world_bounds = Rect2\(\)\s*camera_bounds = Rect2\(\)/.test(spC) && /PieceArt\.draw_piece\(self, thing\["kind"\], Vector2\.ZERO, size/.test(fnGd(cls(spC, 'Bit'), '_draw'))
              && /"c", "c", "c", "C"\]/.test(spC) && (spC.match(/\[[\d.]+, [\d.]+, \d, [\d.]+\]/g) || []).length === 3,
             '⭐ space is pitch black with no edge, full of his pieces (his renders where there are any) and checkers, at three depths');
           ok(/rng\.seed = \(\(cx \* 73856093\) \^ \(cy \* 19349663\) \^ \(\(salt \+ 1\) \* 83492791\)\) & 0x7fffffff/.test(thingsF)
@@ -5705,9 +5725,21 @@ const server = http.createServer((req, res) => {
           const spLine = fnGd(spC, '_line');
           ok(/event\.is_action_pressed\("ui_accept"\) or event\.is_action_pressed\("ui_cancel"\)/.test(fnGd(spC, '_unhandled_input'))
              && /if pad != null and pad\.take_accept\(\):\s*come_back\(\)/.test(fnGd(spC, '_process'))
-             && /return "WASD  ·  Arrows  ·  Spacebar comes back down"/.test(spLine) && /Pad\.changed\.connect\(_reline\)/.test(spC)
+             && /return "WASD  ·  Arrows  ·  Spacebar takes you home"/.test(spLine) && /Pad\.changed\.connect\(_reline\)/.test(spC)
              && /\[node name="OuterSpace" type="Node2D"\]\s*script = ExtResource\("1"\)/.test(rd('space.tscn')),
             '⭐ …and A or B (Spacebar on keys, USE on the glass) brings him back down; the bottom line names the hand he is holding, the keys only his four');
+          /* his (2026-10-24): "it needs to be clearer that spacebar or whatever the back button is will get you back home from the meditation space" */
+          const homeW = fnGd(spC, '_home_words');
+          ok(/_home = corner_button\(come_back\)/.test(fnGd(spC, '_after_ready')) && /set_corner\(_home, _home_words\(\)\)/.test(fnGd(spC, '_reline'))
+             && /return "Back Home  \(A or B\)"/.test(homeW) && /return "Back Home  \(Spacebar\)"/.test(homeW) && /return "Back Home"\n/.test(homeW),
+            '⭐ …and a Back Home button stays up the whole visit, naming the key on the hand he holds  (the bottom line goes after its seconds)');
+          /* the lag (his, 2026-10-24: "I found it very laggy on PC: the space scene"): every thing redrawn every frame was
+             9 ms of an 11 ms frame; drawn once and moved by its transform the scene is under 3 ms, cheaper than his checker */
+          const depW = cls(spC, 'Depth'), bitsW = ['Bit', 'Checker', 'Jelly'].map((n) => cls(spC, n)).join('\n');
+          ok(/process_priority = 1/.test(depW) && /position = seen\.get_center\(\) \* \(1\.0 - f\)/.test(depW) && /var b := OuterSpace\.bit\(thing, grow\)/.test(fnGd(depW, '_fill'))
+             && /b\.move\(t\)/.test(depW) && bitsW.split('\n').length > 30 && !/queue_redraw\(/.test(depW + bitsW)
+             && !/layer\.queue_redraw\(\)/.test(fnGd(spC, '_process')),
+            '⛑ …and nothing in space is redrawn: each thing is its own node, drawn once as it comes into view and only turned or carried after, its depth placed after the camera moves');
           /* ── the White Knight ── */
           ok(/class_name WhiteKnight\s*extends Interactable/.test(knC) && /add_child\(WhiteKnight\.new\(\)\)/.test(fnGd(twC, '_after_ready'))
              && /var with := u\.talking_with\(\)[\s\S]*?_was_with = with if with is TownNPC else null/.test(fnGd(knC, '_watch'))
@@ -5800,12 +5832,18 @@ const server = http.createServer((req, res) => {
           /* ── space: half as many things, and jellyfish ── */
           const thingsW = fnGd(spW, 'things'), loopAt = thingsW.indexOf('for i in rng.randi_range(0, per):');
           ok(loopAt >= 0 && thingsW.indexOf('if rng.randf() < JELLY:') > loopAt && /"kind": "j"/.test(thingsW)
-             && num(spW, 'JELLY') > 0 && num(spW, 'JELLY') < 1 && /if kind == "j":\s*\n\s*_jelly\(/.test(fnGd(spW, 'draw_thing')),
+             && num(spW, 'JELLY') > 0 && num(spW, 'JELLY') < 1 && /"j":\s*b = Jelly\.new\(\)/.test(fnGd(spW, 'bit')),
             '⭐ space has jellyfish  (his), some cells and not all, rolled after the things in their cell so a jellyfish never moves a piece');
-          const jellyW = fnGd(spW, '_jelly'), turns = [...jellyW.matchAll(/draw_set_transform\(([^\n]*)\)/g)].map((m) => m[1].trim());
-          ok(turns.length >= 2 && turns.every((t) => /Vector2\.ONE$/.test(t)) && /TownZone\.glow\(\)/.test(jellyW) && !/\bTime\.|rand/.test(jellyW),
-            '⚠ …each one turned, never scaled (a scale thickens its tentacles), glowing, and moved only by the clock it is handed',
-            turns.length + ' transforms');
+          /* ⚠ A SCALE THICKENS A LINE: the bell may squeeze on the beat; the tentacles hang straight in the picture and the
+             shader bends them by ADDING to each vertex, so every one keeps its distance off its line. */
+          const jellyW = clsGd(spW, 'Jelly'), bendW = (/const BEND := """([\s\S]*?)"""/.exec(spW) || [])[1] || '';
+          const scales = [...jellyW.matchAll(/^\s*([\w.]*)scale\b[^=\n]*=/gm)].map((m) => m[1]);
+          ok(/rotation = cos\(u \* 0\.5\) \* 0\.3/.test(jellyW) && scales.length === 2 && scales.every((w) => w === '_bell.' || w === '_rim.')
+             && /_part\(_paint_legs\)\.material = _legs/.test(jellyW) && /_part\(_paint_arms\)\.material = _arms/.test(jellyW)
+             && /VERTEX\.x \+=/.test(bendW) && !/VERTEX\.[xy]? ?\*=/.test(bendW) && /TownZone\.glow\(\)/.test(jellyW)
+             && /func move\(t: float\) -> void:/.test(jellyW) && !/\bTime\.|rand/.test(jellyW + bendW),
+            '⚠ …each one turned, never scaled but for its bell (a scale thickens its tentacles), glowing, and moved only by the clock it is handed',
+            'scaled: ' + (scales.join(', ') || 'nothing'));
         }
 
         /* ══ the woods: a full trail off the loop, and what is under his wheels there — 2026-10-23 ══ */
