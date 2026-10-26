@@ -5654,14 +5654,14 @@ const server = http.createServer((req, res) => {
             '⛑ …but only where he walks about: no jump in a fight or under a cover, and no JUMP on the glass there  (Shift + a direction is Pawn Crossing\'s "all the way"; JUMP sat on its board; photo mode never got its B)');
           ok(/class Rowing extends TownPlayer:[\s\S]*?func afoot\(\) -> bool:\s*return false/.test(code(rd('sea.gd'))),
             '⛑ …and the boat has no legs: at sea the line offers no run and no jump, and B is left alone  (the boat is a TownPlayer too)');
-          /* ── the loop ── */
-          const loopR = /const LOOP := Rect2\(([-\d.]+), ([-\d.]+), ([\d.]+), ([\d.]+)\)/.exec(twC) || [], lw = +(/const LOOP_W := ([\d.]+)/.exec(twC) || [])[1];
-          const lx = +loopR[1], ly = +loopR[2], lend = lx + +loopR[3], lbot = ly + +loopR[4];
-          ok(/if pr\.intersects\(LOOP\.grow\(LOOP_W\)\) or pr\.intersects\(FOREST\):\s*_draw_loop\(pr\)/.test(fnGd(twC, '_draw'))
-             && lx + lw / 2 < -260 && ly + lw / 2 < -430 && lend - lw / 2 > 260 && lbot - lw / 2 > -80
-             && ly - lw / 2 > -500 && lend + lw / 2 < 334 && lbot + lw / 2 < -20,
-            '⭐ a loop of clay runs round the park lawn  (his pick): outside its trees, inside the fence, clear of the road north and above the main road',
-            'its middle ' + lx + ',' + ly + ' to ' + lend + ',' + lbot + ', ' + lw + ' wide');
+          /* ── the loop is off the park, a road instead — his, 2026-10-26: "take the outline trail off of park tables and
+             instead include just a road" ── */
+          const roadsT = [...fnGd(twC, '_roads').matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)].map((m) => m.slice(1).map(Number));
+          const westRoad = roadsT.find((r) => r[0] + r[2] <= -260 && r[1] <= -430 && r[1] + r[3] >= -20);
+          const topRoad = roadsT.find((r) => r[1] + r[3] <= -430 && r[0] <= -260 && r[0] + r[2] >= -120);
+          ok(!/const LOOP :=|loop_points/.test(twC) && /if pr\.intersects\(FOREST\):\s*_draw_trail\(pr\)/.test(fnGd(twC, '_draw')) && !!westRoad && !!topRoad,
+            '⭐ no trail round the park any more, just a road  (his): up the lawn\'s west side from the main road and along its top to the woods\' trail',
+            westRoad && topRoad ? 'west ' + westRoad.join(',') + ' · top ' + topRoad.join(',') : 'no such road');
           /* ── no dog ── */
           ok(!/static var pack/.test(dgC) && !/TownDog\.gather/.test(twC) && /func yields\(\) -> bool:\s*return _follow\s/.test(dgC),
             '⛑ no dog skates with him  (his: "No dog. Just you.")');
@@ -5806,6 +5806,28 @@ const server = http.createServer((req, res) => {
              && /var he: String = TownPlayerModel\.PRONOUN\.get\(GameState\.character, "he"\)/.test(sayL) && !/"He |"he |\bhe tires/.test(sayL),
             '⭐ the bench press says she for Natalie and Habsa  (his): everyone you can play has a he or a she, and no line of the lift types one',
             playable.map((w) => w + ' ' + (pron[w] || 'NONE')).join(' · '));
+          /* his, 2026-10-26: "Let's make Habsa and Munawar a little darker skinned.  Let's put a hijab on Habsa." */
+          const lin = (h) => [0, 2, 4].map((i) => { const c = parseInt(h.substr(i, 2), 16) / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
+          const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+          let nateSkin = null;
+          try {
+            const glb = fs.readFileSync(path.join(GD, 'art', 'nate.glb')), jn = glb.readUInt32LE(12);
+            const sk = (JSON.parse(glb.slice(20, 20 + jn).toString('utf8')).materials || []).find((m) => m.name === 'skin');
+            nateSkin = sk ? sk.pbrMetallicRoughness.baseColorFactor.slice(0, 3) : null;
+          } catch (e) { nateSkin = null; }
+          const skinOf = (w) => (new RegExp('"' + w + '": \\{[^}]*"skin": "([0-9a-fA-F]{6})"').exec(looksW) || [])[1];
+          const darker = ['habsa', 'munawar'].map((w) => [w, skinOf(w)]);
+          ok(!!nateSkin && darker.every(([, s]) => s && lum(lin(s)) < lum(nateSkin))
+             && /"habsa": \{[^}]*"cut": "hijab", "hijab": "[0-9a-fA-F]{6}"/.test(looksW) && /"hijab": \[/.test(cutsW)
+             && /_build_hair\(cut, Color\(str\(look\.get\(str\(look\["cut"\]\), look\["hair"\]\)\)\)\)/.test(dressF),
+            '⭐ Habsa wears a hijab, and she and Munawar are a little darker than Nate  (his; Nate\'s own skin read off nate.glb)',
+            darker.map(([w, s]) => w + ' ' + (s || 'NO SKIN')).join(' · '));
+          /* his, 2026-10-26: "let's default to having sound off during testing phase" */
+          ok(/var sound_on: bool = false/.test(gsW) && /"sound": sound_on/.test(fnGd(gsW, 'save_state'))
+             && /sound_on = bool\(d\.get\("sound", false\)\)/.test(fnGd(gsW, 'load_state')) && !/"sound_on"/.test(gsW)
+             && /if now >= 0 and now != _program_sound:\s*\n\s*set_sound\(now == 1\)/.test(fnGd(gsW, '_follow_program_sound'))
+             && /_follow_program_sound\(\)/.test(fnGd(gsW, '_tick')),
+            '⭐ the game starts quiet while he tests  (his): kept under a new key so an older save is quiet too; in the desktop program its Sound row is the game\'s own switch, followed on a change only');
           /* ── the body on screen ── */
           ok(/_model = _make_model\(\)/.test(fnGd(plW, '_ready')) && /GameState\.character_changed\.connect\(_swap_model\.unbind\(1\)\)/.test(fnGd(plW, '_ready'))
              && /var m := TownPlayerModel\.make\(0, TownPlayerModel\.TILT, GameState\.character\)/.test(fnGd(plW, '_make_model'))
@@ -5901,16 +5923,17 @@ const server = http.createServer((req, res) => {
           const near = (p, line) => { let best = { d: Infinity, ang: 0 };
             for (let i = 0; i + 1 < line.length; i++) { const r = seg(p, line[i], line[i + 1]); if (r.d < best.d) best = r; } return best; };
           const turn = (a, b) => { const d = Math.abs(((a - b) % Math.PI + Math.PI) % Math.PI); return Math.min(d, Math.PI - d); };
-          /* ── a window of its own, off the loop ── */
+          /* ── a window of its own, off the road ── */
           const wr = (/"woods":\s*\n\s*return Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(fnGd(twW, 'region_rect')) || []).slice(1).map(Number);
-          const loopY = +(/const LOOP := Rect2\((-?[\d.]+), (-?[\d.]+),/.exec(twW) || [])[2];
+          const roadsLit = [...fnGd(twW, '_roads').matchAll(/Rect2\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)/g)].map((m) => m.slice(1).map(Number));
+          const onRoad = (p) => roadsLit.some((r) => p[0] >= Math.min(r[0], r[0] + r[2]) && p[0] <= Math.max(r[0], r[0] + r[2]) && p[1] >= Math.min(r[1], r[1] + r[3]) && p[1] <= Math.max(r[1], r[1] + r[3]));
           const sqSeam = /\{ "to": "woods", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(twW);
           const back = /"woods": \[\s*\n\s*\{ "to": "square", "at": Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(twW);
           ok(wr.length === 4 && /for r in \[[^\]]*"woods"[^\]]*\]:/.test(fnGd(twW, 'region_of')) && sqSeam && back && +sqSeam[1] === +back[1]
-             && stem.length >= 2 && stem[0][1] === loopY && +stem[0][0] === +sqSeam[1] && stem[stem.length - 1][1] < wr[1] + wr[3] - trailW
+             && stem.length >= 2 && onRoad(stem[0]) && +stem[0][0] === +sqSeam[1] && stem[stem.length - 1][1] < wr[1] + wr[3] - trailW
              && T.length >= 8 && T[0][0] === stem[stem.length - 1][0] && T[0][1] === stem[stem.length - 1][1],
-            '⭐ a full trail off the loop that cuts to a new screen  (his): it leaves the loop\'s top, goes through the fence and on round the woods, a window of its own',
-            pts.length ? Math.round(pts.slice(1).reduce((a, p, i) => a + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0)) + ' round, the loop is about 1860' : 'no trail');
+            '⭐ a full trail that cuts to a new screen  (his): it leaves the road along the park\'s top, goes through the fence and on round the woods, a window of its own',
+            pts.length ? Math.round(pts.slice(1).reduce((a, p, i) => a + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0)) + ' round' : 'no trail');
           const out = pts.filter((p) => !(p[0] > wr[0] + 47 && p[0] < wr[0] + wr[2] - 47 && p[1] > wr[1] + 47 && p[1] < wr[1] + wr[3] - 47));
           ok(pts.length > 50 && out.length === 0, '…and the whole of it is inside the woods, clear of its fence',
             out.length ? out.length + ' points off it: ' + out.slice(0, 2).join(' ') : pts.length + ' points');
@@ -5963,14 +5986,14 @@ const server = http.createServer((req, res) => {
             '⭐ grass and dirt drag at his wheels too  (his): the park lawn, the shore and the Park Tables\' lawn on skate_grass, the woods\' floor and the pit head\'s on skate_dirt',
             'grass leaves him ' + tune('skate_grass') + ', dirt ' + tune('skate_dirt') + '; sliders ' + (gsR || []).join(' to ') + ' and ' + (dtR || []).join(' to '));
           ok(/for r in _roads\(\):\s*\n\s*if \(r as Rect2\)\.abs\(\)\.has_point\(p\):\s*\n\s*return 1\.0/.test(fdT) && /if _deck\(\)\.has_point\(p\):\s*\n\s*return 1\.0/.test(fdT)
-             && /\[loop_points\(\), LOOP_W \* 0\.5 \+ 3\.0\]/.test(fdT) && /\[PackedVector2Array\(TRAIL_STEM\), TRAIL_W \* 0\.5 \+ 3\.0\]/.test(fdT)
+             && /\[PackedVector2Array\(TRAIL_STEM\), TRAIL_W \* 0\.5 \+ 3\.0\]/.test(fdT)
              && /\[trail_points\(\), TRAIL_W \* 0\.5 \+ 3\.0\]/.test(fdT) && /for path in paths\(\):/.test(fnGd(pkW, 'floor_drag'))
              && /for path in Pavilion\.paths\(\):\s*\n\s*draw_rect\(path, Pavilion\.PAVE\)/.test(pkW),
-            '⚠ …and a way rolls clean where it crosses them: the roads, the dock, the loop, the trail and the Park Tables\' paths  (painted and rolled off one list)');
+            '⚠ …and a way rolls clean where it crosses them: the roads, the dock, the trail and the Park Tables\' paths  (painted and rolled off one list)');
           /* ── the map ── */
-          ok(/TownMap\.trails = \[loop_points\(\), PackedVector2Array\(TRAIL_STEM\), trail_points\(\)\]/.test(fnGd(twW, '_furnish'))
+          ok(/TownMap\.trails = \[PackedVector2Array\(TRAIL_STEM\), trail_points\(\)\]/.test(fnGd(twW, '_furnish'))
              && /\{ "rect": FOREST, "color": NEEDLES \}/.test(fnGd(twW, '_furnish')) && /for t in TownMap\.trails:/.test(fnGd(jrW, '_paint_map')),
-            '…and the Journal\'s map shows the woods and both trails  (the loop was never on it)');
+            '…and the Journal\'s map shows the woods and the trail');
           const needles = (/const NEEDLES := Color\("([0-9a-fA-F]{6})"\)/.exec(twW) || [0, '000000'])[1];
           const [nr, ng] = [parseInt(needles.slice(0, 2), 16), parseInt(needles.slice(2, 4), 16)];
           ok(ng <= nr, '⚠ …and the woods\' floor is needles, not grass: green stays the lawn\'s and the shore\'s', '#' + needles);
