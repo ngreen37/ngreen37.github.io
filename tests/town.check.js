@@ -5585,7 +5585,7 @@ const server = http.createServer((req, res) => {
              && /if NateHome\.spilled:\s*NateHome\.spilled = false/.test(hmC),
             '⭐ a failed set puts the plates all over the floor, up close and in his room, until he picks them up');
           const say = fnGd(lfC, '_say');
-          ok(/"He is failing\. " \+ \("Mash A!"/.test(say) && /"Pressing nothing lowers the bar\."/.test(say) && /" to lift it off the rack\."/.test(say)
+          ok(/cap \+ " is failing\. " \+ \("Mash A!"/.test(say) && /"Pressing nothing lowers the bar\."/.test(say) && /" to lift it off the rack\."/.test(say)
              && /"Lower it further for a rep\."/.test(rep) && /"Rep %d, but not all the way down\."/.test(rep) && /The plates are all over the floor\./.test(say),
             '⭐ little words during the lift say what to press and when, in the hand he is holding');
           ok(/if not \(event is InputEventKey or event is InputEventJoypadButton\):\s*return\s*get_viewport\(\)\.set_input_as_handled\(\)/.test(fnGd(lfC, '_input'))
@@ -5798,6 +5798,14 @@ const server = http.createServer((req, res) => {
              && /var cut: Array = CUTS\.get\(str\(look\.get\("cut", ""\)\), \[\]\)/.test(dressF) && /_build_hair\(cut, /.test(dressF),
             '⭐ four to play: Nate, Natalie, Habsa and Munawar  (his); everyone without a .glb of their own wears a look and a haircut, or they are Nate, cap and all',
             dressed.map(([w, c]) => w + ' ' + (c || 'NO CUT')).join(' · '));
+          /* his, 2026-10-26: "Natalie still gets called a "he" so let's correct that for the two female characters (i.e. when the
+             weightlifting plates drop" */
+          const pron = Object.fromEntries([...((/const PRONOUN := \{([^}]*)\}/.exec(pmW) || [0, ''])[1]).matchAll(/"(\w+)": "(\w+)"/g)].map((m) => [m[1], m[2]]));
+          const sayL = fnGd(code(rd('lift.gd')), '_say');
+          ok(playable.length > 0 && playable.every((w) => pron[w] === 'he' || pron[w] === 'she') && pron.natalie === 'she' && pron.habsa === 'she'
+             && /var he: String = TownPlayerModel\.PRONOUN\.get\(GameState\.character, "he"\)/.test(sayL) && !/"He |"he |\bhe tires/.test(sayL),
+            '⭐ the bench press says she for Natalie and Habsa  (his): everyone you can play has a he or a she, and no line of the lift types one',
+            playable.map((w) => w + ' ' + (pron[w] || 'NONE')).join(' · '));
           /* ── the body on screen ── */
           ok(/_model = _make_model\(\)/.test(fnGd(plW, '_ready')) && /GameState\.character_changed\.connect\(_swap_model\.unbind\(1\)\)/.test(fnGd(plW, '_ready'))
              && /var m := TownPlayerModel\.make\(0, TownPlayerModel\.TILT, GameState\.character\)/.test(fnGd(plW, '_make_model'))
@@ -5911,9 +5919,11 @@ const server = http.createServer((req, res) => {
           ok(walls.length === 0, '⚠ …and no fenced corner is left standing in it  (the north-west corner WAS the woods\' ground)', walls.join(' ') || 'none');
           /* ── what lies on it ── */
           const offS = sticks.filter((s) => { const r = near(s.at, pts); return r.d > 6 || turn(s.a, r.ang) < 0.9; });
-          ok(sticks.length >= 5 && offS.length === 0 && sticks.every((s) => s.len > trailW),
-            '⭐ sticks lie ACROSS the trail, longer than it is wide  (his "sticks in the way")',
-            offS.length ? 'not across it: ' + offS.map((s) => s.at.join(',')).join(' ') : sticks.length + ' sticks');
+          /* his, 2026-10-26: "take out the sticks in the park trail except for one.  Make the gravel even harder to roll
+             through and teh same with grass and dirt." */
+          ok(sticks.length === 1 && offS.length === 0 && sticks.every((s) => s.len > trailW),
+            '⭐ one stick lies ACROSS the trail, longer than it is wide  (his "sticks in the way", then "except for one")',
+            offS.length ? 'not across it: ' + offS.map((s) => s.at.join(',')).join(' ') : sticks.length + (sticks.length === 1 ? ' stick' : ' sticks'));
           const offG = gravel.filter((g) => { const r = near(g.at, pts); return r.d > 6 || turn(g.a, r.ang) > 0.5; });
           ok(gravel.length >= 3 && offG.length === 0, '⭐ …and gravel lies on it in spots, along it  (his)',
             offG.length ? 'not on it: ' + offG.map((g) => g.at.join(',')).join(' ') : gravel.length + ' patches');
@@ -5934,11 +5944,29 @@ const server = http.createServer((req, res) => {
              && /add_to_group\("skate_ground"\)/.test(tbW),
             '⭐ on skates a stick stops him dead unless he is in the air: a jump clears it, and he cannot push until he has found his feet');
           const walkBranch = phys.slice(phys.indexOf('\telse:\n\t\t_skate_push = false'), phys.indexOf('var was := global_position'));
+          const grR = tuneRange('skate_gravel');
           ok(phys.indexOf('var drag := _ground()') > phys.indexOf('if skate:') && !/_ground\(\)|drag/.test(walkBranch)
              && /var rate := speed \* tune\.skate_push \* _delta \/ \(drag if spd > want else 1\.0\)/.test(phys)
-             && /speed \* tune\.skate_coast \/ drag \* _delta/.test(phys) && +(/const GRAVEL_DRAG := ([\d.]+)/.exec(tbW) || [])[1] < 1,
-            '⭐ …and gravel drags at his wheels, grinding him down at once; on foot he walks straight over both',
-            'gravel leaves him ' + (/const GRAVEL_DRAG := ([\d.]+)/.exec(tbW) || [])[1] + ' of his speed');
+             && /speed \* tune\.skate_coast \/ drag \* _delta/.test(phys) && /return tune\.skate_gravel if /.test(fnGd(tbW, 'drag_at'))
+             && !!grR && grR[0] > 0 && grR[1] < 0.35,
+            '⭐ …and gravel drags at his wheels, grinding him down at once, "even harder" than the 0.35 it was (his); on foot he walks straight over both',
+            'gravel leaves him ' + tune('skate_gravel') + ' of his speed, its slider ' + (grR || []).join(' to '));
+          const fdT = fnGd(twW, 'floor_drag'), gsR = tuneRange('skate_grass'), dtR = tuneRange('skate_dirt');
+          const pkW = code(rd('park.gd')), dpW = code(rd('depths.gd'));
+          ok(/func floor_drag\(_p: Vector2\) -> float:\s*\n\s*return 1\.0/.test(code(rd('zone.gd')))
+             && /var z := get_parent\(\) as TownZone\s*\n\s*var d := z\.floor_drag\(global_position\) if z != null else 1\.0/.test(fnGd(plW, '_ground'))
+             && /var grass := LAWN\.has_point\(p\) or SHORE\.has_point\(p\)/.test(fdT) && /FOREST\.has_point\(p\)/.test(fdT)
+             && /return Tuning\.now\(\)\.skate_grass if grass else Tuning\.now\(\)\.skate_dirt/.test(fdT)
+             && /return Tuning\.now\(\)\.skate_grass/.test(fnGd(pkW, 'floor_drag'))
+             && /return Tuning\.now\(\)\.skate_dirt if _floor\(\)\.has_point\(p\) else 1\.0/.test(fnGd(dpW, 'floor_drag'))
+             && !!gsR && !!dtR && gsR[0] > 0 && gsR[1] < 1 && dtR[0] > 0 && dtR[1] < 1,
+            '⭐ grass and dirt drag at his wheels too  (his): the park lawn, the shore and the Park Tables\' lawn on skate_grass, the woods\' floor and the pit head\'s on skate_dirt',
+            'grass leaves him ' + tune('skate_grass') + ', dirt ' + tune('skate_dirt') + '; sliders ' + (gsR || []).join(' to ') + ' and ' + (dtR || []).join(' to '));
+          ok(/for r in _roads\(\):\s*\n\s*if \(r as Rect2\)\.abs\(\)\.has_point\(p\):\s*\n\s*return 1\.0/.test(fdT) && /if _deck\(\)\.has_point\(p\):\s*\n\s*return 1\.0/.test(fdT)
+             && /\[loop_points\(\), LOOP_W \* 0\.5 \+ 3\.0\]/.test(fdT) && /\[PackedVector2Array\(TRAIL_STEM\), TRAIL_W \* 0\.5 \+ 3\.0\]/.test(fdT)
+             && /\[trail_points\(\), TRAIL_W \* 0\.5 \+ 3\.0\]/.test(fdT) && /for path in paths\(\):/.test(fnGd(pkW, 'floor_drag'))
+             && /for path in Pavilion\.paths\(\):\s*\n\s*draw_rect\(path, Pavilion\.PAVE\)/.test(pkW),
+            '⚠ …and a way rolls clean where it crosses them: the roads, the dock, the loop, the trail and the Park Tables\' paths  (painted and rolled off one list)');
           /* ── the map ── */
           ok(/TownMap\.trails = \[loop_points\(\), PackedVector2Array\(TRAIL_STEM\), trail_points\(\)\]/.test(fnGd(twW, '_furnish'))
              && /\{ "rect": FOREST, "color": NEEDLES \}/.test(fnGd(twW, '_furnish')) && /for t in TownMap\.trails:/.test(fnGd(jrW, '_paint_map')),
