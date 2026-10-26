@@ -5773,7 +5773,7 @@ const server = http.createServer((req, res) => {
              && /var own := "res:\/\/art\/%s\.glb" % who\s*\n\s*var path := own if ResourceLoader\.exists\(own\) else MODEL_PATH/.test(makeF)
              && /if path == MODEL_PATH and LOOKS\.has\(who\):\s*\n\s*vp\._dress\(LOOKS\[who\]\)/.test(makeF)
              && /"natalie": \{/.test((/const LOOKS := \{([\s\S]*?)\n\}/.exec(pmW) || [0, ''])[1]),
-            '⭐ two people to play, Nate and Natalie  (his): art/<who>.glb is that person once it exists, until then nate.glb repainted',
+            '⭐ Nate and Natalie to play  (his): art/<who>.glb is that person once it exists, until then nate.glb repainted',
             playable.join(' · ') || 'none');
           ok(/TownPlayerModel\.make\(CELL\)/.test(ppW) && !/GameState\.character/.test(ppW),
             '⚠ …and the townsfolk are never her: their one rig is baked off nate.glb as it ships',
@@ -5786,6 +5786,18 @@ const server = http.createServer((req, res) => {
              && /att\.bone_name = "Head"/.test(hairF) && !/global_transform/.test(hairF + fnGd(pmW, '_in_pivot')),
             '⭐ …Natalie is his rig with the cap off and long hair held to the head bone, her paint on a copy  (the GLB\'s mesh and paint are everybody\'s)',
             '⚠ the cap and the eyes are one paint: the cap is its biggest piece, the eyes the two little ones');
+          /* ── two more, 2026-10-25 ── his: "let's make two more characters:  one more boy and one more girl - call them
+             Habsa and Munawar."  Asked which is which: "Habsa girl, Munawar boy" */
+          const looksW = (/const LOOKS := \{([\s\S]*?)\n\}/.exec(pmW) || [0, ''])[1];
+          const cutsW = (/const CUTS := \{([\s\S]*?)\n\}/.exec(pmW) || [0, ''])[1];
+          const dressed = playable.filter((w) => w !== 'nate' && !fs.existsSync(path.join(GD, 'art', w + '.glb'))).map((w) => {
+            const cut = (new RegExp('"' + w + '": \\{[^}]*"cut": "(\\w+)"').exec(looksW) || [])[1];
+            return [w, cut && new RegExp('"' + cut + '": \\[').test(cutsW) ? cut : ''];
+          });
+          ok(['nate', 'natalie', 'habsa', 'munawar'].every((w) => playable.includes(w)) && dressed.every(([, c]) => c)
+             && /var cut: Array = CUTS\.get\(str\(look\.get\("cut", ""\)\), \[\]\)/.test(dressF) && /_build_hair\(cut, /.test(dressF),
+            '⭐ four to play: Nate, Natalie, Habsa and Munawar  (his); everyone without a .glb of their own wears a look and a haircut, or they are Nate, cap and all',
+            dressed.map(([w, c]) => w + ' ' + (c || 'NO CUT')).join(' · '));
           /* ── the body on screen ── */
           ok(/_model = _make_model\(\)/.test(fnGd(plW, '_ready')) && /GameState\.character_changed\.connect\(_swap_model\.unbind\(1\)\)/.test(fnGd(plW, '_ready'))
              && /var m := TownPlayerModel\.make\(0, TownPlayerModel\.TILT, GameState\.character\)/.test(fnGd(plW, '_make_model'))
@@ -5816,6 +5828,11 @@ const server = http.createServer((req, res) => {
              && /_take\(event\)/.test(fnGd(csW, '_unhandled_key_input')) && /_take\(event\)/.test(fnGd(csW, '_unhandled_input')) && !/func _input\(/.test(csW)
              && /_at = clampi\(i, 0, _ids\.size\(\) - 1\)/.test(fnGd(csW, '_light')) && /b\.pressed\.connect\(_choose\.bind\(i\)\)/.test(csW),
             '⚠ …every key and pad press stops at the cards (unhandled, so Pad still hears a pad picked up), a stick held over cannot wrap, a tap on a card plays it');
+          const layC = fnGd(csW, '_layout');
+          ok(/for c in range\(1, n \+ 1\):/.test(layC) && /_cols = c/.test(layC) && /var row := i \/ _cols/.test(layC)
+             && /elif event\.is_action_pressed\("ui_up"\) and _at >= _cols:\s*\n\s*_light\(_at - _cols\)/.test(inC)
+             && /elif event\.is_action_pressed\("ui_down"\) and _at \+ _cols < _ids\.size\(\):\s*\n\s*_light\(_at \+ _cols\)/.test(inC),
+            '⚠ …and the cards wrap into rows on a tall window (four in a row on a phone are a thumb wide), up and down moving a row, never off the end');
           /* ── the White Knight's two moods ── */
           const comeK = fnGd(knW, '_come'), kw = words('White Knight'), nr = tuneRange('knight_nate_every');
           ok(/_bro = GameState\.character == "nate" and _visits % tune\.knight_nate_every != tune\.knight_nate_every - 1/.test(comeK)
