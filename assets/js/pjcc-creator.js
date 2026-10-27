@@ -154,7 +154,7 @@
   /* the regulars, by the id the aura table names them with. ⚠ A COPY, and a small one —
      the Forge does not load the Park Tables. `npm run test:regulars` fails if a name here
      stops matching the real BOTS object. */
-  var BOT_NAMES = { maxwell: 'Maxwell', crockett: 'Crockett', argus: 'Argus', nate: 'Nate',
+  var BOT_NAMES = { maxwell: 'Maxwell', crockett: 'Crockett', argus: 'Argus', nate: 'Jay',
                     dad: 'Kedar', robert: 'Robert', princess: 'Princess', ceo: 'The CEO' };
   var P = window.PJCC || {};
   function accountProfile() { try { return P.getProfile ? P.getProfile() : null; } catch (e) { return null; } }

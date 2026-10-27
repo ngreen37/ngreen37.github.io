@@ -3703,8 +3703,8 @@ const server = http.createServer((req, res) => {
            characters except for Nate and Murphy" */
         const talk = /const SMALL_TALK := \[([^\]]*)\]/.exec(npcG);
         const tNames = talk ? strs(talk[1]) : [];
-        ok(tNames.length === 2 && tNames.includes('Nate') && tNames.includes('Murphy'),
-          '⛑ only Nate and Murphy are asked what is out this way and what it was like before',
+        ok(tNames.length === 2 && tNames.includes('Jay') && tNames.includes('Murphy'),
+          '⛑ only Jay (his Nate at the sea, renamed 10-26) and Murphy are asked what is out this way and what it was like before',
           tNames.join(', ') || 'no SMALL_TALK list');
         ok(/if SMALL_TALK\.has\(who\):\s*\n\s*rows\.append\(\{ "id": "local"/.test(npcG)
           && /rows\.append\(\{ "id": "self", "text": "How have you been\?" \}\)/.test(npcG),
@@ -5155,7 +5155,7 @@ const server = http.createServer((req, res) => {
               own = Math.max(own, Math.min(...d));
               across = Math.min(across, Math.max(...d));
             }
-            ok(seams >= 10 && Object.keys(rects).length === 6 && own < near && near < across,
+            ok(seams >= 10 && Object.keys(rects).length === 7 && own < near && near < across,
               '⚠ …and that distance sits between every seam\'s own fence and the one opposite it',
               seams + ' seams: furthest from its own edge ' + own + ', nearest opposite edge ' + across + ', SEAM_NEAR ' + near);
           }
@@ -5794,17 +5794,20 @@ const server = http.createServer((req, res) => {
             const cut = (new RegExp('"' + w + '": \\{[^}]*"cut": "(\\w+)"').exec(looksW) || [])[1];
             return [w, cut && new RegExp('"' + cut + '": \\[').test(cutsW) ? cut : ''];
           });
-          ok(['nate', 'natalie', 'habsa', 'munawar'].every((w) => playable.includes(w)) && dressed.every(([, c]) => c)
+          /* his, 2026-10-26: "add four more characters.  A japanese boy, japanese girl, a black girl, black boy.   Shohei, Hana,
+             Jameis, and Emery."  Asked which is which: "Emery girl, Jameis boy" */
+          ok(['nate', 'natalie', 'habsa', 'munawar', 'shohei', 'hana', 'jameis', 'emery'].every((w) => playable.includes(w)) && dressed.every(([, c]) => c)
              && /var cut: Array = CUTS\.get\(str\(look\.get\("cut", ""\)\), \[\]\)/.test(dressF) && /_build_hair\(cut, /.test(dressF),
-            '⭐ four to play: Nate, Natalie, Habsa and Munawar  (his); everyone without a .glb of their own wears a look and a haircut, or they are Nate, cap and all',
+            '⭐ eight to play: Nate, Natalie, Habsa, Munawar, Shohei, Hana, Jameis and Emery  (his); everyone without a .glb of their own wears a look and a haircut, or they are Nate, cap and all',
             dressed.map(([w, c]) => w + ' ' + (c || 'NO CUT')).join(' · '));
           /* his, 2026-10-26: "Natalie still gets called a "he" so let's correct that for the two female characters (i.e. when the
              weightlifting plates drop" */
           const pron = Object.fromEntries([...((/const PRONOUN := \{([^}]*)\}/.exec(pmW) || [0, ''])[1]).matchAll(/"(\w+)": "(\w+)"/g)].map((m) => [m[1], m[2]]));
           const sayL = fnGd(code(rd('lift.gd')), '_say');
-          ok(playable.length > 0 && playable.every((w) => pron[w] === 'he' || pron[w] === 'she') && pron.natalie === 'she' && pron.habsa === 'she'
+          ok(playable.length > 0 && playable.every((w) => pron[w] === 'he' || pron[w] === 'she') && pron.natalie === 'she' && pron.habsa === 'she' && pron.hana === 'she' && pron.emery === 'she'
+             && pron.shohei === 'he' && pron.jameis === 'he'
              && /var he: String = TownPlayerModel\.PRONOUN\.get\(GameState\.character, "he"\)/.test(sayL) && !/"He |"he |\bhe tires/.test(sayL),
-            '⭐ the bench press says she for Natalie and Habsa  (his): everyone you can play has a he or a she, and no line of the lift types one',
+            '⭐ the bench press says she for Natalie, Habsa, Hana and Emery  (his): everyone you can play has a he or a she, and no line of the lift types one',
             playable.map((w) => w + ' ' + (pron[w] || 'NONE')).join(' · '));
           /* his, 2026-10-26: "Let's make Habsa and Munawar a little darker skinned.  Let's put a hijab on Habsa." */
           const lin = (h) => [0, 2, 4].map((i) => { const c = parseInt(h.substr(i, 2), 16) / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
@@ -6184,11 +6187,16 @@ const server = http.createServer((req, res) => {
              && /\{ "key": "crockett", "who": "Milo", "elo": 750,\s+"piece": "n" \}/.test(pkM)
              && /_lane_dog\("Milo", /.test(tw) && /_lodger\("Milo", where\("MiloBed", MILO_BED_AT\)\)/.test(hm),
             '…on his square, on his rung, on the lane and on his own cushion');
-          ok(/const RENAMED := \{ "Crockett": "Milo" \}/.test(gsM)
+          /* his, 2026-10-26: "Rename Nate NPC to Jay." The site renamed him too; the key `nate` stays everywhere. */
+          ok(/\{ "p": "p", "who": "Jay",\s+"key": "nate",/.test(gsM) && /\{ "key": "nate",\s+"who": "Jay",/.test(pkM)
+             && /_add_challenger\("Jay", "nate", /.test(tw) && fs.existsSync(path.join(GD, 'people', 'lines', 'jay.txt'))
+             && !fs.existsSync(path.join(GD, 'people', 'lines', 'nate.txt')) && !/"key": "jay"/.test(gsM + pkM),
+            '⭐ the Nate at the sea is JAY  (his): his square, his seat, his place by the sea and his words, and his key did not move');
+          ok(/const RENAMED := \{ "Crockett": "Milo", "Nate": "Jay" \}/.test(gsM)
              && /by_name\[now\] = maxi\(int\(by_name\.get\(now, 0\)\), int\(by_name\[was\]\)\)\s*\n\s*by_name\.erase\(was\)/.test(fnGd(gsM, '_renamed'))
              && /hearts = d\.get\("hearts", \{\}\)\s*\n\s*_renamed\(people\.hearts\)/.test(fnGd(gsM, 'load_state'))
              && /var theirs: Dictionary = \(d\.get\("hearts", \{\}\) as Dictionary\)\.duplicate\(\)\s*\n\s*_renamed\(theirs\)\s*\n\s*for k in theirs:/.test(fnGd(gsM, 'merge_in')),
-            '⛑⛑ the hearts he had as Crockett are Milo\'s — from the file on this device AND from the account',
+            '⛑⛑ the hearts he had as Crockett are Milo\'s, and Nate\'s are Jay\'s — from the file on this device AND from the account',
             'hearts are kept by NAME; the account\'s copy still says Crockett, and is read, never rewritten in place');
 
           /* ── his coat ── */
@@ -6624,6 +6632,60 @@ const server = http.createServer((req, res) => {
           ok(askers.length === 1 && askers[0] === 'zone.gd',
             '⛑⛑ only zone.gd reads the story — no door, no lesson and no boat asks it for permission',
             askers.join(' ') || 'nobody');
+        }
+
+        /* ══ THE OPENING (2026-10-26) ══ His: "At the very beginning, you have two dogs, Milo and Argus.  You need to
+           find princess - she's north of the assembly and you need to move the symbols around to spell Access (using
+           c-shapes for the c's, e's, and s's).   You find her in a crater, staring up at the moon." */
+        {
+          const bareO = (src) => src.split('\n').filter((l) => !/^\s*#/.test(l)).join('\n');
+          const dogO = rd('dog.gd'), homeO = rd('home.gd'), twnO = rd('town.gd'), panO = rd('access_panel.gd');
+          const stnO = rd('access_stones.gd'), herO = rd('crater_princess.gd'), moonO = rd('moon_view.gd'), ssO = rd('state_story.gd');
+          ok(/if who_ != "Princess" and not GameState\.story\.found\("princess"\):\s*\n\s*return true/.test(fnGd(dogO, 'indoors'))
+             && /if who == "Princess" and not GameState\.story\.found\("princess"\):\s*\n\s*return false/.test(fnGd(dogO, '_on_duty'))
+             && /func _princess\(\) -> TownDog:\s*\n(?:\s*#[^\n]*\n)*\s*if not GameState\.story\.found\("princess"\):\s*\n\s*return null/.test(homeO)
+             && /"at": "missing",\s*\n\s*"where": "res:\/\/rooms\/home\.tscn"/.test(st)
+             && /"missing":\s*\n\s*return not GameState\.story\.found\("princess"\)/.test(fnGd(st, 'ready_for')),
+            '⭐ the game begins with Milo and Argus at home and Princess missing  (his): she is nowhere, not even at the board at home, until she is found');
+          const loadO = fnGd(gsS, 'load_state');
+          ok(/if typeof\(parsed\) != TYPE_DICTIONARY:[\s\S]*?story\.told\["new:opening"\] = 1\s*\n\s*return/.test(loadO)
+             && /if not story\.told\.has\("new:opening"\):\s*\n\s*for k in \["find:princess", "find:access", "ep1-found"\]:\s*\n\s*story\.told\[k\] = 1/.test(loadO)
+             && /if their_told\.has\("ep1-arrive"\) and not their_told\.has\("new:opening"\):\s*\n\s*for k in \["find:princess", "find:access", "ep1-found"\]:/.test(fnGd(gsS, 'merge_in')),
+            '⚠⚠ …a NEW game, that is: a save from before keeps her, and never sees her close-up for a find nobody made — loaded here, or pulled down from the site onto a device with no save of its own',
+            'nobody\'s dog goes missing because the game changed');
+          const word = (/const WORD := "(\w+)"/.exec(panO) || [])[1], start = (/const START := "(\w+)"/.exec(panO) || [])[1];
+          const letters = (w) => (w || '').split('').sort().join('');
+          const gl = fnGd(panO, 'glyph');
+          const cut = (L) => (new RegExp('\\t\\t"' + L + '":\\n([\\s\\S]*?)(?=\\n\\t\\t"|$)').exec(gl) || [])[1] || '';
+          ok(word === 'ACCESS' && !!start && start !== word && letters(start) === letters(word)
+             && ['C', 'E', 'S'].every((L) => /draw_arc\(/.test(cut(L))) && (cut('S').match(/draw_arc\(/g) || []).length === 2
+             && /draw_line\(/.test(cut('E')) && !/draw_line\(/.test(cut('C')),
+            '⭐ the stones north of the Assembly are moved around to spell ACCESS  (his), every C, E and S cut from c-shapes: a C is one, an E one with a bar, an S two',
+            (start || 'no START') + ' → ' + (word || 'no WORD'));
+          ok(/if read\(\) == WORD:\s*\n\s*_done = 0\.0\s*\n\s*solved\.emit\(\)/.test(fnGd(panO, '_press'))
+             && /GameState\.story\.find\("access"\)/.test(fnGd(stnO, '_solved')) && /town\.call\("open_crater"\)/.test(fnGd(stnO, '_solved'))
+             && /_set_open\(GameState\.story\.found\("access"\)\)/.test(fnGd(stnO, '_ready_extra'))
+             && /if str\(\(row as Dictionary\)\["to"\]\) == "crater" and not GameState\.story\.found\("access"\):\s*\n\s*continue/.test(fnGd(twnO, '_furnish_seams')),
+            '⭐ …and only then is there a way to the crater: the slab stands aside and the seam is there, no reload',
+            'until then the slab is solid, wall to wall in the gap in the north fence');
+          ok(/_shut\.pressed\.connect\(_close\)/.test(panO) && /elif event\.is_action_pressed\("ui_cancel"\):/.test(fnGd(panO, '_take'))
+             && /_cell = clampf\([^\n]*, TownUI\.finger\(self\) \/ 0\.92, /.test(fnGd(panO, '_layout')),
+            '⛑ …and on a phone every stone is a thumb wide, and you can walk away from them unsolved: Esc, the pad\'s B, and a Close for the phone, which has neither',
+            'the Close asks TownUI.finger() too, so the file-wide button check cannot see the stones shrink');
+          const CRATER_LINE = 'You find her in a crater, staring up at the moon.';
+          const fnd = (/\{\s*\n\s*"id": "ep1-found",([\s\S]*?)\n\t\},/.exec(st) || [])[1] || '';
+          ok(fnd.includes('"' + CRATER_LINE + '"') && /"view": "moon"/.test(fnd) && /"where": "res:\/\/town\/town\.tscn"/.test(fnd)
+             && /"found":\s*\n\s*return GameState\.story\.found\("princess"\)/.test(fnGd(st, 'ready_for')),
+            '⭐⭐ "' + CRATER_LINE + '"  — HIS, verbatim, on the moon up close the moment you find her',
+            fnd ? 'ep1-found' : 'no ep1-found row');
+          ok(/if _view == "moon":[\s\S]*?MoonView\.open\(get_parent\(\), [^\n]*\)\.closed\.connect\(_finish\)/.test(fnGd(bt, '_ready'))
+             && /found_one\.emit\(id\)/.test(fnGd(ssO, 'find')) && /GameState\.story\.found_one\.connect\(/.test(znS)
+             && /GameState\.story\.find\("princess"\)/.test(fnGd(herO, 'interact')) && !/TownStory|MoonView/.test(bareO(herO)),
+            '⚠⚠ …through the zone\'s own runner: finding her is all the crater does; the runner hears it and plays that beat on its picture, told when it shuts',
+            'a crater that opened the picture itself would read the story table, and a beat that never fired would look like one not reached');
+          ok(/TownDog\.paint_sitting\(_art, "Princess", [^\n]*, false, [\d.]+\)/.test(moonO)
+             && /deg_to_rad\(-20\.0\) if tilt else deg_to_rad\(-look_up\)/.test(dogO),
+            '⚠ …her head up with her eyes OPEN: staring at the moon, which is not the tilt (that stays canon and unshown)');
         }
 
         /* ⚠⚠ THE THREE WAYS A BEAT COULD HANG THE GAME, all of them one line. */
