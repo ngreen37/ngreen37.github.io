@@ -167,10 +167,14 @@ no_sky: true
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/pjcc-adapt.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/pjcc-townchess.js' | relative_url }}" defer></script>
+{%- comment -%} The table's game (2026-10-26, Route B): the town referees and draws, this thinks for the regular
+     across the board as the Park Tables do. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-towntable.js' | relative_url }}" defer></script>
 <script id="ct-facts-data" type="application/json">
   [{%- for r in site.data.regulars -%}
      {"key":{{ r.key | jsonify }},"name":{{ r.name | jsonify }},"elo":{{ r.elo | default: 0 }},
-      "sys_w":{{ r.sys_w | default: "" | jsonify }},"sys_b":{{ r.sys_b | default: "" | jsonify }}}
+      "sys_w":{{ r.sys_w | default: "" | jsonify }},"sys_b":{{ r.sys_b | default: "" | jsonify }},
+      "movetime":{{ r.movetime | default: 0 }},"adaptive":{{ r.adaptive | default: false }}}
      {%- unless forloop.last -%},{%- endunless -%}
    {%- endfor -%}]
 </script>

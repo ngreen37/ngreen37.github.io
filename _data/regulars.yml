@@ -42,6 +42,7 @@
   name: Maxwell
   icon: "♖"
   elo: 400
+  movetime: 120
   sys_w: london
   sys_b: openb
   open: true
@@ -50,6 +51,7 @@
   name: Crockett
   icon: "♞"
   elo: 750
+  movetime: 160
   sys_w: larsen
   sys_b: slav
   open: true
@@ -58,6 +60,7 @@
   name: Argus
   icon: "♝"
   elo: 1000
+  movetime: 260
   sys_w: kia
   sys_b: caro
   open: true
@@ -66,6 +69,7 @@
   name: Jay
   icon: "♙"
   elo: 1200
+  movetime: 480
   sys_w: qgambit
   sys_b: grunfeld
   open: true
@@ -74,6 +78,7 @@
   name: Kedar
   icon: "♚"
   elo: 1400
+  movetime: 620
   sys_w: italian
   sys_b: french
   open: true
@@ -82,6 +87,7 @@
   name: Robert
   icon: "♜"
   elo: 1800
+  movetime: 950
   sys_w: samisch
   sys_b: kid
   open: true
@@ -90,6 +96,7 @@
   name: Princess
   icon: "♟"
   elo: 2100
+  movetime: 1150
   sys_w: catalan
   sys_b: pircb
   open: false
@@ -98,6 +105,7 @@
   name: The CEO
   icon: "♔"
   elo: 2400
+  movetime: 1300
   sys_w: mainline
   sys_b: najdorf
   open: false
@@ -114,6 +122,7 @@
   name: Auston
   icon: "♘"
   elo: 1200
+  movetime: 420
   adaptive: true
   open: true
 
@@ -127,4 +136,5 @@
   name: Vince
   icon: "♕"
   elo: 1150
+  movetime: 500
   open: false

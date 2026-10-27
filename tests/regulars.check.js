@@ -66,6 +66,9 @@ while ((m = entry.exec(botsBlock)) !== null) {
        bench has no Black repertoire" was the other half of what was wrong. */
     sysW: (/sysW:\s*'(\w+)'/.exec(body) || [, null])[1],
     sysB: (/sysB:\s*'(\w+)'/.exec(body) || [, null])[1],
+    /* ⚑ 2026-10-26 — the town's own table paces each regular by it (assets/js/pjcc-towntable.js, off this file):
+       a SIXTH thing that can disagree, and a wrong one is a regular who answers at somebody else's speed. */
+    movetime: +((/movetime:\s*(\d+)/.exec(body) || [, 0])[1]),
     open: !/locked:/.test(body)
   });
 }
@@ -123,6 +126,7 @@ for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
   check('· ' + b.key + ' — Black system',
         hasSys ? (!!r.sys_b && r.sys_b === b.sysB) : (!r.sys_b && !b.sysB),
         hasSys ? (r.sys_b || 'MISSING') + ' vs ' + (b.sysB || 'MISSING') : 'none, on purpose');
+  check('· ' + b.key + ' — pace', b.movetime > 0 && r.movetime === b.movetime, r.movetime + ' vs ' + b.movetime);
   check('· ' + b.key + ' — ' + (b.open ? 'open' : 'locked'), r.open === b.open,
         'data says ' + (r.open ? 'open' : 'locked') + ', the game says ' + (b.open ? 'open' : 'locked'));
   check('· ' + b.key + ' — ' + (b.adaptive ? 'adaptive' : 'a fixed rung'), !!r.adaptive === b.adaptive,

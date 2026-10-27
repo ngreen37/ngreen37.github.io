@@ -2540,10 +2540,15 @@ const server = http.createServer((req, res) => {
         ok(ids.length === 7 && gdIds.join(',') === ids.join(','),
           '⭐⭐ the town names the same seven studies the site sets up',
           gdIds.join(',') + '  vs  ' + ids.join(','));
-        const gdFiles = GD_LIST.filter((f) => f.endsWith('.gd'))
-          .map((f) => fs.readFileSync(GDF(f), 'utf8')).join('\n');
-        ok(!STUD.all().some((r) => gdFiles.includes(r.fen)),
-          '⚠⚠ and NOT ONE FEN lives in the Godot project  [[godot-starter-code]]');
+        /* ⚑ REVERSED 2026-10-26 (his: "Start with number 10", Route B): the town plays the position itself now, so
+           it holds a copy of each, and the copy is held to this file field for field. */
+        /* ⚠ THE STUDIES' BLOCK ONLY: another table's "id" first would carry the first study's fields off with it */
+        const blockS = gs.slice(gs.indexOf('const STUDIES := ['), gs.indexOf('\n]', gs.indexOf('const STUDIES := [')));
+        const rowsS = [...blockS.matchAll(/"id": "(\w+)",[\s\S]*?"side": "(\w)", "goal": "(\w+)", "fen": "([^"]+)"/g)];
+        ok(rowsS.length === STUD.all().length
+           && STUD.all().every((r) => rowsS.some((g) => g[1] === r.id && g[2] === r.side && g[3] === r.goal && g[4] === r.fen)),
+          '⚠⚠ and the town\'s copy of every position is the site\'s, field for field: the board, the side, the goal',
+          rowsS.length + ' town rows');
         const js = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-studies.js'), 'utf8');
         ok(!/who:|ask:|ore:/.test(js) && !/crockett|maxwell|robert/.test(js),
           '…and the site half names nobody: the ids are the joint');
@@ -2581,8 +2586,8 @@ const server = http.createServer((req, res) => {
         const sit = gs.slice(gs.indexOf('func sit_study'), gs.indexOf('func win_study'));
         ok(!/spend\(/.test(sit),
           '⚠ FREE — six hearts is the price and it took a dozen games to pay');
-        ok(/TABLE_URL \+ key \+ "&pos=" \+ str\(row\["id"\]\)/.test(sit),
-          '…and the link names the position');
+        ok(/"pos": str\(row\["id"\]\)/.test(sit) && /table_wanted\.emit\(\)/.test(sit),
+          '…and the errand names the position, and the table in the town sets it');
       }
       {
         const tl = fn(PROF, 'townLast');
@@ -5278,8 +5283,9 @@ const server = http.createServer((req, res) => {
             '⭐ a win raises it by their rating over ' + PER + ', and a square on your board by ' + SQ + ', wherever the square came from');
           {
             const need = fnGd(gsR, 'rating_needed'), sit = fnGd(gsR, 'sit_down');
-            ok(/if key == "" or key == GameState\.challenge\.CEO_KEY or GameState\.board\.has_slot\(GameState\.board\.slot_for_key\(key\)\):\s*return 0\s*return maxi\(0, seat_elo\(key\) - RATING_REACH\)/.test(need),
-              '⛑ a seat wants a rating within ' + REACH + ' of its own, EXCEPT one whose square you hold, and the CEO\'s',
+            /* ⚑ HIS RULE, 2026-10-26: "you can't play an opponent that is rated 200 or more rating points higher than yours" */
+            ok(REACH === 200 && /if key == "" or key == GameState\.challenge\.CEO_KEY or GameState\.board\.has_slot\(GameState\.board\.slot_for_key\(key\)\):\s*return 0\s*return maxi\(0, seat_elo\(key\) - RATING_REACH \+ 1\)/.test(need),
+              '⛑ nobody rated 200 or more above you may be played  (his), EXCEPT one whose square you hold, and the CEO',
               'his chair is opened by the full board: a second lock on the finale is a grind in front of the ending');
             ok(sit.indexOf('rating_short(key)') > sit.indexOf('beaten_today(key)') && sit.indexOf('rating_short(key)') < sit.indexOf('spend(cost)'),
               '⛑ …refused in the ONE place that sits you down, before any energy is taken');
@@ -5294,12 +5300,12 @@ const server = http.createServer((req, res) => {
               .map((m) => ({ who: m[2], elo: +m[3] })).filter((s) => s.elo > 0 && s.who !== 'CEO').sort((a, b) => a.elo - b.elo);
             let r = START, open = 0, wall = '';
             for (const s of seats) {
-              if (r < Math.max(0, s.elo - REACH)) { wall = s.who + ' wants ' + (s.elo - REACH) + ', the ladder alone gives ' + r; break; }
+              if (r < Math.max(0, s.elo - REACH + 1)) { wall = s.who + ' wants ' + (s.elo - REACH + 1) + ', the ladder alone gives ' + r; break; }
               open++;
               r += Math.max(MIN, Math.floor(s.elo / PER)) + SQ;
             }
-            ok(seats.length >= 7 && open >= 6,
-              '⚠ …and from 400 the first six seats open one after another, each beaten once  (the numbers are his to set)',
+            ok(seats.length >= 7 && open === seats.length,
+              '⚠ …and from 400 every seat opens one after another, each beaten once  (the square is 200 so his rule leaves no wall)',
               open + ' of ' + seats.length + ' open in turn' + (wall ? '; then ' + wall : '; no wall'));
           }
           {
@@ -6686,6 +6692,133 @@ const server = http.createServer((req, res) => {
           ok(/TownDog\.paint_sitting\(_art, "Princess", [^\n]*, false, [\d.]+\)/.test(moonO)
              && /deg_to_rad\(-20\.0\) if tilt else deg_to_rad\(-look_up\)/.test(dogO),
             '⚠ …her head up with her eyes OPEN: staring at the moon, which is not the tilt (that stays canon and unshown)');
+        }
+
+        /* ══ THE TABLE IN THE TOWN (2026-10-26) ══ His: "Start with number 10" — Route B, decided 2026-10-11: "the
+           board drawn in Godot, Stockfish beside it", the rules "ported once and held to the same tests the site's
+           referee passes". The rules' own test is the game's tests/chess.sh (perft, and a corpus the site's referee
+           writes, answered position for position); this holds the seams around them. */
+        {
+          const chT = rd('state_challenge.gd'), tabT = rd('chess_table.gd'), brT = rd('table_brain.gd');
+          const aiT = rd('chess_ai.gd'), ruT = rd('chess_rules.gd'), znT = rd('zone.gd'), drT = rd('dev_referee.gd');
+          const corpus = fs.existsSync(path.join(GD, 'tests/chess_corpus.js')) ? fs.readFileSync(path.join(GD, 'tests/chess_corpus.js'), 'utf8') : '';
+          const suiteT = fs.existsSync(path.join(GD, 'tests/suite.sh')) ? fs.readFileSync(path.join(GD, 'tests/suite.sh'), 'utf8') : '';
+          ok(/require\(path\.join\(SITE, 'assets\/js\/pjcc-chess\.js'\)\)/.test(corpus) && /bash "\$S\/chess\.sh"/.test(suiteT)
+             && /static func legal_moves\(S: Dictionary\) -> Array:/.test(ruT) && /static func to_san\(S: Dictionary, m: Dictionary\) -> String:/.test(ruT)
+             && /static func pos_key\(S: Dictionary\) -> String:/.test(ruT),
+            '⭐⭐ the town has its own rules now (games/chess/chess_rules.gd), held to the site\'s referee by the game\'s tests/chess.sh, which its suite runs  (his: Route B)',
+            'a corpus the site\'s pjcc-chess.js writes: legal moves, SAN, every move\'s outcome, check, results, repetition keys');
+          const sitT = fnGd(chT, 'sit_down');
+          ok(/begin_challenge\(who, key, cost\)\s*\n\s*table_wanted\.emit\(\)\s*\n\s*return ""/.test(sitT) && !/TABLE_URL/.test(chT)
+             && !/open_url/.test(sitT + fnGd(chT, 'sit_study'))
+             && /table_wanted\.emit\(\)\s*\n\s*return ""/.test(fnGd(chT, 'sit_study')),
+            '⭐ sitting down opens the table in the town, a game or a study: no tab and no site, the errand written first',
+            'a game walked out of half-played is still pending, and opens again where it was');
+          ok(/GameState\.challenge\.table_wanted\.connect\(_open_table\)/.test(znT)
+             && /if bool\(GameState\.challenge\.pending\.get\("table", false\)\):\s*\n\s*_open_table\(\)/.test(znT)
+             && /ChessTable\.open\(self, GameState\.challenge\.pending\)/.test(fnGd(znT, '_open_table'))
+             && /if n != self:\s*\n\s*other = true/.test(fnGd(tabT, '_process')),
+            '…the zone opens it off the signal, and again on the way in while the errand stands, under any cover already up');
+          ok(/if pending\.is_empty\(\) or bool\(pending\.get\("table", false\)\) or not OS\.has_feature\("web"\):/.test(fnGd(chT, 'poll_challenge'))
+             && /not bool\(GameState\.challenge\.pending\.get\("table", false\)\)/.test(drT),
+            '⚠ …and nothing else answers it: the site\'s poll and the editor\'s W/L keys are for an errand from before the table');
+          const doneT = fnGd(chT, 'table_done');
+          ok(/var slot := resolve_challenge\(won, clean\)/.test(doneT)
+             && /if won and clean and not study and took > 0:\s*\n\s*GameState\.money\.pay_captures\(took\)/.test(doneT)
+             && /GameState\.challenge\.table_done\(_goal_met\(\), tb_used == 0, _took\(\)\)/.test(fnGd(tabT, '_close'))
+             && /if not study\.is_empty\(\) and str\(study\.get\("goal", ""\)\) == "draw":\s*\n\s*return result == "1\/2-1\/2" or _won\(\)/.test(fnGd(tabT, '_goal_met')),
+            '⭐ the result settles the errand the one way a result ever has (resolve_challenge): a takeback is not clean, a study scores by its own goal, captures pay on a clean win',
+            'the Philidor\'s held draw is its win');
+          ok(/GameState\.body\.refund\(cost\)/.test(fnGd(chT, 'stand_up')) && /GameState\.challenge\.stand_up\(\)/.test(fnGd(tabT, '_leave'))
+             && /if phase != SETUP:\s*\n\s*return/.test(fnGd(tabT, '_leave')),
+            '…and up from the table before a move costs nothing: the energy comes back');
+          ok(/var m := ChessRules\.from_uci\(S, uci\)\s*\n\s*if m\.is_empty\(\):\s*\n\s*_brain\.think\([^\n]*, true\)\s*\n\s*return/.test(fnGd(tabT, '_on_moved')),
+            '⛑⛑ ENGINE PROPOSES, REFEREE DISPOSES: their move is played only if the table\'s own rules find it, and one they do not is handed to the stand-in');
+          ok(/const TAKEBACKS := 1/.test(tabT) && /if phase != PLAY or result != "" or tb_used >= TAKEBACKS/.test(fnGd(tabT, '_takeback'))
+             && /_end\("0-1" if turn == "w" else "1-0"/.test(fnGd(tabT, '_process'))
+             && /left\[turn\] = maxf\(0\.0, float\(left\[turn\]\) - minf\(delta, 0\.25\) \* 1000\.0\)/.test(fnGd(tabT, '_process')),
+            '…one takeback a game, as at the Park Tables, and a flag is a loss  (his: "flagging is a loss")',
+            '⚠ and a pause is nobody\'s time: a frame charges a quarter second at most, so the first one back from a hidden tab or the program\'s menu cannot flag you');
+          const canonT = fs.readFileSync(path.join(ROOT, '_sass/_pjcc-22-chess-canon.scss'), 'utf8');
+          const tokT = (n) => ((new RegExp('--' + n + ':\\s*(#[0-9a-fA-F]{6})').exec(canonT) || [])[1] || '').toLowerCase();
+          const gdcT = (n) => ((new RegExp('const ' + n + ' := Color\\("([0-9a-fA-F]{6})"\\)').exec(tabT) || [])[1] || '').toLowerCase();
+          ok(tokT('chess-lt') === '#' + gdcT('LT') && tokT('chess-dk') === '#' + gdcT('DK') && tokT('chess-frame') === '#' + gdcT('FRAME')
+             && /const MINT := Color\("6bffb8"\)/.test(tabT) && /const LAST := Color\(0\.961, 0\.773, 0\.094, 0\.42\)/.test(tabT),
+            '⭐ the board is the Park Tables\' own: the woods, the frame, the gold last move, the mint ring  (his: "every new board defaults to Park Table Default")',
+            gdcT('LT') + ' ' + gdcT('DK') + ' ' + gdcT('FRAME'));
+          const engT = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-gauntlet-engine.js'), 'utf8');
+          const rowsJ = [...engT.matchAll(/^\s*\[\s*(\d+),\s*(\d+),\s*(\d+),\s*([\d.]+),\s*([\d.]+),\s*(\d+),\s*([\d.]+),/gm)].map((m) => m.slice(1, 8).map(Number).join(','));
+          const rowsG = [...aiT.matchAll(/^\t\[(\d+), (\d+), (\d+), ([\d.]+), ([\d.]+), (\d+), ([\d.]+),/gm)].map((m) => m.slice(1, 8).map(Number).join(','));
+          ok(rowsJ.length === 12 && rowsJ.join(' ') === rowsG.join(' ')
+             && /\[350, 2, 220, [^\n]*\{ "blunder": 0\.05 \}\]/.test(aiT) && /\[400, 2, 160, [^\n]*\{ "never_castle": true \}\]/.test(aiT),
+            '⭐ off the web the stand-in plays the site\'s measured ladder under 1400, row for row, Maxwell refusing to castle',
+            rowsG.length + ' rows');
+          const ctpT = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
+          const atT = (f) => ctpT.indexOf("/assets/js/" + f + "'");
+          ok(atT('pjcc-towntable.js') > atT('pjcc-gauntlet-engine.js') && atT('pjcc-towntable.js') > atT('pjcc-adapt.js')
+             && atT('pjcc-systems.js') > 0 && atT('pjcc-systems.js') < atT('pjcc-towntable.js')
+             && /"movetime":\{\{ r\.movetime \| default: 0 \}\},"adaptive":\{\{ r\.adaptive \| default: false \}\}/.test(ctpT)
+             && /window\.parent\.PJCCTownTable/.test(brT),
+            '⭐ on the web the site\'s own brain plays the regular: the page loads the door after the referee, the engine, the systems and the dial, and hands it each seat\'s pace');
+          const ttT = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-towntable.js'), 'utf8');
+          const ptThinkT = (PT.match(/function botThinkFor\(b, st, S\)\{[\s\S]*?\n  \}/) || [''])[0];
+          const keyT = ['Math.min(base * 2.5, left / 8)', 'Math.min(base, left / 30)', 'Math.max(150, Math.floor(Math.min(want, left - 800)))', '(n >= 2 && n <= 4)'];
+          const cpP = /var CP_LOSING = (-?\d+);[\s\S]*?var CP_SWING\s+= (-?\d+);/.exec(PT), cpD = /var CP_LOSING = (-?\d+);[\s\S]*?var CP_SWING\s+= (-?\d+);/.exec(ttT);
+          ok(keyT.every((l) => ptThinkT.includes(l) && ttT.includes(l)) && !!cpP && !!cpD && cpP[1] === cpD[1] && cpP[2] === cpD[2]
+             && /if \(persona\) \{ persona\.timeMs = ms; return \{ persona: persona, negamax: true, movetime: ms \}; \}/.test(ttT),
+            '⚠ …and its dial and its pacing are the Park Tables\' own (botDial, botThinkFor), word for word where they decide',
+            cpD ? cpD[1] + ' / ' + cpD[2] : 'no constants');
+          /* ⭐ THE DOOR ITSELF, run in node with the site's own referee, negamax, engine bridge, systems and dial */
+          const rowsY = [];
+          for (const chunk of yml.split(/\n- key:/).slice(1)) {
+            /* ⚠ THE FILE ENDS ITS LINES IN CRLF: a value read to the end of the line keeps the CR, and "london" + CR is no system */
+            const g = (k) => (new RegExp('\\n\\s+' + k + ':\\s*"?([^"\\r\\n]*)"?')).exec('\n' + chunk);
+            rowsY.push({ key: chunk.trim().split(/\s/)[0], name: (g('name') || [])[1], elo: +((g('elo') || [])[1] || 0),
+              sys_w: (g('sys_w') || [, ''])[1], sys_b: (g('sys_b') || [, ''])[1], movetime: +((g('movetime') || [])[1] || 0),
+              adaptive: (g('adaptive') || [])[1] === 'true' });
+          }
+          const W2 = { _s: {} };
+          const sbT = { localStorage: { getItem: (k) => W2._s[k] || null, setItem: (k, v) => { W2._s[k] = String(v); } },
+            document: { getElementById: (id) => (id === 'ct-facts-data' ? { textContent: JSON.stringify(rowsY) } : null) } };
+          sbT.window = sbT;
+          for (const f of ['pjcc-chess.js', 'pjcc-chess-ai.js', 'pjcc-gauntlet-engine.js', 'pjcc-systems.js', 'pjcc-adapt.js', 'pjcc-towntable.js']) {
+            new Function('self', 'window', 'module', 'document', 'localStorage', fs.readFileSync(path.join(ROOT, 'assets/js', f), 'utf8'))(
+              sbT, sbT, undefined, sbT.document, sbT.localStorage);
+          }
+          const TT = sbT.PJCCTownTable, CT = sbT.PJCCChess;
+          const takeT = async (tok, ms) => {
+            const t0 = Date.now();
+            for (;;) {
+              const r = TT.take(tok);
+              if (r) return { r: JSON.parse(r), ms: Date.now() - t0 };
+              if (Date.now() - t0 > ms) return null;
+              await new Promise((res) => setTimeout(res, 15));
+            }
+          };
+          const b0 = TT && TT.begin('maxwell');
+          const a1 = TT ? await takeT(TT.think(JSON.stringify({ key: 'maxwell', fen0: CT.START_FEN, moves: '', clock: null, study: false })), 6000) : null;
+          const fenS = '6k1/5ppp/8/8/8/8/1r6/R5K1 b - - 0 1';
+          const a2 = TT ? await takeT(TT.think(JSON.stringify({ key: 'maxwell', fen0: fenS, moves: '', clock: null, study: true })), 9000) : null;
+          const S2 = CT.parseFEN(fenS);
+          const legal2 = !!(a2 && a2.r.uci && CT.findMove(S2, CT.sqFromName(a2.r.uci.slice(0, 2)), CT.sqFromName(a2.r.uci.slice(2, 4)), a2.r.uci[4] || null));
+          if (TT) TT.finish(JSON.stringify({ key: 'maxwell', side: 'w', result: '1-0', moves: 'e2e4 e7e5', clean: true, study: false }));
+          const beatenT = JSON.parse(W2._s['pjcc.pt.beaten.v1'] || '[]'), starsT = JSON.parse(W2._s['pjcc.pt.stars.v1'] || '{}');
+          const gamesT = JSON.parse(W2._s['pjcc.pt.games.v1'] || '{}');
+          const beforeT = JSON.stringify(W2._s);
+          if (TT) TT.finish(JSON.stringify({ key: 'crockett', side: 'w', result: '1-0', moves: '', clean: true, study: true }));
+          const studyWrote = JSON.stringify(W2._s) !== beforeT;
+          if (TT) { TT.begin('auston'); TT.finish(JSON.stringify({ key: 'auston', side: 'b', result: '1-0', moves: 'e2e4', clean: true, study: false })); }
+          const seedT = JSON.parse(W2._s['pjcc.adapt.v1'] || '{}');
+          ok(b0 === 'ok' && !!a1 && a1.r.uci === 'd2d4' && a1.r.sys === true && a1.ms >= 100,
+            '⭐ the door: Maxwell as White opens his London, d2d4, out of his own system and not in the same breath',
+            a1 ? a1.r.uci + ' in ' + a1.ms + 'ms' : 'no answer');
+          ok(!!a2 && legal2 && a2.r.sys === false,
+            '…a study is no setup: the engine answers, and what it answers is legal', a2 ? a2.r.uci : 'no answer');
+          ok(beatenT.includes('maxwell') && starsT.maxwell && starsT.maxwell.w === 'full' && gamesT.maxwell && gamesT.maxwell.moves === 'e2e4 e7e5'
+             && !W2._s['pjcc.pt.last.v1'],
+            '⭐ …and a win at the town\'s table leaves the site\'s own records: the beaten list, the full star for that color, the game for the replay door, never the result stamp the town polls');
+          ok(!studyWrote && typeof seedT.auston === 'number',
+            '…a study leaves none of them, and Auston keeps where she settled for next time');
         }
 
         /* ⚠⚠ THE THREE WAYS A BEAT COULD HANG THE GAME, all of them one line. */
