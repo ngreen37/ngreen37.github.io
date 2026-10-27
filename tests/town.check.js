@@ -3562,8 +3562,8 @@ const server = http.createServer((req, res) => {
           '…and it lights with the lamps');
 
         /* ── #8 · THE MAP ──. */
-        ok(/"The map"/.test(jr9) && /if k\.keycode == KEY_M and not _talking\(\):/.test(jr9) && /_paint_map\(f\)/.test(jr9),
-          'M, or the journal\'s fourth tab, opens the map');
+        ok(/const TABS := \[[^\]]*"Map"\]/.test(jr9) && /if k\.keycode == KEY_M and not _talking\(\):/.test(jr9) && /_paint_map\(f\)/.test(jr9),
+          'M, or the journal\'s last tab, opens the map');
         const cap = fnGd(mapg, 'capture');
         ok(/not n2\.visible/.test(cap) && /not \(n is TownNPC\)/.test(cap),
           '⚠⚠ the map shows only places the town is showing — no people, and nothing hidden');
@@ -3644,10 +3644,10 @@ const server = http.createServer((req, res) => {
            && /if tap\.is_finite\(\) and not shut:/.test(fnGd(plG, '_process')),
           '…and the press that closed it cannot reopen it  (nor can a tap)');
         const sv = fnGd(gst, 'save_state'), ld = fnGd(gst, 'load_state');
-        ok(/FileAccess\.open\(SAVE_TMP, FileAccess\.WRITE\)/.test(sv) && /rename_absolute\(SAVE_TMP, SAVE_PATH\)/.test(sv),
-          'a save is written aside and swapped in');
-        ok(/rename_absolute\(SAVE_PATH, SAVE_BAK\)/.test(sv), '…keeping the one before it');
-        ok(/for p in \[SAVE_PATH, SAVE_TMP, SAVE_BAK\]:/.test(ld), '…and a torn save falls back instead of starting Day 1');
+        ok(/FileAccess\.open\(_path\("\.tmp"\), FileAccess\.WRITE\)/.test(sv) && /rename_absolute\(_path\("\.tmp"\), _path\(\)\)/.test(sv),
+          'a save is written aside and swapped in  (whichever of the two saves is in play)');
+        ok(/rename_absolute\(_path\(\), _path\("\.bak"\)\)/.test(sv), '…keeping the one before it');
+        ok(/for p in \[_path\(\), _path\("\.tmp"\), _path\("\.bak"\)\]:/.test(ld), '…and a torn save falls back instead of starting Day 1');
         ok(/GameState\.board\.check_site_unlocks\(\)[\s\S]*site_scores/.test(fnGd(jr, 'open')), 'the Journal fills a met price before it draws');
       }
 
@@ -3968,7 +3968,7 @@ const server = http.createServer((req, res) => {
         ok(/var bed := TownBed\.new\(\)/.test(homeG) && /HomeBoard\.new\(\)/.test(homeG)
            && /DogBed\.new\(\)/.test(homeG) && /dog\.at_home = true/.test(homeG)
            && !/TownBed\.new\(\)|HomeBoard/.test(townG),
-          '⭐ the bed, her bed and the board are in the house, and out of the square');
+          '⭐ the bed, her bed and the board are in the house, and out of the square  (for whoever keeps the dogs outdoors, theirs are in the yard home.gd builds)');
         const shown = /const SHOWN := \[([\s\S]*?)\n\t\]/.exec(hb);
         const sl = shown ? strs(shown[1]) : [];
         ok(sl.length === 4 && sl.every((s) => /^(She|You)\b/.test(s) && !/"/.test(s)),
@@ -4737,15 +4737,17 @@ const server = http.createServer((req, res) => {
              && floored.every(([who]) => new RegExp('"' + who + '":\\s+\\[Color').test(dg)),
             '⛑ ONLY HUMANS TALK: what you do, then what the dog did, starting with its name',
             '⚠ and no line at their boards may say a dog can play — that is Princess\'s to give away');
-          ok(/\n\tnow = turn\(\)\s*\n\s*for d in left_out:\s*\n\s*tidy\.erase\(d\)\s*\n\s*bump\[d\] = int\(bump\.get\(d, 0\)\) \+ 1\s*\n\s*left_out\.clear\(\)/.test(fnGd(hm, '_furnish_room'))
+          ok(/\n\tnow = turn\(\)\s*\n\s*for d in left_out:\s*\n\s*tidy\.erase\(d\)\s*\n\s*bump\[d\] = int\(bump\.get\(d, 0\)\) \+ 1\s*\n\s*left_out\.clear\(\)/.test(fnGd(hm, 'arrive'))
+             && /if not TownDog\.outdoors\(\):\s*\n\s*NateHome\.arrive\(\)/.test(fnGd(hm, '_furnish_room'))
+             && /NateHome\.arrive\(\)/.test(fnGd(hm, 'furnish_yard'))
              && /static var left_out: Dictionary = \{\}/.test(hm) && /static var tidy: Dictionary = \{\}/.test(hm)
              && /static var bump: Dictionary = \{\}/.test(hm) && /static var seen: Dictionary = \{\}/.test(hm)
              && /NateHome\.left_out\[dog\] = true/.test(fnIn(hb2, 'leave_out'))
              && !/left_out|NateHome\.(now|tidy|bump|seen)\b/.test(gs2),
             '⭐ you leave the lesson out, and the room you come back into is what became of it',
             '⚠ static, never saved or pushed: it outlives the walk outside and nothing else');
-          ok(/if NateHome\.wrecked\(dog\):\s*\n\s*open_talk\(prompt_text, FLOORED\[dog\]/.test(theirs)
-             && theirs.indexOf('FLOORED[dog]') < theirs.indexOf('"id": "teach"')
+          ok(/if NateHome\.wrecked\(dog\):\s*\n\s*open_talk\(prompt_text, _floored\(dog\)/.test(theirs)
+             && theirs.indexOf('_floored(dog)') < theirs.indexOf('"id": "teach"')
              && /if id == "tidy":\s*\n\s*NateHome\.tidy\[dog\] = NateHome\.now\s*\n\s*queue_redraw\(\)\s*\n\s*changed\.emit\(\)/.test(fnIn(hb2, '_on_chose'))
              && /low\.changed\.connect\(queue_redraw\)/.test(hm),
             '…and the mess comes first: nobody is taught anything until the pieces are picked up',
@@ -4968,13 +4970,14 @@ const server = http.createServer((req, res) => {
               makers.length + ' files make buttons; still 44 * k: ' + (flat.join(' ') || 'none') + '; never ask: ' + (off.join(' ') || 'none'));
           }
           ok(/_btns\[i\]\.size = Vector2\(bw, bh\)/.test(jrS) && /_sound\.size = Vector2\(w2, bh\)/.test(jrS) && /_who\.size = Vector2\(w2, bh\)/.test(jrS)
-             && /_btns\[TABS\.size\(\)\]\.size = Vector2\(w2, bh\)/.test(jrS) && /zb\.size = Vector2\(zw, bh\)/.test(jrS),
-            '   the Journal: its four tabs, Character, Sound, Close and the three time-zone buttons');
+             && /_btns\[TABS\.size\(\)\]\.size = Vector2\(w2, bh\)/.test(jrS) && /zb\.size = Vector2\(zw, bh\)/.test(jrS)
+             && /sb\.size = Vector2\(zw, bh\)/.test(jrS),
+            '   the Journal: its tabs, Character, Sound, Close, the three time-zone buttons and the three saves\'');
           {
             /* ⚠ ON A DESKTOP NOTHING MOVES: a thumb there is 44, and each new sum is the old number. */
             const row = n1(/var row2: float = 50\.0 \* k \+ \(\(bh \+ ([\d.]+) \* k\) if narrow else 0\.0\)/, jrS);
             const top = n1(/_top = row2 \+ bh \+ ([\d.]+) \* k/, jrS);
-            const bar = n1(/var bar: float = \(bh \+ ([\d.]+) \* k\) if town else 0\.0/, jrS);
+            const bar = n1(/var bar: float = \(bh \+ ([\d.]+) \* k\) if town or saves else 0\.0/, jrS);
             const zy = n1(/float\(i\) \* \(zw \+ 6\.0 \* k\), h - ([\d.]+) \* k - bh\)/, jrS);
             const pc = n1(/_card\.size\.y - ([\d.]+) \* _k - _bh\)/, papS), pb = n1(/var bottom: float = h - ([\d.]+) \* k - _bh/, papS);
             const fy = n1(/b\.position = Vector2\(x, s\.y - ([\d.]+) \* _k - _bh\)/, phoS);
@@ -5040,7 +5043,7 @@ const server = http.createServer((req, res) => {
           /* ── 3 · the box's line goes round USE ── */
           {
             const lay = fnGd(uiS, '_layout'), rnd = fnGd(uiS, '_round_use'), use = fnGd(padS, 'use_rect');
-            ok(/if not _seen_touch or _talking\(\):\s*\n\s*return Rect2\(\)/.test(use)
+            ok(/if not _shown\(\) or _talking\(\):\s*\n\s*return Rect2\(\)/.test(use)
                && /var r := \(R_BTN \+ 2\.0\) \* k\(\)\s*\n\s*var use := Rect2\(_btn_at\(\) - Vector2\(r, r\), Vector2\(r, r\) \* 2\.0\)\s*\n\s*if not _jumps\(\):\s*\n\s*return use\s*\n\s*var j := \(R_JUMP \+ 2\.0\) \* k\(\)\s*\n\s*return use\.merge\(Rect2\(_jump_at\(\) - Vector2\(j, j\), Vector2\(j, j\) \* 2\.0\)\)/.test(use),
               '⛑ the pad says where it is painting USE and JUMP, and "nowhere" while it paints none  (JUMP is not painted in a fight)');
             ok(/if _use\.has_area\(\):/.test(rnd) && /_line\.get_character_bounds\(i\)/.test(rnd)
@@ -6237,7 +6240,7 @@ const server = http.createServer((req, res) => {
           const lowR = +(/low\.radius = ([\d.]+)/.exec(hm) || [0, 0])[1];
           const beds = { Princess: v2M(hm, 'DOG_BED_AT'), Milo: v2M(hm, 'MILO_BED_AT'), Argus: v2M(hm, 'ARGUS_BED_AT') };
           ok(/for spot in \[\[where\("MiloBoard", MILO_BOARD_AT\), "Milo"\], \[where\("ArgusBoard", ARGUS_BOARD_AT\), "Argus"\]\]:\s*\n\s*var low := HomeBoard\.new\(\)\s*\n\s*low\.dog = spot\[1\]/.test(hm)
-             && /var dog := "Princess"/.test(hbM) && (hm.match(/HomeBoard\.new\(\)/g) || []).length === 2
+             && /var dog := "Princess"/.test(hbM) && (fnGd(hm, '_furnish_dogs').match(/HomeBoard\.new\(\)/g) || []).length === 2
              && !/_solid\(low/.test(hm) && /prompt_text = "%s's board" % dog/.test(fnInM(hbM, '_ready_extra')),
             '⭐ three boards, one for each dog: hers on the table, theirs on the floor and never a wall',
             'in a room this size a solid thing you cannot see the edges of is a wall nobody can report');
@@ -6286,7 +6289,7 @@ const server = http.createServer((req, res) => {
           ok(TM >= 30 && TM <= 360 && 1440 % TM === 0
              && /return TownClock\.day_of_year\(\) \* \(1440 \/ TURN_MINUTES\) \+ TownClock\.minute_of_day\(\) \/ TURN_MINUTES/.test(fnGd(hm, 'turn'))
              && /static var now: int = 0/.test(hm) && (hm.match(/\bturn\(\)/g) || []).length === 2
-             && /\n\tnow = turn\(\)\n/.test(fnGd(hm, '_furnish_room')),
+             && /\n\tnow = turn\(\)\n/.test(fnGd(hm, 'arrive')),
             '⭐ when you check back in the pieces have changed: a turn is ' + TM + ' minutes of the town\'s clock, read ONCE, at the door',
             '⚠⚠ nothing else in the house asks the clock — pieces that jump in front of you are a glitch, not a dog');
           ok(/return now \* 16 \+ int\(bump\.get\(dog, 0\)\)/.test(fnGd(hm, 'stamp'))
@@ -6302,7 +6305,7 @@ const server = http.createServer((req, res) => {
           const dealt = +(/for i in (\d+):\s*\n\s*all\.append\(\[SIDE\[i % 16\], i >= 16\]\)/.exec(spillFn) || [0, 0])[1];
           ok(side.split('').sort().join('') === 'bbknnppppppppqrr' && dealt === 31 && side[dealt % 16] === 'p'
              && /if act\(\) == "mess" and bool\(scene\.get\("happy", false\)\):\s*\n\s*_piece\("p", true,/.test(bvM),
-            '⭐ Milo\'s are all over the place, and they add up: 31 dealt between the floor and his board, the 32nd in his mouth',
+            '⭐ Milo\'s are all over the place, and they add up: 31 dealt between the floor and his board, the 32nd in his mouth  (under his paw for whoever keeps the dogs outdoors)',
             'the one left out is white\'s last pawn — the pawn BoardView paints under his nose');
           const nSpots = (((/const SCATTER := \[([\s\S]*?)\n\]/.exec(hm) || [0, ''])[1]).match(/Vector2\(/g) || []).length;
           const nR = /var n := rng\.randi_range\(SCATTER\.size\(\) - (\d+), SCATTER\.size\(\) - (\d+)\)/.exec(spillFn);
@@ -6821,6 +6824,269 @@ const server = http.createServer((req, res) => {
             '…a study leaves none of them, and Auston keeps where she settled for next time');
         }
 
+        /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
+           …, 8, 9, and 10 … Also, fix number 4 on the skeptic list regarding touch support." */
+        {
+          const padW = rd('pad.gd'), tpW = rd('touch_pad.gd'), homeW = rd('home.gd'), linW = rd('lines.gd');
+          const npcW = rd('npc.gd'), beatW = rd('beat.gd'), uiW = rd('town_ui.gd'), stW = rd('story.gd'), znW = rd('zone.gd');
+          const papRaw = rd('paper.gd');
+          /* ── 9, and the skeptic's 4: the hints follow the hand in use ── */
+          const inW = fnGd(padW, '_input');
+          ok(/var touching := false/.test(padW) && /var hand_known := false/.test(padW)
+             && /if event is InputEventScreenTouch or event is InputEventScreenDrag:\s*\n\s*finger = 1/.test(inW)
+             && /event\.device != InputEvent\.DEVICE_ID_EMULATION/.test(inW)
+             && /if finger != 0 and \(not hand_known or touching != \(finger == 1\)\):\s*\n\s*hand_known = true\s*\n\s*touching = finger == 1\s*\n\s*changed\.emit\(\)/.test(inW)
+             && /if Pad\.hand_known:\s*\n\s*return Pad\.touching/.test(fnGd(tpW, 'probably_touch')),
+            '⭐ the hints follow the hand in use  (his #9, the skeptic\'s #4): a PC with a touchscreen being typed on is a keyboard, and a finger is a finger the moment it touches',
+            'the device\'s own guess stands only until anything is pressed; a mouse Godot copied from a finger is the finger');
+          ok(/return _seen_touch and not \(Pad\.hand_known and not Pad\.touching\)/.test(fnGd(tpW, '_shown'))
+             && /if not _shown\(\):\s*\n\s*return/.test(fnGd(tpW, '_paint')) && /return _shown\(\)/.test(fnGd(tpW, 'seen_touch'))
+             && /Pad\.changed\.connect\(func\(\) -> void: _draw\.queue_redraw\(\)\)/.test(tpW),
+            '…and the thumb pad goes away when the keys take over, and comes back with the next touch');
+          ok(/if GameState\.body\.gear == "skates":\s*\n\s*say\("They roll on the roads and the trail\. Grass, dirt and gravel hold them back\."/.test(homeW),
+            '⭐ where the skates go on, one line says where they roll  (his #9)');
+          /* ── 4: the town says your name ── */
+          ok(/own\[i\] = own\[i\]\.replace\("\{you\}", you\)/.test(fnGd(linW, 'list'))
+             && /return str\(TownPlayerModel\.PLAYABLE\.get\(GameState\.character, "you"\)\)/.test(fnGd(linW, 'you_name'))
+             && /if first_today and not animal:\s*\n\s*_greeted = "%s, %s\. %s" % \[TownClock\.greeting\(\), Lines\.you_name\(\), _greeted\]/.test(npcW),
+            '⭐ the town says your name  (his #4): the first talk of the day opens "Morning, Habsa.", and {you} in any line is whoever you play',
+            '⚠ ONLY HUMANS TALK: a dog says nobody\'s name');
+          ok(/news\.append\("%s took %s: %s\." % \[you,/.test(papRaw) && /news\.append\("%s beat the CEO\." % you\)/.test(papRaw),
+            '…and the paper names you for what you took');
+          /* ── 5: each character their own narrator ── */
+          ok(/var mine = \(beat\.get\("by", \{\}\) as Dictionary\)\.get\(GameState\.character, null\)/.test(fnGd(beatW, 'play'))
+             && /b\._lines = \(\(mine if mine is Array else beat\.get\("lines", \[\]\)\) as Array\)\.duplicate\(\)/.test(fnGd(beatW, 'play'))
+             && (beatW.match(/u\.say\([^\n]*, null, Lines\.you_name\(\)\)/g) || []).length === 2
+             && /`by` gives any one of them their own words/.test(stW),
+            '⭐ each character is their own narrator  (his #5): a beat can carry anybody\'s own words (`by`), and whoever you play is named over every line of it');
+          ok(/func say\(text: String, seconds: float = 3\.4, from: Node2D = null, by: String = ""\) -> void:/.test(uiW)
+             && /var told: bool = look == SAY and _by != "" and not _bubbled/.test(fnGd(uiW, '_layout'))
+             && /_who\.visible = \(look == TALK or told\) and not _bubbled/.test(fnGd(uiW, '_layout'))
+             && /h = \(66\.0 if k <= 1\.4 else 96\.0\) \* k \+ \(18\.0 \* k if told else 0\.0\)/.test(fnGd(uiW, '_layout')),
+            '…in the bottom box as a person\'s name is, the box made taller for it');
+          ok(/if is_instance_valid\(_beat\):\s*\n\s*_beat\.done\.connect\(_report_challenge\.bind\(who, won, slot, learned\), CONNECT_ONE_SHOT\)\s*\n\s*return/.test(fnGd(znW, '_report_challenge')),
+            '⚠⚠ …and a win\'s report waits for the beat it set off: the first square\'s beat and "You beat Maxwell." land in one breath, and the report took the beat\'s first line out of the box before anybody read it',
+            'found by the narrator probe, 10-26');
+          /* ── 2: the road from start to finish, on one page ── */
+          const jrW = rd('journal.gd');
+          ok(/const TABS := \["Story", /.test(jrW) && /STORY_TAB: return _story_rows\(\)/.test(fnGd(jrW, '_rows'))
+             && /out\.append\(\{ "mark": "·", "a": "Next", "b": _next_step\(\), "lit": true \}\)/.test(fnGd(jrW, '_story_rows'))
+             && /if not GameState\.story\.found\("princess"\):\s*\n\s*return "Find Princess, north of the Assembly\."/.test(fnGd(jrW, '_next_step')),
+            '⭐ the Journal opens on the story  (his #2): what has happened so far, and the next step by name');
+          ok(/if GameState\.story\.dogs_play:\s*\n\s*out\.append\(\{ "mark": "✓", "a": "The secret"/.test(fnGd(jrW, '_story_rows'))
+             && /if _met\(GameState\.board\.holder_at\(slot\), key, slot\):\s*\n\s*return "%s, %s" % \[GameState\.board\.holder_at\(slot\), where\]\s*\n\s*return "somebody " \+ where/.test(fnGd(jrW, '_found_at')),
+            '⚠⚠ …and it keeps the town\'s mysteries: the secret is a row only once found, and the next step names a person only once you have met them  (his 09-03: "it should be a mystery")',
+            'it names the place: "somebody at the camp"');
+          /* ── 1: a finish ── */
+          const hlW = rd('hall.gd'), crW = rd('credits_roll.gd'), gsW = rd('game_state.gd'), phW = rd('photo.gd');
+          ok(/func interact\(player: Node\) -> void:\s*\n\t\tif not GameState\.challenge\.ceo_beaten:\s*\n\t\t\treturn\s*\n\t\tGameState\.story\.credits_due = true\s*\n\t\tGameState\.story\.tell\("end:door"\)\s*\n(?:\t\t#[^\n]*\n)?\t\tCheckerTown\.region = CheckerTown\.region_of\(arrive_at\)\s*\n\t\tsuper\(player\)/.test(hlW)
+             && /_far\.scene_path = "res:\/\/town\/town\.tscn"/.test(hlW)
+             && /_far\.visible = GameState\.challenge\.ceo_beaten\s*\n\s*_far\.monitoring = GameState\.challenge\.ceo_beaten/.test(fnGd(hlW, '_refresh')),
+            '⭐ a finish  (his #1): the CEO beaten, the far door at the back of the Assembly opens and walks you out into the town',
+            '⚠ the window is set to where you come out, or the town puts you back in the square  (found by the finish probe)');
+          ok(/if GameState\.story\.credits_due:\s*\n\s*GameState\.story\.credits_due = false\s*\n\s*CreditsRoll\.open\(self\)/.test(znW)
+             && /var credits_due := false/.test(gsW) && !/"credits_due"/.test(gsW)
+             && /func finished\(\) -> bool:\s*\n\treturn told\.has\("end:door"\)/.test(gsW)
+             && /add_to_group\("town_cover"\)/.test(crW) && /TownZone\.uncovered\(\)/.test(fnGd(crW, '_close'))
+             && /\["The town stays open\.", /.test(crW),
+            '…under the credits, once: it is kept that you went (`told`, a union), and the roll is a cover that hands the feet back',
+            '⚠ credits_due is NOT saved: a save made at the door would play them on every load');
+          ok(/for w in _crowd:\s*\n\s*w\.stand\(GameState\.challenge\.ceo_beaten\)/.test(fnGd(hlW, '_refresh'))
+             && /_feet\.set_deferred\("disabled", not on\)/.test(hlW) && /_build = TownPeople\.dress\(self, who, key\)\["build"\]/.test(hlW)
+             && /if THEIR_BACK\[f\] == "k" and GameState\.challenge\.ceo_beaten:/.test(fnGd(hlW, '_draw_theirs'))
+             && /"down": str\(back\[f\]\) == "k" and GameState\.challenge\.ceo_beaten/.test(phW),
+            '…the town stands along the walls, each in their own clothes, and his king lies down, in the room and in the photo',
+            '⚠ a hidden body still blocks, and drawn on the room\'s own canvas all ten wore your clothes');
+          ok(/return "The town is yours\." if GameState\.story\.finished\(\) else "Walk through the far door, at the back of the Assembly\."/.test(fnGd(jrW, '_next_step'))
+             && /"a": "The far door"/.test(fnGd(jrW, '_story_rows')),
+            '…and the Journal\'s next step says where the door is until you have gone through it');
+          /* ── 7: the dogs know who you are, and Habsa and Munawar keep them outdoors ── */
+          /* his: "7 (adhere to Habsa and Munawar's muslim views toward dogs in which no saliva can be transferred.  Dog
+             must be DRY as well - don't make it a huge deal, though.  Also, the dogs cannot stay indoors for these
+             characters... we'll have to work around that)" */
+          const pmW = rd('player_model.gd'), dgW = rd('dog.gd'), hmW = rd('home.gd'), bvW = rd('board_view.gd');
+          const twW = rd('town.gd'), lnW = rd('lines.gd');
+          const playable = [...((/const PLAYABLE := \{([\s\S]*?)\}/.exec(pmW) || [0, ''])[1]).matchAll(/"(\w+)":/g)].map((m) => m[1]);
+          const keepOut = (((/const DOGS_OUTDOORS := \[([^\]]*)\]/.exec(pmW) || [0, ''])[1]).match(/"\w+"/g) || []).map((x) => x.slice(1, -1));
+          ok(keepOut.join(' ') === 'habsa munawar' && keepOut.every((k) => playable.includes(k))
+             && /static func outdoors\(\) -> bool:\s*\n\treturn TownPlayerModel\.DOGS_OUTDOORS\.has\(GameState\.character\)/.test(dgW),
+            '⭐ Habsa and Munawar keep the dogs outdoors  (his #7): one list, and the dogs ask it', keepOut.join(', '));
+          const DOGS3 = ['Princess', 'Milo', 'Argus'];
+          const hiMiss = [];
+          for (const d of DOGS3) for (const id of playable) {
+            const rows = words(d)['hello_' + id] || [];
+            if (rows.length !== 1 || !rows[0].startsWith(d + ' ')) hiMiss.push(d + '/' + id);
+          }
+          ok(playable.length === 8 && hiMiss.length === 0
+             && /if first_today and animal:\s*\n\s*_greeted = Lines\.one\(who, "hello_" \+ GameState\.character, _greeted\)/.test(npcW),
+            '⭐ the dogs know who you are  (his #7): the first time each sees you in a day, its own trick for each of the eight',
+            hiMiss.join(' ') || '24 rows, every one what the dog DOES, starting with its name');
+          /* ⚠⚠ NO MOUTH, NO NOSE, NO WET DOG: every plain row with one of these has a _dry row the game reads instead */
+          const MOUTH = /\b(mouths?|lick\w*|teeth|drool\w*|slobber\w*|chew\w*|carr(?:y|ies|ied)|nose[sd]?|nosing|chin|tongue|wet|soak\w*)\b/i;
+          const wet = [];
+          for (const d of DOGS3) {
+            const w = words(d);
+            for (const h of Object.keys(w)) {
+              if (h.endsWith('_dry') || h.startsWith('hello_')) continue;
+              if (!w[h].some((r) => MOUTH.test(r))) continue;
+              const dry = w[h + '_dry'] || [];
+              if (dry.length === 0) wet.push(d + ' [' + h + '] has no _dry rows');
+            }
+            for (const h of Object.keys(w)) {
+              if (h.endsWith('_dry') || keepOut.some((k) => h === 'hello_' + k)) (w[h] || []).filter((r) => MOUTH.test(r)).forEach((r) => wet.push(d + ' [' + h + ']: ' + r));
+            }
+            if (w.lines_dry && w.lines_dry.length !== (w.lines || []).length) wet.push(d + ': [lines_dry] is not the ladder\'s length');
+          }
+          const listFn = fnGd(lnW, 'list');
+          ok(wet.length === 0
+             && /if TownDog\.is_animal\(who\) and TownDog\.outdoors\(\):\s*\n\s*own\.assign\(_of\(who\)\.get\(heading \+ "_dry", \[\]\)\)\s*\n\s*if own\.is_empty\(\):\s*\n\s*own\.assign\(_of\(who\)\.get\(heading, \[\]\)\)/.test(listFn),
+            '⛑⛑ …and for them no dog\'s mouth or nose touches them or anything of theirs, and no wet dog leans on them: every row that says so has a dry one, read first',
+            wet.slice(0, 3).join(' | ') || 'the dry rows are clean, and the [lines] ladder keeps its length');
+          const hbW = hmW.slice(hmW.indexOf('class HomeBoard extends Interactable:'));
+          const strsW = (t) => [...t.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+          const fnInW = (src, name) => {
+            const a = src.indexOf('\tfunc ' + name + '(');
+            if (a < 0) return '';
+            const rest = src.slice(a + 1);
+            const b = rest.search(/\n\t(?:static )?func |\n\S/);
+            return b < 0 ? rest : rest.slice(0, b);
+          };
+          const shownL = strsW((/const SHOWN := \[([\s\S]*?)\n\t\]/.exec(hbW) || [0, ''])[1]);
+          const shownD = Object.fromEntries([...((/const SHOWN_DRY := \{([\s\S]*?)\n\t\}/.exec(hbW) || [0, ''])[1]).matchAll(/(\d+): "([^"]*)"/g)].map((m) => [m[1], m[2]]));
+          const floorL = Object.fromEntries([...((/const FLOORED := \{([\s\S]*?)\n\t\}/.exec(hbW) || [0, ''])[1]).matchAll(/"(\w+)": "([^"]*)"/g)].map((m) => [m[1], m[2]]));
+          const floorD = Object.fromEntries([...((/const FLOORED_DRY := \{([\s\S]*?)\n\t\}/.exec(hbW) || [0, ''])[1]).matchAll(/"(\w+)": "([^"]*)"/g)].map((m) => [m[1], m[2]]));
+          const boardWet = shownL.map((r, i) => [String(i), r]).filter(([, r]) => MOUTH.test(r)).filter(([i]) => !shownD[i] || MOUTH.test(shownD[i]))
+            .concat(Object.entries(floorL).filter(([, r]) => MOUTH.test(r)).filter(([k]) => !floorD[k] || MOUTH.test(floorD[k])));
+          ok(shownL.length === 4 && boardWet.length === 0 && Object.entries(floorD).every(([k, r]) => r.startsWith(k + ' '))
+             && /return str\(SHOWN_DRY\.get\(i, SHOWN\[i\]\)\) if TownDog\.outdoors\(\) else str\(SHOWN\[i\]\)/.test(fnInW(hbW, '_shown'))
+             && /return str\(FLOORED_DRY\.get\(d, FLOORED\[d\]\)\) if TownDog\.outdoors\(\) else str\(FLOORED\[d\]\)/.test(fnInW(hbW, '_floored'))
+             && !/SHOWN\[_stage\]|FLOORED\[dog\]/.test(hbW),
+            '…at the boards too: she pushes the knight with a paw, and Argus paws his pieces off rather than carry them',
+            boardWet.map(([k]) => k).join(' ') || 'every board line with a mouth or nose in it has its dry line');
+          const pd = fnGd(bvW, '_paint_dog');
+          ok(/var dry := TownDog\.outdoors\(\)/.test(pd)
+             && /if dry:\s*\n\s*at = home\.lerp\(push \+ Vector2\(0\.714, -0\.79\) \* c, lean\)\s*\n\s*reach = lean\s*\n\s*paw_to = \(move\["at"\] as Vector2\) \+ Vector2\(0\.0, -0\.3 \* c\)\s*\n\s*else:\s*\n\s*at = home\.lerp\(push, lean\)/.test(pd)
+             && /TownDog\.paint_reach\(_art, dog, paw, paw\.lerp\(paw_to, reach\), c \* 0\.40\)/.test(pd)
+             && /_piece\("p", true, at \+ \(Vector2\(-0\.6, 0\.9\) if dry else Vector2\(0\.0, 0\.34\)\) \* c, PI \* 0\.5\)\s*\n(?:\s*#[^\n]*\n)?\s*if dry:\s*\n\s*TownDog\.paint_reach\(/.test(pd),
+            '…and up close the piece moves under a paw, and Milo\'s pawn is under his paw, never in his mouth');
+          /* ⚠⚠ NEVER INDOORS: the house builds none of it for them, and the yard is built by the house's own code */
+          ok(/if not TownDog\.outdoors\(\):\s*\n\s*_furnish_dogs\(\)/.test(fnGd(hmW, '_furnish_room'))
+             && /if not TownDog\.outdoors\(\):\s*\n\s*_draw_mess\(\)/.test(fnGd(hmW, '_decor'))
+             && /TownDog\.princess\(\)/.test(fnGd(hmW, '_furnish_dogs')) && /_lodger\("Argus", /.test(fnGd(hmW, '_furnish_dogs'))
+             && !/TownDog\.(princess|of)\(|DogBed|HomeBoard/.test(fnGd(hmW, '_furnish_room')),
+            '⭐⭐ the dogs never come into the house for them: no dog, no bed, no board and no mess indoors  (his: "the dogs cannot stay indoors for these characters")');
+          const yardFn = fnGd(hmW, 'furnish_yard');
+          const kennelC = hmW.slice(hmW.indexOf('class Kennel extends Node2D:'), hmW.indexOf('class YardMess extends Node2D:'));
+          ok(/if TownDog\.outdoors\(\):\s*\n\s*NateHome\.furnish_yard\(self, HOME_AT\)/.test(fnGd(twW, '_furnish_home'))
+             && (yardFn.match(/HomeBoard\.new\(\)/g) || []).length === 2 && /Kennel\.new\(\)/.test(yardFn) && /YardMess\.new\(\)/.test(yardFn)
+             && /her\.at_home = true/.test(yardFn) && /NateHome\.lodge\(town, name_, yard_bed\(name_, home\) \+ Vector2\(0\.0, 6\.0\)\)\.door_home = yard_gate\(home\)/.test(yardFn)
+             && /table\.stood_up\.connect\(town\._story\)/.test(yardFn)
+             && /const DOORS := \["Princess", "Milo", "Argus"\]/.test(kennelC) && /draw_colored_polygon\(roof, ROOF\)/.test(kennelC),
+            '⭐ …it is all out in a yard by his checker instead: a doghouse each with a roof over every bed, the three boards, and the house\'s copies of the three of them');
+          ok(/if TownDog\.outdoors\(\):\s*\n\s*d\.door_home = NateHome\.yard_gate\(HOME_AT\)/.test(fnGd(twW, '_lane_dog'))
+             && /if door_home != Vector2\.ZERO:\s*\n\s*global_position = door_home/.test(fnGd(dgW, '_step_in')),
+            '…and the lane\'s copy and the yard\'s hand over at one gate, in plain view: one goes out of sight where the other comes in',
+            'from the lane every bed is behind the kennel, and a dog walks a straight line');
+          /* ⚠⚠ EVERY PIECE OF IT IN THE SQUARE'S WINDOW: the south window starts at x -200 below y 560, and the cull
+             dropped two of the boards the first time. */
+          const rrect = Object.fromEntries([...fnGd(twW, 'region_rect').matchAll(/"(\w+)":\s*\n\s*return Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/g)]
+            .map((m) => [m[1], { x: +m[2], y: +m[3], w: +m[4], h: +m[5] }]));
+          const sq = /\n\treturn Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(fnGd(twW, 'region_rect'));
+          const homeAt = (/const HOME_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(twW) || [0, NaN, NaN]).slice(1).map(Number);
+          const yardOff = (n) => (new RegExp('const YARD_' + n + ' := Vector2\\((-?[\\d.]+), (-?[\\d.]+)\\)').exec(hmW) || [0, NaN, NaN]).slice(1).map(Number);
+          const inRect = (r, x, y) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+          const strayYard = ['KENNEL', 'ARGUS', 'TABLE', 'MILO', 'GATE'].filter((n) => {
+            const [ox, oy] = yardOff(n), x = homeAt[0] + ox, y = homeAt[1] + oy;
+            return !Number.isFinite(x) || !sq || !inRect({ x: +sq[1], y: +sq[2], w: +sq[3], h: +sq[4] }, x, y)
+              || Object.values(rrect).some((r) => inRect(r, x, y));
+          });
+          ok(Object.keys(rrect).length >= 6 && strayYard.length === 0 && !/StaticBody2D/.test(kennelC) && !/_solid\(/.test(yardFn),
+            '⚠⚠ …every piece of the yard is in the square\'s own window, and it is scenery like the night market: nothing out there has a body',
+            strayYard.length ? 'outside the square: ' + strayYard.join(' ') : 'kennel, three boards and the gate, all filed in the square');
+          ok(/if dogs_room:\s*\n\s*var out := TownDog\.outdoors\(\)\s*\n\s*GameState\.character_changed\.connect\(func\(_w: String\) -> void:\s*\n\s*if TownDog\.outdoors\(\) != out:\s*\n\s*_dogs_moved\(\)\)/.test(fnGd(znW, '_ready'))
+             && /\(n as CharacterSelect\)\.closed\.connect\(_rebuild, CONNECT_ONE_SHOT\)/.test(fnGd(znW, '_dogs_moved'))
+             && /_rebuilding = true/.test(fnGd(znW, '_dogs_moved')) && /if is_instance_valid\(_beat\) or _rebuilding:/.test(fnGd(znW, '_story'))
+             && /GameState\.reentry\[scene_file_path\] = player\.global_position/.test(fnGd(znW, '_rebuild'))
+             && /dogs_room = true/.test(fnGd(twW, '_furnish')) && /dogs_room = true/.test(fnGd(hmW, '_furnish_room')),
+            '⚠⚠ …and switching to one of them in the house rebuilds it where you stand, once the cards shut: a dog left indoors for them is the one thing this forbids',
+            'no beat starts in the room that is going, or the opening plays twice');
+          ok(/"by": \{\s*\n\s*"habsa": \["Out in the yard, /.test(stW) && /"munawar": \["Out in the yard, /.test(stW),
+            '…and the opening says their beds are out in the yard');
+          /* ── 6: one signature each ── */
+          /* his: "One signature each, cosmetic only. A celebration pose, an idle and one item per character, shown on
+             the cards and the title screen. Poses need no Blender (the bench press already bends the rig); your clips
+             replace them." */
+          const sigM = /const SIGNATURE := \{([\s\S]*?)\n\}/.exec(pmW);
+          const sigs = sigM ? [...sigM[1].matchAll(/"(\w+)": \{ "item": "(\w+)", "idle": "(\w+)", "win": "(\w+)" \}/g)]
+            .map((m) => ({ who: m[1], item: m[2], idle: m[3], win: m[4] })) : [];
+          const posesM = /const POSES := \{([\s\S]*?)\n\}/.exec(pmW);
+          const V3 = 'Vector3\\((-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+)\\)';
+          const poses = posesM ? Object.fromEntries([...posesM[1].matchAll(new RegExp('"(\\w+)": \\[' + V3 + ', ' + V3, 'g'))]
+            .map((m) => [m[1], [[+m[2], +m[3], +m[4]], [+m[5], +m[6], +m[7]]]])) : {};
+          const itemsM = /const ITEMS := \{([\s\S]*?)\n\}/.exec(pmW);
+          const items = itemsM ? [...itemsM[1].matchAll(/^\t"(\w+)": \["([\w.]+)"/gm)].map((m) => [m[1], m[2]]) : [];
+          const sigBad = playable.filter((id) => {
+            const g = sigs.find((x) => x.who === id);
+            return !g || !items.some(([k]) => k === g.item) || !poses[g.idle] || !(poses[g.win] || g.win === 'clip');
+          });
+          ok(sigs.length === 8 && sigBad.length === 0 && new Set(sigs.map((g) => g.item)).size === 8
+             && items.every(([, b]) => ['Head', 'Spine.2', 'Hand.L', 'Hand.R'].includes(b)),
+            '⭐ one signature each  (his #6): a thing to carry, a way to stand and a celebration for every one of the eight, no two holding the same thing',
+            sigBad.join(' ') || sigs.map((g) => g.who + ' ' + g.item).join(', '));
+          const tooFar = Object.entries(poses).filter(([, lr]) => lr.some((v) => Math.hypot(v[0], v[1], v[2]) > 0.245)).map(([k]) => k);
+          ok(Object.keys(poses).length >= 10 && tooFar.length === 0,
+            '⚠ …every pose inside the reach of his short arms  (0.24 of his height: past it is an arm held straight at nothing)',
+            tooFar.join(' ') || Object.keys(poses).length + ' poses');
+          const csW6 = rd('character_select.gd'), prbW = rd('tests/probe.gd');
+          const castStep = (prbW.split('\t\t\t"cast":')[1] || '').split('\n\t\t\t"')[0];
+          ok(/add_child\(body\)\s*\n\s*body\.sign\(str\(_ids\[i\]\)\)/.test(fnGd(csW6, '_ready')) && /body\.sign_win\(\)/.test(fnGd(csW6, '_choose'))
+             && /body\.sign\(who\)/.test(castStep)
+             && !/\.sign\(|sign_win\(/.test(rd('player.gd') + rd('people_sheet.gd') + rd('npc.gd') + rd('lift.gd')),
+            '…shown on the cards, where the one you pick celebrates their own way, and in the title screen\'s cast  (and nowhere else: cosmetic only)');
+          ok(/and \(str\(w\)\.contains\("_"\) or not _signed_clip\(short\)\)/.test(fnGd(pmW, '_match_clip'))
+             && /_match_clip\(\[who \+ "_idle"\], ""\)/.test(fnGd(pmW, 'sign')) && /_match_clip\(\[_who \+ "_win"\], ""\)/.test(fnGd(pmW, 'sign_win'))
+             && /if own != "" or str\(_sign\.get\("win", ""\)\) == "clip":/.test(fnGd(pmW, 'sign_win')),
+            '⭐ …and a clip of his replaces a pose: "<who>_win" or "<who>_idle" plays instead, and is never taken as everybody\'s',
+            'Nate\'s celebration is already his own Wave');
+          /* ── 8: New Game and a second save ── */
+          /* his: "New Game and a second save. Continue / New Game on the title screen, so a finished run can start
+             over with someone else first." */
+          const gsS = rd('game_state.gd'), jrS8 = rd('journal.gd');
+          ok(/const SAVE_COUNT := 2/.test(gsS) && /return SAVE_PATH if n <= 1 else "user:\/\/town%d\.json" % n/.test(fnGd(gsS, 'path_of'))
+             && /return path_of\(save_slot\) \+ ext/.test(fnGd(gsS, '_path'))
+             && !/SAVE_(PATH|TMP|BAK)\b/.test(fnGd(gsS, 'save_state') + fnGd(gsS, 'load_state')),
+            '⭐ two saves  (his #8): Save 1 is the file it always was, Save 2 its own, and both are written and read the same way',
+            'an old save is Save 1, untouched');
+          ok(/if not OS\.has_feature\("web"\) or save_slot != 1:\s*\n\s*return/.test(fnGd(gsS, 'push_to_site'))
+             && /if not OS\.has_feature\("web"\) or save_slot != 1:\s*\n\s*return/.test(fnGd(gsS, 'pull_from_site'))
+             && /_pulls_left = 15 if save_slot == 1 else 0/.test(fnGd(gsS, '_ready')) && /_pulls_left = 15 if save_slot == 1 else 0/.test(fnGd(gsS, 'use_save'))
+             && /func new_game\(\) -> void:\s*\n\tuse_save\(2, true\)/.test(gsS),
+            '⛑⛑ …Save 2 never meets the account\'s run, and a new game is always Save 2',
+            'the account merges by union: a new game in Save 1 would be handed its old run straight back');
+          const useFn = fnGd(gsS, 'use_save');
+          ok(useFn.indexOf('save_state()') < useFn.indexOf('save_slot = clampi(n, 1, SAVE_COUNT)')
+             && /_reset_parts\(\)/.test(useFn) && /load_state\(\)/.test(useFn) && /NateHome\.forget\(\)/.test(useFn)
+             && /CheckerTown\.region = "square"/.test(useFn) && /CharacterSelect\.asked = false/.test(useFn)
+             && /sound_on = bool\(keep\[0\]\)/.test(useFn) && /get_tree\(\)\.change_scene_to_file\("res:\/\/rooms\/home\.tscn"\)/.test(useFn)
+             && /var fresh: Object = \(part\.get_script\(\) as Script\)\.new\(\)/.test(fnGd(gsS, '_reset_parts'))
+             && /if int\(prop\["usage"\]\) & PROPERTY_USAGE_SCRIPT_VARIABLE:/.test(fnGd(gsS, '_reset_parts')),
+            '…switching writes the run you leave, then reads the other in its place: every part back to its own defaults, the house\'s mess forgotten, the cards up',
+            'the mute and the clock stay as they are: they are the device\'s');
+          ok(/save_slot = _read_slot\(\)/.test(fnGd(gsS, '_ready')) && /"user:\/\/saves\.json"/.test(gsS)
+             && /if _program_new_game\(\):\s*\n\s*save_slot = 2/.test(fnGd(gsS, '_ready'))
+             && /\(window\.townNewGame === true\) \? \(\(window\.townNewGame = false\), 1\) : 0/.test(fnGd(gsS, '_program_new_game'))
+             && /program\.wait_time = 0\.25/.test(fnGd(gsS, '_ready')),
+            '…which save is in play is the device\'s, and New Game on the desktop program\'s title begins Save 2 before the first room is drawn');
+          ok(/_save_btns\.append\(_button\("Save 1", func\(\) -> void: _play_save\(1\)\)\)/.test(jrS8)
+             && /_save_btns\.append\(_button\("New Game", func\(\) -> void: _new_game\(\)\)\)/.test(jrS8)
+             && /if held and not _armed:\s*\n\s*_armed = true\s*\n\s*_save_btns\[2\]\.text = "Yes, start Save 2 over"\s*\n\s*return/.test(fnGd(jrS8, '_new_game'))
+             && /"kept with your account" if GameState\.save_slot == 1 else "on this device only"/.test(fnGd(jrS8, '_story_rows')),
+            '⭐ …in the Journal\'s story tab: either save, and New Game, which asks first over a run in Save 2; the tab says which run this is');
+          const casesS = rd('tests/cases.sh');
+          ok(/rm -f [^\n]*"\$SAVE\/town2\.json"[^\n]*"\$SAVE\/saves\.json"/.test(casesS),
+            '⚠ …and every probe run starts from no save of either kind  (a Save 2 left behind walked into the next case)');
+        }
+
         /* ⚠⚠ THE THREE WAYS A BEAT COULD HANG THE GAME, all of them one line. */
         ok(/add_to_group\("town_cover"\)/.test(bt) && /TownZone\.uncovered\(\)/.test(bt),
           'a beat takes the feet through the town\'s own cover, and hands them back through uncovered()',
@@ -7266,8 +7532,8 @@ const server = http.createServer((req, res) => {
             '⚠⚠ …and an empty `water` still means no water night');
           ok(/door_home != Vector2\.ZERO and not _walk_to\(door_home/.test(fnGd(dogP, '_process')),
             '⚠⚠ …and an empty door_home still means "step out where you stand"');
-          ok(/if not at_home and door_home != Vector2\.ZERO:/.test(fnGd(dogP, '_step_in')),
-            '⚠ …and coming back on duty does not teleport her to a door in another window');
+          ok(/if door_home != Vector2\.ZERO:\s*\n\s*global_position = door_home/.test(fnGd(dogP, '_step_in')),
+            '⚠ …and coming back on duty does not teleport her to a door in another window  (an empty door_home is nowhere)');
           /* ⚠ SHE IS STILL THE COMPANION. The whole point of his pick over the other two. */
           ok(/"companion": true/.test(dogP),
             '⭐ …and she is still a companion — she heels while you are up there');
