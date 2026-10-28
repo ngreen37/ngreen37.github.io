@@ -6936,13 +6936,14 @@ const server = http.createServer((req, res) => {
             /* ⭐ THE LATER AREAS  (his, 2026-10-27: "block off the later areas of the game (your best discretion)") */
             const wdW = rd('state_worlds.gd'), drW = rd('door.gd'), ptW = rd('portal.gd'), cgW = rd('city_gate.gd'),
               mxW = rd('maxwell.gd'), sbW = rd('state_board.gd'), stW = rd('state_town.gd');
-            const laterAt = [...((/const LATER := \{([\s\S]*?)\n\}/.exec(wdW) || [])[1] || '').matchAll(/^\t"([^"]+)": "[^"]+",/gm)].map((m) => m[1]);
-            const laterGames = [...((/const LATER_GAMES := \[([^\]]*)\]/.exec(wdW) || [])[1] || '').matchAll(/"([\w-]+)"/g)].map((m) => m[1]);
+            const laterRows = [...((/const LATER := \{([\s\S]*?)\n\}/.exec(wdW) || [])[1] || '').matchAll(/^\t"([^"]+)": \["[^"]+", "([\w-]*)"\],/gm)];
+            const laterAt = laterRows.map((m) => m[1]), laterGames = laterRows.map((m) => m[2]).filter((g) => g !== '');
             ok(/const BUILDING := "Building\. Not open to visitors\."/.test(wdW)
                && JSON.stringify(laterAt) === JSON.stringify(['/games/chess-city/', '/games/campaign/', '/games/murphys-law/', 'res://rooms/secret.tscn'])
                && JSON.stringify(laterGames) === JSON.stringify(['siege-waves', 'murphys-law'])
-               && /return where != "" and LATER\.has\(where\.get_slice\("\?", 0\)\)/.test(fnGd(wdW, 'later')),
-              '⭐ the later areas  (his 10-27): ONE list of what is still being built, and his words for it  ("Building. Not open to visitors.")',
+               && /return where != "" and LATER\.has\(where\.get_slice\("\?", 0\)\)/.test(fnGd(wdW, 'later'))
+               && !/LATER_GAMES/.test(wdW + sbW + rd('journal.gd')),
+              '⭐ the later areas  (his 10-27): ONE list of what is still being built and the square each one holds, and his words for it  ("Building. Not open to visitors.")',
               laterAt.join(' ') + ' · ' + laterGames.join(' '));
             const pages = laterAt.filter((u) => u.startsWith('/games/')).map((u) => 'games/' + u.split('/')[2] + '/index.html');
             const unshut = pages.filter((f) => !fs.existsSync(path.join(ROOT, f))
@@ -6968,7 +6969,8 @@ const server = http.createServer((req, res) => {
             const rosterN = (sbW.match(/^\t\{ "p": "[prnbqk]", +"who":/gm) || []).length;
             const strays = laterGames.filter((g) => !new RegExp('"un": \\["' + g + '", \\d+\\]').test(sbW));
             ok(/if \(str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)\) and not later\(i\):/.test(fnGd(sbW, 'claimable'))
-               && /return r\.has\("un"\) and GameState\.worlds\.LATER_GAMES\.has\(str\(\(r\["un"\] as Array\)\[0\]\)\)/.test(fnGd(sbW, 'later'))
+               && /return r\.has\("un"\) and GameState\.worlds\.later_game\(str\(\(r\["un"\] as Array\)\[0\]\)\)/.test(fnGd(sbW, 'later'))
+               && /for v in LATER\.values\(\):\s*\n\t\tif game != "" and str\(\(v as Array\)\[1\]\) == game:\s*\n\t\t\treturn true\s*\n\treturn false/.test(fnGd(wdW, 'later_game'))
                && /for i in claimable\(\):/.test(fnGd(sbW, 'army_full')) && strays.length === 0 && rosterN === 16,
               '⛑⛑ …and a square won only in one of them is not asked of you yet: the CEO waits on the other ' + (rosterN - laterGames.length),
               strays.length ? 'not a square\'s game: ' + strays.join(' ') : 'a square nobody can win would lock the far chair for good');
