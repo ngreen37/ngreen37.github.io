@@ -95,10 +95,11 @@ function walk(d, out) {
 }
 const rel = (f) => path.relative(ROOT, f).split('\\').join('/');
 /* ⚠ THE GAME LIVES OUTSIDE THIS REPO (its mirror in private/ was retired 2026-10-19): walked too,
-   or its comments leave the gate. Skipped where it is not checked out. */
+   or its comments leave the gate. Skipped where it is not checked out.
+   ⚠ engine/stockfish/ IS STOCKFISH'S OWN RELEASE, fetched beside the game (2026-10-28): not our words to spell. */
 const GAME = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
 const FILES = walk(ROOT, []).concat(fs.existsSync(GAME)
-  ? walk(GAME, []).filter((f) => !/[\\/]\.godot[\\/]|[\\/]tests[\\/](probes|out)[\\/]/.test(f)) : []);
+  ? walk(GAME, []).filter((f) => !/[\\/]\.godot[\\/]|[\\/]tests[\\/](probes|out)[\\/]|[\\/]engine[\\/]stockfish[\\/]/.test(f)) : []);
 
 /* ⭐⭐ AND IT READS THE MEMORY DIRECTORY (2026-09-05). Nineteen British spellings were
    living in `~/.claude/projects/<slug>/memory` — the one place prose gets written every
