@@ -698,7 +698,7 @@ const server = http.createServer((req, res) => {
         '…and the a-rook lands on d(4), or the king castles by himself');
       ok(/_poll\.timeout\.connect\(_tick\)/.test(gs) && /\bpoll_challenge\(\)/.test(gs),
         '…on a timer: the new tab means the town never reloads, so nothing else asks');
-      ok(/if not OS\.has_feature\("web"\):\s*\n\s*add_child\(DevReferee/.test(zone),
+      ok(/if not OS\.has_feature\("web"\) and not GameState\.worlds\.no_site\(\):\s*\n\s*add_child\(DevReferee/.test(zone),
         'the DevReferee stand-in is DESKTOP ONLY — on web it would hide a broken seam');
       /* ⚠ the half that was missing until 2026-09-03: the town has to READ the account. */
       ok(/func pull_from_site\(/.test(gs) && /townState/.test(gs),
@@ -6873,6 +6873,43 @@ const server = http.createServer((req, res) => {
             cpG ? cpG[1] + ' / ' + cpG[2] : 'no constants');
           ok(/bash "\$S\/engine\.sh"/.test(suiteT) && /\btablesf\b/.test(suiteT) && /\btablesfnone\b/.test(suiteT),
             '…and the suite plays it: engine.sh against the real Stockfish (every pace branch, a mate in one, a stopped search, nothing left running), and a game at Robert\'s table with it and without it');
+          /* ⭐ THE STANDALONE WINDOWS BUILD  (his, 2026-10-28: "build a standalone windows build") */
+          const presetT = gdTxt('export_presets.cfg'), projT = gdTxt('project.godot');
+          const winP = (/\[preset\.\d+\]\n\nname="Windows Desktop"[\s\S]*?(?=\n\[preset\.\d+\]\n|$)/.exec(presetT) || [''])[0];
+          const wdS = rd('state_worlds.gd'), znS2 = rd('zone.gd'), pcS = rd('puzzle_champ.gd'), gsS2 = rd('game_state.gd');
+          const expT = gdTxt('tests/export_windows.sh'), tplT = gdTxt('tests/get_templates.py'), saT = gdTxt('tests/standalone.sh');
+          ok(/platform="Windows Desktop"/.test(winP) && /custom_features="standalone"/.test(winP)
+             && /include_filter="people\/lines\/\*\.txt"/.test(winP) && /binary_format\/architecture="x86_64"/.test(winP)
+             && /^\[preset\.0\]\n\nname="Web"/.test(presetT) && /'--export-release', 'Web'/.test(fs.readFileSync(path.join(ROOT, 'tests/gen-checkertown.js'), 'utf8')),
+            '⭐⭐ the standalone Windows build  (his 10-28): its own preset, marked "standalone", carrying everybody\'s lines, beside the Web one the site builds by name',
+            'a preset without people/lines/*.txt ships a town where nobody says anything');
+          ok(/static func no_site\(\) -> bool:\s*\n\treturn OS\.has_feature\("standalone"\)/.test(wdS)
+             && /return LATER\.has\(at\) or \(no_site\(\) and at\.begins_with\("\/"\)\)/.test(fnGd(wdS, 'later'))
+             && /if no_site\(\):\s*\n\t\treturn true/.test(fnGd(wdS, 'later_game'))
+             && /if GameState\.worlds\.later\(GameState\.challenge\.PUZZLE_URL\) and not GameState\.challenge\.island_open:/.test(fnGd(pcS, 'menu'))
+             && /return GAMES\.has\(the_game\) and GameState\.worlds\.later\(str\(GAMES\[the_game\]\["url"\]\)\)/.test(fnGd(rd('portal.gd'), 'ring_later'))
+             && /TownPortal\.paint\(self, o \+ Vector2\(cell \* 2\.0, cell \* 2\.0\), cell, TownPortal\.ring_later\("dungeon"\)\)/.test(rd('home.gd'))
+             && /TownPortal\.paint\(_art, _board\.get_center\(\), c \* 1\.25, TownPortal\.ring_later\("dungeon"\)\)/.test(rd('board_view.gd')),
+            '⛑ …where there is no site, so every site page is later: its door says Building and its square is not asked, and the CEO waits on the squares won at the tables  (as Wes\'s was in the desktop program)',
+            'the puzzle run too, and the ring at home is drawn shut by the board that paints it');
+          ok(/if not OS\.has_feature\("web"\) and not GameState\.worlds\.no_site\(\):\s*\n\t\tadd_child\(DevReferee\.new\(\)\)/.test(znS2)
+             && /if worlds\.no_site\(\):\s*\n\t\tget_tree\(\)\.root\.title = "Checker Town"/.test(fnGd(gsS2, '_ready'))
+             && /config\/name="CheckerTown"/.test(projT),
+            '⛑⛑ …with no referee keys in it (W / L would settle a game nobody played), and its own name on the window while config/name keeps the save\'s folder');
+          ok(/^boot_splash\/show_image=false$/m.test(projT) && /^boot_splash\/bg_color=Color\(0\.08627451, 0\.047058824, 0\.2, 1\)$/m.test(projT)
+             && /^window\/size\/mode\.standalone=2$/m.test(projT),
+            '…opening maximized, and with the site\'s own purple behind it at boot instead of Godot\'s logo  (his 09-09: "does it HAVE to show Godot loading screen")',
+            '#160c33, the loading screen\'s');
+          ok(/--export-release "Windows Desktop"/.test(expT) && /cp -r "\$SF" "\$NEW\/engine\/"/.test(expT)
+             && /OUT="\$\{1:-\/c\/Users\/Nate\/Documents\/checker-town-windows\}"/.test(expT)
+             && /mv "\$OUT" "\$OUT\.old" 2>\/dev\/null \|\| \{/.test(expT) && /timeout -k 5/.test(expT)
+             && /if h\.hexdigest\(\) != SHA256:\s*\n\s*sys\.exit\("REFUSED/.test(tplT) && /KEEP = \["windows_release_x86_64\.exe"/.test(tplT),
+            '…made by tests/export_windows.sh: outside every repo, Stockfish copied beside the .exe, built aside and swapped in, and never over one that is open (its templates fetched by digest, Windows only)');
+          ok(/bash "\$S\/standalone\.sh"/.test(suiteT) && /export_windows\.sh" "\$OUT" "\$S\/probes\/town"/.test(saT)
+             && /grep -q 'config\/name="CheckerTownProbe"'/.test(saT)
+             && ['title:Checker Town', 'referee:0', 'useat:640,950;bubble:Building. Not open to visitors.', 'jrows:The CEO is waiting in the far chair', 'brainis:stockfish', 'sfgone'].every((t) => saT.includes(t))
+             && /referee:1/.test((/^  later\) SEQ="[^\n]*/m.exec(rd('tests/cases.sh')) || [''])[0]),
+            '…and the suite plays the build itself: the probe copy exported with the same preset (its save, never his) and a game run inside the .exe, Stockfish found beside it');
           /* ⭐ THE DOOR ITSELF, run in node with the site's own referee, negamax, engine bridge, systems and dial */
           const rowsY = [];
           for (const chunk of yml.split(/\n- key:/).slice(1)) {
@@ -7009,7 +7046,7 @@ const server = http.createServer((req, res) => {
             ok(/const BUILDING := "Building\. Not open to visitors\."/.test(wdW)
                && JSON.stringify(laterAt) === JSON.stringify(['/games/chess-city/', '/games/campaign/', '/games/murphys-law/', 'res://rooms/secret.tscn', '/games/the-gauntlet/'])
                && JSON.stringify(laterGames) === JSON.stringify(['siege-waves', 'murphys-law', 'the-gauntlet'])
-               && /return where != "" and LATER\.has\(where\.get_slice\("\?", 0\)\)/.test(fnGd(wdW, 'later'))
+               && /if where == "":\s*\n\t\treturn false\s*\n\tvar at := where\.get_slice\("\?", 0\)\s*\n\treturn LATER\.has\(at\)/.test(fnGd(wdW, 'later'))
                && !/LATER_GAMES/.test(wdW + sbW + rd('journal.gd')),
               '⭐ the later areas  (his 10-27): ONE list of what is still being built and the square each one holds, and his words for it  ("Building. Not open to visitors.")',
               laterAt.join(' ') + ' · ' + laterGames.join(' '));
@@ -7044,7 +7081,7 @@ const server = http.createServer((req, res) => {
             const strays = laterGames.filter((g) => !new RegExp('"un": \\["' + g + '", \\d+\\]').test(sbW));
             ok(/if \(str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)\) and not later\(i\):/.test(fnGd(sbW, 'claimable'))
                && /return r\.has\("un"\) and GameState\.worlds\.later_game\(str\(\(r\["un"\] as Array\)\[0\]\)\)/.test(fnGd(sbW, 'later'))
-               && /for v in LATER\.values\(\):\s*\n\t\tif game != "" and str\(\(v as Array\)\[1\]\) == game:\s*\n\t\t\treturn true\s*\n\treturn false/.test(fnGd(wdW, 'later_game'))
+               && /if game == "":\s*\n\t\treturn false[\s\S]*?for v in LATER\.values\(\):\s*\n\t\tif str\(\(v as Array\)\[1\]\) == game:\s*\n\t\t\treturn true\s*\n\treturn false/.test(fnGd(wdW, 'later_game'))
                && /for i in claimable\(\):/.test(fnGd(sbW, 'army_full')) && strays.length === 0 && rosterN === 16,
               '⛑⛑ …and a square won only in one of them is not asked of you yet: the CEO waits on the other ' + (rosterN - laterGames.length),
               strays.length ? 'not a square\'s game: ' + strays.join(' ') : 'a square nobody can win would lock the far chair for good');
