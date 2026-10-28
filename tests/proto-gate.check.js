@@ -91,8 +91,8 @@ for (const p of PROTOS) {
 
   ok(/id="proto-gate"[^>]*\shidden/.test(src),
      p.name + ': the frame starts HIDDEN — a gate that reveals nothing hides nothing');
-  ok(/id="proto-locked"/.test(src) && /class="proto-shut"/.test(src),
-     p.name + ': says the shut line, in the shared style');
+  ok(/id="proto-locked"/.test(src) && /<p class="proto-shut">Building\. Not open to visitors\.<\/p>/.test(src),
+     p.name + ': says his shut line, "Building. Not open to visitors.", in the shared style');
   ok(/^---[\s\S]*?\bsitemap:\s*false[\s\S]*?^---/m.test(src),
      p.name + ': sitemap: false — an unfinished game does not belong in a search result');
 }
@@ -156,8 +156,8 @@ for (const p of EARNED) {
 
   ok(/id="proto-gate"[^>]*\shidden/.test(src),
      p.name + ': the frame starts HIDDEN — a gate that reveals nothing hides nothing');
-  ok(/id="proto-locked"/.test(src) && /class="proto-shut"/.test(src),
-     p.name + ': says the shut line, in the shared style');
+  ok(/id="proto-locked"/.test(src) && /<p class="proto-shut">Building\. Not open to visitors\.<\/p>/.test(src),
+     p.name + ': says his shut line, "Building. Not open to visitors.", in the shared style');
 }
 if (earnedBlocks.length) {
   const firstE = earnedBlocks[0];

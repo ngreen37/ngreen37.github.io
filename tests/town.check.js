@@ -299,6 +299,40 @@ const server = http.createServer((req, res) => {
       'townState: hands back the merged copy for the town to read at boot',
       'ore ' + (S.after || {}).ore);
 
+    /* ══ 2b′ · three saves  (his, 2026-10-27: "Can each account have up to 3 saves?") ══ */
+    const S3 = await page.evaluate(() => {
+      const keys = () => Object.keys(localStorage).filter((k) => k.indexOf('pjcc.town.v1') === 0).sort();
+      for (const k of keys()) localStorage.removeItem(k);
+      const o = {};
+      PJCC.mergeTown({ ore: 50, army: [0, 1, 2] });
+      PJCC.mergeTown({ ore: 9, army: [5], run: 1000 }, 2);
+      o.s1 = PJCC.townState(1); o.s1Bare = PJCC.townState(); o.s2 = PJCC.townState(2); o.s3 = PJCC.townState(3);
+      o.keys = keys();
+      o.same = PJCC.mergeTown({ ore: 4, army: [7], run: 1000 }, 2);
+      o.later = PJCC.mergeTown({ ore: 1, army: [], run: 2000 }, 2);
+      o.stale = PJCC.mergeTown({ ore: 99, army: [3, 4], run: 1000 }, 2);
+      o.s2End = PJCC.townState(2);
+      o.s1End = PJCC.townState(1);
+      PJCC.mergeTown({ ore: 3 }, 7);
+      o.keysEnd = keys();
+      for (const k of keys()) localStorage.removeItem(k);
+      return o;
+    });
+    ok(S3.s1 && S3.s1.ore === 50 && S3.s1Bare && S3.s1Bare.ore === 50 && S3.s2 && S3.s2.ore === 9 && S3.s3 === null
+       && JSON.stringify(S3.keys) === JSON.stringify(['pjcc.town.v1', 'pjcc.town.v1.s2']),
+      '⭐ three saves: each its own store, and Save 1 is the store it always was  (pjcc.town.v1, then .s2 and .s3)',
+      JSON.stringify(S3.keys));
+    ok(S3.same && S3.same.ore === 9 && JSON.stringify(S3.same.army) === '[5,7]',
+      '…two copies of ONE run merge as they always have: the union', JSON.stringify(S3.same));
+    ok(S3.later && S3.later.ore === 1 && S3.later.army.length === 0 && S3.later.run === 2000,
+      '⛑⛑ …a LATER run, begun again somewhere else, replaces the old one whole',
+      'the union would hand a New Game straight back the run it began over');
+    ok(S3.stale && S3.stale.run === 2000 && S3.stale.ore === 1 && S3.s2End && S3.s2End.ore === 1 && S3.s2End.army.length === 0,
+      '⛑ …and a late push of the run it replaced changes nothing', JSON.stringify(S3.s2End));
+    ok(S3.s1End && S3.s1End.ore === 50 && JSON.stringify(S3.keysEnd) === JSON.stringify(['pjcc.town.v1', 'pjcc.town.v1.s2']),
+      '…while Save 1 sat through all of it untouched, and a number that is not one of the three is Save 1, never a store of its own',
+      JSON.stringify(S3.keysEnd));
+
     /* ══ 2c · the scouting facts, and whether they can be TRUE ══ */
     const PAGE_SRC = fs.readFileSync(path.join(ROOT, 'games/checker-town/index.html'), 'utf8');
     ok(/id="ct-facts-data"/.test(PAGE_SRC) && /site\.data\.regulars/.test(PAGE_SRC),
@@ -2257,9 +2291,9 @@ const server = http.createServer((req, res) => {
           && /if dark\(\):\s*\n\s*say\(/.test(fnGd(ringCode, 'interact')),
           '…and a shut ring says its own price AND how far you have got, and a press only says so',
           '⚠ "Locked" alone is a door refusing to say what it wants');
-        ok(/TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\)\)/.test(ringCode)
+        ok(/TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\) or GameState\.worlds\.later\(url\)\)/.test(ringCode)
           && /RING_DARK if shut else RING/.test(fnGd(ringCode, 'paint')),
-          '…and is painted dark until it opens');
+          '…and is painted dark until it opens, and while what it opens is still being built');
         ok(/GameState\.board\.army_changed\.connect\(/.test(fnGd(ringCode, '_ready_extra')),
           '⚠ it lights while you stand at it: a square can fill from another tab');
       }
@@ -3917,7 +3951,7 @@ const server = http.createServer((req, res) => {
           robert ? robert.name : 'no Robert');
         ok(/if GameState\.people\.hearts_for\(who\) >= GameState\.town\.BOAT_HEARTS:/.test(npcG) && /const BOAT_HEARTS := 3/.test(gsG),
           '…asked only of somebody who knows you, and the grayed row says how well');
-        ok(/if GameState\.town\.boat_done\(\):\s*\n\s*rows\.append\(\{ "id": "sail"/.test(maxw) && !/ceo_beaten/.test(maxw)
+        ok(/if GameState\.town\.boat_done\(\):\s*\n(?:\s*#[^\n]*\n)?\s*if GameState\.worlds\.later\(GameState\.town\.CHESS_CITY_URL\):[\s\S]*?else:\s*\n\s*rows\.append\(\{ "id": "sail", "text": "It's finished\. I'm going\." \}\)/.test(maxw) && !/ceo_beaten/.test(maxw)
           && /open_url\(CHESS_CITY_URL\)/.test(fnGd(gsG, 'sail')) && /url = GameState\.town\.CHESS_CITY_URL/.test(townG),
           '⭐ his answer: it sails when it is FINISHED, not when the CEO falls — to the same city the gate opens on');
         ok(/if m != null and GameState\.town\.boat_done\(\):\s*\n\s*m\.stand_at\(MAXWELL_DOCK\)/.test(townG)
@@ -4971,8 +5005,8 @@ const server = http.createServer((req, res) => {
           }
           ok(/_btns\[i\]\.size = Vector2\(bw, bh\)/.test(jrS) && /_sound\.size = Vector2\(w2, bh\)/.test(jrS) && /_who\.size = Vector2\(w2, bh\)/.test(jrS)
              && /_btns\[TABS\.size\(\)\]\.size = Vector2\(w2, bh\)/.test(jrS) && /zb\.size = Vector2\(zw, bh\)/.test(jrS)
-             && /sb\.size = Vector2\(zw, bh\)/.test(jrS),
-            '   the Journal: its tabs, Character, Sound, Close, the three time-zone buttons and the three saves\'');
+             && /sb\.size = Vector2\(sw, bh\)/.test(jrS),
+            '   the Journal: its tabs, Character, Sound, Close, the three time-zone buttons, the three saves and New Game');
           {
             /* ⚠ ON A DESKTOP NOTHING MOVES: a thumb there is 44, and each new sum is the old number. */
             const row = n1(/var row2: float = 50\.0 \* k \+ \(\(bh \+ ([\d.]+) \* k\) if narrow else 0\.0\)/, jrS);
@@ -5329,7 +5363,7 @@ const server = http.createServer((req, res) => {
             ok(/"a": "Your rating"/.test(jrR), '   and the Journal has it under THE BOARD');
           }
           ok(/"rating": ladder\.rating, "booth_nights": money\.booth_nights[,\s]/.test(fnGd(gsR, 'save_state'))
-             && /"rating": ladder\.rating, "booth_nights": money\.booth_nights,\s*"board": board\.banner\(\) \}\)/.test(gsR)
+             && /"rating": ladder\.rating, "booth_nights": money\.booth_nights,\s*"board": board\.banner\(\), "run": run_began \}\)/.test(gsR)
              && /if int\(d\.get\("rating", 0\)\) > ladder\.rating:/.test(fnGd(gsR, 'merge_in'))
              && /if int\(d\.get\("booth_nights", 0\)\) > money\.booth_nights:/.test(fnGd(gsR, 'merge_in'))
              && /local\.rating = Math\.max\(\+local\.rating \|\| 0, \+remote\.rating \|\| 0\)/.test(fn(PROF, 'townMerge'))
@@ -6891,6 +6925,59 @@ const server = http.createServer((req, res) => {
              && /\["The town stays open\.", /.test(crW),
             '…under the credits, once: it is kept that you went (`told`, a union), and the roll is a cover that hands the feet back',
             '⚠ credits_due is NOT saved: a save made at the door would play them on every load');
+          {
+            /* ⭐ HIS (2026-10-27): "Credit only McPuppy Studios." */
+            const named = [...fnGd(crW, '_lines').matchAll(/\["([^"]*)", \d+/g)].map((m) => m[1]).filter((t) => t !== '');
+            ok(JSON.stringify(named) === JSON.stringify(['CHECKER TOWN', 'McPuppy Studios', 'The town stays open.']),
+              '⭐ …and the roll credits McPuppy Studios and nobody else  (his, 10-27): the title over it and the line under it are not credits',
+              named.join(' | '));
+          }
+          {
+            /* ⭐ THE LATER AREAS  (his, 2026-10-27: "block off the later areas of the game (your best discretion)") */
+            const wdW = rd('state_worlds.gd'), drW = rd('door.gd'), ptW = rd('portal.gd'), cgW = rd('city_gate.gd'),
+              mxW = rd('maxwell.gd'), sbW = rd('state_board.gd'), stW = rd('state_town.gd');
+            const laterAt = [...((/const LATER := \{([\s\S]*?)\n\}/.exec(wdW) || [])[1] || '').matchAll(/^\t"([^"]+)": "[^"]+",/gm)].map((m) => m[1]);
+            const laterGames = [...((/const LATER_GAMES := \[([^\]]*)\]/.exec(wdW) || [])[1] || '').matchAll(/"([\w-]+)"/g)].map((m) => m[1]);
+            ok(/const BUILDING := "Building\. Not open to visitors\."/.test(wdW)
+               && JSON.stringify(laterAt) === JSON.stringify(['/games/chess-city/', '/games/campaign/', '/games/murphys-law/', 'res://rooms/secret.tscn'])
+               && JSON.stringify(laterGames) === JSON.stringify(['siege-waves', 'murphys-law'])
+               && /return where != "" and LATER\.has\(where\.get_slice\("\?", 0\)\)/.test(fnGd(wdW, 'later')),
+              '⭐ the later areas  (his 10-27): ONE list of what is still being built, and his words for it  ("Building. Not open to visitors.")',
+              laterAt.join(' ') + ' · ' + laterGames.join(' '));
+            const pages = laterAt.filter((u) => u.startsWith('/games/')).map((u) => 'games/' + u.split('/')[2] + '/index.html');
+            const unshut = pages.filter((f) => !fs.existsSync(path.join(ROOT, f))
+              || !/<p class="proto-shut">Building\. Not open to visitors\.<\/p>/.test(fs.readFileSync(path.join(ROOT, f), 'utf8')));
+            ok(pages.length === 3 && unshut.length === 0,
+              '…and each of its pages on the site is shut in the same words: the game never opens a door the site keeps shut',
+              unshut.join(' ') || pages.join(' '));
+            ok(/^\t# [^\n]*\n\tif GameState\.worlds\.later\(scene_path if scene_path != "" else url\):\s*\n\t\tsay\(GameState\.worlds\.BUILDING\)\s*\n\t\treturn\s*\n\tif energy_cost > 0/m.test(fnGd(drW, 'interact'))
+               && /url = GameState\.town\.CHESS_CITY_URL/.test(cgW) && /_secret\.scene_path = "res:\/\/rooms\/secret\.tscn"/.test(hlW)
+               && /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/"/.test(ptW),
+              '⛑ …every door asks it before it spends or opens anything: the west gate past the CEO, the camp\'s ring, the room behind the west wall',
+              'a door that took your energy and then refused would charge you to read a sign');
+            ok(/if GameState\.worlds\.later\(url\):\s*\n\t\tsay\(GameState\.worlds\.BUILDING, [\d.]+\)\s*\n\t\treturn\s*\n\tif dark\(\):/.test(fnGd(ptW, 'interact'))
+               && /if GameState\.worlds\.later\(url\):\s*\n\t\treturn "%s  —  %s" % \[title, GameState\.worlds\.BUILDING\]\s*\n\tif dark\(\):/.test(fnGd(ptW, '_line'))
+               && /elif GameState\.worlds\.later\(url\):\s*\n\t\trelabel\("The road west, to Chess City  —  %s" % GameState\.worlds\.BUILDING\)/.test(fnGd(cgW, '_relabel')),
+              '…and says so before you press: the camp\'s ring ahead of its half-the-Assembly price, the gate on its label');
+            ok(/^\treturn -size\.y \* 0\.5$/m.test(fnGd(cgW, 'speech_top')),
+              '⚠ the gate speaks from its opening: from over its sign the line was off the top of the west window, and nothing it said ever showed',
+              'found by the later probe: "Barred from the other side" never once reached the screen');
+            ok(/if GameState\.worlds\.later\(GameState\.town\.CHESS_CITY_URL\):\s*\n\t\t\trows\.append\(\{ "id": "sail", "on": false,/.test(fnGd(mxW, 'menu'))
+               && /^\tif GameState\.worlds\.later\(CHESS_CITY_URL\):\s*\n\t\treturn\s*\n\tboat\["sailed"\] = 1/m.test(fnGd(stW, 'sail')),
+              '…the finished boat stays at the dock: Maxwell\'s row is gray and says why, and sail() refuses on its own');
+            const rosterN = (sbW.match(/^\t\{ "p": "[prnbqk]", +"who":/gm) || []).length;
+            const strays = laterGames.filter((g) => !new RegExp('"un": \\["' + g + '", \\d+\\]').test(sbW));
+            ok(/if \(str\(r\.get\("key", ""\)\) != "" or r\.has\("un"\)\) and not later\(i\):/.test(fnGd(sbW, 'claimable'))
+               && /return r\.has\("un"\) and GameState\.worlds\.LATER_GAMES\.has\(str\(\(r\["un"\] as Array\)\[0\]\)\)/.test(fnGd(sbW, 'later'))
+               && /for i in claimable\(\):/.test(fnGd(sbW, 'army_full')) && strays.length === 0 && rosterN === 16,
+              '⛑⛑ …and a square won only in one of them is not asked of you yet: the CEO waits on the other ' + (rosterN - laterGames.length),
+              strays.length ? 'not a square\'s game: ' + strays.join(' ') : 'a square nobody can win would lock the far chair for good');
+            ok(/if GameState\.board\.later\(i\):\s*\n\t\t\tcontinue/.test(fnGd(jrW, '_next_step'))
+               && /elif GameState\.board\.later\(i\):\s*\n\t\t\trow\["b"\] = GameState\.worlds\.BUILDING/.test(fnGd(jrW, '_board_rows')),
+              '…the Journal never sends you to one, and its board says Building on those squares');
+            ok(/^  later\) SEQ=/m.test(rd('tests/cases.sh')) && /\blater\b/.test((/CASES="\$\{\*:-([^}]*)\}"/.exec(rd('tests/suite.sh')) || [])[1] || ''),
+              '…and the probe walks into every one of them  (cases.sh later, in the suite)');
+          }
           ok(/for w in _crowd:\s*\n\s*w\.stand\(GameState\.challenge\.ceo_beaten\)/.test(fnGd(hlW, '_refresh'))
              && /_feet\.set_deferred\("disabled", not on\)/.test(hlW) && /_build = TownPeople\.dress\(self, who, key\)\["build"\]/.test(hlW)
              && /if THEIR_BACK\[f\] == "k" and GameState\.challenge\.ceo_beaten:/.test(fnGd(hlW, '_draw_theirs'))
@@ -7048,22 +7135,38 @@ const server = http.createServer((req, res) => {
              && /if own != "" or str\(_sign\.get\("win", ""\)\) == "clip":/.test(fnGd(pmW, 'sign_win')),
             '⭐ …and a clip of his replaces a pose: "<who>_win" or "<who>_idle" plays instead, and is never taken as everybody\'s',
             'Nate\'s celebration is already his own Wave');
-          /* ── 8: New Game and a second save ── */
+          /* ── 8: New Game and the saves ── */
           /* his: "New Game and a second save. Continue / New Game on the title screen, so a finished run can start
-             over with someone else first." */
+             over with someone else first."  and 10-27: "Can each account have up to 3 saves?" */
           const gsS = rd('game_state.gd'), jrS8 = rd('journal.gd');
-          ok(/const SAVE_COUNT := 2/.test(gsS) && /return SAVE_PATH if n <= 1 else "user:\/\/town%d\.json" % n/.test(fnGd(gsS, 'path_of'))
+          ok(/const SAVE_COUNT := 3/.test(gsS) && /return SAVE_PATH if n <= 1 else "user:\/\/town%d\.json" % n/.test(fnGd(gsS, 'path_of'))
              && /return path_of\(save_slot\) \+ ext/.test(fnGd(gsS, '_path'))
              && !/SAVE_(PATH|TMP|BAK)\b/.test(fnGd(gsS, 'save_state') + fnGd(gsS, 'load_state')),
-            '⭐ two saves  (his #8): Save 1 is the file it always was, Save 2 its own, and both are written and read the same way',
+            '⭐ three saves  (his #8, and 10-27): Save 1 is the file it always was, Saves 2 and 3 their own, and all three are written and read the same way',
             'an old save is Save 1, untouched');
-          ok(/if not OS\.has_feature\("web"\) or save_slot != 1:\s*\n\s*return/.test(fnGd(gsS, 'push_to_site'))
-             && /if not OS\.has_feature\("web"\) or save_slot != 1:\s*\n\s*return/.test(fnGd(gsS, 'pull_from_site'))
-             && /_pulls_left = 15 if save_slot == 1 else 0/.test(fnGd(gsS, '_ready')) && /_pulls_left = 15 if save_slot == 1 else 0/.test(fnGd(gsS, 'use_save'))
-             && /func new_game\(\) -> void:\s*\n\tuse_save\(2, true\)/.test(gsS),
-            '⛑⛑ …Save 2 never meets the account\'s run, and a new game is always Save 2',
-            'the account merges by union: a new game in Save 1 would be handed its old run straight back');
+          const pushS = fnGd(gsS, 'push_to_site'), pullS = fnGd(gsS, 'pull_from_site');
+          ok(!/save_slot != 1/.test(gsS) && /P\.mergeTown\(JSON\.parse\(t\), slot\)/.test(pushS) && /% \[JSON\.stringify\(payload\), save_slot\]/.test(pushS)
+             && /P\.townState\(%d\)/.test(pullS) && /""" % save_slot, true\)/.test(pullS)
+             && /_pulls_left = 15\s*\n/.test(fnGd(gsS, '_ready')) && /_pulls_left = 15\s*\n/.test(fnGd(gsS, 'use_save'))
+             && /var TOWN_SAVES = 3;/.test(PROF) && /var data = \{\};\s*data\[townField\(slot\)\] = merged;/.test(PROF)
+             && /for \(var ts = 1; ts <= TOWN_SAVES; ts\+\+\) \{\s*if \(tw && tw\.data && tw\.data\[townField\(ts\)\]\) townMerge\(tw\.data\[townField\(ts\)\], ts\);/.test(PROF),
+            '⭐⭐ …and every one is kept with the account, each in a field of its own  (data.town, town2, town3), pushed and pulled by its number',
+            '⚠ saveScore merges `data`, so writing one save leaves the other two where they were');
           const useFn = fnGd(gsS, 'use_save');
+          ok(/var theirs_run := int\(d\.get\("run", 0\)\)\s*\n\tif theirs_run < run_began:\s*\n\t\treturn\s*\n\tif theirs_run > run_began:\s*\n\t\t_take_their_run\(d\)\s*\n\t\treturn/.test(fnGd(gsS, 'merge_in'))
+             && /"run": run_began/.test(fnGd(gsS, 'save_state')) && /run_began = int\(d\.get\("run", 0\)\)/.test(fnGd(gsS, 'load_state'))
+             && /"run": run_began \}\)/.test(pushS)
+             && /var lr = \+local\.run \|\| 0, rr = \+remote\.run \|\| 0;\s*if \(rr < lr\) return local;[^\n]*\s*if \(rr > lr\) local = \{\};[^\n]*\s*local\.run = rr;/.test(fn(PROF, 'townMerge'))
+             && /_reset_parts\(\)\s*\n\trun_began = int\(d\.get\("run", 0\)\)\s*\n\tmerge_in\(d\)/.test(fnGd(gsS, '_take_their_run')),
+            '⛑⛑ …a run carries when it began: two copies of one run merge as they always have, and a LATER run replaces the earlier whole, in the game and on the site',
+            'without it the union hands a New Game straight back the run it began over');
+          ok(/func new_game\(\) -> void:\s*\n\tuse_save\(new_game_slot\(\), true\)/.test(gsS)
+             && /for n in range\(1, SAVE_COUNT \+ 1\):\s*\n\t\tif n != save_slot and save_summary\(n\)\.is_empty\(\):\s*\n\t\t\treturn n\s*\n\treturn save_slot/.test(fnGd(gsS, 'new_game_slot'))
+             && /d = _site_town\(n\)/.test(fnGd(gsS, 'save_summary'))
+             && /run_began = 0\s*\n\tload_state\(\)\s*\n\tif fresh:\s*\n\t\trun_began = int\(Time\.get_unix_time_from_system\(\)\)/.test(useFn)
+             && useFn.indexOf('run_began = int(Time') < useFn.lastIndexOf('save_state()'),
+            '⛑⛑ …a New Game goes in the first save with no run in it, on this device or the account, and stamps its run and writes it at once',
+            'a save begun on the phone is not an empty save on the desk');
           ok(useFn.indexOf('save_state()') < useFn.indexOf('save_slot = clampi(n, 1, SAVE_COUNT)')
              && /_reset_parts\(\)/.test(useFn) && /load_state\(\)/.test(useFn) && /NateHome\.forget\(\)/.test(useFn)
              && /CheckerTown\.region = "square"/.test(useFn) && /CharacterSelect\.asked = false/.test(useFn)
@@ -7073,18 +7176,21 @@ const server = http.createServer((req, res) => {
             '…switching writes the run you leave, then reads the other in its place: every part back to its own defaults, the house\'s mess forgotten, the cards up',
             'the mute and the clock stay as they are: they are the device\'s');
           ok(/save_slot = _read_slot\(\)/.test(fnGd(gsS, '_ready')) && /"user:\/\/saves\.json"/.test(gsS)
-             && /if _program_new_game\(\):\s*\n\s*save_slot = 2/.test(fnGd(gsS, '_ready'))
+             && /if _program_new_game\(\):\s*\n\t\tsave_slot = new_game_slot\(\)\s*\n\t\t_write_slot\(\)\s*\n\t\t_wipe\(save_slot\)\s*\n\t\tload_state\(\)\s*\n\t\trun_began = int\(Time\.get_unix_time_from_system\(\)\)\s*\n\t\tsave_state\(\)/.test(fnGd(gsS, '_ready'))
              && /\(window\.townNewGame === true\) \? \(\(window\.townNewGame = false\), 1\) : 0/.test(fnGd(gsS, '_program_new_game'))
-             && /program\.wait_time = 0\.25/.test(fnGd(gsS, '_ready')),
-            '…which save is in play is the device\'s, and New Game on the desktop program\'s title begins Save 2 before the first room is drawn');
-          ok(/_save_btns\.append\(_button\("Save 1", func\(\) -> void: _play_save\(1\)\)\)/.test(jrS8)
+             && /program\.wait_time = 0\.25/.test(fnGd(gsS, '_ready'))
+             && /window\.townSaves = %s;/.test(fnGd(gsS, '_publish_saves')) && /_publish_saves\(\)/.test(fnGd(gsS, '_tick'))
+             && /_publish_saves\(\)/.test(useFn) && !/save_summary|_publish_saves/.test(fnGd(gsS, '_follow_program_saves')),
+            '…which save is in play is the device\'s, New Game on the desktop program\'s title begins one before the first room is drawn, and the title is told which saves hold a run',
+            '⚠ told on the 2s tick and on a switch, not the quarter second: it reads the other two saves off the disk and the site');
+          ok(/for n in range\(1, GameState\.SAVE_COUNT \+ 1\):\s*\n\t\tvar which := n\s*\n\t\t_save_btns\.append\(_button\("Save %d" % n, func\(\) -> void: _play_save\(which\)\)\)/.test(jrS8)
              && /_save_btns\.append\(_button\("New Game", func\(\) -> void: _new_game\(\)\)\)/.test(jrS8)
-             && /if held and not _armed:\s*\n\s*_armed = true\s*\n\s*_save_btns\[2\]\.text = "Yes, start Save 2 over"\s*\n\s*return/.test(fnGd(jrS8, '_new_game'))
-             && /"kept with your account" if GameState\.save_slot == 1 else "on this device only"/.test(fnGd(jrS8, '_story_rows')),
-            '⭐ …in the Journal\'s story tab: either save, and New Game, which asks first over a run in Save 2; the tab says which run this is');
+             && /var over := GameState\.new_game_slot\(\) == GameState\.save_slot\s*\n\tif over and not _armed:\s*\n\t\t_armed = true\s*\n\t\t_save_btns\[_save_btns\.size\(\) - 1\]\.text = "Yes, start Save %d over" % GameState\.save_slot\s*\n\t\treturn/.test(fnGd(jrS8, '_new_game'))
+             && /var sm := GameState\.save_summary\(n\)/.test(fnGd(jrS8, '_story_rows')) && /"lit": n == GameState\.save_slot/.test(fnGd(jrS8, '_story_rows')),
+            '⭐ …in the Journal\'s story tab: all three saves and what is in each, and New Game, which asks first only when there is no save to spare');
           const casesS = rd('tests/cases.sh');
-          ok(/rm -f [^\n]*"\$SAVE\/town2\.json"[^\n]*"\$SAVE\/saves\.json"/.test(casesS),
-            '⚠ …and every probe run starts from no save of either kind  (a Save 2 left behind walked into the next case)');
+          ok(/rm -f [^\n]*"\$SAVE\/town2\.json"[^\n]*"\$SAVE\/town3\.json"[^\n]*"\$SAVE\/saves\.json"/.test(casesS),
+            '⚠ …and every probe run starts from no save of any kind  (a Save 2 left behind walked into the next case)');
         }
 
         /* ⚠⚠ THE THREE WAYS A BEAT COULD HANG THE GAME, all of them one line. */

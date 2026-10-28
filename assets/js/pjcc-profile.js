@@ -634,13 +634,26 @@
      ⚠⚠ EVERY FIELD IS EARNED, so every rule is max/union/sticky and a stale row can never
      walk progress backwards. [[everything-earned-syncs]] */
   var TOWN_KEY = 'pjcc.town.v1';
-  function townLocal() {
-    try { var o = JSON.parse(localStorage.getItem(TOWN_KEY)); return (o && typeof o === 'object') ? o : {}; }
+  /* ⭐ THREE SAVES (his, 2026-10-27: "Can each account have up to 3 saves?"). Save 1 is the store and the account
+     field it always was (`pjcc.town.v1`, data.town); Saves 2 and 3 sit beside it (`.s2`, data.town2).
+     ⚠⚠ A RUN CARRIES WHEN IT BEGAN (`run`, seconds; none is the first run, 0): two copies of one run merge as they
+     always have, and a LATER run replaces an earlier one whole. Without it the union hands a New Game straight
+     back the run it began over. */
+  var TOWN_SAVES = 3;
+  function townSlot(slot) { var n = parseInt(slot, 10) || 1; return (n >= 1 && n <= TOWN_SAVES) ? n : 1; }
+  function townKey(slot) { return townSlot(slot) === 1 ? TOWN_KEY : TOWN_KEY + '.s' + townSlot(slot); }
+  function townField(slot) { return townSlot(slot) === 1 ? 'town' : 'town' + townSlot(slot); }
+  function townLocal(slot) {
+    try { var o = JSON.parse(localStorage.getItem(townKey(slot))); return (o && typeof o === 'object') ? o : {}; }
     catch (e) { return {}; }
   }
-  function townMerge(remote) {
+  function townMerge(remote, slot) {
     if (!remote || typeof remote !== 'object') return null;
-    var local = townLocal();
+    var local = townLocal(slot);
+    var lr = +local.run || 0, rr = +remote.run || 0;
+    if (rr < lr) return local;             // an earlier run: ours replaces it on the next push
+    if (rr > lr) local = {};               // a later run, begun again somewhere else: it replaces ours whole
+    local.run = rr;
     /* ⛑ NO `day` SINCE 2026-10-03: the town counts no days, it reads the real date. An old copy's
        `day` stays in storage untouched; nothing reads it. */
     local.ore = Math.max(+local.ore || 0, +remote.ore || 0);
@@ -731,7 +744,7 @@
     local.favors = maxPerKey(local.favors, remote.favors);
     local.lessons_used = maxPerKey(local.lessons_used, remote.lessons_used);
     local.packs = union(local.packs, remote.packs);
-    try { localStorage.setItem(TOWN_KEY, JSON.stringify(local)); } catch (e) {}
+    try { localStorage.setItem(townKey(slot), JSON.stringify(local)); } catch (e) {}
     return local;
   }
 
@@ -1119,7 +1132,9 @@
         var bk = (rows || []).find(function (r) { return r.game === 'opening-trainer'; });
         if (bk && bk.data && bk.data.book) trainerBookMerge(bk.data.book);
         var tw = (rows || []).find(function (r) { return r.game === 'checker-town'; });
-        if (tw && tw.data && tw.data.town) townMerge(tw.data.town);
+        for (var ts = 1; ts <= TOWN_SAVES; ts++) {
+          if (tw && tw.data && tw.data[townField(ts)]) townMerge(tw.data[townField(ts)], ts);
+        }
         var nr = (rows || []).find(function (r) { return r.game === 'notation-run'; });
         /* ⭐ THE HALL IS ALREADY PAINTED BY THE TIME THIS LANDS. pjcc-hall.js issues its OWN
            myStats() call, so which of the two resolves first is a race — without the event a
@@ -1217,12 +1232,15 @@
      ⚠⚠ THE TOWN CALLS THESE FROM AN IFRAME, so they must exist on `window.PJCC` before
      the Godot build finishes booting — which it will: the game is 38 MB and this file is
      in the page head. Both are guarded on the Godot side anyway. [[pjcc-loads-after-content]] */
-  PJCC.mergeTown = function (state) {
-    var merged = townMerge(state);
+  PJCC.mergeTown = function (state, slot) {
+    var merged = townMerge(state, slot);
     if (!merged) return null;
     /* rides saveScore like every other banked thing; signed out it writes local only.
-       ⚠ the SCORE is the army size so the row sorts sensibly — the state is in `data`. */
-    try { PJCC.saveScore('checker-town', (merged.army || []).length, { data: { town: merged } }); }
+       ⚠ the SCORE is the army size so the row sorts sensibly — the state is in `data`, a field a save. ⚠ saveScore
+       MERGES `data`, so writing one save leaves the other two where they were. */
+    var data = {};
+    data[townField(slot)] = merged;
+    try { PJCC.saveScore('checker-town', (merged.army || []).length, { data: data }); }
     catch (e) {}
     return merged;
   };
@@ -1244,8 +1262,8 @@
     } catch (e) { return []; }
   };
 
-  PJCC.townState = function () {
-    var t = townLocal();
+  PJCC.townState = function (slot) {
+    var t = townLocal(slot);
     return (t && Object.keys(t).length) ? t : null;
   };
 
