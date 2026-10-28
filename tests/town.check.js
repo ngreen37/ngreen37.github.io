@@ -461,7 +461,7 @@ const server = http.createServer((req, res) => {
       const GD_INDEX = new Map(), GD_DUPS = [];
       (function index(d) {
         for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-          if (['.godot', '.git', 'tests'].includes(e.name)) continue;
+          if (['.godot', '.git', 'tests', 'engine'].includes(e.name)) continue;
           const f = path.join(d, e.name);
           if (e.isDirectory()) index(f);
           else if (!GD_INDEX.has(e.name)) GD_INDEX.set(e.name, f);
@@ -6227,7 +6227,7 @@ const server = http.createServer((req, res) => {
             '⛑ he is MILO: nothing the game can show says Crockett, and his bench key did not move',
             stale.length ? 'still "Crockett" in: ' + stale.join(' ') : 'the site\'s seat, his square and every stamp are kept by `crockett`');
           ok(/\{ "p": "p", "who": "Milo",\s+"key": "crockett",/.test(gsM) && /"say": "Milo stands on his square/.test(gsM)
-             && /\{ "key": "crockett", "who": "Milo", "elo": 750,\s+"piece": "n" \}/.test(pkM)
+             && /\{ "key": "crockett", "who": "Milo", "elo": 750,\s+"piece": "n", "ms": 160 \}/.test(pkM)
              && /_lane_dog\("Milo", /.test(tw) && /_lodger\("Milo", where\("MiloBed", MILO_BED_AT\)\)/.test(hm),
             '…on his square, on his rung, on the lane and on his own cushion');
           /* his, 2026-10-26: "Rename Nate NPC to Jay." The site renamed him too; the key `nate` stays everywhere. */
@@ -6805,6 +6805,74 @@ const server = http.createServer((req, res) => {
              && /if \(persona\) \{ persona\.timeMs = ms; return \{ persona: persona, negamax: true, movetime: ms \}; \}/.test(ttT),
             '⚠ …and its dial and its pacing are the Park Tables\' own (botDial, botThinkFor), word for word where they decide',
             cpD ? cpD[1] + ' / ' + cpD[2] : 'no constants');
+          /* ⭐ OFF THE WEB, STOCKFISH BESIDE THE GAME  (his, 2026-10-28: "yes, go ahead and build that brain") */
+          const uciT = rd('uci_engine.gd'), paceT = rd('table_pace.gd'), parkT = rd('park.gd'), ladT = rd('state_ladder.gd');
+          const gdTxt = (f) => (fs.existsSync(path.join(GD, f)) ? fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n') : '');
+          const getT = gdTxt('tests/get_stockfish.py'), mkT = gdTxt('tests/mkprobe.py'), ignT = gdTxt('.gitignore');
+          const exeName = (/const BINARY := \{ "Windows": "([\w.-]+)" \}/.exec(uciT) || [])[1] || '';
+          const thinkB = fnGd(brT, 'think');
+          const atB = (t) => thinkB.indexOf(t);
+          ok(atB('if _web and not stand_in:') >= 0
+             && atB('if _web and not stand_in:') < atB('if not _web and not stand_in and elo >= ENGINE_FROM and _sf != null:')
+             && atB('if not _web and not stand_in and elo >= ENGINE_FROM and _sf != null:') < atB('var persona := ChessAI.persona_for_elo(elo)')
+             && /const ENGINE_FROM := 1400/.test(brT) && /if \(elo >= 1400\) return null;/.test(engT)
+             && /if _web or elo < ENGINE_FROM or UciEngine\.path\(\) == "":\s*\n\t\treturn/.test(fnGd(brT, 'warm'))
+             && /_brain\.moved\.connect\(_on_moved\)\s*\n\t_brain\.warm\(_seat_elo\(\)\)/.test(tabT),
+            '⭐⭐ off the web the regular from 1400 up is Stockfish beside the game  (his 10-28: "go ahead and build that brain"): the web brain first, then Stockfish, then the stand-in under 1400 or with none',
+            'started when the table opens, so it is ready by the first move');
+          ok(/elif w\[0\] == "uciok":\s*\n\t\t_send\("setoption name UCI_LimitStrength value true"\)/.test(fnGd(uciT, '_line'))
+             && /if l\.begins_with\("option name UCI_Elo "\):/.test(fnGd(uciT, '_line'))
+             && /var e := clampi\(int\(_want\["elo"\]\), elo_min, elo_max\)/.test(fnGd(uciT, '_search'))
+             && /_send\("setoption name UCI_Elo value %d" % e\)/.test(fnGd(uciT, '_search'))
+             && /_send\("go movetime %d" % maxi\(50, int\(_want\["ms"\]\)\)\)/.test(fnGd(uciT, '_search')),
+            '…at the seat\'s rating as Stockfish itself measures one (UCI_Elo), held inside the range it reports, for the seat\'s time');
+          ok(/elif _sf\.state == UciEngine\.DEAD or Time\.get_ticks_msec\(\) > _sf_until:\s*\n(?:\t+#[^\n]*\n)?\t+_sf\.halt\(\)\s*\n\t+_sf_gen = -1\s*\n\t+answered_by = "stockfish"\s*\n\t+moved\.emit\(""\)/.test(fnGd(brT, '_process'))
+             && /if _searching and Time\.get_ticks_msec\(\) - _looked_at > 500:/.test(fnGd(uciT, 'poll'))
+             && /if not OS\.is_process_running\(_pid\):\s*\n\t+quit\(\)/.test(fnGd(uciT, 'poll'))
+             && /if _stale > 0:\s*\n\t+_stale -= 1\s*\n\t+return/.test(fnGd(uciT, '_line'))
+             && /_send\("stop"\)\s*\n\t+_stale \+= 1/.test(fnGd(uciT, 'halt'))
+             && /if _sf != null:\s*\n\t\t_sf\.halt\(\)/.test(fnGd(brT, 'stop')),
+            '⛑ …and one that dies or goes quiet hands its move to the stand-in, never a hang: a stopped search\'s answer is dropped, and a dead one is noticed within half a second');
+          ok(/if _sf != null:\s*\n\t\t_sf\.quit\(\)/.test(fnGd(brT, '_exit_tree'))
+             && /_send\("quit"\)\s*\n\t\t_pipe\.close\(\)/.test(fnGd(uciT, 'quit'))
+             && /if OS\.is_process_running\(_pid\):\s*\n\t\t\tOS\.kill\(_pid\)/.test(fnGd(uciT, 'quit'))
+             && /_boot\.start\(func\(\) -> Dictionary: return OS\.execute_with_pipe\(p, PackedStringArray\(\), false\)\)/.test(fnGd(uciT, 'start')),
+            '⛑⛑ …started on a thread (its first launch ever is a virus scan of 100 MB), read without waiting, and gone when its table goes: told to quit, its input closed, killed if it lingers');
+          ok(/var own := OS\.get_environment\("CT_STOCKFISH"\)\s*\n\tif own != "":\s*\n\t\treturn own if FileAccess\.file_exists\(own\) else ""/.test(fnGd(uciT, 'path'))
+             && /for dir in \[OS\.get_executable_path\(\)\.get_base_dir\(\), ProjectSettings\.globalize_path\("res:\/\/"\)\]:/.test(fnGd(uciT, 'path'))
+             && /\.path_join\("engine\/stockfish"\)/.test(fnGd(uciT, 'path')) && exeName !== '',
+            '…found beside a native build\'s .exe, or in the project for the editor, or where CT_STOCKFISH says; with none the stand-in plays',
+            exeName);
+          const shaG = (/SHA256 = "([0-9a-f]{64})"/.exec(getT) || [])[1] || '';
+          const assetG = (/ASSET = "([\w.-]+)"/.exec(getT) || [])[1] || '';
+          ok(fs.existsSync(path.join(GD, 'engine/.gdignore')) && /^\/engine\/stockfish\/$/m.test(ignT)
+             && shaG.length === 64 && /if h != SHA256:\s*\n\s*sys\.exit\("REFUSED/.test(getT)
+             && /not i\.filename\.startswith\("stockfish\/"\) or "\.\." in i\.filename\.split\("\/"\)/.test(getT)
+             && assetG.replace(/\.zip$/, '') + '.exe' === exeName && /SKIP_DIRS = \{[^}]*"engine"[^}]*\}/.test(mkT)
+             && fs.statSync(path.join(ROOT, 'assets/games/checker-town/index.pck')).size < 20 * 1048576,
+            '⛑⛑ …and never part of the game: engine/.gdignore keeps it out of every .pck (the web build stays 2 MB, not 100), git never carries it, and tests/get_stockfish.py fetches the release whole, its source and GPL beside it, refusing it unless its SHA-256 matches',
+            assetG + ' ' + shaG.slice(0, 12));
+          const seatMs = [...parkT.matchAll(/\{ "key": "([a-z]+)",[^\n]*"ms": (\d+)/g)].map((m) => [m[1], +m[2]]);
+          const ceoMs = +((/const CEO_MS := (\d+)/.exec(ladT) || [])[1] || 0);
+          const ymlMs = {};
+          for (const chunk of yml.split(/\n- key:/).slice(1)) {
+            const mt = /\n\s+movetime:\s*(\d+)/.exec('\n' + chunk);
+            if (mt) ymlMs[chunk.trim().split(/\s/)[0]] = +mt[1];
+          }
+          const msOff = seatMs.concat([['ceo', ceoMs]]).filter(([k, ms]) => ymlMs[k] !== ms);
+          ok(seatMs.length === 9 && msOff.length === 0 && /return int\(\(row as Dictionary\)\.get\("ms", 400\)\)/.test(fnGd(ladT, 'seat_ms')),
+            '…each seat thinking at its own pace off the web: the bench\'s movetime to the millisecond, the CEO\'s included',
+            msOff.map((r) => r.join(' ')).join(', ') || seatMs.length + ' seats and the CEO');
+          const keyG = ['minf(base * 2.5, left / 8.0)', 'minf(base, left / 30.0)', 'maxi(150, int(floor(minf(want, left - 800.0))))', '(n >= 2 and n <= 4)'];
+          const cpG = /const CP_LOSING := (-?\d+)[\s\S]*?const CP_SWING := (-?\d+)/.exec(paceT);
+          ok(keyG.every((l) => paceT.includes(l)) && !!cpG && !!cpD && cpG[1] === cpD[1] && cpG[2] === cpD[2]
+             && /ChessRules\.in_check\(S, str\(S\.turn\)\)/.test(paceT)
+             && /var ms := TablePace\.ms\(GameState\.ladder\.seat_ms\(key\), S, clock, _cps\)/.test(brT)
+             && /if _sf\.score\(\) != null:\s*\n\t+_cps\.append\(int\(_sf\.score\(\)\)\)/.test(fnGd(brT, '_process')),
+            '…for as long as the site\'s thinkFor says: the same pace, thirtieth, 2.5 times and eighth, the same two pawns down and the same swing, off its own scores',
+            cpG ? cpG[1] + ' / ' + cpG[2] : 'no constants');
+          ok(/bash "\$S\/engine\.sh"/.test(suiteT) && /\btablesf\b/.test(suiteT) && /\btablesfnone\b/.test(suiteT),
+            '…and the suite plays it: engine.sh against the real Stockfish (every pace branch, a mate in one, a stopped search, nothing left running), and a game at Robert\'s table with it and without it');
           /* ⭐ THE DOOR ITSELF, run in node with the site's own referee, negamax, engine bridge, systems and dial */
           const rowsY = [];
           for (const chunk of yml.split(/\n- key:/).slice(1)) {
@@ -6939,18 +7007,24 @@ const server = http.createServer((req, res) => {
             const laterRows = [...((/const LATER := \{([\s\S]*?)\n\}/.exec(wdW) || [])[1] || '').matchAll(/^\t"([^"]+)": \["[^"]+", "([\w-]*)"\],/gm)];
             const laterAt = laterRows.map((m) => m[1]), laterGames = laterRows.map((m) => m[2]).filter((g) => g !== '');
             ok(/const BUILDING := "Building\. Not open to visitors\."/.test(wdW)
-               && JSON.stringify(laterAt) === JSON.stringify(['/games/chess-city/', '/games/campaign/', '/games/murphys-law/', 'res://rooms/secret.tscn'])
-               && JSON.stringify(laterGames) === JSON.stringify(['siege-waves', 'murphys-law'])
+               && JSON.stringify(laterAt) === JSON.stringify(['/games/chess-city/', '/games/campaign/', '/games/murphys-law/', 'res://rooms/secret.tscn', '/games/the-gauntlet/'])
+               && JSON.stringify(laterGames) === JSON.stringify(['siege-waves', 'murphys-law', 'the-gauntlet'])
                && /return where != "" and LATER\.has\(where\.get_slice\("\?", 0\)\)/.test(fnGd(wdW, 'later'))
                && !/LATER_GAMES/.test(wdW + sbW + rd('journal.gd')),
               '⭐ the later areas  (his 10-27): ONE list of what is still being built and the square each one holds, and his words for it  ("Building. Not open to visitors.")',
               laterAt.join(' ') + ' · ' + laterGames.join(' '));
-            const pages = laterAt.filter((u) => u.startsWith('/games/')).map((u) => 'games/' + u.split('/')[2] + '/index.html');
-            const unshut = pages.filter((f) => !fs.existsSync(path.join(ROOT, f))
-              || !/<p class="proto-shut">Building\. Not open to visitors\.<\/p>/.test(fs.readFileSync(path.join(ROOT, f), 'utf8')));
-            ok(pages.length === 3 && unshut.length === 0,
-              '…and each of its pages on the site is shut in the same words: the game never opens a door the site keeps shut',
-              unshut.join(' ') || pages.join(' '));
+            /* ⚠ THE SITE'S SHUT PAGES ARE LATER IN THE GAME, NOT THE REVERSE: a live game can be later in the town (the
+               Gauntlet has no door yet, his 10-28), and a page behind the site's lock is never a door the town opens. */
+            const page = (g) => path.join(ROOT, 'games', g, 'index.html');
+            const shutPages = fs.readdirSync(path.join(ROOT, 'games')).filter((g) => fs.existsSync(page(g))
+              && /class="proto-shut"/.test(fs.readFileSync(page(g), 'utf8')));
+            const offWords = shutPages.filter((g) => !/<p class="proto-shut">Building\. Not open to visitors\.<\/p>/.test(fs.readFileSync(page(g), 'utf8')));
+            const gameAll = GD_ALL.filter((f) => f.endsWith('.gd')).map((f) => rd(f)).join('\n');
+            const opened = shutPages.filter((g) => g !== 'checker-town' && gameAll.includes('"/games/' + g + '/')
+              && !laterAt.includes('/games/' + g + '/'));
+            ok(shutPages.length >= 5 && offWords.length === 0 && opened.length === 0,
+              '…and every page the site keeps shut says the same words, and is a later area wherever the game names it: the game never opens a door the site keeps shut',
+              offWords.concat(opened).join(' ') || shutPages.join(' '));
             ok(/^\t# [^\n]*\n\tif GameState\.worlds\.later\(scene_path if scene_path != "" else url\):\s*\n\t\tsay\(GameState\.worlds\.BUILDING\)\s*\n\t\treturn\s*\n\tif energy_cost > 0/m.test(fnGd(drW, 'interact'))
                && /url = GameState\.town\.CHESS_CITY_URL/.test(cgW) && /_secret\.scene_path = "res:\/\/rooms\/secret\.tscn"/.test(hlW)
                && /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/"/.test(ptW),
