@@ -1513,12 +1513,12 @@ const CAT_ORDER = ['fork','skewer','material','discovered','pin','mate'];
 function loadTactics(){ try { return JSON.parse(localStorage.getItem(TACT_KEY)) || {}; } catch(e){ return {}; } }
 function saveTactics(t){ try { localStorage.setItem(TACT_KEY, JSON.stringify(t)); } catch(e){} }
 /* ══ A LOG CHECKER TOWN CAN READ ═══════════════════════════════════
-   2026-09-03. The Puzzle Champ down at the Sea keeps the oars to Shogi Island and wants three
-   clean in a row; the town counts them, and this is the only thing that can tell it.
+   2026-09-03. The town counts the clean entries toward a favor or a bounty that asks for a puzzle
+   (its poll_deeds). ⚑ The Puzzle Champ's three for the oars are played at the town's own table
+   since 2026-10-29, so this log no longer counts toward them.
 
-   ⚠⚠ A LOG, NOT A "LAST RESULT". The town polls every two seconds and two puzzles can settle
-   inside one tick — a single `last` field would silently drop the first, which on a
-   three-in-a-row gate is a streak that never finishes and no way to see why.
+   ⚠⚠ A LOG, NOT A "LAST RESULT". The town polls and two puzzles can settle between two polls
+   — a single `last` field would silently drop the first.
    ⚠ `earned` IS THIS ROOM'S OWN WORD FOR CLEAN and it is reused deliberately: aced, no
    reveal, no hint. Inventing a second definition of a clean solve is how two counters that
    should agree stop agreeing.
@@ -1716,38 +1716,8 @@ function warmupArgs(){
              floor: parseInt(q.get('floor'), 10), name: (q.get('name') || 'the next floor').slice(0, 40) };
   } catch(e){ return null; }
 }
-/* ══ THE CHAMP'S THREE (2026-09-21) ══
-   Checker Town opens this room with `?oars=<clean solves still owed>&since=<ms>`. A miss or the
-   last clean solve ends his run, and tapping past that card closes the tab — before, the room
-   kept serving puzzles he had stopped counting.
-   ⚠ READ OFF THE LOG, the same rule GameState.puzzle_report() runs: a counter kept in this
-   page would reset on a reload and let the run go past its end. */
-function oarsArgs(){
-  try {
-    const q = new URLSearchParams(searchStr('oars'));
-    const left = parseInt(q.get('oars'), 10), since = parseInt(q.get('since'), 10);
-    return left > 0 && since >= 0 ? { left, since } : null;
-  } catch(e){ return null; }
-}
-function oarsOver(){
-  const o = oarsArgs();
-  if (!o) return false;
-  try {
-    const a = JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]');
-    let clean = 0;
-    for (const r of a) {
-      if (!r || !(r.at > o.since)) continue;
-      if (!r.c || ++clean >= o.left) return true;
-    }
-  } catch(e){}
-  return false;
-}
-/* ⚠ Closing fails on a tab no script opened (popup blocked, the installed app) — walk back. */
-function backToTown(){
-  const w = window.top || window;
-  try { w.close(); } catch(e){}
-  setTimeout(() => { try { w.location.href = '/games/checker-town/'; } catch(e){ location.href = '/games/checker-town/'; } }, 180);
-}
+/* ⚑ NO `?oars=` ANY MORE (2026-10-29, his "give the website the table, too"): the Puzzle Champ's three are played at
+   the town's own table, so this room no longer counts a run for him or closes itself at its end. */
 let lastWarmup = null;
 function startWarmup(w){
   lastWarmup = w;
@@ -1916,11 +1886,46 @@ function puzzleSolved(){
      one and misses the other. There is one name for one idea. */
   const earned = G.clean && !G.revealed && G.hintLevel === 0;
   run.stats.solved++;
+  settleOnce(earned);
+  if (!earned) queueRetry(G.p);
+  if (run.ladder){ if (G.revealed) run.slipped = true; else run.rungs = (run.rungs||0) + 1; }
+  if (run.mode === 'journey'){
+    /* ⚠ THE ROAD ONLY MOVES ON AN EARNED SOLVE. The difficulty and the rating still settle
+       either way — they are measurements, and a hinted solve is real information about
+       where you are. The STEP is a claim, and only a clean solve gets to make it. */
+    if (earned){
+      run.step = Math.min(JOURNEY_LEN, run.step + 1);
+      run.best = Math.max(run.best || 0, run.step);
+    }
+    saveProg({ step: run.step, diff: run.diff, best: run.best });
+  }
+  if (G.p.boss){
+    bannerText = 'BOSS DOWN!'; bannerColor = C.gold; bannerT = 0;
+    const lastU = uci(G.p.line[G.p.line.length-1][0]); burst(lastU.tx, lastU.ty, true);
+    for (let i=0;i<4;i++) setTimeout(()=>burst((Math.random()*8)|0, (Math.random()*8)|0, true), 110*i);
+    sfx('win');
+  } else {
+    // three outcomes now, and the middle one has to be honest without being a scolding:
+    // you solved it, it doesn't count, and you will see it again.
+    bannerText = earned ? 'SOLVED!' : 'NO CREDIT — IT COMES BACK';
+    bannerColor = earned ? C.good : C.frame; bannerT = 0;
+    sfx('advance');
+  }
+  showExplain();
+}
+
+/* ⭐ SETTLED ONCE: AT THE SOLVE, OR THE MOMENT THE CREDIT GOES (his, 2026-10-29: "Making the wrong move, whether they
+   get up mid-puzzle or not, counts against them. leaving a puzzle that can still be correctly solved costs nothing.")
+   spoil() runs it at the first wrong move or hint, so closing the tab after one changes nothing, and a puzzle left
+   clean costs nothing. ⚠ G.settled: the solve that follows a spoil must not count the same puzzle twice. */
+function spoil(){ G.clean = false; settleOnce(false); }
+function settleOnce(earned){
+  if (G.settled) return;
+  G.settled = true;
   recordTactic(G.p.cat, earned);
   if (earned) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
-  else { run.stats.streak = 0; queueRetry(G.p); }
+  else run.stats.streak = 0;
   logForTown(earned);
-  if (run.ladder){ if (G.revealed) run.slipped = true; else run.rungs = (run.rungs||0) + 1; }
 
   /* ── THE RATING SETTLES, AND IT IS NOW THE DIFFICULTY DIAL (2026-08-03, priority #2) ──
      The old ratchet was +0.34 / −0.7 on a 1–10 dial: honest, but it only ever knew
@@ -1962,31 +1967,10 @@ function puzzleSolved(){
     }
   } catch(e){}
   lastRatingMove = pzMove;
-
   if (run.mode === 'journey'){
     if (!pzMove) run.diff = Math.max(1, Math.min(10, run.diff + (earned ? 0.34 : -0.7)));  // no profile module: the old ratchet still works
-    /* ⚠ THE ROAD ONLY MOVES ON AN EARNED SOLVE. The difficulty and the rating still settle
-       either way — they are measurements, and a hinted solve is real information about
-       where you are. The STEP is a claim, and only a clean solve gets to make it. */
-    if (earned){
-      run.step = Math.min(JOURNEY_LEN, run.step + 1);
-      run.best = Math.max(run.best || 0, run.step);
-    }
     saveProg({ step: run.step, diff: run.diff, best: run.best });
   }
-  if (G.p.boss){
-    bannerText = 'BOSS DOWN!'; bannerColor = C.gold; bannerT = 0;
-    const lastU = uci(G.p.line[G.p.line.length-1][0]); burst(lastU.tx, lastU.ty, true);
-    for (let i=0;i<4;i++) setTimeout(()=>burst((Math.random()*8)|0, (Math.random()*8)|0, true), 110*i);
-    sfx('win');
-  } else {
-    // three outcomes now, and the middle one has to be honest without being a scolding:
-    // you solved it, it doesn't count, and you will see it again.
-    bannerText = earned ? 'SOLVED!' : 'NO CREDIT — IT COMES BACK';
-    bannerColor = earned ? C.good : C.frame; bannerT = 0;
-    sfx('advance');
-  }
-  showExplain();
 }
 
 // Teaching card shown after each solve — names the motif and explains the idea.
@@ -2009,18 +1993,17 @@ function showExplain(){
     ? { text: (lastRatingMove.delta > 0 ? '+' : '') + lastRatingMove.delta + ' → ' + lastRatingMove.after,
         up: lastRatingMove.delta > 0 }
     : null;
-  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm, rating: rl, town: oarsOver() };
+  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm, rating: rl };
   clearTimeout(explainTimer);   // no auto-advance — the player taps OK when ready, so there's time to read it
 }
 function advanceFromExplain(){
   clearTimeout(explainTimer);
-  const town = explainCard && explainCard.town;
   explainCard = null;
-  if (town) backToTown(); else nextPuzzle();
+  nextPuzzle();
 }
 function revealSolution(){
   clearRefutation();
-  G.clean = false; G.revealed = true; G.selected = null; G.wrong = 0;
+  spoil(); G.revealed = true; G.selected = null; G.wrong = 0;
   const mv = G.p.line[G.step]; const u = uci(mv[0]);
   arrow = { fx: u.fx, fy: u.fy, tx: u.tx, ty: u.ty, t: 0 };
   G.phase = 'animating';
@@ -2091,7 +2074,7 @@ canvas.addEventListener('pointerdown', e => {
     G.selected = null; G.moves = null; playerAltCorrect(from.x, from.y, c.x, c.y);   // a second, equally-valid mate
   } else {
     const tried = { x: c.x, y: c.y };
-    G.selected = null; G.moves = null; G.clean = false; G.wrong++;
+    G.selected = null; G.moves = null; spoil(); G.wrong++;
     sfx('wrong'); shake = 10; vignette = 14;
     // the nudge moved ABOVE the board — the refutation card owns the strip below it
     if (G.wrong >= 2) { const hb = document.getElementById('hint-btn'); hb.classList.remove('nudge'); void hb.offsetWidth; hb.classList.add('nudge'); }
@@ -2139,7 +2122,7 @@ document.getElementById('hint-btn').addEventListener('click', () => {
   if (!G || G.phase !== 'await') return;
   clearRefutation();                    // the hint text uses the same strip
   G.hintLevel = (G.hintLevel || 0) + 1;
-  G.clean = false;
+  spoil();
   run.stats.hints = (run.stats.hints || 0) + 1;
   const mt = MOTIFS[G.p.theme] || {};
   if (G.hintLevel === 1){
@@ -2447,7 +2430,7 @@ function drawExplain(){
   const okW = 70, okH = 24, okX = x + cardW - okW - 12, okY = y + cardH - okH - 9;
   ctx.fillStyle = explainCard.color; roundRect(okX, okY, okW, okH, 12); ctx.fill();
   ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(explainCard.town ? 'Town ▸' : 'OK ▸', okX + okW/2, okY + okH/2);
+  ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
   /* The rating swing, bottom-left of the same card, opposite the OK. Green up, pink
      down — the room's own two colors, so it needs no legend. It sits INSIDE the card
      rather than floating: this is a fact about the puzzle you just did, not a

@@ -674,6 +674,8 @@
     local.dogs_play = !!(local.dogs_play || remote.dogs_play);
     /* ⭐ PAWN CROSSING'S BEST RUN (2026-10-04): earned, so the max. */
     local.crossing_best = Math.max(+local.crossing_best || 0, +remote.crossing_best || 0);
+    /* ⭐ CLEAN PUZZLES AT THE PUZZLE CHAMP'S TABLE (2026-10-29): toward his own square, earned, so the max. */
+    local.puzzles_clean = Math.max(+local.puzzles_clean || 0, +remote.puzzles_clean || 0);
     /* ⭐ YOUR RATING, AND HOW FAR THE BOOTH HAS RUN (2026-10-12): both only ever climb, so the max.
        ⚠ The rating has no floor here on purpose: the town starts a save with none at its own 400. */
     local.rating = Math.max(+local.rating || 0, +remote.rating || 0);
