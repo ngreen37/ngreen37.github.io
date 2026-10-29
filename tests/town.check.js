@@ -6871,6 +6871,37 @@ const server = http.createServer((req, res) => {
              && /if _sf\.score\(\) != null:\s*\n\t+_cps\.append\(int\(_sf\.score\(\)\)\)/.test(fnGd(brT, '_process')),
             '…for as long as the site\'s thinkFor says: the same pace, thirtieth, 2.5 times and eighth, the same two pawns down and the same swing, off its own scores',
             cpG ? cpG[1] + ' / ' + cpG[2] : 'no constants');
+          /* ⭐ THEIR SYSTEMS OFF THE WEB  (his, 2026-10-28: "toward 1.0"): the site's pjcc-systems.js, ported once */
+          const tsT = rd('table_systems.gd');
+          const sysJ = require(path.join(ROOT, 'assets/js/pjcc-systems.js')).SYS;
+          const sysG = {};
+          for (const m of tsT.matchAll(/^\t"(\w+)": (\{ "side": [^\n]*\}),$/gm)) { try { sysG[m[1]] = JSON.parse(m[2]); } catch (e) { sysG[m[1]] = null; } }
+          const sysOff = Object.keys(sysJ).filter((id) => JSON.stringify(sysG[id] || null) !== JSON.stringify({ side: sysJ[id].side, name: sysJ[id].name,
+            ...(sysJ[id].moves ? { moves: sysJ[id].moves } : {}), ...(sysJ[id].vs ? { vs: sysJ[id].vs } : {}) }))
+            .concat(Object.keys(sysG).filter((id) => !sysJ[id]));
+          const seatG = {};
+          for (const m of ((/const SEAT := \{([\s\S]*?)\n\}/.exec(tsT) || [])[1] || '').matchAll(/"(\w+)": \["(\w+)", "(\w+)"\]/g)) seatG[m[1]] = [m[2], m[3]];
+          const seatY = {};
+          for (const chunk of yml.split(/\n- key:/).slice(1)) {
+            const w = /\n\s+sys_w:\s*(\w+)/.exec('\n' + chunk), b = /\n\s+sys_b:\s*(\w+)/.exec('\n' + chunk);
+            if (w && b) seatY[chunk.trim().split(/\s/)[0]] = [w[1], b[1]];
+          }
+          ok(sysOff.length === 0 && Object.keys(sysJ).length === 16 && JSON.stringify(seatG) === JSON.stringify(seatY),
+            '⭐⭐ off the web each regular plays their own system  (his 10-28: "toward 1.0"): the site\'s sixteen, square for square, and who plays which as the bench says',
+            sysOff.join(' ') || (Object.keys(seatG).length + ' seats: ' + Object.keys(seatG).join(' ')));
+          ok(/if list\.is_empty\(\) or ChessRules\.in_check\(S, str\(S\.turn\)\):\s*\n\t\treturn \{\}/.test(fnGd(tsT, 'next'))
+             && /if hangs\(S, mv\):\s*\n\t\t\tcontinue/.test(fnGd(tsT, 'next')) && /return worst > 1/.test(fnGd(tsT, 'hangs'))
+             && /return worst > 1;/.test(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-systems.js'), 'utf8'))
+             && /bash "\$S\/systems\.sh"/.test(suiteT) && /const Y = require\(path\.join\(SITE, 'assets\/js\/pjcc-systems\.js'\)\)/.test(gdTxt('tests/systems_corpus.js'))
+             && /\btablesys\b/.test(suiteT),
+            '…held to the site\'s own next() position for position (tests/systems.sh: its corpus, every pairing and random games), never in check, never at a hanging price',
+            'the first wanted square that is legal right now: a system, not a line');
+          const sysB = fnGd(brT, 'think');
+          ok(atB('if not _web and not stand_in and not study:') > atB('if _web and not stand_in:')
+             && atB('if not _web and not stand_in and not study:') < atB('if not _web and not stand_in and elo >= ENGINE_FROM and _sf != null:')
+             && /var wait := maxi\(120, roundi\(float\(GameState\.ladder\.seat_ms\(key\)\) \* 0\.35\)\)/.test(sysB)
+             && /Math\.max\(120, Math\.round\(\(s\.movetime \|\| 300\) \* 0\.35\)\)/.test(ttT),
+            '…first, before Stockfish or the stand-in thinks, as the web brain plays it: fast but not instant (a third of their pace), and never in a study');
           ok(/bash "\$S\/engine\.sh"/.test(suiteT) && /\btablesf\b/.test(suiteT) && /\btablesfnone\b/.test(suiteT),
             '…and the suite plays it: engine.sh against the real Stockfish (every pace branch, a mate in one, a stopped search, nothing left running), and a game at Robert\'s table with it and without it');
           /* ⭐ THE STANDALONE WINDOWS BUILD  (his, 2026-10-28: "build a standalone windows build") */
@@ -6910,6 +6941,36 @@ const server = http.createServer((req, res) => {
              && ['title:Checker Town', 'referee:0', 'useat:640,950;bubble:Building. Not open to visitors.', 'jrows:The CEO is waiting in the far chair', 'brainis:stockfish', 'sfgone'].every((t) => saT.includes(t))
              && /referee:1/.test((/^  later\) SEQ="[^\n]*/m.exec(rd('tests/cases.sh')) || [''])[0]),
             '…and the suite plays the build itself: the probe copy exported with the same preset (its save, never his) and a game run inside the .exe, Stockfish found beside it');
+          /* ⭐ ITS FRONT DOOR  (his, 2026-10-28: "Start growing the standalone build toward 1.0") */
+          const fdT = rd('front_door.gd'), fadeT = rd('fade.gd');
+          const fdLayer = +((/const LAYER := (\d+)/.exec(fdT) || [])[1] || 0), overAll = +((/const OVER_ALL := (\d+)/.exec(fadeT) || [])[1] || 0);
+          const others = GD_ALL.filter((f) => f.endsWith('.gd') && !['front_door.gd', 'fade.gd'].includes(f))
+            .map((f) => [...rd(f).matchAll(/^\s*layer = (\d+)/gm)].map((m) => +m[1])).flat();
+          const topOther = others.length ? Math.max(...others) : 0;
+          ok(/# ⭐ THE STANDALONE BUILD'S TITLE AND MENU[^\n]*\n\tif worlds\.no_site\(\):\s*\n\t\tFrontDoor\.open\(get_tree\(\)\)/.test(fnGd(gsS2, '_ready'))
+             && /process_mode = Node\.PROCESS_MODE_ALWAYS/.test(fnGd(fdT, '_ready')) && /tree\.root\.add_child\.call_deferred\(FrontDoor\.new\(\)\)/.test(fnGd(fdT, 'open'))
+             && fdLayer > topOther && fdLayer < overAll,
+            '⭐⭐ …with a front door of its own: a title at launch and a menu over the game, only where there is no site, a child of the root over everything but the fade',
+            'layer ' + fdLayer + ', over every other layer (' + topOther + ') and under the fade (' + overAll + ')');
+          ok(/get_tree\(\)\.paused = true/.test(fnGd(fdT, '_show')) && /get_tree\(\)\.paused = false/.test(fnGd(fdT, 'hide_door'))
+             && /\["play", "Continue" if GameState\.had_save or _played else "Play"\]/.test(fnGd(fdT, 'rows'))
+             && /\["newgame", \("Yes, Start Save %d Over" % GameState\.save_slot\) if _armed else "New Game"\]/.test(fnGd(fdT, 'rows'))
+             && /return \[\["resume", "Resume"\], full, sound, \["title", "Title Screen"\], \["quit", "Quit"\]\]/.test(fnGd(fdT, 'rows'))
+             && /if GameState\.new_game_slot\(\) == GameState\.save_slot and not _armed:/.test(fnGd(fdT, 'act')),
+            '…the desktop program\'s rows, word for word: Continue (Play the first time), New Game asking first with no save to spare, Full Screen, Sound, Quit; Resume and Title Screen over the game, which waits under it',
+            'paused, so no energy drains and no clock runs');
+          ok(/if \(down and key\.keycode == KEY_F1\) or Pad\.hit\(event, JOY_BUTTON_START\):/.test(fnGd(fdT, '_input'))
+             && /elif shown == MENU and event\.is_action_pressed\("ui_cancel"\):\s*\n\t\thide_door\(\)/.test(fnGd(fdT, '_input'))
+             && /key\.keycode == KEY_F11 or \(key\.keycode == KEY_ENTER and key\.alt_pressed\)/.test(fnGd(fdT, '_input'))
+             && /"quit":\s*\n\t\t\tGameState\.save_state\(\)\s*\n\t\t\tget_tree\(\)\.quit\(\)/.test(fnGd(fdT, 'act'))
+             && /if what == NOTIFICATION_WM_CLOSE_REQUEST:\s*\n\t\tsave_state\(\)/.test(fnGd(gsS2, '_notification'))
+             && /had_save = FileAccess\.file_exists\(_path\(\)\)/.test(fnGd(gsS2, '_ready')) && !/had_save = true/.test(fnGd(gsS2, 'save_state')),
+            '⛑ …F1 or Start for the menu (Esc or B puts it away), F11 or Alt+Enter for full screen, and Quit saves first, as the window\'s own close does now',
+            'Continue reads the disk at launch: the game saves on its first frame, before any title is drawn');
+          ok(['front:title', 'frontpick:Play', 'key:f1;front:menu', 'joy:start;wait:6;front:menu', 'fullscreen:1', 'frontpick:Title Screen', 'gs:money.ore=777;done;frontpick:Quit'].every((t) => saT.includes(t))
+             && /^grep -q '"ore":777' "\$SAVE\/town\.json" 2>\/dev\/null \|\| \{ echo "SA FAIL Quit did not save"; FAILS=\$\(\(FAILS \+ 1\)\); \}$/m.test(saT)
+             && /^\[ "\$DONES" = "1" \] \|\| \{/m.test(saT) && /front:absent/.test((/^  later\) SEQ="[^\n]*/m.exec(rd('tests/cases.sh')) || [''])[0]),
+            '…and the suite opens it inside the .exe: the title, Play, the menu on F1 and on Start, full screen and back, the title again, and a Quit that ends the game with the run saved  (and the editor has none)');
           /* ⭐ THE DOOR ITSELF, run in node with the site's own referee, negamax, engine bridge, systems and dial */
           const rowsY = [];
           for (const chunk of yml.split(/\n- key:/).slice(1)) {
