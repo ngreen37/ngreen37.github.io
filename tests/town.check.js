@@ -387,68 +387,54 @@ const server = http.createServer((req, res) => {
     ok(/local\.island_open = !!\(local\.island_open \|\| remote\.island_open\)/.test(PROF),
       '…the oars merge by OR, like every other earned thing');
 
-    /* ══ THE CHAMP'S TAB CLOSES — 2026-09-21 ══ */
-    /* his: "If there is a miss, the window closes. Currently, you can just keep doing puzzles and you may not realize why." */
+    /* ══ THE WRONG MOVE COUNTS AT ONCE — 2026-10-29 ══ */
+    /* his: "Making the wrong move, whether they get up mid-puzzle or not, counts against them. leaving a puzzle that can
+       still be correctly solved costs nothing." The room settles a puzzle the moment its credit goes, so closing the tab
+       after a wrong move changes nothing. (The Champ's three left this room for the town's table the same day.) */
     {
-      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-      const now = () => page.evaluate(() => Date.now());
       await page.evaluate(() => localStorage.removeItem('pjcc.puz.log.v1'));
-      const openRoom = async (q) => {
-        const u = '/w/' + q;
-        const tgt = browser.waitForTarget((t) => t.url().endsWith(u), { timeout: 10000 });
-        await page.evaluate((x) => { window.open(x, '_blank'); }, u);
-        const pop = await (await tgt).page();
-        pop.on('pageerror', (e) => errs.push('room: ' + e.message));
-        await pop.waitForFunction(() => { const f = document.querySelector('iframe');
-          return f && f.contentWindow && typeof f.contentWindow.oarsOver === 'function'; }, { timeout: 15000 });
-        const fr = pop.frames().find((f) => f.url().includes('pjcc_fork.html'));
-        await fr.evaluate(() => document.getElementById('journey-btn').click());
-        await fr.waitForFunction(() => typeof G !== 'undefined' && G && G.phase === 'await', { timeout: 10000 });
-        return { pop, fr };
-      };
-      const settle = (fr, clean) => fr.evaluate((c) => { G.clean = c; puzzleSolved(); return { town: explainCard.town, id: G.p.id }; }, clean);
-      const tap = (fr) => fr.evaluate(() => document.querySelector('canvas')
-        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 240, clientY: 300 })));
-      const shut = (pop) => Promise.race([new Promise((r) => pop.once('close', () => r(true))), sleep(2000).then(() => pop.isClosed())]);
-
-      let t0 = await now(), room = await openRoom('?oars=3&since=' + t0 + '&from=town');
-      const a1 = await settle(room.fr, true); await tap(room.fr); await sleep(250);
-      const a2 = await settle(room.fr, true); await tap(room.fr); await sleep(250);
-      const openAfterTwo = !room.pop.isClosed();
-      const a3 = await settle(room.fr, true); await tap(room.fr);
-      ok(!a1.town && !a2.town && openAfterTwo && a3.town && await shut(room.pop),
-        '⛑ the Champ\'s tab serves three clean, then its card says Town and the tap closes it',
-        JSON.stringify({ a1: a1.town, a2: a2.town, openAfterTwo, a3: a3.town }));
-
-      t0 = await now(); room = await openRoom('?oars=3&since=' + t0 + '&from=town');
-      const b1 = await settle(room.fr, false); await tap(room.fr);
-      ok(b1.town && await shut(room.pop), '…one miss closes it on the spot  (⚠ before, the room kept serving puzzles he stopped counting)');
-
-      await page.evaluate(() => { const a = JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]');
-        a.push({ c: 0, at: Date.now() - 5 }); localStorage.setItem('pjcc.puz.log.v1', JSON.stringify(a)); });
-      await sleep(20);
-      t0 = await now(); room = await openRoom('?oars=1&since=' + t0 + '&from=town');
-      const c0 = await room.fr.evaluate(() => oarsOver());
-      const c1 = await settle(room.fr, true); await tap(room.fr);
-      ok(!c0 && c1.town && await shut(room.pop),
-        '…"set me another" mid-run counts only what settled after `since`, and closes on the last one owed');
-
-      room = await openRoom('?from=town');
-      const d1 = await settle(room.fr, false); await tap(room.fr); await sleep(300);
-      const d2 = await room.fr.evaluate(() => G && G.p && G.p.id);
-      ok(!d1.town && !room.pop.isClosed() && d2 !== d1.id,
-        '…and a visit with no `oars` is the plain room: a miss serves the next puzzle');
-      await room.pop.close();
-
-      t0 = await now(); room = await openRoom('?oars=2&since=' + t0 + '&from=town');
-      await room.pop.evaluate(() => { window.close = () => {}; });
-      await settle(room.fr, false);
-      const nav = room.pop.waitForNavigation({ timeout: 3000 }).catch(() => null);
-      await tap(room.fr); await nav;
-      ok(/\/games\/checker-town\/$/.test(room.pop.url()),
-        '…a tab no script may close (popup blocked, the installed app) WALKS back to the town', room.pop.url());
-      await room.pop.close();
+      const tgt = browser.waitForTarget((t) => t.url().endsWith('/w/'), { timeout: 10000 });
+      await page.evaluate(() => { window.open('/w/', '_blank'); });
+      const pop = await (await tgt).page();
+      pop.on('pageerror', (e) => errs.push('room: ' + e.message));
+      await pop.waitForFunction(() => { const f = document.querySelector('iframe');
+        return f && f.contentWindow && typeof f.contentWindow.spoil === 'function'; }, { timeout: 15000 });
+      const fr = pop.frames().find((f) => f.url().includes('pjcc_fork.html'));
+      await fr.evaluate(() => document.getElementById('journey-btn').click());
+      await fr.waitForFunction(() => typeof G !== 'undefined' && G && G.phase === 'await', { timeout: 10000 });
+      const logged = () => fr.evaluate(() => JSON.parse(localStorage.getItem('pjcc.puz.log.v1') || '[]').map((r) => r.c).join(''));
+      /* a move the rules allow that is not the answer, tapped where a finger taps it */
+      const wrongAt = await fr.evaluate(() => {
+        const exp = uci(G.p.line[G.step][0]), r = document.querySelector('canvas').getBoundingClientRect();
+        const at = (x, y) => { const c = cell(x, y); return { x: r.left + c.x * r.width / W, y: r.top + c.y * r.height / H }; };
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+          const pc = G.board[y][x];
+          if (!pc || pc.c !== G.orient) continue;
+          for (const m of legalFrom(G.board, x, y)) {
+            if (x === exp.fx && y === exp.fy && m.x === exp.tx && m.y === exp.ty) continue;
+            if (G.p.line.length === 1 && isWinningAltMove(G.p, G.board, x, y, m.x, m.y)) continue;
+            return [at(x, y), at(m.x, m.y)];
+          }
+        }
+        return null;
+      });
+      const tapAt = (pt) => fr.evaluate((q) => document.querySelector('canvas')
+        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: q.x, clientY: q.y })), pt);
+      const log0 = await logged();
+      if (wrongAt) { await tapAt(wrongAt[0]); await tapAt(wrongAt[1]); }
+      const mid = await fr.evaluate(() => ({ settled: !!G.settled, phase: G.phase, clean: G.clean, streak: run.stats.streak }));
+      const log1 = await logged();
+      await fr.evaluate(() => puzzleSolved());
+      const log2 = await logged();
+      ok(!!wrongAt && log0 === '' && log1 === '0' && mid.settled && mid.phase === 'await' && !mid.clean && mid.streak === 0 && log2 === '0',
+        '⭐ his 10-29: a wrong move in the room counts against you the moment it is made, so a tab shut after it changes nothing, and finishing the puzzle does not count it twice',
+        JSON.stringify({ log0, log1, log2, mid }));
+      await pop.close();
     }
+    const gdCh = fs.existsSync(path.join(process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town', 'core/state/state_challenge.gd'))
+      ? fs.readFileSync(path.join(process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town', 'core/state/state_challenge.gd'), 'utf8') : '';
+    ok(!/oars|backToTown/.test(fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_fork.html'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')) && !/\?oars=/.test(gdCh),
+      '…and the room has no `?oars=` mode left: the town no longer sends anybody there for the Champ\'s three');
 
     ok(errs.length === 0, 'no page errors', errs.join(' | '));
 
@@ -992,21 +978,16 @@ const server = http.createServer((req, res) => {
       ok(/no_seat_say/.test(chal) && /no_seat_say = /.test(isl),
         'his chess row is grayed and SAYS WHY — no bench seat was invented for him');
 
-      ok(/const PUZZLE_RUN := 3/.test(gs) && /func poll_puzzle\(/.test(gs),
-        'the Puzzle Champ keeps the oars until three clean in a row');
-      ok(/challenge\.poll_challenge\(\)\s*\n\s*challenge\.poll_puzzle\(\)/.test(gs),
-        '…counted on the SAME 2s tick, not a second timer');
-      ok(/if typeof\(got\) != TYPE_ARRAY:/.test(gs),
-        '…reading an ARRAY of results, or two puzzles inside one tick lose one  (⚠ the streak would never finish)');
+      ok(/const PUZZLE_RUN := 3/.test(gs) && !/func poll_puzzle\(/.test(gs) && !/challenge\.poll_puzzle\(\)/.test(gs),
+        'the Puzzle Champ keeps the oars until three clean in a row, counted at his own table and never off the room\'s log',
+        'his 10-29: "give the website the table, too" — a puzzle solved in Fork in the Road no longer counts toward his run');
       ok(/puz = \{ "failed_day": GameState\.day_no\(\) \}/.test(gs) && /!= GameState\.day_no\(\)/.test(fnGd(gs, 'puzzle_ready')),
         '…and one wrong answer ends it until tomorrow  (the real tomorrow since 2026-10-03)');
-      ok(/func puzzle_more\(/.test(gs) && /NOT puzzle_begin/.test(gs),
+      ok(/func puzzle_more\(/.test(gs) && /NOT puzzle_begin/.test(gs) && /puzzle_more\(\)/.test(fnGd(gs, 'puzzle_begin')),
         '…while "set me another" mid-run does NOT reset the count to zero');
-      const pMore = fnGd(gs, 'puzzle_more');
-      ok(/"%s\?oars=%d&since=%d" % \[PUZZLE_URL, PUZZLE_RUN - puzzle_streak\(\),\s*roundi\(/.test(pMore) &&
-         /open_url\(url\)/.test(pMore) && /puzzle_more\(\)/.test(fnGd(gs, 'puzzle_begin')),
-        '…and both doors tell the room what is still owed and since when, so it can close itself',
-        'roundi, not int: truncating a float stamp a hair low recounts the last solve');
+      ok(fnGd(gs, 'puzzle_more').trim() === 'func puzzle_more() -> void:\n\tsit_puzzle()'
+         && fnGd(gs, 'puzzle_practice').trim() === 'func puzzle_practice() -> void:\n\tsit_puzzle()',
+        '⭐ …and both doors set it at the table in every build: no tab, no `?oars=`, the web too');
       /* ⚠ IT NAMES THE REFUSAL, not the flag. */
       ok(/class Rowboat extends TownDoor/.test(town) &&
          /if not GameState\.challenge\.island_open:\s*\n\s*say\("No oars/.test(town),
@@ -1214,12 +1195,11 @@ const server = http.createServer((req, res) => {
       const dev = fs.readFileSync(GDF('dev_referee.gd'), 'utf8');
       ok(/func puzzle_report\(clean: bool/.test(gs),
         'ONE path settles a puzzle, won or lost');
-      ok(/puzzle_report\(int\(rec\.get\("c", 0\)\) == 1/.test(gs),
-        '…the live poll comes down it');
-      ok(/if puzzle_running\(\):\s*\n\s*puzzle_report\(clean, Time\.get_unix_time_from_system\(\)\)/.test(fnGd(gs, 'puzzle_settled')),
-        '…and so does a puzzle solved at the table off the web  (⚠ a second copy of the rule is a second rule)');
+      ok(/if puzzle_running\(\):\s*\n\s*puzzle_report\(clean, Time\.get_unix_time_from_system\(\)\)/.test(fnGd(gs, 'puzzle_settled'))
+         && (gs.match(/\bpuzzle_report\(/g) || []).length === 2,
+        '…and its one caller is the table\'s settle, in every build  (⚠ a second copy of the rule is a second rule)');
       ok(!/KEY_Y|KEY_N\b|puzzle_report/.test(dev),
-        '…and the editor\'s referee has no puzzle keys: off the web the puzzles are played, so they settle themselves');
+        '…and the editor\'s referee has no puzzle keys: the puzzles are played, so they settle themselves');
       ok(/for i in GameState\.challenge\.PUZZLE_RUN:/.test(town2) && /puzzle_streak\(\)/.test(town2),
         'the Champ WEARS the run — three pips, filled as you go');
       ok(/GameState\.challenge\.puzzle_run\.connect\([\s\S]{0,90}queue_redraw\(\)\)/.test(town2),
@@ -5272,8 +5252,8 @@ const server = http.createServer((req, res) => {
               '⛑ with the oars won or today\'s run missed, the Puzzle Champ still sets ONE',
               'a favor or a bounty that asks for a puzzle could not be done from inside the game');
             const prac = fnGd(gsE, 'puzzle_practice');
-            ok(/open_url\(PUZZLE_URL\)/.test(prac) && !/oars|puz\b|puz\[/.test(prac),
-              '   …through the same door, with no run started and none touched');
+            ok(/sit_puzzle\(\)/.test(prac) && !/oars|puz\b|puz\[|open_url/.test(prac),
+              '   …at his table like the run, with no run started and none touched');
             const said = [[0, (words('anyone').favor_puzzle || [''])[0]], /"id": "puzzle",[^\n]*"text": "([^"]+)"/.exec(gsE), /"puzzle":\s*return "([^"]+)"/.exec(fnGd(gsE, 'favor_line'))].map((m) => (m ? m[1] : ''));
             ok(said.every((s) => /Puzzle Champ's puzzles/.test(s) && !/site/.test(s)),
               '   and the three lines that send you there name HIM, not "the site"', said.join(' | '));
@@ -5314,7 +5294,8 @@ const server = http.createServer((req, res) => {
           }
           ok(/GameState\.money\.deed_won\(key\)\s*GameState\.ladder\.rate\(maxi\(GameState\.ladder\.RATING_WIN_MIN, GameState\.ladder\.seat_elo\(key\) \/ GameState\.ladder\.RATING_WIN_PER\)\)/.test(fnGd(gsR, 'resolve_challenge'))
              && /GameState\.board\.army_changed\.emit\(GameState\.board\.army\.size\(\)\)\s*GameState\.ladder\.rate\(GameState\.ladder\.RATING_SQUARE\)\s*return slot/.test(fnGd(gsR, '_fill_their_slot'))
-             && /GameState\.ladder\.rate\(GameState\.ladder\.RATING_SQUARE \* won\.size\(\)\)/.test(fnGd(gsR, 'check_site_unlocks')),
+             && /GameState\.ladder\.rate\(GameState\.ladder\.RATING_SQUARE \* won\.size\(\)\)/.test(fnGd(gsR, '_won_squares'))
+             && /\n\t_won_squares\(won\)/.test(fnGd(gsR, 'check_site_unlocks')) && /\n\t_won_squares\(won\)/.test(fnGd(gsR, 'check_town_unlocks')),
             '⭐ a win raises it by their rating over ' + PER + ', and a square on your board by ' + SQ + ', wherever the square came from');
           {
             const need = fnGd(gsR, 'rating_needed'), sit = fnGd(gsR, 'sit_down');
@@ -6914,11 +6895,11 @@ const server = http.createServer((req, res) => {
             'a preset without people/lines/*.txt ships a town where nobody says anything');
           ok(/static func no_site\(\) -> bool:\s*\n\treturn OS\.has_feature\("standalone"\)/.test(wdS)
              && /return LATER\.has\(at\) or \(no_site\(\) and at\.begins_with\("\/"\)\)/.test(fnGd(wdS, 'later'))
-             && /if no_site\(\):\s*\n\t\treturn true/.test(fnGd(wdS, 'later_game'))
+             && /if no_site\(\):\s*\n\t\treturn not in_town\(game\)/.test(fnGd(wdS, 'later_game'))
              && /return GAMES\.has\(the_game\) and GameState\.worlds\.later\(str\(GAMES\[the_game\]\["url"\]\)\)/.test(fnGd(rd('portal.gd'), 'ring_later'))
              && /TownPortal\.paint\(self, o \+ Vector2\(cell \* 2\.0, cell \* 2\.0\), cell, TownPortal\.ring_later\("dungeon"\)\)/.test(rd('home.gd'))
              && /TownPortal\.paint\(_art, _board\.get_center\(\), c \* 1\.25, TownPortal\.ring_later\("dungeon"\)\)/.test(rd('board_view.gd')),
-            '⛑ …where there is no site, so every site page is later: its door says Building and its square is not asked, and the CEO waits on the squares won at the tables  (as Wes\'s was in the desktop program)',
+            '⛑ …where there is no site, so every site page is later: its door says Building and its square is not asked, and the CEO waits on the squares won at the tables and the Puzzle Champ\'s own  (as Wes\'s was in the desktop program)',
             'the ring at home is drawn shut by the board that paints it');
           ok(/if not OS\.has_feature\("web"\) and not GameState\.worlds\.no_site\(\):\s*\n\t\tadd_child\(DevReferee\.new\(\)\)/.test(znS2)
              && /if worlds\.no_site\(\):\s*\n\t\tget_tree\(\)\.root\.title = "Checker Town"/.test(fnGd(gsS2, '_ready'))
@@ -7060,32 +7041,62 @@ const server = http.createServer((req, res) => {
             '⭐ …answered by the room\'s rule: the stored move, or any mate in a mate in one, and the credit only for a solve with no wrong move, no hint and nothing revealed',
             'TablePuzzle.answers / earned, against isWinningAltMove and `earned` in pjcc_fork.html');
           ok(/if not puzzle\.is_empty\(\):\s*\n\t\t_answer\(hit\[0\]\)\s*\n\t\treturn/.test(fnGd(tabT, '_try')) && /var hit: Array = targets\.filter/.test(fnGd(tabT, '_press_square'))
-             && /\t\t_apply\(m\)\s*\n\t\treturn\s*\n\tclean = false\s*\n\ttried = \{ "from": m\.from, "to": m\.to \}/.test(fnGd(tabT, '_answer'))
-             && /G\.selected = null; G\.moves = null; G\.clean = false; G\.wrong\+\+;/.test(forkT),
+             && /\t\t_apply\(m\)\s*\n\t\treturn\s*\n\t_spoil\(\)\s*\n\ttried = \{ "from": m\.from, "to": m\.to \}/.test(fnGd(tabT, '_answer'))
+             && /G\.selected = null; G\.moves = null; spoil\(\); G\.wrong\+\+;/.test(forkT),
             '⛑ …a wrong move the rules allow costs the credit and leaves the board as it was, and one they do not is a piece put down  (his 07-28)');
-          ok(/const HINT_WORDS := \["Hint", "Idea", "Reveal"\]/.test(tabT) && /hints \+= 1\s*\n\tclean = false/.test(fnGd(tabT, '_hint'))
+          ok(/const HINT_WORDS := \["Hint", "Idea", "Reveal"\]/.test(tabT) && /hints \+= 1\s*\n\t_spoil\(\)/.test(fnGd(tabT, '_hint'))
              && /if hints >= HINT_WORDS\.size\(\):\s*\n\t\trevealed = true/.test(fnGd(tabT, '_hint'))
              && /lvl <= 0 \? '[^']*Hint' : lvl === 1 \? '[^']*Idea' : '[^']*Reveal'/.test(forkT)
              && /const REPLY := 0\.38/.test(tabT) && /G\.step\+\+; G\.phase = 'await'; G\.wrong = 0; \}\), 380\)/.test(forkT),
             '…the room\'s three hints, each costing it (the piece ringed, the motif named, the move played), and its reply a beat after yours');
-          ok(/GameState\.challenge\.puzzle_settled\(_earned\(\)\)/.test(fnGd(tabT, '_puzzle_over')) && /logForTown\(earned\);/.test(forkT)
-             && /if clean:\s*\n\t\tGameState\.money\.deed_puzzles\(1\)\s*\n\tif puzzle_running\(\):\s*\n\t\tpuzzle_report\(clean, Time\.get_unix_time_from_system\(\)\)/.test(fnGd(chT, 'puzzle_settled'))
-             && /else:\s*\n\t\tsit_puzzle\(\)/.test(fnGd(chT, 'puzzle_more')) && /else:\s*\n\t\tsit_puzzle\(\)/.test(fnGd(chT, 'puzzle_practice'))
+          /* ⭐ HIS RULE, 10-29: "Making the wrong move, whether they get up mid-puzzle or not, counts against them. leaving a
+             puzzle that can still be correctly solved costs nothing." */
+          ok(/func _spoil\(\) -> void:\s*\n\tclean = false\s*\n\tif not _settled:\s*\n\t\t_settled = true\s*\n\t\tGameState\.challenge\.puzzle_settled\(false, int\(puzzle\.rating\)\)/.test(tabT)
+             && /if not _settled:\s*\n\t\t_settled = true\s*\n\t\tGameState\.challenge\.puzzle_settled\(_earned\(\), int\(puzzle\.rating\)\)/.test(fnGd(tabT, '_puzzle_over'))
+             && /\t_settled = false\n/.test(fnGd(tabT, '_set_puzzle'))
+             && /function spoil\(\)\{ G\.clean = false; settleOnce\(false\); \}/.test(forkT) && /function settleOnce\(earned\)\{\s*\n\s*if \(G\.settled\) return;\s*\n\s*G\.settled = true;/.test(forkT)
+             && /logForTown\(earned\);/.test(forkT) && /settleOnce\(earned\);/.test(forkT),
+            '⭐⭐ a wrong move or a hint counts against you the moment it is made, at the table and in the room: getting up or shutting the tab after it changes nothing, and a puzzle left clean costs nothing  (his 10-29)',
+            'settled once: the solve after a spoil does not count the same puzzle twice');
+          ok(/if clean:\s*\n\t\tpuzzles_clean \+= 1\s*\n\t\tGameState\.money\.deed_puzzles\(1\)\s*\n\t\tGameState\.board\.check_town_unlocks\(\)\s*\n\tGameState\.site_settle_puzzle\(rating, clean\)\s*\n\tif puzzle_running\(\):\s*\n\t\tpuzzle_report\(clean, Time\.get_unix_time_from_system\(\)\)/.test(fnGd(chT, 'puzzle_settled'))
              && /var i := TablePuzzle\.pick\(GameState\.ladder\.rating, puzzles_seen\)/.test(fnGd(chT, 'next_puzzle'))
              && !/later\(/.test(fnGd(pcS, 'menu')),
-            '⭐ …settled the moment it is solved, as the room logs it: the run hears every one through puzzle_report, a clean one is a deed for a favor or a bounty, and his three are no longer later in the standalone build',
+            '⭐ …settled down one path: the run hears every one through puzzle_report, and a clean one is a deed for a favor or a bounty and a step toward his square',
             'set at your rating, never twice in a sitting');
+          const gsAll = rd('game_state.gd'), brdT = rd('state_board.gd'), jrnT = rd('journal.gd');
+          ok(/if not OS\.has_feature\("web"\) or rating <= 0:\s*\n\t\treturn/.test(fnGd(gsAll, 'site_settle_puzzle'))
+             && /if \(P && P\.settlePuzzle\) P\.settlePuzzle\(r, s\);/.test(fnGd(gsAll, 'site_settle_puzzle')) && /% \[rating, 1 if clean else 0\]/.test(fnGd(gsAll, 'site_settle_puzzle'))
+             && /PJCC\.settlePuzzle\(G\.p\.rating, score\)/.test(forkT),
+            '⭐ …and on the website a puzzle at the table is one of the site\'s: its puzzle rating settles through the room\'s own PJCC.settlePuzzle, a full score only for a clean solve  (his 10-29: "give the website the table, too")');
+          ok(/"un": \["fork-in-the-road", 20\], "un_say": "solve 20 of the Puzzle Champ's puzzles"/.test(brdT)
+             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean \}/.test(fnGd(brdT, 'town_scores'))
+             && /const IN_TOWN := \["fork-in-the-road"\]/.test(wdS)
+             && /for g in own:\s*\n\t\t_scores\[g\] = maxi\(int\(_scores\.get\(g, 0\)\), int\(own\[g\]\)\)/.test(fnGd(jrnT, 'open'))
+             && /if GameState\.worlds\.in_town\(GameState\.board\.game_at\(i\)\):/.test(fnGd(jrnT, '_next_step'))
+             && /\btablesys champrun champmiss champone champleave champforfeit champhint champsquare champphone\b/.test(suiteT),
+            '⭐⭐ the Puzzle Champ\'s own square is won at his table: the twentieth clean puzzle there fills it, in every build, the Journal counting toward it  (his 10-29: "Champs own square: yes, go ahead on that")',
+            'on the website the site\'s road still buys it too; two counts, never summed');
+          ok(/"puzzles_clean": challenge\.puzzles_clean/.test(fnGd(gsAll, 'save_state')) && /challenge\.puzzles_clean = maxi\(0, int\(d\.get\("puzzles_clean", 0\)\)\)/.test(fnGd(gsAll, 'load_state'))
+             && /"puzzles_clean": challenge\.puzzles_clean/.test(fnGd(gsAll, 'push_to_site'))
+             && /if int\(d\.get\("puzzles_clean", 0\)\) > challenge\.puzzles_clean:/.test(fnGd(gsAll, 'merge_in'))
+             && /local\.puzzles_clean = Math\.max\(\+local\.puzzles_clean \|\| 0, \+remote\.puzzles_clean \|\| 0\);/.test(PROF),
+            '…and the count is earned, so it saves, syncs and merges by the max on both sides');
           ok(/if not puzzle\.is_empty\(\):\s*\n\t\t_puzzle_moved\(\)\s*\n\t\treturn\s*\n\tvar r := ChessRules\.game_result/.test(fnGd(tabT, '_apply'))
              && !/pending/.test(fnGd(chT, 'sit_puzzle')) && /GameState\.challenge\.puzzle_wanted\.connect\(_open_puzzle\)/.test(znT),
-            '⚠ …a puzzle is not an errand: never saved, so one walked away from counts nothing, as a tab shut on the room logs nothing');
-          ok(/var t := _table_up\(\)\s*\n\tif t != null:\s*\n\t\tif _puzzle_held\.is_empty\(\):\s*\n\t\t\tt\.closed\.connect\(_say_held_puzzle, CONNECT_ONE_SHOT\)/.test(fnGd(znT, '_report_puzzle'))
+            '⚠ …a puzzle is not an errand: never saved, and one left clean counts nothing');
+          ok(/var t := _table_up\(\)\s*\n\tif t != null:\s*\n\t\t_hold_say\(t, "puzzle", \[streak, done, won\]\)/.test(fnGd(znT, '_report_puzzle'))
+             && /if t != null:\s*\n\t\t_hold_say\(t, "square", said\)/.test(fnGd(znT, '_report_site_slot'))
+             && /if h\.has\("square"\):\s*\n\t\tparts\.append\(str\(h\["square"\]\)\)/.test(fnGd(znT, '_say_held'))
+             && fnGd(znT, '_say_held').indexOf('parts.append(str(h["square"]))') < fnGd(znT, '_say_held').indexOf('parts.append(_puzzle_words(')
+             && /_ui\.say\("  "\.join\(parts\)/.test(fnGd(znT, '_say_held'))
              && /t\.closed\.connect\(_flush_paid, CONNECT_ONE_SHOT\)/.test(fnGd(znT, '_flush_paid'))
              && /if n is ChessTable and n\.is_in_group\("town_cover"\):/.test(fnGd(znT, '_table_up')),
-            '…and what the town says about it (the count, the oars, a bounty paid) waits until you get up: under the table nobody reads it');
-          ok(/bash "\$S\/puzzles\.sh"/.test(suiteT) && ['champrun', 'champmiss', 'champone', 'champleave', 'champphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
+            '…and what the town says about it (his square, the count, the oars, a bounty paid) waits until you get up, in one line, the square first: under the table nobody reads it');
+          ok(/bash "\$S\/puzzles\.sh"/.test(suiteT)
              && saT.includes('use:Puzzle Champ;pick:Set me three') && saT.includes('puzzlesolve;tableis:clean:true;streak:1')
+             && saT.includes("jrows:Solve 20 of the Puzzle Champ's puzzles.")
              && /bad\("#%d: %d mates here, the site's referee found one \(%s\)"/.test(gdTxt('tests/puzzles_test.gd')),
-            '…and the suite plays them: the pool against the game\'s own rules (puzzles.sh), three straight for the oars, a miss, the hints, walking away, a phone, and one solved inside the standalone .exe');
+            '…and the suite plays them: the pool against the game\'s own rules (puzzles.sh), three straight for the oars, a miss, the hints, getting up clean and after a wrong move, his square, a phone, and one solved inside the standalone .exe');
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
