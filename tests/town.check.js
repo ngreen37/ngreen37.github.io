@@ -7097,6 +7097,29 @@ const server = http.createServer((req, res) => {
              && saT.includes("jrows:Solve 20 of the Puzzle Champ's puzzles.")
              && /bad\("#%d: %d mates here, the site's referee found one \(%s\)"/.test(gdTxt('tests/puzzles_test.gd')),
             '…and the suite plays them: the pool against the game\'s own rules (puzzles.sh), three straight for the oars, a miss, the hints, getting up clean and after a wrong move, his square, a phone, and one solved inside the standalone .exe');
+
+          /* ⭐ SAVES, READY FOR STEAM  (his, 2026-10-29: "do whatever is needed for an eventual STeam release") */
+          ok(/^config\/use_custom_user_dir\.standalone=true$/m.test(projT) && /^config\/custom_user_dir_name\.standalone="McPuppy Studios\/Checker Town"$/m.test(projT)
+             && !/^config\/use_custom_user_dir=/m.test(projT)
+             && /REAL_DIR = 'config\/custom_user_dir_name\.standalone="McPuppy Studios\/Checker Town"'/.test(mkT)
+             && /src = src\.replace\(REAL_DIR, 'config\/custom_user_dir_name\.standalone="McPuppy Studios\/Checker Town Probe"'\)/.test(mkT)
+             && /grep -q 'config\/custom_user_dir_name\.standalone="McPuppy Studios\/Checker Town Probe"'/.test(saT),
+            '⭐⭐ the standalone build keeps its saves in a folder of its own for Steam Cloud to sync (%APPDATA%/McPuppy Studios/Checker Town), and the editor keeps its own  (his 10-29)',
+            '⛑ the probe copy renames it too, and the standalone test refuses to run a copy that has not');
+          ok(/if not worlds\.no_site\(\):\s*\n\t\treturn/.test(fnGd(gsAll, '_carry_old_saves'))
+             && /for f in CARRIED\.slice\(0, 4\):\s*\n\t\tif FileAccess\.file_exists\("user:\/\/" \+ f\):\s*\n\t\t\treturn/.test(fnGd(gsAll, '_carry_old_saves'))
+             && /DirAccess\.copy_absolute\(old\.path_join\(f\), ProjectSettings\.globalize_path\("user:\/\/" \+ f\)\)/.test(fnGd(gsAll, '_carry_old_saves'))
+             && !/rename_absolute|remove_absolute/.test(fnGd(gsAll, '_carry_old_saves'))
+             && /\t_carry_old_saves\(\)\n\tsave_slot = _read_slot\(\)/.test(fnGd(gsAll, '_ready'))
+             && saT.includes('SA FAIL the carry moved the old save instead of copying it') && saT.includes('SA FAIL the standalone build wrote the editor\'s folder'),
+            '…and a first launch with nothing there COPIES the saves it used to share with the editor, never moving them, before any save is read');
+          ok(/const SAVE_VERSION := 1/.test(gsAll) && /"run": run_began, "v": SAVE_VERSION/.test(fnGd(gsAll, 'save_state'))
+             && /_upgrade\(d, int\(d\.get\("v", 0\)\)\)/.test(fnGd(gsAll, 'load_state'))
+             && !/"v":/.test(fnGd(gsAll, 'push_to_site'))
+             && /"run": 1792000000, "v": 1,/.test(gdTxt('tests/savefix.py')) && saT.includes('SA FAIL the save does not say which version wrote it'),
+            '…and every save says which version of the game wrote it, so a patch can upgrade an old one instead of misreading it');
+          ok(/REAL2="\$APPDATA\/McPuppy Studios\/Checker Town"/.test(suiteT) && /"\$REAL2\/town\.json"/.test(suiteT),
+            '⛑ …and the suite watches his real standalone folder as it watches the editor\'s');
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
