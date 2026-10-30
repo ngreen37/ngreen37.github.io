@@ -6796,7 +6796,7 @@ const server = http.createServer((req, res) => {
              && atB('if not _web and not stand_in and elo >= ENGINE_FROM and _sf != null:') < atB('var persona := ChessAI.persona_for_elo(elo)')
              && /const ENGINE_FROM := 1400/.test(brT) && /if \(elo >= 1400\) return null;/.test(engT)
              && /if _web or elo < ENGINE_FROM or UciEngine\.path\(\) == "":\s*\n\t\treturn/.test(fnGd(brT, 'warm'))
-             && /_brain\.moved\.connect\(_on_moved\)\s*\n\tif puzzle\.is_empty\(\):\s*\n\t\t_brain\.warm\(_seat_elo\(\)\)/.test(tabT),
+             && /_brain\.moved\.connect\(_on_moved\)\s*\n(?:\t#[^\n]*\n)?\tif puzzle\.is_empty\(\) and lesson == "":\s*\n\t\t_brain\.warm\(_seat_elo\(\)\)/.test(tabT),
             '⭐⭐ off the web the regular from 1400 up is Stockfish beside the game  (his 10-28: "go ahead and build that brain"): the web brain first, then Stockfish, then the stand-in under 1400 or with none',
             'started when the table opens, so it is ready by the first move');
           ok(/elif w\[0\] == "uciok":\s*\n\t\t_send\("setoption name UCI_LimitStrength value true"\)/.test(fnGd(uciT, '_line'))
@@ -6846,7 +6846,8 @@ const server = http.createServer((req, res) => {
           const cpG = /const CP_LOSING := (-?\d+)[\s\S]*?const CP_SWING := (-?\d+)/.exec(paceT);
           ok(keyG.every((l) => paceT.includes(l)) && !!cpG && !!cpD && cpG[1] === cpD[1] && cpG[2] === cpD[2]
              && /ChessRules\.in_check\(S, str\(S\.turn\)\)/.test(paceT)
-             && /var ms := TablePace\.ms\(GameState\.ladder\.seat_ms\(key\), S, clock, _cps\)/.test(brT)
+             && /var ms := TablePace\.ms\(_pace\(key\), S, clock, _cps\)/.test(brT)
+             && /return pace_ms if pace_ms > 0 else GameState\.ladder\.seat_ms\(key\)/.test(fnGd(brT, '_pace'))
              && /if _sf\.score\(\) != null:\s*\n\t+_cps\.append\(int\(_sf\.score\(\)\)\)/.test(fnGd(brT, '_process')),
             '…for as long as the site\'s thinkFor says: the same pace, thirtieth, 2.5 times and eighth, the same two pawns down and the same swing, off its own scores',
             cpG ? cpG[1] + ' / ' + cpG[2] : 'no constants');
@@ -7069,8 +7070,8 @@ const server = http.createServer((req, res) => {
              && /PJCC\.settlePuzzle\(G\.p\.rating, score\)/.test(forkT),
             '⭐ …and on the website a puzzle at the table is one of the site\'s: its puzzle rating settles through the room\'s own PJCC.settlePuzzle, a full score only for a clean solve  (his 10-29: "give the website the table, too")');
           ok(/"un": \["fork-in-the-road", 20\], "un_say": "solve 20 of the Puzzle Champ's puzzles"/.test(brdT)
-             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean \}/.test(fnGd(brdT, 'town_scores'))
-             && /const IN_TOWN := \["fork-in-the-road"\]/.test(wdS)
+             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean, "trainer-pirc": TablePirc\.held_count\(\) \}/.test(fnGd(brdT, 'town_scores'))
+             && /const IN_TOWN := \["fork-in-the-road", "trainer-pirc"\]/.test(wdS)
              && /for g in own:\s*\n\t\t_scores\[g\] = maxi\(int\(_scores\.get\(g, 0\)\), int\(own\[g\]\)\)/.test(fnGd(jrnT, 'open'))
              && /if GameState\.worlds\.in_town\(GameState\.board\.game_at\(i\)\):/.test(fnGd(jrnT, '_next_step'))
              && /\btablesys champrun champmiss champone champleave champforfeit champhint champsquare champphone\b/.test(suiteT),
@@ -7081,8 +7082,8 @@ const server = http.createServer((req, res) => {
              && /if int\(d\.get\("puzzles_clean", 0\)\) > challenge\.puzzles_clean:/.test(fnGd(gsAll, 'merge_in'))
              && /local\.puzzles_clean = Math\.max\(\+local\.puzzles_clean \|\| 0, \+remote\.puzzles_clean \|\| 0\);/.test(PROF),
             '…and the count is earned, so it saves, syncs and merges by the max on both sides');
-          ok(/if not puzzle\.is_empty\(\):\s*\n\t\t_puzzle_moved\(\)\s*\n\t\treturn\s*\n\tvar r := ChessRules\.game_result/.test(fnGd(tabT, '_apply'))
-             && !/pending/.test(fnGd(chT, 'sit_puzzle')) && /GameState\.challenge\.puzzle_wanted\.connect\(_open_puzzle\)/.test(znT),
+          ok(/if not puzzle\.is_empty\(\):\s*\n\t\t_puzzle_moved\(\)\s*\n\t\treturn\s*\n\tif lesson != "":\s*\n\t\t_lesson_moved\(\)\s*\n\t\treturn\s*\n\tvar r := ChessRules\.game_result/.test(fnGd(tabT, '_apply'))
+             && !/pending/.test(fnGd(chT, 'sit_puzzle')) && /GameState\.challenge\.puzzle_wanted\.connect\(_open_errand\)/.test(znT),
             '⚠ …a puzzle is not an errand: never saved, and one left clean counts nothing');
           ok(/var t := _table_up\(\)\s*\n\tif t != null:\s*\n\t\t_hold_say\(t, "puzzle", \[streak, done, won\]\)/.test(fnGd(znT, '_report_puzzle'))
              && /if t != null:\s*\n\t\t_hold_say\(t, "square", said\)/.test(fnGd(znT, '_report_site_slot'))
@@ -7120,6 +7121,69 @@ const server = http.createServer((req, res) => {
             '…and every save says which version of the game wrote it, so a patch can upgrade an old one instead of misreading it');
           ok(/REAL2="\$APPDATA\/McPuppy Studios\/Checker Town"/.test(suiteT) && /"\$REAL2\/town\.json"/.test(suiteT),
             '⛑ …and the suite watches his real standalone folder as it watches the editor\'s');
+
+          /* ⭐ MICHAEL'S PIRC AT THE ACADEMY'S TABLE  (his, 2026-10-29: "now start importing games … dealer's choice") */
+          const pbT = rd('pirc_book.gd'), tpT = rd('table_pirc.gd'), doorT = rd('door.gd'), acadT = rd('academy.gd');
+          const trainT = fs.readFileSync(path.join(ROOT, 'academy-opening-trainer.html'), 'utf8');
+          const BOOKS = require(path.join(ROOT, 'assets/js/pjcc-pirc-book.js')), CHS = require(path.join(ROOT, 'assets/js/pjcc-chess.js'));
+          const SYSP = require(path.join(ROOT, 'assets/js/pjcc-systems.js'));
+          const S_ = '("(?:[^"\\\\]|\\\\.)*")';
+          const linesG = [...pbT.matchAll(new RegExp('\\{ "id": ' + S_ + ', "name": ' + S_ + ', "eco": ' + S_ + ', "white": ' + S_ + ',\\n\\t  "note": ' + S_ +
+            ', "moves": ' + S_ + ',\\n\\t  "why": ' + S_ + ',\\n\\t  "plan": ' + S_ + ' \\},', 'g'))]
+            .map((m) => m.slice(1, 9).map((x) => JSON.parse(x)));
+          const linesS = BOOKS.all().map((v) => [v.id, v.name, v.eco, v.white, v.note,
+            v.plies.map((p) => CHS.nameFromSq(p.from) + CHS.nameFromSq(p.to) + (p.promo ? String(p.promo).toLowerCase() : '')).join(' '), v.why, v.plan]);
+          const levelsG = [...pbT.matchAll(new RegExp('\\{ "id": (\\d+), "name": ' + S_ + ', "elo": (\\d+), "movetime": (\\d+), "blurb": ' + S_ + ' \\},', 'g'))]
+            .map((m) => [+m[1], JSON.parse(m[2]), +m[3], +m[4], JSON.parse(m[5])]);
+          const levelsS = BOOKS.LEVELS.map((L) => [L.id, L.name, L.elo, L.movetime, L.blurb]);
+          const prepG = [...pbT.matchAll(new RegExp('\\{ "key": ' + S_ + ', "name": ' + S_ + ', "elo": (\\d+), "line": ' + S_ + ' \\},', 'g'))]
+            .map((m) => [JSON.parse(m[1]), JSON.parse(m[2]), +m[3], JSON.parse(m[4])]);
+          const prepS = [];
+          for (const chunk of fs.readFileSync(path.join(ROOT, '_data/regulars.yml'), 'utf8').replace(/\r\n/g, '\n').split(/\n- key:/).slice(1)) {
+            const g = (k) => ((new RegExp('\\n\\s+' + k + ':\\s*"?([^"\\n]*)"?')).exec('\n' + chunk) || [])[1];
+            const ln = g('sys_w') ? SYSP.pircVariation(g('sys_w')) : null;
+            if (ln) prepS.push([chunk.trim().split(/\s/)[0], g('name'), +g('elo'), ln]);
+          }
+          ok(linesG.length === 6 && JSON.stringify(linesG) === JSON.stringify(linesS) && JSON.stringify(levelsG) === JSON.stringify(levelsS)
+             && JSON.stringify(prepG) === JSON.stringify(prepS) && prepS.length >= 1
+             && pbT.includes('const CREED := ' + JSON.stringify(BOOKS.CREED)) && pbT.includes('const TEACHER := "Michael"')
+             && /GENERATED, DO NOT EDIT BY HAND: node tests\/gen_pirc\.js/.test(pbT) && /const lines = BOOK\.all\(\);/.test(gdTxt('tests/gen_pirc.js')),
+            '⭐⭐ Michael\'s Pirc is played at a table in the Academy off the web  (his 10-29: "start importing games … dealer\'s choice"): the site\'s own book, every line as the site\'s referee resolves it, its six opponents and the regulars it prepares you for',
+            linesG.length + ' lines · ' + levelsG.length + ' levels · ' + prepG.map((p) => p[0] + '→' + p[3]).join(' '));
+          ok(/if not helped and TablePirc\.grant_known\(pick_line\):\s*\n\t\tearned = "known"/.test(fnGd(tabT, '_to_play'))
+             && /if \(!G\.helped && grantKnown\(G\.v\.id, USER\)\) G\.earned = 'known';/.test(trainT)
+             && /if lesson != "" and _won\(\) and not helped and _book_done and TablePirc\.grant_held\(pick_line, int\(opp\.elo\)\):/.test(fnGd(tabT, '_end'))
+             && /if \(loser !== USER && !G\.helped && grantHeld\(G\.v\.id, G\.lvl\.elo, USER\)\) G\.earned = 'held';/.test(trainT)
+             && /if not known\(id\) or held\(id\) >= elo:\s*\n\t\treturn false/.test(fnGd(tpT, 'grant_held'))
+             && /if \(!all\[id\] \|\| !all\[id\]\[f\.known\]\) return false;[^\n]*\n\s*if \(\(all\[id\]\[f\.held\] \|\| 0\) >= elo\) return false;/.test(trainT),
+            '⭐ …and its two marks are the room\'s: the whole line walked with no help is in your book; then the game won with no help holds it, at that opponent\'s rating, only ever upward, and never before it is known');
+          ok(/\n\thelped = true\n\twrong = ChessRules\.to_san\(S, m\)/.test(fnGd(tabT, '_book_answer'))
+             && /\n\thelped = true\n\thint_san = ChessRules\.to_san\(S, m\)/.test(fnGd(tabT, '_lesson_hint'))
+             && /\thelped = skip\n/.test(fnGd(tabT, '_start_lesson')) && /\n\thelped = true\n/.test(fnGd(tabT, '_lesson_takeback'))
+             && (trainT.match(/G\.helped = 1;/g) || []).length >= 4
+             && /while back < 2 and target > book\.size\(\):/.test(fnGd(tabT, '_lesson_takeback')) && /while \(back < 2 && target > floor\)/.test(trainT)
+             && /const BOOK_BEAT := 0\.48/.test(tabT) && /applyBookPly\(\);\s*\n\s*render\(\);\s*\n\s*tick\(\);\s*\n\s*\}, 480\);/.test(trainT)
+             && /if absi\(int\(l\["elo"\]\) - int\(p\["elo"\]\)\) < absi\(int\(near\["elo"\]\) - int\(p\["elo"\]\)\):/.test(fnGd(tpT, 'opponent_for'))
+             && /Math\.abs\(LEVELS\[q\]\.elo - reg\.elo\) < Math\.abs\(near\.elo - reg\.elo\)/.test(trainT),
+            '…one flag decides both, as in the room: a wrong move in the walk (the board stays), a hint, a skip, a take-back (a pair, never back into the book); White\'s book moves a beat apart; a regular at his own rating at the nearest rung\'s pace');
+          const wordsP = ['The Opening Trainer', 'Six ways White meets the Pirc. Each one walks you to its main position.', 'Start the Walk-In',
+            'Skip to the Position', 'Show Me the Move', 'White is playing the line…', ' is legal, but ', ' goes another way. Try again — or press ',
+            'Book over — the game is yours.', 'You are in check.', ' Get out of it.', 'Checkmate. White got there first.',
+            'Checkmate — you won it. That is the Pirc doing its job.', 'Win from here and it fills in.', '(No mark for this game — you took help.)',
+            'What he actually plays, at what he is actually rated.', 'Draw — the fifty-move rule', 'Draw — threefold repetition'];
+          const missingP = wordsP.filter((w) => !tabT.includes(w) || !trainT.includes(w));
+          ok(missingP.length === 0, '…in the room\'s own words', missingP.join(' | ') || wordsP.length + ' phrases, both sides');
+          ok(/if lesson != "" and not OS\.has_feature\("web"\):\s*\n\t\tGameState\.challenge\.sit_lesson\(lesson\)\s*\n\t\treturn/.test(fnGd(doorT, 'interact'))
+             && fnGd(doorT, 'interact').indexOf('sit_lesson') < fnGd(doorT, 'interact').indexOf('GameState.worlds.later(')
+             && /"\/academy\/opening-trainer\/",\s*\n\t\tVector2\(330\.0, -H \+ 200\.0\), Color\("5d2f3a"\)\)\.lesson = "pirc"/.test(acadT)
+             && /var held: int = maxi\(GameState\.site_score\("trainer-pirc"\), TablePirc\.held_count\(\)\)/.test(acadT)
+             && /GameState\.challenge\.lesson_wanted\.connect\(_open_errand\)/.test(znT) && /\t_brain\.pace_ms = int\(opp\["movetime"\]\)/.test(fnGd(tabT, '_start_lesson')),
+            '⭐ …through the Academy\'s own Lesson 3 door, never "later" off the web (on the website the door still opens the site\'s room), its noticeboard counting both books, the opponent at its own pace');
+          ok(/const PATH := "user:\/\/pirc\.json"/.test(tpT) && !/pirc/.test(fnGd(gsAll, 'save_state'))
+             && /"\$SAVE\/pirc\.json"/.test(gdTxt('tests/cases.sh')) && /"\$SAVE\/pirc\.json"/.test(saT)
+             && /bash "\$S\/pirc\.sh"/.test(suiteT) && ['pircwalk', 'pircwrong', 'pircprep', 'pircsquare', 'pircphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
+             && saT.includes('jrows:Hold all six Pirc lines in the Academy.'),
+            '…your book is yours, not a save\'s, as on the site (one for all three, user://pirc.json, every test starting without one), and the suite plays it: the lines under the game\'s rules (pirc.sh), a clean walk won and held, a correction, a hint, a skip, a take-back, Robert, Michael\'s square, a phone, and the standalone CEO waiting on it');
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
