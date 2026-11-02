@@ -1078,12 +1078,34 @@ const server = http.createServer((req, res) => {
       })();
       ok(cover && cover.size > 200, 'the font\'s cmap is readable', cover ? cover.size + ' codepoints' : 'unreadable');
       if (cover) {
+        /* ⚠ WHAT IS SAID, NOT WHAT IS WRITTEN (2026-11-02, tests/make_font.py reads the same way): a script's string
+           literals and a line file's lines, never a comment, in the ranges the town's own font cannot draw: the shapes
+           (Shogi Island's ▲), CJK punctuation, kana, kanji, and the full-width forms (its ！ and （）). */
+        const spoken = (src, gd) => {
+          if (!gd) return src.split(/\r?\n/).filter((l) => !/^\s*#/.test(l)).join('\n');
+          let out = '', i = 0;
+          while (i < src.length) {
+            const ch = src[i];
+            if (ch === '#') { const j = src.indexOf('\n', i); i = j < 0 ? src.length : j; continue; }
+            if (ch === '"' || ch === "'") {
+              if (src.substr(i, 3) === ch.repeat(3)) { const j = src.indexOf(ch.repeat(3), i + 3); out += src.slice(i + 3, j < 0 ? src.length : j); i = (j < 0 ? src.length : j) + 3; continue; }
+              let j = i + 1;
+              while (j < src.length && src[j] !== ch && src[j] !== '\n') j += src[j] === '\\' ? 2 : 1;
+              out += src.slice(i + 1, j);
+              i = j + 1;
+              continue;
+            }
+            i++;
+          }
+          return out;
+        };
+        const MUST = [[0x25A0, 0x25FF], [0x3000, 0x30FF], [0x4E00, 0x9FFF], [0xFF00, 0xFFEF]];
         const said = new Set();
         for (const f of GD_LIST) {
           if (!f.endsWith('.gd') && !LINES_ALL.includes(f)) continue;
-          for (const ch of fs.readFileSync(GDF(f), 'utf8')) {
+          for (const ch of spoken(fs.readFileSync(GDF(f), 'utf8'), f.endsWith('.gd'))) {
             const o = ch.codePointAt(0);
-            if ((o >= 0x3000 && o <= 0x30FF) || (o >= 0x4E00 && o <= 0x9FFF)) said.add(ch);
+            if (MUST.some(([a, b]) => o >= a && o <= b)) said.add(ch);
           }
         }
         const missing = [...said].filter((ch) => !cover.has(ch.codePointAt(0)));
@@ -7126,8 +7148,8 @@ const server = http.createServer((req, res) => {
              && /PJCC\.settlePuzzle\(G\.p\.rating, score\)/.test(forkT),
             '⭐ …and on the website a puzzle at the table is one of the site\'s: its puzzle rating settles through the room\'s own PJCC.settlePuzzle, a full score only for a clean solve  (his 10-29: "give the website the table, too")');
           ok(/"un": \["fork-in-the-road", 20\], "un_say": "solve 20 of the Puzzle Champ's puzzles"/.test(brdT)
-             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean, "trainer-pirc": TablePirc\.held_count\(\) \}/.test(fnGd(brdT, 'town_scores'))
-             && /const IN_TOWN := \["fork-in-the-road", "trainer-pirc"\]/.test(wdS)
+             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean, "trainer-pirc": TablePirc\.held_count\(\),\s*"shogi-island": TableShogi\.best\(\) \}/.test(fnGd(brdT, 'town_scores'))
+             && /const IN_TOWN := \["fork-in-the-road", "trainer-pirc", "shogi-island"\]/.test(wdS)
              && /for g in own:\s*\n\t\t_scores\[g\] = maxi\(int\(_scores\.get\(g, 0\)\), int\(own\[g\]\)\)/.test(fnGd(jrnT, 'open'))
              && /if GameState\.worlds\.in_town\(GameState\.board\.game_at\(i\)\):/.test(fnGd(jrnT, '_next_step'))
              && /\btablesys champrun champmiss champone champleave champforfeit champhint champsquare champphone\b/.test(suiteT),
@@ -7147,7 +7169,7 @@ const server = http.createServer((req, res) => {
              && fnGd(znT, '_say_held').indexOf('parts.append(str(h["square"]))') < fnGd(znT, '_say_held').indexOf('parts.append(_puzzle_words(')
              && /_ui\.say\("  "\.join\(parts\)/.test(fnGd(znT, '_say_held'))
              && /t\.closed\.connect\(_flush_paid, CONNECT_ONE_SHOT\)/.test(fnGd(znT, '_flush_paid'))
-             && /if n is ChessTable and n\.is_in_group\("town_cover"\):/.test(fnGd(znT, '_table_up')),
+             && /if n is TownTable and n\.is_in_group\("town_cover"\):/.test(fnGd(znT, '_table_up')),
             '…and what the town says about it (his square, the count, the oars, a bounty paid) waits until you get up, in one line, the square first: under the table nobody reads it');
           ok(/bash "\$S\/puzzles\.sh"/.test(suiteT)
              && saT.includes('use:Puzzle Champ;pick:Set me three') && saT.includes('puzzlesolve;tableis:clean:true;streak:1')
@@ -7240,6 +7262,104 @@ const server = http.createServer((req, res) => {
              && /bash "\$S\/pirc\.sh"/.test(suiteT) && ['pircwalk', 'pircwrong', 'pircprep', 'pircsquare', 'pircphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
              && saT.includes('jrows:Hold all six Pirc lines in the Academy.'),
             '…your book is yours, not a save\'s, as on the site (one for all three, user://pirc.json, every test starting without one), and the suite plays it: the lines under the game\'s rules (pirc.sh), a clean walk won and held, a correction, a hint, a skip, a take-back, Robert, Michael\'s square, a phone, and the standalone CEO waiting on it');
+
+          /* ⭐ MATSU'S DOJO AT A TABLE ON SHOGI ISLAND  (his, 2026-10-29: "now start importing games … dealer's choice") */
+          const djSbT = rd('shogi_book.gd'), djStT = rd('shogi_table.gd'), djSlT = rd('shogi_lessons.gd'), djTsT = rd('table_shogi.gd');
+          const djTtT = rd('town_table.gd'), djIslT = rd('island.gd');
+          const djShogiPage = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_shogi.html'), 'utf8').replace(/\r\n/g, '\n');
+          const djShogiSrc = (djShogiPage.match(/<script>\s*("use strict";[\s\S]*)<\/script>/) || [])[1] || '';
+          const djShogiSha = require('crypto').createHash('sha1').update(djShogiSrc).digest('hex');
+          const djSVM = require('vm'), djSV = djSVM.createContext({});
+          djSVM.runInContext(djShogiSrc, djSV);
+          const djSR = (e) => djSVM.runInContext(e, djSV);
+          const djGdLine = (name) => { const m = new RegExp('\\nconst ' + name + ' := (.*)\\n').exec(djSbT); try { return m ? JSON.parse(m[1]) : null; } catch (e) { return null; } };
+          const djGdRows = (name) => { const m = new RegExp('\\nconst ' + name + ' := \\[\\n([\\s\\S]*?)\\n\\]').exec(djSbT);
+            try { return m ? m[1].split('\n').map((l) => JSON.parse(l.trim().replace(/,$/, ''))) : []; } catch (e) { return []; } };
+          const djShTypes = djSR('BASE_T').concat(djSR('PROMO_T'));
+          const djPageOf = (o) => { const out = {}; for (const t of djShTypes) out[t] = djSR(o)[t]; return out; };
+          const djRanksP = [];
+          for (let n = 0, last = null; n <= 200; n++) { const r = djSR('rankFor(' + n + ')'); if (r !== last) { djRanksP.push([n, r]); last = r; } }
+          const djThemeP = JSON.parse((djShogiPage.match(/function themeLevel\(\)\{[^}]*var th=(\[[\d,]+\])/) || [])[1] || 'null');
+          const djSecB = (/\nconst SECTIONS := (\[[\s\S]*?\n\])\n/.exec(djSbT) || [])[1] || '[]';
+          let djSecG = null;
+          try { djSecG = JSON.parse(djSecB.replace(/,(\s*[\]}])/g, '$1')); } catch (e) { djSecG = null; }
+          const djSecP = djSR('SECTIONS').map((x) => ({ key: x.key, jp: x.jp, en: x.en, items: x.items.map((i) => ({ jp: i.jp, en: i.en })) }));
+          const djJ = JSON.stringify;
+          ok(djSbT.includes('const ENGINE := "' + djShogiSha + '"') && /GENERATED, DO NOT EDIT BY HAND: node tests\/gen_shogi\.js/.test(djSbT)
+             && djJ(djGdLine('GLYPH')) === djJ(djPageOf('GLYPH')) && djJ(djGdLine('NAME')) === djJ(djPageOf('NAME')) && djJ(djGdLine('DESC')) === djJ(djPageOf('DESC'))
+             && djJ(djGdLine('BASE_T')) === djJ(djSR('BASE_T')) && djJ(djGdLine('PROMO_T')) === djJ(djSR('PROMO_T')) && djJ(djSecG) === djJ(djSecP)
+             && djJ(djGdLine('RANKS')) === djJ(djRanksP) && djJ(djGdLine('THEME')) === djJ(djThemeP)
+             && new RegExp('\\nconst UNLOCK_AT := ' + djSR('UNLOCK_AT') + '\\n').test(djSbT) && new RegExp('\\nconst MATCH_UNLOCK_AT := ' + djSR('MATCH_UNLOCK_AT') + '\\n').test(djSbT),
+            '⭐⭐ Matsu\'s dojo is played at a table on Shogi Island off the web  (his 10-29: "start importing games … dealer\'s choice"): its book written by THIS page\'s own engine (rerun gen_shogi.js when the page changes), the codex, the pieces\' names, the ranks and the board\'s dressing word for word',
+            'engine ' + djShogiSha.slice(0, 10) + ' · ' + djSecP.reduce((n, x) => n + x.items.length, 0) + ' codex lines');
+          const djTSB = djGdRows('TSUME'), djMTB = djGdRows('MATE'), djLibP = djSR('TSUME_LIB');
+          const djBOf = (b) => { const o = {}; for (const k of Object.keys(b)) o[k] = b[k].t + (b[k].s === 'P' ? '' : '@'); return o; };
+          const djMvS = (m) => (m.drop ? m.drop + '*' + m.to : m.from + '-' + m.to + (m.promote ? '+' : ''));
+          ok(djTSB.length === djLibP.length && djTSB.every((t, i) => djJ(t.b) === djJ(djBOf(djLibP[i].b)) && djJ(t.hand) === djJ(djLibP[i].hand) && djJ(t.def) === djJ(djLibP[i].defHand)
+               && t.k === djLibP[i].k && t.n === djLibP[i].n && t.first === djMvS(djLibP[i].first) && !!t.tree[t.first.replace(/\+$/, '')]),
+            '…its mates in three are the page\'s own library, each with its key move among the answers the page\'s judge accepts', djTSB.length + ' of ' + djLibP.length);
+          /* ⚠ EVERY MATE-IN-ONE RE-JUDGED HERE, by the room's own judge (tsumeAcceptMove at one move): every press it accepts and nothing else */
+          djSVM.runInContext(`function __j1(st0, m){
+            var cands=[];
+            if(m.drop){ cands=[{drop:m.drop, to:m.to}]; }
+            else { var pc=st0.b[m.from], pf=rc(m.from), pt=rc(m.to);
+              var canP=canPromoteT(pc.t)&&(inZone(pf[0],'P')||inZone(pt[0],'P')), forced=mustPromote(pc.t, pt[0],'P');
+              if(forced) cands=[{from:m.from,to:m.to,promote:true}];
+              else { cands=[{from:m.from,to:m.to,promote:false}]; if(canP) cands.push({from:m.from,to:m.to,promote:true}); } }
+            for(var i=0;i<cands.length;i++){ var cm=cands[i]; var p1=applyFull(st0, cm);
+              if(!inCheck(p1.b,'E')) continue;
+              if(defenderEscapes(p1).length===0){ if(cm.drop==='P') continue; return cm; } }
+            return null; }
+          function __tree1(e){ var b={}; for(var k in e.b){ var v=e.b[k]; b[k]={t:v.replace('@',''), s:(v.slice(-1)==='@'?'E':'P')}; }
+            var st={b:b, hand:{P:e.hand.slice(), E:e.def.slice()}, turn:'P'}, out={};
+            for(var k2 in b){ if(b[k2].s!=='P') continue; var p=rc(k2), ds=destsFor(b,p[0],p[1]);
+              for(var i=0;i<ds.length;i++){ var r=__j1(st,{from:k2,to:ds[i]}); if(r) out[k2+'-'+ds[i]]={mate:(r.from+'-'+r.to+(r.promote?'+':''))}; } }
+            var seen={};
+            for(var h=0;h<st.hand.P.length;h++){ var t=st.hand.P[h]; if(seen[t]) continue; seen[t]=1; var dd=dropDests(b,t,'P');
+              for(var j=0;j<dd.length;j++){ var r2=__j1(st,{drop:t,to:dd[j]}); if(r2) out[t+'*'+dd[j]]={mate:(t+'*'+dd[j])}; } }
+            return out; }`, djSV);
+          const djMateOff = djMTB.filter((e) => djJ(JSON.parse(djSR('JSON.stringify(__tree1(' + djJ(e) + '))'))) !== djJ(e.tree) || !e.firsts.length || !e.tree[e.firsts[0].replace(/\+$/, '')]);
+          ok(djMTB.length >= 150 && djMateOff.length === 0,
+            '…and its mates in one are the page\'s own generator\'s, every answer re-judged by the room\'s judge: all it accepts, and nothing it does not',
+            djMTB.length + ' problems' + (djMateOff.length ? ', ' + djMateOff.length + ' off' : ''));
+          const djStF = (n) => fnGd(djStT, n);
+          ok(/else:\s*\n\t\t_say\("おしい — " \+ msg, "no"\)\s*\n\t\tsel = \{\}/.test(djStF('_commit_move'))
+             && /else \{ fb\.textContent='おしい — '\+msg; fb\.className='fb no'; sel=null; paint\(\); renderHand\(\); \}/.test(djShogiPage)
+             && /if e == null:[\s\S]*?\n\t\tsel = \{\}\n\t\t_layout\(\)\n\t\treturn/.test(djStF('_tsume_commit')) && !/locked = true/.test((/if e == null:[\s\S]*?\n\t\treturn/.exec(djStF('_tsume_commit')) || [''])[0])
+             && /^func _check_move\(\) -> void:\s*\n\tlocked = true/.test(djStF('_check_move')) && /next_up = true/.test(djStF('_check_move'))
+             && /locked = true/.test(djStF('_show_me')) && /next_up = true/.test(djStF('_show_me')) && !/_on_solved\(\)/.test(djStF('_show_me'))
+             && /afterSolveButton\(\);  \/\/ lets you move on \(no solve credit\)/.test(djShogiPage)
+             && /var e = \(prob\["node"\] as Dictionary\)\.get\(ShogiRules\.press_of\(m\)\)/.test(djStF('_tsume_commit')) && !/solve_tsume|defender_escapes/.test(djStT),
+            '⭐ …and the room\'s rules, not the Puzzle Champ\'s: a wrong move only says おしい and you try again, Show me moves you on for no credit, a piece\'s squares are checked once, and a mate is answered from the book, never searched');
+          const djWordsS = ['正解！ Correct.', 'That doesn’t capture the marked piece — move onto it.', 'No check yet — the King isn’t attacked. Try another move.',
+            'おしい — give check with no escape for the King.', 'おしい — that doesn’t force mate. Every move must check and keep the net closed.', '詰み！ Checkmate.',
+            '王手！ Check — the King answers. Find the next blow (', ' to go).', ' (the key move)', ' (promote)', 'Tap every square the ', ' can move to.',
+            'Capture the marked enemy — tap your piece, then its target.', 'Give check — tap your piece, then a square that attacks the King.',
+            ' — the King has pieces and a hand, yet cannot escape.', ' — give check every move; the King fights back between your blows.',
+            'Each of your moves must be check. After each, the defender plays its toughest reply.', '確認 Check', '教えて Show me', '次へ Next', '持ち駒 in hand:',
+            '敵 enemy:', '将棋島', 'Shogi Island', '解いた数 solved', '解読 decoded', '▲ 前 forward ▲', '— Locked — keep solving to begin decoding —',
+            'A hidden match waits at ', ' solves — you are at ', '. Decode the island and it opens.', 'The full 9×9 match opens at ', '免許皆伝', 'The island opens',
+            'You have decoded the codex and learned the pieces, the drops, and the mate.', '続ける Continue', '教えて — ', ' there'];
+          const djMissingS = djWordsS.filter((w) => !djStT.includes(w) || !djShogiPage.includes(w));
+          ok(djMissingS.length === 0, '…in the room\'s own words, Japanese and English', djMissingS.join(' | ') || djWordsS.length + ' phrases, both sides');
+          ok(/\tdojo\.url = "\/games\/shogi-island\/"\n\tdojo\.lesson = "shogi"/.test(djIslT)
+             && /if str\(errand\.get\("lesson", ""\)\) == "shogi":\s*\n\t\tShogiTable\.open\(self, errand\)\s*\n\telse:\s*\n\t\tChessTable\.open\(self, errand\)/.test(fnGd(znT, '_open_errand'))
+             && /lesson_wanted\.emit\(\{ "who": "Matsu" if id == "shogi" else PircBook\.TEACHER, "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
+             && /"un": \["shogi-island", 5\]/.test(brdT)
+             && /var e: Dictionary = ShogiBook\.MATE\[int\(rng\.next\(\) \* ShogiBook\.MATE\.size\(\)\)\]/.test(fnGd(djSlT, 'pick_mate'))
+             && /return genTsume\(1\);/.test(fn(djShogiPage, 'pickProblem') || djShogiPage),
+            '⭐ …through the island\'s own dojo door (on the website the page still opens), its mates in one drawn from the page\'s pool with one draw where the page makes its own, and five solved fill Matsu\'s square');
+          ok(/^class_name TownTable\nextends CanvasLayer\n[\s\S]*\nsignal closed\n/.test(djTtT) && /^class_name ChessTable\nextends TownTable\n/.test(tabT)
+             && /^class_name ShogiTable\nextends TownTable\n/.test(djStT) && !/\nsignal closed/.test(tabT) && !/\nsignal closed/.test(djStT)
+             && /func _table_up\(\) -> TownTable:/.test(znT) && /func _hold_say\(t: TownTable,/.test(znT) && !/func _input\(/.test(djStT),
+            '…one kind of table to the town, so what the town says waits until you get up from either, and nothing in the dojo takes the map\'s press');
+          ok(/const PATH := "user:\/\/shogi\.json"/.test(djTsT)
+             && /st\["solved"\] = solved\(\) \+ 1\s*\n\tst\["best"\] = maxi\(best\(\), int\(st\["solved"\]\)\)\s*\n\tst\["decoded"\] = mini\(decoded\(\) \+ 1, codex_size\(\)\)/.test(fnGd(djTsT, 'solve'))
+             && /st\.solved\+\+; if\(st\.solved>st\.best\) st\.best=st\.solved;\s*\n\s*var before=st\.decoded; if\(st\.decoded<TOTAL_SEG\) st\.decoded\+\+;/.test(djShogiPage)
+             && /"\$SAVE\/shogi\.json"/.test(gdTxt('tests/cases.sh')) && /`shogi\.json` \(your Pirc\s*book and your dojo record/.test(gdTxt('README.md'))
+             && /bash "\$S\/shogi\.sh"/.test(suiteT) && ['shogidojo', 'shogirules', 'shogimate', 'shogiphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
+             && saT.includes('jrows:Solve 5 on Shogi Island.'),
+            '…your record is yours, not a save\'s, kept as the page keeps it (one for all three, user://shogi.json), and the suite plays it: the port against the page row for row and seed for seed (shogi.sh), five through the real door, a wrong move, Show me, a mate, the codex, 28, a phone, and the standalone CEO waiting on it');
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
