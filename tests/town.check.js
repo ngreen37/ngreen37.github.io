@@ -1114,6 +1114,17 @@ const server = http.createServer((req, res) => {
           '…and the font can draw EVERY one of them  (⚠ a missing glyph is silent — rerun make_font.py)',
           missing.length ? 'MISSING: ' + missing.join('') : said.size + ' checked');
       }
+      /* ⛑⛑ IN A BROWSER THE BUILT-IN FONT ALONE DRAWS A BOX for ✓ ♥ ↑ ▲ (2026-11-02, a web export screenshotted: natively
+         Windows fills them in, so only the website and the desktop program showed it). Every label that says one draws
+         with the Japanese font behind it, and glyphs.sh asks the engine about every character said. */
+      {
+        const jrG = fs.readFileSync(GDF('journal.gd'), 'utf8'), lfG = fs.readFileSync(GDF('lift.gd'), 'utf8'), znG = fs.readFileSync(GDF('zone.gd'), 'utf8');
+        ok(/var f: Font = _font\(\)/.test(fnGd(jrG, '_paint')) && /_mixed = Speech\.mixed_font\(\)/.test(fnGd(jrG, '_font'))
+           && /_cap\.add_theme_font_override\("font", mixed\)/.test(lfG) && /_stat\.add_theme_font_override\("font", mixed\)/.test(znG)
+           && /_stat\.text \+= sep \+ "★"/.test(znG) && !/"♛"/.test(znG)
+           && /^[^#\n]*bash "\$S\/glyphs\.sh"/m.test(fs.readFileSync(path.join(GD, 'tests', 'suite.sh'), 'utf8')),
+          '⛑⛑ …and every label that says a ✓, a ♥, an ↑ or the CEO\'s ★ draws it with that font behind it (in a browser the built-in one alone drew boxes), and glyphs.sh asks the engine about every character said');
+      }
 
       /* ══ 7 · REWARD AND DEFEAT ══ */
       ok(/func cost\(\) -> int:/.test(chal) && !/GameState\.body\.spend\(energy_cost\)/.test(chal),
@@ -6797,7 +6808,7 @@ const server = http.createServer((req, res) => {
           const aiT = rd('chess_ai.gd'), ruT = rd('chess_rules.gd'), znT = rd('zone.gd'), drT = rd('dev_referee.gd');
           const corpus = fs.existsSync(path.join(GD, 'tests/chess_corpus.js')) ? fs.readFileSync(path.join(GD, 'tests/chess_corpus.js'), 'utf8') : '';
           const suiteT = fs.existsSync(path.join(GD, 'tests/suite.sh')) ? fs.readFileSync(path.join(GD, 'tests/suite.sh'), 'utf8') : '';
-          ok(/require\(path\.join\(SITE, 'assets\/js\/pjcc-chess\.js'\)\)/.test(corpus) && /bash "\$S\/chess\.sh"/.test(suiteT)
+          ok(/require\(path\.join\(SITE, 'assets\/js\/pjcc-chess\.js'\)\)/.test(corpus) && /^[^#\n]*bash "\$S\/chess\.sh"/m.test(suiteT)
              && /static func legal_moves\(S: Dictionary\) -> Array:/.test(ruT) && /static func to_san\(S: Dictionary, m: Dictionary\) -> String:/.test(ruT)
              && /static func pos_key\(S: Dictionary\) -> String:/.test(ruT),
             '⭐⭐ the town has its own rules now (games/chess/chess_rules.gd), held to the site\'s referee by the game\'s tests/chess.sh, which its suite runs  (his: Route B)',
@@ -6950,7 +6961,7 @@ const server = http.createServer((req, res) => {
           ok(/if list\.is_empty\(\) or ChessRules\.in_check\(S, str\(S\.turn\)\):\s*\n\t\treturn \{\}/.test(fnGd(tsT, 'next'))
              && /if hangs\(S, mv\):\s*\n\t\t\tcontinue/.test(fnGd(tsT, 'next')) && /return worst > 1/.test(fnGd(tsT, 'hangs'))
              && /return worst > 1;/.test(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-systems.js'), 'utf8'))
-             && /bash "\$S\/systems\.sh"/.test(suiteT) && /const Y = require\(path\.join\(SITE, 'assets\/js\/pjcc-systems\.js'\)\)/.test(gdTxt('tests/systems_corpus.js'))
+             && /^[^#\n]*bash "\$S\/systems\.sh"/m.test(suiteT) && /const Y = require\(path\.join\(SITE, 'assets\/js\/pjcc-systems\.js'\)\)/.test(gdTxt('tests/systems_corpus.js'))
              && /\btablesys\b/.test(suiteT),
             '…held to the site\'s own next() position for position (tests/systems.sh: its corpus, every pairing and random games), never in check, never at a hanging price',
             'the first wanted square that is legal right now: a system, not a line');
@@ -6960,7 +6971,7 @@ const server = http.createServer((req, res) => {
              && /var wait := maxi\(120, roundi\(float\(GameState\.ladder\.seat_ms\(key\)\) \* 0\.35\)\)/.test(sysB)
              && /Math\.max\(120, Math\.round\(\(s\.movetime \|\| 300\) \* 0\.35\)\)/.test(ttT),
             '…first, before Stockfish or the stand-in thinks, as the web brain plays it: fast but not instant (a third of their pace), and never in a study');
-          ok(/bash "\$S\/engine\.sh"/.test(suiteT) && /\btablesf\b/.test(suiteT) && /\btablesfnone\b/.test(suiteT),
+          ok(/^[^#\n]*bash "\$S\/engine\.sh"/m.test(suiteT) && /\btablesf\b/.test(suiteT) && /\btablesfnone\b/.test(suiteT),
             '…and the suite plays it: engine.sh against the real Stockfish (every pace branch, a mate in one, a stopped search, nothing left running), and a game at Robert\'s table with it and without it');
           /* ⭐ THE STANDALONE WINDOWS BUILD  (his, 2026-10-28: "build a standalone windows build") */
           const presetT = gdTxt('export_presets.cfg'), projT = gdTxt('project.godot');
@@ -6993,7 +7004,7 @@ const server = http.createServer((req, res) => {
              && /mv "\$OUT" "\$OUT\.old" 2>\/dev\/null \|\| \{/.test(expT) && /timeout -k 5/.test(expT)
              && /if h\.hexdigest\(\) != SHA256:\s*\n\s*sys\.exit\("REFUSED/.test(tplT) && /KEEP = \["windows_release_x86_64\.exe"/.test(tplT),
             '…made by tests/export_windows.sh: outside every repo, Stockfish copied beside the .exe, built aside and swapped in, and never over one that is open (its templates fetched by digest, Windows only)');
-          ok(/bash "\$S\/standalone\.sh"/.test(suiteT) && /export_windows\.sh" "\$OUT" "\$S\/probes\/town"/.test(saT)
+          ok(/^[^#\n]*bash "\$S\/standalone\.sh"/m.test(suiteT) && /export_windows\.sh" "\$OUT" "\$S\/probes\/town"/.test(saT)
              && /grep -q 'config\/name="CheckerTownProbe"'/.test(saT)
              && ['title:Checker Town', 'referee:0', 'useat:640,950;bubble:Building. Not open to visitors.', 'jrows:The CEO is waiting in the far chair', 'brainis:stockfish', 'sfgone'].every((t) => saT.includes(t))
              && /referee:1/.test((/^  later\) SEQ="[^\n]*/m.exec(rd('tests/cases.sh')) || [''])[0]),
@@ -7171,7 +7182,7 @@ const server = http.createServer((req, res) => {
              && /t\.closed\.connect\(_flush_paid, CONNECT_ONE_SHOT\)/.test(fnGd(znT, '_flush_paid'))
              && /if n is TownTable and n\.is_in_group\("town_cover"\):/.test(fnGd(znT, '_table_up')),
             '…and what the town says about it (his square, the count, the oars, a bounty paid) waits until you get up, in one line, the square first: under the table nobody reads it');
-          ok(/bash "\$S\/puzzles\.sh"/.test(suiteT)
+          ok(/^[^#\n]*bash "\$S\/puzzles\.sh"/m.test(suiteT)
              && saT.includes('use:Puzzle Champ;pick:Set me three') && saT.includes('puzzlesolve;tableis:clean:true;streak:1')
              && saT.includes("jrows:Solve 20 of the Puzzle Champ's puzzles.")
              && /bad\("#%d: %d mates here, the site's referee found one \(%s\)"/.test(gdTxt('tests/puzzles_test.gd')),
@@ -7259,7 +7270,7 @@ const server = http.createServer((req, res) => {
             '⭐ …through the Academy\'s own Lesson 3 door, never "later" off the web (on the website the door still opens the site\'s room), its noticeboard counting both books, the opponent at its own pace');
           ok(/const PATH := "user:\/\/pirc\.json"/.test(tpT) && !/pirc/.test(fnGd(gsAll, 'save_state'))
              && /"\$SAVE\/pirc\.json"/.test(gdTxt('tests/cases.sh')) && /"\$SAVE\/pirc\.json"/.test(saT)
-             && /bash "\$S\/pirc\.sh"/.test(suiteT) && ['pircwalk', 'pircwrong', 'pircprep', 'pircsquare', 'pircphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
+             && /^[^#\n]*bash "\$S\/pirc\.sh"/m.test(suiteT) && ['pircwalk', 'pircwrong', 'pircprep', 'pircsquare', 'pircphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
              && saT.includes('jrows:Hold all six Pirc lines in the Academy.'),
             '…your book is yours, not a save\'s, as on the site (one for all three, user://pirc.json, every test starting without one), and the suite plays it: the lines under the game\'s rules (pirc.sh), a clean walk won and held, a correction, a hint, a skip, a take-back, Robert, Michael\'s square, a phone, and the standalone CEO waiting on it');
 
@@ -7357,7 +7368,7 @@ const server = http.createServer((req, res) => {
              && /st\["solved"\] = solved\(\) \+ 1\s*\n\tst\["best"\] = maxi\(best\(\), int\(st\["solved"\]\)\)\s*\n\tst\["decoded"\] = mini\(decoded\(\) \+ 1, codex_size\(\)\)/.test(fnGd(djTsT, 'solve'))
              && /st\.solved\+\+; if\(st\.solved>st\.best\) st\.best=st\.solved;\s*\n\s*var before=st\.decoded; if\(st\.decoded<TOTAL_SEG\) st\.decoded\+\+;/.test(djShogiPage)
              && /"\$SAVE\/shogi\.json"/.test(gdTxt('tests/cases.sh')) && /`shogi\.json` \(your Pirc\s*book and your dojo record/.test(gdTxt('README.md'))
-             && /bash "\$S\/shogi\.sh"/.test(suiteT) && ['shogidojo', 'shogirules', 'shogimate', 'shogiphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
+             && /^[^#\n]*bash "\$S\/shogi\.sh"/m.test(suiteT) && ['shogidojo', 'shogirules', 'shogimate', 'shogiphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
              && saT.includes('jrows:Solve 5 on Shogi Island.'),
             '…your record is yours, not a save\'s, kept as the page keeps it (one for all three, user://shogi.json), and the suite plays it: the port against the page row for row and seed for seed (shogi.sh), five through the real door, a wrong move, Show me, a mate, the codex, 28, a phone, and the standalone CEO waiting on it');
         }
