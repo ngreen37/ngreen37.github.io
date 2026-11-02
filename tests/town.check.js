@@ -3574,7 +3574,7 @@ const server = http.createServer((req, res) => {
           '…and it lights with the lamps');
 
         /* ── #8 · THE MAP ──. */
-        ok(/const TABS := \[[^\]]*"Map"\]/.test(jr9) && /if k\.keycode == KEY_M and not _talking\(\):/.test(jr9) && /_paint_map\(f\)/.test(jr9),
+        ok(/const TABS := \[[^\]]*"Map"\]/.test(jr9) && /k\.keycode == KEY_M\) or Pad\.hit\(event, Pad\.MINUS\)/.test(jr9) && /_paint_map\(f\)/.test(jr9),
           'M, or the journal\'s last tab, opens the map');
         const cap = fnGd(mapg, 'capture');
         ok(/not n2\.visible/.test(cap) && /not \(n is TownNPC\)/.test(cap),
@@ -5439,11 +5439,67 @@ const server = http.createServer((req, res) => {
              && +(/const WALK_DEADZONE := ([\d.]+)/.exec(pdC) || [])[1] <= 0.3,
             '⭐ a stick has a middle: a part push is a slow walk, not nothing and then his full speed');
           /* ── the Journal, a conversation ── */
-          const jIn = fnGd(jrC, '_unhandled_input');
-          ok(/if Pad\.hit\(event, Pad\.TOP\) and not _talking\(\):\s*toggle\(\)/.test(jIn) && /elif Pad\.hit\(event, Pad\.MINUS\) and not _talking\(\):\s*_map_key\(\)/.test(jIn)
-             && /elif _open and event\.is_action_pressed\("ui_cancel"\):\s*close\(\)/.test(jIn)
-             && /elif _open and step != 0:\s*_pick\(wrapi\(_tab \+ step, 0, TABS\.size\(\)\)\)/.test(jIn),
+          const jIn = fnGd(jrC, '_unhandled_input'), jI = fnGd(jrC, '_input'), jTake = fnGd(jrC, '_take');
+          ok(/if Pad\.hit\(event, Pad\.TOP\) and not _talking\(\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*toggle\(\)/.test(jIn)
+             && /if TownJournal\.map_key\(event\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_map_key\(\)/.test(jI)
+             && /if Pad\.hit\(event, Pad\.TOP\) or event\.is_action_pressed\("ui_cancel"\):\s*close\(\)/.test(jTake)
+             && /elif step != 0:\s*_pick\(wrapi\(_tab \+ step, 0, TABS\.size\(\)\)\)/.test(jTake),
             '⭐ the Journal on a pad: the top button opens it, Minus the map, the shoulders walk the tabs, B shuts it');
+          /* ══ THE MAP AT ALL TIMES — 2026-10-29 ══ */
+          /* his: "Make sure you can always hit the 'select' button, or whatever we are using, to see the map at all times (it includes time-played-this-session, and it includes Current Rating." */
+          {
+            ok(/static func map_key\(event: InputEvent\) -> bool:\s*var k := event as InputEventKey\s*return \(k != null and k\.pressed and not k\.echo and k\.keycode == KEY_M\) or Pad\.hit\(event, Pad\.MINUS\)/.test(jrC)
+               && /if TownJournal\.map_key\(event\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_map_key\(\)\s*elif _open:\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_take\(event\)/.test(jI)
+               && !/_talking\(\)/.test(jI) && !/KEY_M|Pad\.MINUS/.test(fnGd(jrC, '_unhandled_key_input') + jIn),
+              '⭐ M or Select opens the map in _input, ahead of every cover that takes presses, and with somebody talking too  (his: "at all times")');
+            ok(/if get_tree\(\)\.paused:\s*return/.test(jI) && /if f is LineEdit or f is TextEdit:\s*return/.test(jI)
+               && /if not \(event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion\):\s*return/.test(jI),
+              '…and while it is up it takes every key, button and stick itself, so nothing under it moves  (not under the standalone\'s paused menu, not out of a text box)');
+            const layerOf = (f) => +((/\n\tlayer = (\d+)/.exec(code(rd(f))) || [])[1] || 0);
+            const covers = ['chess_table.gd', 'character_select.gd', 'lift.gd', 'paper.gd', 'credits_roll.gd', 'board_view.gd', 'photo.gd', 'moon_view.gd', 'access_panel.gd'];
+            const coverTop = Math.max(...covers.map(layerOf)), jLayer = layerOf('journal.gd');
+            ok(covers.every((f) => layerOf(f) > 0) && jLayer > coverTop && jLayer < +((/const LAYER := (\d+)/.exec(code(rd('front_door.gd'))) || [])[1] || 0),
+              '…drawn over every cover in the game, and under only the standalone\'s front door', 'the journal ' + jLayer + ', the covers up to ' + coverTop);
+            const lfIn = fnGd(code(rd('lift.gd')), '_input'), lfPr = fnGd(code(rd('lift.gd')), '_process');
+            ok(/if TownJournal\.map_key\(event\) or TownJournal\.is_open\(get_tree\(\)\):\s*return/.test(lfIn)
+               && lfIn.indexOf('TownJournal.map_key') < lfIn.indexOf('set_input_as_handled')
+               && /^func _process\(delta: float\) -> void:\s*if TownJournal\.is_open\(get_tree\(\)\):\s*return\s*_t \+= delta/.test(lfPr),
+              '…the bench press lets Select through ahead of its own presses, and its set waits under the map  (the bar stops where it was)');
+            ok(/if _mode != TALK or _hold <= 0\.0 or TownJournal\.is_open\(get_tree\(\)\):\s*return/.test(fnGd(uiC, '_input'))
+               && /elif _mode == TALK and not TownJournal\.is_open\(get_tree\(\)\):\s*var by := Pad\.menu_step\(delta\)/.test(fnGd(uiC, '_process')),
+              '…a conversation lets the map\'s clicks through and its rows stand still under it  (a stick on the map is not a row picked)');
+            const tbC = code(rd('chess_table.gd')), tbP = fnGd(tbC, '_process'), tbTake = fnGd(tbC, '_take'), tbHand = fnGd(tbC, '_hand');
+            ok(/if TownJournal\.is_open\(get_tree\(\)\):\s*return/.test(tbP)
+               && tbP.indexOf('TownJournal.is_open') < tbP.indexOf('left[turn] = maxf(')
+               && /or Pad\.hit\(event, Pad\.LEFT\)\):\s*_resign\(\)/.test(tbTake) && !/Pad\.MINUS/.test(tbTake),
+              '⭐ at the table the map stops the clock, and Select is the map\'s: Resign is the left button now  ("sometimes they just want to relax")');
+            ok((tbHand.match(/Pad\.word\(Pad\.MINUS\)/g) || []).length === 2
+               && (tbHand.match(/M map"/g) || []).length === 2 && /Pad\.word\(Pad\.LEFT\)/.test(tbHand) && !/"[^"]*\bY (hint|take back)/.test(tbHand),
+              '…and its key line names the map\'s button and the pad\'s own letters  (a typed "Y" was the wrong button on his pad)');
+            ok(/_btns\["map"\] = _button\("Map", _show_map\)/.test(tbC)
+               && /func _finger\(\) -> bool:\s*return TouchPad\.probably_touch\(\) and not Pad\.using/.test(tbC)
+               && /var j := get_tree\(\)\.get_first_node_in_group\("town_journal"\) as TownJournal\s*if j != null:\s*j\.show_map\(\)/.test(fnGd(tbC, '_show_map'))
+               && /mb\.visible = _finger\(\)/.test(fnGd(tbC, '_layout'))
+               && /_place\(tc, Vector2\(16\.0 \* k, 16\.0 \* k\), s\.x - 32\.0 \* k - _map_room\(\)\)/.test(tbC)
+               && /if not \(_open and _tab == MAP_TAB\):\s*_map_key\(\)/.test(fnGd(jrC, 'show_map')),
+              '…and a finger, with no M and no Select, has the table\'s own Map button  (the town\'s Journal tab is under the table)');
+            const gsS = code(rd('game_state.gd'));
+            ok(/^func _ready\(\) -> void:\s*session_secs = _session_kept\(\)/m.test(gsS)
+               && /if DisplayServer\.window_get_mode\(\) == DisplayServer\.WINDOW_MODE_MINIMIZED:\s*return\s*session_secs \+= minf\(delta, 0\.25\)/.test(fnGd(gsS, '_process'))
+               && /sessionStorage\.setItem\('ct\.session\.v1'/.test(fnGd(gsS, '_process')) && /sessionStorage\.getItem\('ct\.session\.v1'\)/.test(fnGd(gsS, '_session_kept'))
+               && /return "%d:%02d:%02d" % \[s \/ 3600, \(s \/ 60\) % 60, s % 60\]\s*return "%d:%02d" % \[s \/ 60, s % 60\]/.test(fnGd(gsS, 'clock_text')),
+              '⭐ the sitting\'s clock counts the game RUNNING: a frame a quarter second at most, nothing minimized, and on the web a reload is the same sitting');
+            ok(/func map_line\(\) -> String:\s*return "Rating %d   ·   Played this session %s" % \[GameState\.ladder\.rating, GameState\.clock_text\(GameState\.session_secs\)\]/.test(jrC)
+               && fnGd(jrC, '_paint_map').indexOf('map_line()') < fnGd(jrC, '_paint_map').indexOf('if not TownMap.ready()')
+               && /if _open and _tab == MAP_TAB and int\(GameState\.session_secs\) != _shown_secs:\s*_body\.queue_redraw\(\)/.test(fnGd(jrC, '_process')),
+              '…and the map says it on top, with your rating, ticking once a second while it is up  (and before the map has drawn itself)');
+            const sTxt = fs.readFileSync(path.join(GD, 'tests', 'suite.sh'), 'utf8'), cTxt = fs.readFileSync(path.join(GD, 'tests', 'cases.sh'), 'utf8');
+            ok(/mapanywhere maplift mapcards mapphone/.test(sTxt)
+               && cTxt.includes('use:Vince;talking:1;key:m;jrn:4;talking:1;mapline:Rating ') && cTxt.includes('joy:back;jrn:4;tclock:mark;wait:60;tclock:same')
+               && cTxt.includes('joy:x;wait:5;tableis:phase:1;joy:x;tableis:phase:3') && cTxt.includes('key:m;jrn:4;lift:hmark;wait:60;lift:hsame')
+               && cTxt.includes('select:1;key:m;jrn:4;select:1') && cTxt.includes('finger:1;') && cTxt.includes('tablebtn:map;jrn:4'),
+              '…and the suite presses it over a conversation, a table (the clock stops, Select no longer resigns), the bench press, the cards and a phone');
+          }
           const uIn = fnGd(uiC, '_unhandled_input');
           ok((uIn.match(/event\.is_action_pressed\("ui_cancel"\)/g) || []).length === 2 && !/KEY_ESCAPE/.test(uIn)
              && /is_action_pressed\("ui_cancel"\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*close\(\)\s*return\s*if not \(event is InputEventKey\)/.test(uIn),
@@ -5473,7 +5529,7 @@ const server = http.createServer((req, res) => {
           const stepC = fnGd(pdC, 'menu_step'), numP = (name) => +(new RegExp('const ' + name + ' := ([\\d.]+)').exec(pdC) || [])[1];
           const uPr = fnGd(uiC, '_process');
           ok(/if event\.is_action_pressed\("ui_down"\) or event\.is_action_pressed\("ui_up"\):\s*get_viewport\(\)\.set_input_as_handled\(\)\s*if event is InputEventKey:\s*_step_row\(/.test(uIn)
-             && /elif _mode == TALK:\s*var by := Pad\.menu_step\(delta\)\s*if by != 0:\s*_step_row\(by\)/.test(uPr),
+             && /elif _mode == TALK and not TownJournal\.is_open\(get_tree\(\)\):\s*var by := Pad\.menu_step\(delta\)\s*if by != 0:\s*_step_row\(by\)/.test(uPr),
             '⛑ the rows of a conversation step on a KEY where keys are heard, and on a pad ONCE A FRAME  (every report of a held stick was another press: one push ran down the list)');
           ok(numP('STEP_ON') >= 0.5 && numP('STEP_OFF') > 0 && numP('STEP_OFF') <= numP('STEP_ON') - 0.2
              && /absf\(v\.y\) > absf\(v\.x\) and absf\(v\.y\) > \(STEP_OFF if _step_dir != 0 else STEP_ON\)/.test(stepC),
@@ -5876,7 +5932,7 @@ const server = http.createServer((req, res) => {
             'otherwise the beat due as the cards close never plays');
           ok(/_who = _button\("Character", func\(\) -> void: _pick_character\(\)\)/.test(jrW)
              && /close\(\)\s*\n\s*CharacterSelect\.open\(get_tree\(\)\.current_scene\)/.test(fnGd(jrW, '_pick_character'))
-             && /elif _open and Pad\.hit\(event, Pad\.LEFT\):\s*\n\s*_pick_character\(\)/.test(fnGd(jrW, '_unhandled_input')),
+             && /elif Pad\.hit\(event, Pad\.LEFT\):\s*\n\s*_pick_character\(\)/.test(fnGd(jrW, '_take')) && /elif _open:\s*get_viewport\(\)\.set_input_as_handled\(\)\s*_take\(event\)/.test(fnGd(jrW, '_input')),
             '⭐ …and again mid-game  (his): the Journal\'s Character button, or a pad\'s left button while it is open');
           const inC = fnGd(csW, '_take');
           ok(/get_viewport\(\)\.set_input_as_handled\(\)/.test(inC) && /_light\(_at - 1\)/.test(inC) && /_light\(_at \+ 1\)/.test(inC)
