@@ -423,11 +423,13 @@ function genCapture(diff){
       if(!board[dk] && dk!==tgt && dk!==key(r,c)){ board[dk]={t:'G',s:'P'};
         var stillReach=destsFor(board,r,c).indexOf(tgt)>=0, decoyReaches=destsFor(board,dr,dc).indexOf(tgt)>=0;
         if(!stillReach || decoyReaches) delete board[dk]; } }
-    return {goal:'capture', kind:'play', board:board, enemyKey:tgt, teach:'取り Capture — move onto the marked enemy ('+NAME[board[tgt].t]+').'};
+    return {goal:'capture', kind:'play', board:board, enemyKey:tgt, solutions:[{kind:'move', from:key(r,c), to:tgt}],   // Show me reads it
+      teach:'取り Capture — move onto the marked enemy ('+NAME[board[tgt].t]+').'};
   }
   // fallback
   var b={}; b[key(4,4)]={t:'R',s:'P'}; b[key(4,7)]={t:'P',s:'E'};
-  return {goal:'capture', kind:'play', board:b, enemyKey:key(4,7), teach:'取り Capture — the Rook takes along the rank.'};
+  return {goal:'capture', kind:'play', board:b, enemyKey:key(4,7), solutions:[{kind:'move', from:key(4,4), to:key(4,7)}],
+    teach:'取り Capture — the Rook takes along the rank.'};
 }
 
 function genCheck(diff){
@@ -1207,7 +1209,8 @@ if (RUN_UI) (function(){
     if(prob.goal==='move'){ return; }
     locked=true; var fb=document.getElementById('fb');
     if(isTsumeGoal()){
-      var f = prob.firsts && prob.firsts[0]; if(!f){ return; }
+      // past the first blow the key move is the one from HERE, found by the room's own judge (firsts is only the first)
+      var f = (prob.rem < (prob.plies || 1)) ? keyNow() : (prob.firsts && prob.firsts[0]); if(!f){ return; }
       if(f.drop){ if(cells[f.to]) cells[f.to].classList.add('hint'); fb.textContent='教えて — drop '+(NAME[f.drop]||'').split(' ')[0]+' on '+sqName(f.to)+(prob.goal==='tsume'?' (the key move)':''); }
       else { if(cells[f.from]) cells[f.from].classList.add('hint'); if(cells[f.to]) cells[f.to].classList.add('hint');
         fb.textContent='教えて — '+(NAME[prob.live.b[f.from] ? prob.live.b[f.from].t : 'P']||'').split(' ')[0]+' to '+sqName(f.to)+(f.promote?' (promote)':'')+(prob.goal==='tsume'?' (the key move)':''); }
@@ -1219,6 +1222,9 @@ if (RUN_UI) (function(){
     fb.textContent='教えて — '+(s.kind==='drop'?('drop '+NAME[s.type].split(' ')[0]+' there'):('move '+ (NAME[prob.board[s.from].t]||'').split(' ')[0] +' there')); fb.className='fb';
     afterSolveButton();  // lets you move on (no solve credit)
   }
+  function keyNow(){ var ms=atkCheckMoves(prob.live);
+    for(var i=0;i<ms.length;i++){ var m=ms[i], r=tsumeAcceptMove(m.drop?{drop:m.drop,to:m.to}:{from:m.from,to:m.to}); if(r.result!=='no') return r.move; }
+    return null; }
   function sqName(k){ var p=rc(k); return (9-p[1])+''+'abcdefghi'.charAt(p[0]); }
 
   document.getElementById('action').onclick=function(){

@@ -264,6 +264,42 @@ async function solveOne(page, sleep) {
     }
     if (!sawTsume) ok(false, 'a tsume problem appears within 60 deals at 30 solves');
 
+    // --- 教えて Show me: it shows a capture, and past a mate's first blow it shows the NEXT one (2026-10-29) ---
+    // ⛑ a capture problem carried no solutions, so Show me locked the board, marked nothing and offered no Next:
+    //   the lesson was stuck until a reload. And mid-mate it named the FIRST move again, its piece long gone ("Pawn to 5d").
+    await page.evaluate(() => window.__t.setSolved(6));
+    let cap = false;
+    for (let i = 0; i < 40 && !cap; i++) { await page.evaluate(() => window.__t.newProblem()); cap = (await page.evaluate(() => window.__t.prob().goal)) === 'capture'; }
+    const solved6 = (await page.evaluate(() => window.__t.state())).solved;
+    await page.click('#showme'); await sleep(80);
+    const capShown = await page.evaluate(() => ({ fb: window.__t.fb(), hints: document.querySelectorAll('#board .cell.hint').length,
+      next: getComputedStyle(document.getElementById('action')).display !== 'none' && document.getElementById('action').dataset.next === '1' }));
+    ok(cap && capShown.hints === 2 && /^教えて — move \S+ there$/.test(capShown.fb) && capShown.next
+       && (await page.evaluate(() => window.__t.state())).solved === solved6,
+      'Show me on a capture marks the move and offers Next, for no credit  [' + capShown.fb + ']');
+    await action(page); await sleep(60);
+    await page.evaluate(() => window.__t.setSolved(30));
+    let mid = null;
+    for (let i = 0; i < 80 && !mid; i++) {
+      await page.evaluate(() => window.__t.newProblem());
+      const q = await page.evaluate(() => window.__t.prob());
+      if (q.goal !== 'tsume' || q.rem < 2) continue;
+      const f = q.firsts[0];
+      if (f.drop) { await handClick(page, f.drop); } else { await cellClick(page, f.from); }
+      await cellClick(page, f.to); await sleep(60);
+      await page.click('#showme'); await sleep(80);
+      // the move it names must be one that can be played HERE: that piece, from where it stands (or from the hand)
+      mid = await page.evaluate(() => { const q2 = window.__t.prob(), fb = window.__t.fb();
+        const m = /^教えて — (?:drop (\S+) on|(\S+) to) (\d)([a-i])/.exec(fb);
+        if (!m) return { fb: fb, ok: false };
+        const k = ('abcdefghi'.indexOf(m[4])) + ',' + (9 - +m[3]);
+        const named = m[1] || m[2], word = (t) => NAME[t].split(' ')[0];
+        if (m[1]) return { fb: fb, ok: !q2.live.b[k] && q2.live.hand.P.some((t) => word(t) === named) };
+        return { fb: fb, ok: Object.keys(q2.live.b).some((s) => { const pc = q2.live.b[s], a = s.split(',').map(Number);
+          return pc.s === 'P' && word(pc.t) === named && destsFor(q2.live.b, a[0], a[1]).indexOf(k) >= 0; }) }; });
+    }
+    ok(mid && mid.ok, 'past a mate\'s first blow, Show me names the next blow, one that can be played from here  [' + (mid ? mid.fb : 'no mate-in-three dealt') + ']');
+
     // --- unlock gates ---
     await page.evaluate(() => window.__t.setSolved(28));
     ok(await page.evaluate(() => !!document.getElementById('play-dob')), 'Catch the Lion unlocks at 28 solves');
