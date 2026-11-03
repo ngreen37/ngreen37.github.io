@@ -8,7 +8,7 @@
  * 14-ply line per seat, and a line can be checked by reading it: replay the plies, count
  * them, done. A SYSTEM has no plies to read — it is "the first wanted square that is legal
  * right now", so what it actually plays depends entirely on what the other person does. The
- * only honest way to know whether Crockett's b3 setup survives a Sicilian is to play a
+ * only honest way to know whether Milo's b3 setup survives a Sicilian is to play a
  * Sicilian at it. So: every White system against every Black system, all 64 pairings, and
  * every Black system against every common first move.
  *

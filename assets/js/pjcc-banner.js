@@ -37,7 +37,7 @@
     /* ⚠⚠ THE TOWN'S GRID, TRANSLATED, AND BOTH AXES ARE FLIPPED FROM THE OBVIOUS READING.
        We sit on the BLACK side of that board: column 0 is the left of the picture and the
        a-file is therefore on the RIGHT, and row 0 is the far rank, which is rank ONE.
-       Checked against the roster: Crockett is the h-pawn and comes back as (0, 6) = h7, and
+       Checked against the roster: Milo is the h-pawn and comes back as (0, 6) = h7, and
        Vince is the a-rook at (7, 7) = a8. Getting this backwards names every square wrong in
        the one place a screen reader gets to read the board. */
     return FILES[7 - f] + String(r + 1);

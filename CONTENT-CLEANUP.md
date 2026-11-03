@@ -18,7 +18,7 @@ A page-by-page checklist for the read-everything text pass before launch.
 - [ ] **Lore consistent** with the canon checks below.
 
 ## Canon cross-checks (verify wherever mentioned)
-- [ ] **Auston = younger sister (Family); Crockett = the dog.** (Were swapped — hunt stale refs.)
+- [ ] **Auston = younger sister (Family); Milo = the dog** (Crockett until 2026-11-03). (Were swapped — hunt stale refs.)
 - [ ] **Chess City rival = Michael** (righteous, "represents God") at `/characters/rival/`. **Checker Town rival = Robert** (Bob Proctor voice).
 - [ ] **"The Dad"** — not "Father." Role = Family.
 - [ ] **Best friend = Maxwell.** **Kaede's brother = Matsu.**

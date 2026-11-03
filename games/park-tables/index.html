@@ -757,7 +757,7 @@ body_class: theme-hall
      bench has to double somewhere — and the obvious doubling does not work, because these
      render in an emoji-presentation font where WHITE AND BLACK ARE THE SAME PICTURE. Held
      side by side at card size, ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are indistinguishable; only ♔ (the
-     CEO's, a crown with a cross) and ♘ (an OUTLINE horse against Crockett's solid one) read
+     CEO's, a crown with a cross) and ♘ (an OUTLINE horse against Milo's solid one) read
      as different pieces at all. So Auston's canon rook was unavailable in practice — a
      second rook would have looked like Robert's. Same family as [[text-clip-glyph-technique]]:
      ask what actually REACHES the glyph before assuming a variant is a variant.
@@ -776,7 +776,7 @@ body_class: theme-hall
 
      Keys come from `PJCC.AURAS` (pjcc-profile.js) — never a hex literal here, or the
      bench drifts off the palette the Forge offers. My picks, and open to veto the same way
-     the icons were: Maxwell the one who stays = emerald · Crockett the Academy teacher =
+     the icons were: Maxwell the one who stays = emerald · Milo the Academy teacher =
      amber (pine/copper) · Argus = ice · Auston brave = crimson · The Dad = turquoise (HIS pick, see his row) ·
      Robert the rival = violet · Princess = sakura · the CEO at the top = gold · Nate = jade.
 
@@ -792,7 +792,7 @@ body_class: theme-hall
     maxwell:  { name: 'Maxwell',  icon: '♖', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald',
                 sysW: 'london', sysB: 'openb' /* one setup, at everything — what somebody
                    shown a single opening actually does. He plays it, then plays like a 400 */ },
-    crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber',
+    crockett: { name: 'Milo', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber',
                 sysW: 'larsen', sysB: 'slav' /* ⭐ NATE'S OWN EXAMPLE, verbatim: 1.b3, and
                    “the Slav or 1…e5 for black regardless of 1.e4 or 1.d4” */ },
     argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260,  aura: 'ice',
@@ -2392,7 +2392,7 @@ body_class: theme-hall
 
   /* ⚑ THE LAST RESULT, STAMPED — for Checker Town (2026-09-02).
      ⚠⚠ THE BEATEN LIST CANNOT ANSWER THIS. It is a lifetime set: it says "have you ever
-     beaten Crockett", and the town has to know "did that game just happen" or it hands out
+     beaten Milo", and the town has to know "did that game just happen" or it hands out
      a piece every time you walk past him. Only a timestamp separates the two.
      ⚠ EVERY ENDING, NOT JUST A WIN. A loss has to clear the town's pending challenge too —
      it does not spend the day, but it does end the errand.
@@ -2403,7 +2403,7 @@ body_class: theme-hall
       localStorage.setItem('pjcc.pt.last.v1', JSON.stringify({
         /* ⚠⚠ `pos` IS WHICH ERRAND THIS WAS, "" for an ordinary game. Checker Town waits on
            one specific errand at a time and both land in this one record; without the field
-           a study win against Crockett would have filled Crockett's square, which is the one
+           a study win against Milo would have filled Milo's square, which is the one
            thing a study must never do. */
         bot: st.bot, result: st.result, won: studyOK(st), pos: st.pos || '',
         /* ⚠ CLEAN = THE FULL STAR, the same test the bench already uses: no takeback
@@ -3166,8 +3166,8 @@ body_class: theme-hall
 
      ⭐⭐ SO: SYSTEMS, NOT LINES. `sysW`/`sysB` name a set of squares the character wants,
      reachable in any order, against anything — the moves are in pjcc-systems.js and the
-     assignment is here, on the seat, beside every other fact about them. Crockett plays b3,
-     Bb2, e3, Nf3 whether you answer 1…e5, 1…c5 or the Pirc, and he is still Crockett in a
+     assignment is here, on the seat, beside every other fact about them. Milo plays b3,
+     Bb2, e3, Nf3 whether you answer 1…e5, 1…c5 or the Pirc, and he is still Milo in a
      position no book has ever seen. Measured: every seat holds its system SIX full moves
      against every other seat's, and not one of the 64 pairings ends a piece down.
 

@@ -353,13 +353,13 @@ description: McPuppy Studios — the independent studio behind ChessWild. The Ac
       <h2 class="project-title">ChessWild Chess Academy</h2>
     </div>
     {% comment %} 2026-08-25 (Nate: "Change the Academy description to read 'from the
-         Chesswild site' instead of PJCC characters"). Auston and Crockett stay — they are
+         Chesswild site' instead of PJCC characters"). Auston and Milo stay — they are
          the teachers and they are named on the Academy itself. What changed is where they
          are said to come FROM: sourcing them to the P&JCC universe on the one page a
          stranger reads first is the announcement the slow-roll is avoiding. "the ChessWild
          site" is true, checkable in one click, and says nothing about the series.
          ⚠ HOUSE SPELLING IS `ChessWild`, camel-cased — 81 occurrences to 4. {% endcomment %}
-    <p class="project-desc">An All-Ages online Chess Academy, taught by Auston and Crockett from the ChessWild site. Free, and open now.</p>
+    <p class="project-desc">An All-Ages online Chess Academy, taught by Auston and Milo from the ChessWild site. Free, and open now.</p>
     <div class="project-links">
       <a href="/academy/" class="project-link">Visit the Academy &rarr;</a>
     </div>

@@ -25,7 +25,7 @@ Each check exits `0` on pass, `1` on failure — so they drop straight into CI o
 ## What's covered
 
 - **Sky Run** (`skyrun.check.js`) — starts as Pawn/5 hearts · auto-fires · Focus engages on Shift ·
-  Crockett fetches & delivers a power-up · the region boss has its own attack kind · a weak-point
+  Milo fetches & delivers a power-up · the region boss has its own attack kind · a weak-point
   window opens · clearing a region promotes Princess a rank · no JS exceptions.
 - **Follow the Dog** (`ftd.check.js`) — the fair-but-strict miss fix: no instant heart loss on the
   starter rook · no docking while riding · landing scores · survives with no input · a missed

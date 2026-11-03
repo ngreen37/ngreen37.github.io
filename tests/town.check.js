@@ -1789,9 +1789,9 @@ const server = http.createServer((req, res) => {
         /\{ "key": "([a-z]+)",\s*"who": "([^"]+)",\s*"elo": (\d+),\s*"piece": "([a-z])"/g)];
       ok(rows.length === benchKeys.length,
         '…and every row was readable', rows.length + ' of ' + benchKeys.length);
-      /* ⚑ 2026-10-10 — THE TOWN IS AHEAD OF THE SITE BY ONE NAME (his: "Change that dog's name to Milo.").
-         GameState.RENAMED is the ONLY way a name here may differ from the bench's, and it is printed on
-         every run until the site's bench says the same. */
+      /* ⚑ 2026-10-10 — THE TOWN WAS AHEAD OF THE SITE BY ONE NAME (his: "Change that dog's name to Milo."), and
+         the site caught up 11-03 (his: "Make every Crockett instance Milo instead"). GameState.RENAMED is still the
+         ONLY way a name here may differ from the bench's: old saves keep hearts under Crockett. */
       const renamedGd = Object.fromEntries([...((/const RENAMED := \{([^}]*)\}/.exec(gs) || [0, ''])[1])
         .matchAll(/"([^"]+)": "([^"]+)"/g)].map((m) => [m[1], m[2]]));
       const ahead = [];
@@ -2369,7 +2369,7 @@ const server = http.createServer((req, res) => {
       ok(/function updatePrincess\(/.test(FTD) && /a dog who can learn/.test(pmd)
         && /static func princess\(\) -> TownDog:\s*\n\s*return TownDog\.of\("Princess"\)/.test(dog),
         '…and she is PRINCESS, because Follow the Dog is her game',
-        '⚑ Crockett is the other dog and his file says "always around" — one word moves it');
+        '⚑ Milo is the other dog and his file says "always around" — one word moves it');
       /* ⚠⚠ ANCHORED TO THE END OF THE LINE. */
       ok(/"Princess": \{ "key": "princess", "elo": 2100/.test(dog) && /dog\.away_chance = 0\.0(?!\d)/.test(dog),
         '…keeping her seat, and never randomly missing  (a companion who vanishes reads as a bug)');
@@ -4079,7 +4079,7 @@ const server = http.createServer((req, res) => {
         /* ⚠ AND THE SIGN COUNTS THE ROOM IT IS NAILED UP IN, not the whole bench — "nine seats"
            over six tables is a board lying about where it is standing.
            ⚠⚠ SCOPED TO Standings. `Table._lock_who()` resolves a lock key to a name and MUST
-           still search the whole ladder: Vince is locked behind Crockett, who has no table now
+           still search the whole ladder: Vince is locked behind Milo, who has no table now
            and is still the lock. A blanket ban on SEATS+OFF in this file would break that. */
         const stand = parkG.slice(parkG.indexOf('class Standings extends Interactable:'));
         ok(/Pavilion\.tabled\(\) \+ Pavilion\.OFF/.test(stand)
@@ -7402,7 +7402,7 @@ const server = http.createServer((req, res) => {
           const bcRowsP = bcPieces.map((p) => JSON.stringify([p.k, p.name, p.home, p.extras, bcTown(p.line)]));
           ok(bcMilo === 'Milo' && bcSays.length === 4 && bcPieces.length === 6 && bcOffW.length === 0 && bcRowsG.join('\n') === bcRowsP.join('\n')
              && /GENERATED, DO NOT EDIT BY HAND: node tests\/gen_bootcamp\.js/.test(bcBkT),
-            '⭐⭐ Auston\'s Bootcamp is played at a table in the Academy off the web  (his 10-29: "start importing games … dealer\'s choice"): its six pieces, each set out where the room sets it, and every word the room says, out of THIS page (rerun gen_bootcamp.js when the page changes), the page\'s Crockett said as the town\'s Milo',
+            '⭐⭐ Auston\'s Bootcamp is played at a table in the Academy off the web  (his 10-29: "start importing games … dealer\'s choice"): its six pieces, each set out where the room sets it, and every word the room says, out of THIS page (rerun gen_bootcamp.js when the page changes), Milo on the page as in the town',
             bcOffW.length ? 'not the page\'s: ' + bcOffW.join(' ') : bcRowsG.length + ' pieces and ' + Object.keys(bcWant).length + ' lines, word for word');
           const bcF = (n) => fnGd(bcDtT, n);
           ok(/var S := \{ "b": b\.duplicate\(\), "turn": col if col != "" else "w",\s*\n\t\t"cast": \{ "K": false, "Q": false, "k": false, "q": false \}, "ep": -1, "half": 0, "full": 1 \}/.test(bcF('moves_for'))
@@ -8084,7 +8084,7 @@ const server = http.createServer((req, res) => {
 
         /* ══ 44. NOBODY WALKS THROUGH BARK ══════════════════════════════════════════════════
            2026-09-28. The trunks went solid on 09-26 but only the PLAYER and Princess were ever
-           stopped by them: a person's `patrol` and Crockett's `_pace` both moved by assigning a
+           stopped by them: a person's `patrol` and Milo's `_pace` both moved by assigning a
            position outright, and the check they needed was sitting on TownDog three functions
            away from one of them. It lives on TownNPC now and a walker inherits it by walking.
            Verified in the engine, square window, 16 assertions: a person and a dog each driven

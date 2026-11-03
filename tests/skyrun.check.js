@@ -42,11 +42,11 @@ window.__t = {
     await page.keyboard.down('Shift'); await sleep(200); const sf = await G(); await page.keyboard.up('Shift');
     ok(sf.focus === true, 'holding Shift engages Focus');
 
-    // Crockett fetch (#2)
+    // Milo fetch (#2)
     await page.evaluate(() => window.__t.spawnToken('bishop'));
     let fetched = false;
     for (let i = 0; i < 18; i++) { await sleep(200); if ((await G()).bishopPwr > 0) { fetched = true; break; } }
-    ok(fetched, "Crockett fetches a power-up and delivers it (bishop power applied)");
+    ok(fetched, "Milo fetches a power-up and delivers it (bishop power applied)");
 
     // Boss personality (#5)
     await page.evaluate(() => window.__t.forceBoss()); await sleep(700);
@@ -257,7 +257,7 @@ window.__t = {
     ok(promo.blast > 0 && promo.queensAfter === 0,
       '…and one with a target still spends itself on the blast  [-' + promo.blast + 'hp, promoted=' + promo.queensAfter + ']');
 
-    // ── Crockett learns, and the town's weather reaches the flight ─────────────
+    // ── Milo learns, and the town's weather reaches the flight ─────────────
     const dog = await page.evaluate(() => {
       startPlay('normal');
       const learned = [];
@@ -273,7 +273,7 @@ window.__t = {
       updateEBullets(0.001); const second = G.ebullets.length;
       return { learned: learned.join(''), ate: ate, second: second, names: TRICKS.map((t) => t.name).join(',') };
     });
-    ok(dog.learned === '12344', 'Crockett picks up one trick for every region she clears, and stops at four  [' + dog.learned + ']');
+    ok(dog.learned === '12344', 'Milo picks up one trick for every region she clears, and stops at four  [' + dog.learned + ']');
     ok(dog.ate === 0 && dog.second === 1, '⭐ GUARD eats one shot, then has to shake it off  [' + dog.ate + ' then ' + dog.second + ']');
 
     const wx = await page.evaluate(() => {
@@ -374,7 +374,7 @@ window.__t = {
     ok(log && log.flight && log.flight.score === 321 && log.flight.where === 'Checker Town' && log.flight.rank === 'Pawn' && log.flight.end === 'down',
       'the flight log is banked onto the profile with the score  [' + (log && log.flight ? log.flight.where + ' · ' + log.flight.rank + ' · ' + log.flight.score : 'none') + ']');
 
-    // ── Couch co-op: player two flies Crockett ────────────────────────────────
+    // ── Couch co-op: player two flies Milo ────────────────────────────────
     const co = await page.evaluate(() => {
       const out = {}; __saves.length = 0;
       setAssist(false); setCoop(true); startPlay('normal');
@@ -405,8 +405,8 @@ window.__t = {
       keys.add('ArrowRight'); update(0.2); out.soloArrows = G.tx > sx; keys.clear();
       return out;
     });
-    ok(co.herMoved && co.dogStill, 'co-op: W A S D flies Princess and leaves Crockett alone');
-    ok(co.dogMoved && co.herStill, '…and the arrows fly Crockett and leave Princess alone');
+    ok(co.herMoved && co.dogStill, 'co-op: W A S D flies Princess and leaves Milo alone');
+    ok(co.dogMoved && co.herStill, '…and the arrows fly Milo and leave Princess alone');
     ok(co.dogFlown, '…and he goes where player two flies him, not back to her flank  [' + co.dogWhere + ']');
     ok(co.picked && co.notYet && co.delivered,
       '⭐ …player two carries the power-up: it lands when he reaches her, not when he touches it');

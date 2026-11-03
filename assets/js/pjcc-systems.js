@@ -12,8 +12,8 @@
  * anti-Pirc LINE, so all eight opened 1.e4 whenever you were Black, and the moment you
  * played anything the line had not heard of the whole thing evaporated. A line is a
  * corridor. A system is a SET OF SQUARES a player wants, reachable in any order, against
- * anything — so Crockett plays b3, Bb2, e3, Nf3 whether you answer with e5, c5 or the Pirc,
- * and he is still recognizably Crockett in a position no book has ever seen.
+ * anything — so Milo plays b3, Bb2, e3, Nf3 whether you answer with e5, c5 or the Pirc,
+ * and he is still recognizably Milo in a position no book has ever seen.
  *
  * ⚠⚠ AND IT IS WHY A 400 CAN HAVE ONE. A weak seat reciting theory reads as a bug; a weak
  * seat that knows one setup and plays it at everything reads as a person who has been shown
@@ -65,7 +65,7 @@
     london: { side: 'w', name: 'The London System',
       moves: ['d2d4', 'c1f4', 'e2e3', 'g1f3', 'f1d3', 'f1e2', 'c2c3', 'e1g1', 'b1d2'] },
 
-    /* Crockett, 750 — Nate's own example. An early oddity that looks like a trick and is
+    /* Milo, 750 — Nate's own example. An early oddity that looks like a trick and is
        actually a real opening, which is every improving player's favorite kind. */
     larsen: { side: 'w', name: 'The Nimzo-Larsen Attack',
       moves: ['b2b3', 'c1b2', 'e2e3', 'g1f3', 'f1e2', 'e1g1', 'd2d4'] },
@@ -108,7 +108,7 @@
       vs: { e2e4: ['e7e5', 'b8c6', 'g8f6', 'f8c5', 'f8e7', 'e8g8', 'd7d6'],
             '*':  ['d7d5', 'g8f6', 'e7e6', 'f8e7', 'e8g8', 'c7c6'] } },
 
-    /* Crockett — Nate's words: *"the Slav or 1.e5 for black regardless of 1.e4 or 1.d4."* */
+    /* Milo — Nate's words: *"the Slav or 1.e5 for black regardless of 1.e4 or 1.d4."* */
     slav: { side: 'b', name: 'The Slav, or 1…e5',
       vs: { e2e4: ['e7e5', 'b8c6', 'g8f6', 'f8c5', 'f8e7', 'e8g8', 'd7d6'],
             '*':  ['d7d5', 'c7c6', 'g8f6', 'c8f5', 'e7e6', 'f8e7', 'e8g8', 'b8d7'] } },

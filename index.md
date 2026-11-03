@@ -1440,7 +1440,7 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 /* ── THE BENCH (2026-08-18) ────────────────────────────────────────────────────────────
    Eight seats, four across, two rows — the shape is picked by the COLUMN, not by taste:
    `.mc-lead-col` is capped at 420px to match the green door's right edge, and eight names
-   in one row leaves ~50px a name, which "Crockett" does not fit in at any size worth
+   in one row leaves ~50px a name, which "Princess" does not fit in at any size worth
    reading. Four across gives each seat ~100px and lands the block at almost exactly the
    height of the parchment that was empty under the proofs.
 
@@ -1458,8 +1458,8 @@ html.reduce-flourish .page-note-out .tg-x-glyph { animation: none; opacity: 1; }
 /* ⚑ THREE ACROSS, NOT FOUR (2026-08-18). Four was sized for eight seats; the locked pair came
    off, and six across three columns is two clean rows where six across four would have been
    4 + 2 — the same "row and a half" shape the doors grid below this page was re-columned to
-   avoid. The cells also gain ~39px of width each, which is the difference between "Crockett"
-   fitting and "Crockett" ellipsizing.
+   avoid. The cells also gain ~39px of width each, which is the difference between "Princess"
+   fitting and "Princess" ellipsizing (and Crockett's, while he had that name).
    ⚠ THE SIX IS THE LADDER, NOT THE ROSTER (2026-08-19). Auston left the rungs and the
    bench went to seven; three columns still divide the SIX rated seats exactly because the
    seventh spans all three. If a rung is ever added or removed, count the RATED seats against

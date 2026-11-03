@@ -40,7 +40,7 @@
  *
  * ⛑ ONE EXCEPTION SINCE 2026-09-02: `.ac-coach`, the card a lesson's teacher speaks
  * from. It stopped being furniture the day it belonged to two rooms — Nate opened
- * Lesson 2 ("Notation Blitz in the Academy w/ Crockett for business") and Crockett needed
+ * Lesson 2 ("Notation Blitz in the Academy w/ Crockett for business") and Milo needed
  * the card Auston already had. It was `.bc-*` inside academy-bootcamp.md's own <style>;
  * copying five declarations onto a second page is precisely the thing this file was
  * created to undo. The rule stands for everything else: a class earns a place here by
@@ -78,7 +78,7 @@ body.theme-academy .ts-horizon {
 }
 
 /* ── THE TEACHER'S CARD ────────────────────────────────────────────────────────────
-   Auston in Lesson 1, Crockett in Lesson 2. ⚠ The left rule is the ember accent and the
+   Auston in Lesson 1, Milo in Lesson 2. ⚠ The left rule is the ember accent and the
    ICON is the only thing that changes between them — a lesson taught by somebody is the
    Academy's whole shape, so it reads the same in every room.
 
@@ -86,7 +86,7 @@ body.theme-academy .ts-horizon {
    `body.theme-academy …` because it repaints a page; this one is a CARD, and Lesson 2 lives
    at /games/notation-run/ under `layout: game`, which has no body_class to hang a theme on.
    Every color below is written out rather than inherited, so the card carries the Academy
-   with it onto a page painted in arcade violet. ⚠ Scope it and Crockett's card goes
+   with it onto a page painted in arcade violet. ⚠ Scope it and Milo's card goes
    unstyled with nothing on screen saying so. [[self-contained-means-intrinsic]] */
 .ac-coach {
   display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px;

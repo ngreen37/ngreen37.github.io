@@ -48,7 +48,7 @@
   open: true
 
 - key: crockett
-  name: Crockett
+  name: Milo
   icon: "♞"
   elo: 750
   movetime: 160
@@ -128,7 +128,7 @@
 
 # ⚑⚑ THE SECOND SEAT THAT IS NOT A RUNG (2026-08-31) — the Elder Brother, Nate's pick for the
 # opponent who studies your games. He is drawn under the ladder beside Auston in the game.
-# ⚠ `open: false` IS NOT A TECHNICALITY. He is locked behind a clean win over Crockett, and
+# ⚠ `open: false` IS NOT A TECHNICALITY. He is locked behind a clean win over Milo, and
 # the front door draws only the open seats — so the bench there stays six across three
 # columns, which is arithmetic `test:regulars` checks. Unlock him by deleting his `locked:`
 # in BOTS and this line has to follow, or the gate says so.

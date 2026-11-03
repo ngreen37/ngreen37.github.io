@@ -60,7 +60,7 @@ body_class: theme-bw
   <div class="cc-wall">
     <div class="cc-wall-label">◈ MORE STUDENT REVIEWS</div>
     <div class="cc-wall-grid">
-      <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"I still can't castle. Five stars anyway. I keep showing up!"</p><cite>— Crockett</cite></div>
+      <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"I still can't castle. Five stars anyway. I keep showing up!"</p><cite>— Milo</cite></div>
       <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"Show her something once and she starts mastering it. The coaches barely keep up."</p><cite>— on Princess</cite></div>
       <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"Ten years braver than her big brother. She never leaves the board."</p><cite>— on Auston</cite></div>
     </div>

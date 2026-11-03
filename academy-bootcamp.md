@@ -253,7 +253,7 @@ body_class: theme-academy
         /* ⛑ SHE STOPPED SAYING "STILL BEING BUILT" ON 2026-09-02, the day Lesson 2 opened.
            A graduation line that hands you off to a locked door is the one place on the site
            where a stale sentence is guaranteed to be read. */
-        "You know where every piece goes now — and that's the ground under everything else you'll ever learn here. Next up: reading the board out loud, square by square, with Crockett. He's waiting for you.";
+        "You know where every piece goes now — and that's the ground under everything else you'll ever learn here. Next up: reading the board out loud, square by square, with Milo. He's waiting for you.";
       gradEl.hidden = false;
       if (!reduce) gradEl.classList.add('bc-rise');
     }
@@ -292,7 +292,7 @@ body_class: theme-academy
 @media (max-width: 700px) { .page-body > .page-title { margin: 8px -20px 14px; } }
 
 /* ⛑ THE COACH CARD MOVED OUT 2026-09-02 — `.ac-coach*` in _sass/_pjcc-30-academy.scss.
-   Crockett needed the same card for Lesson 2, and five declarations copied onto a second
+   Milo needed the same card for Lesson 2, and five declarations copied onto a second
    page is what that partial exists to prevent. Only the FLASH is still local: it is this
    page's drill feedback, not something a teacher's card does. */
 .bc-flash { animation: bcFlash 0.5s ease; }

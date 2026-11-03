@@ -6,13 +6,13 @@ permalink: /educators/
 
 <div class="ed-hero selectable">
   <div class="ed-kicker">ChessWild Chess Academy · for classrooms &amp; curious minds of any age</div>
-  <p class="ed-sub">The <a href="{{ '/academy/' | relative_url }}">ChessWild Chess Academy</a> teaches chess the way anyone actually learns — through a cartoon they care about, with Auston and Crockett from the P&JCC series doing the teaching. It's geared for kids and classrooms, but built to be genuinely enjoyable for <strong>all ages</strong>. Free to use today, and it drops straight into a classroom: offline, kid-safe, and standards-friendly.</p>
+  <p class="ed-sub">The <a href="{{ '/academy/' | relative_url }}">ChessWild Chess Academy</a> teaches chess the way anyone actually learns — through a cartoon they care about, with Auston and Milo from the P&JCC series doing the teaching. It's geared for kids and classrooms, but built to be genuinely enjoyable for <strong>all ages</strong>. Free to use today, and it drops straight into a classroom: offline, kid-safe, and standards-friendly.</p>
 </div>
 
 <!-- WHY IT WORKS -->
 <h2 class="ed-h2">◈ Why it works in a classroom</h2>
 <div class="ed-grid">
-  <div class="ed-cell"><span class="ed-ico">🐶</span><b>Character-led</b><small>Auston teaches the pieces, Crockett takes notation next, and every rival on the ladder is someone from the show — kids learn from a cast they're rooting for.</small></div>
+  <div class="ed-cell"><span class="ed-ico">🐶</span><b>Character-led</b><small>Auston teaches the pieces, Milo takes notation next, and every rival on the ladder is someone from the show — kids learn from a cast they're rooting for.</small></div>
   <div class="ed-cell"><span class="ed-ico">📶</span><b>Fully offline</b><small>Everything runs in the browser with no logins required. No accounts, no data collection, no network needed once loaded.</small></div>
   <div class="ed-cell"><span class="ed-ico">🛡️</span><b>Kid-safe by design</b><small>No chat, no ads, no purchases, no personal data. Progress is stored only on the device.</small></div>
   <div class="ed-cell"><span class="ed-ico">🪜</span><b>A path, in order</b><small>The Academy runs one honest lesson at a time, starting at how the pieces move — so there is always exactly one next step, for the room and for each kid.</small></div>

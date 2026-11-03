@@ -94,12 +94,12 @@ permalink: /constellation/
         <text x="240" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Argus</text>
       </g>
 
-      <!-- Crockett (lower right) -->
-      <g class="const-node-group" data-char="crockett" data-name="Crockett" data-role="Side Character · the dog" data-url="/characters/crockett/">
+      <!-- Milo (lower right) -->
+      <g class="const-node-group" data-char="crockett" data-name="Milo" data-role="Side Character · the dog" data-url="/characters/crockett/">
         <circle cx="560" cy="340" r="18" fill="rgba(196,181,253,0.06)" stroke="rgba(196,181,253,0.1)" stroke-width="1" class="const-node-ring"/>
         <circle cx="560" cy="340" r="13" fill="rgba(196,181,253,0.12)" stroke="rgba(196,181,253,0.42)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="560" y="345" text-anchor="middle" font-size="11" fill="rgba(196,181,253,0.72)" pointer-events="none">♞</text>
-        <text x="560" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Crockett</text>
+        <text x="560" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Milo</text>
       </g>
     </svg>
 

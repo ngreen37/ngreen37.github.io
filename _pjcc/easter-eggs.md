@@ -215,7 +215,7 @@ booth wall.* Only shows while the city is still sealed (no Gauntlet win).
 ### The Spotted Pawn (The Gauntlet)
 The opposition's **e-pawn** carries two faint spots (a small white dog with black spots) —
 tracked square-to-square as it moves, gone when captured, promoted, or taken en passant.
-Crockett: "usually the first one sacrificed, never seems to mind." Zero label, in-game only.
+Milo: "usually the first one sacrificed, never seems to mind." Zero label, in-game only.
 
 ### window.murphysLaw() (site-wide)
 A hidden global function. Call it with anything — it always returns `false` and logs

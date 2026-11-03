@@ -201,7 +201,7 @@ const WIND_PUSH = 30;        // rain leans on the ship the whole way; you fly ac
 const MIST_SIGHT = 300, NIGHT_SIGHT = 235;   // how far her light reaches when the town is dark
 const PROMO_Y = 58;          // the eighth rank — a summoned pawn that gets here is promoted
 const ASSIST_HEARTS = 2, ASSIST_EB = 0.72;   // two more hearts, and enemy fire flies slower
-// Crockett is a dog. He never says anything — he learns, and you watch him do it.
+// Milo is a dog. He never says anything — he learns, and you watch him do it.
 const TRICKS = [
   { id:'fetch', glyph:'🦴', name:'FETCH', note:'He breaks for a power-up the moment it drops.' },
   { id:'guard', glyph:'🛡', name:'GUARD', note:'He eats a shot that was going to hit her.' },
@@ -229,7 +229,7 @@ function setCoop(on){
   if (b){ b.setAttribute('aria-pressed', coopOn ? 'true' : 'false'); b.textContent = coopOn ? '👥 2-Player on' : '👥 2-Player'; }
   const l = $('coop-line');
   // ⚠ it needs a second set of keys, so it needs a keyboard. Say that before they turn it on.
-  if (l){ l.hidden = !coopOn; l.textContent = 'Player 1 flies Princess with W A S D. Player 2 flies Crockett with the arrows, and carries the power-ups to her.'; }
+  if (l){ l.hidden = !coopOn; l.textContent = 'Player 1 flies Princess with W A S D. Player 2 flies Milo with the arrows, and carries the power-ups to her.'; }
 }
 function setAssist(on){
   assistOn = !!on;
@@ -600,7 +600,7 @@ let mouseFocus=false, drag=null, usedTouch=false;
 const keys = new Set();
 /* ⭐ TWO SETS, ONE MAP. Flying alone, either set flies Princess — nobody should have to find out
    which half of the keyboard this game wants. In co-op the arrows are taken away from her and
-   given to Crockett, and WASD is hers alone. */
+   given to Milo, and WASD is hers alone. */
 const KEYMAP_P2 = { ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1] };
 const KEYMAP_P1 = { KeyA:[-1,0], KeyD:[1,0], KeyW:[0,-1], KeyS:[0,1] };
 const KEYMAP = Object.assign({}, KEYMAP_P2, KEYMAP_P1);
@@ -912,7 +912,7 @@ function updateTokens(dt){
     }
   }
 }
-// ---------- Crockett, the wing-dog (follow the dog) — fetches power-ups, chomps stragglers ----------
+// ---------- Milo, the wing-dog (follow the dog) — fetches power-ups, chomps stragglers ----------
 function updateDog(dt){
   const d=G.dog; if(!d) return; d.t+=dt;
   d.biteCd-=dt; d.fetchCd-=dt; if(d.bark>0) d.bark-=dt;
@@ -1045,7 +1045,7 @@ function render(){
   G.bullets.forEach(b=>blit(b.spr, b.x, b.y));
   // guardians
   if (G.guardians.length){ const es=glyphSpr('♘',20,'#8fe3ff'); G.guardians.forEach(e=>blit(es, e.x, e.y)); }
-  // Crockett (behind Princess) then Princess
+  // Milo (behind Princess) then Princess
   drawDog();
   drawPrincess();
   // particles
@@ -1200,7 +1200,7 @@ function gameOver(won, quit){
     '<br>Score <b>'+G.score+'</b>' + (G.score>G.prevBest?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best) +
     (G.assist ? '<br><span style="color:#ffd36b">🤝 Flown with assist — kept on its own board.</span>' : '') +
     (G.coop ? '<br><span style="color:#ffd36b">👥 Flown by two — kept on its own board.</span>' : '') +
-    (G.tricks ? '<br><span style="color:#cfe0ff">Crockett picked up '+G.tricks+' trick'+(G.tricks>1?'s':'')+': '+
+    (G.tricks ? '<br><span style="color:#cfe0ff">Milo picked up '+G.tricks+' trick'+(G.tricks>1?'s':'')+': '+
         TRICKS.slice(0,G.tricks).map(t=>t.glyph+' '+t.name).join(' · ')+'</span>' : '') +
     // the King you last faced fought a real opening — the door to it opens the deck by name
     (G.lastKing && G.lastKing.book ? '<br><span style="color:#9fe8ff">'+G.lastKing.name+' fought '+G.lastKing.book.name+
@@ -1270,7 +1270,7 @@ function pause(){
   // the pause screen is where his tricks get their names — in the air you only ever see him do them
   $('pause-score').innerHTML = 'Score <b>'+G.score+'</b> · '+RANK_NAME[G.rank] +
     (G.assist ? ' · <span style="color:#ffd36b">🤝 assist</span>' : '') +
-    (G.tricks ? '<br><span style="font-size:12px;color:#cfe0ff">Crockett knows: ' +
+    (G.tricks ? '<br><span style="font-size:12px;color:#cfe0ff">Milo knows: ' +
         TRICKS.slice(0,G.tricks).map(t=>t.glyph+' <b>'+t.name+'</b> — '+t.note).join('<br>') + '</span>' : '');
   $('pause').classList.remove('hidden');
 }

@@ -49,7 +49,7 @@ function world(profile) {
       puzzleRating: () => ({ rating: (profile && profile.puzzle_rating) || 700, solved: 0 })
     },
     PJCCParkBots: {
-      maxwell: { name: 'Maxwell' }, crockett: { name: 'Crockett' }, argus: { name: 'Argus' },
+      maxwell: { name: 'Maxwell' }, crockett: { name: 'Milo' }, argus: { name: 'Argus' },
       auston: { name: 'Auston' }, dad: { name: 'Kedar' }, robert: { name: 'Robert' },
       princess: { name: 'Princess' }, ceo: { name: 'The CEO' }
     }

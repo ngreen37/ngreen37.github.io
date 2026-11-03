@@ -4,7 +4,7 @@ title: ChessWild Chess Academy
 permalink: /academy/
 own_title: true
 body_class: theme-academy
-description: The ChessWild Chess Academy — free, self-paced chess from the very first piece, on a real board. Taught by Auston and Crockett from the P&JCC series.
+description: The ChessWild Chess Academy — free, self-paced chess from the very first piece, on a real board. Taught by Auston and Milo from the P&JCC series.
 ---
 
 {% comment %} THE ACADEMY, REBUILT FROM SCRATCH (2026-07-15, Nate: "tear it down and build
@@ -20,7 +20,7 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
        · a living hero (the pieces rise into formation; the CTA + path evolve with YOUR
          progress and, over time, with the school itself)
        · Lesson 1 — Auston's Bootcamp Basics: a REAL board at /academy/bootcamp/
-       · Lesson 2 — Notation Blitz with Crockett: open 2026-09-02
+       · Lesson 2 — Notation Blitz with Milo: open 2026-09-02
      Adding a lesson = one more `.ac-lesson` anchor here + its own page. No shared belt
      math to keep in sync any more. {% endcomment %}
 
@@ -35,7 +35,7 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
      then a reason to stay rather than a thing you have to already care about.
 
      ⚠ THE CAST DOES NOT LEAVE, IT MOVES INTO THE DESCRIPTIONS. Auston still teaches
-     Lesson 1 and Crockett still has Lesson 2; what changed is that the characters are now
+     Lesson 1 and Milo still has Lesson 2; what changed is that the characters are now
      the ANSWER to "who teaches this" instead of the price of admission. The page
      `description` above, the /projects/ card and the /educators/ lede all say so. {% endcomment %}
 
@@ -88,13 +88,13 @@ description: The ChessWild Chess Academy — free, self-paced chess from the ver
        ⚠⚠ AND IT LINKS INTO THE GAMES HALL ON PURPOSE, not to an /academy/ page of its own.
        The cabinet's bezel and its phone-landscape sizing live in `_layouts/game.html`; a
        lesson page on `layout: page` renders the board with neither. The lesson went to the
-       game instead — the crumb and Crockett are on that page. See its header for the whole
+       game instead — the crumb and Milo are on that page. See its header for the whole
        argument. {%- endcomment -%}
   <a class="ac-lesson ac-lesson--open" href="{{ '/games/notation-run/' | relative_url }}">
     <span class="ac-lesson-n">02</span>
     <span class="ac-lesson-ico" aria-hidden="true">♟</span>
     <span class="ac-lesson-main">
-      <b>Notation Blitz with Crockett</b>
+      <b>Notation Blitz with Milo</b>
       <small>Read the board out loud — name any square at a glance.</small>
     </span>
     <span class="ac-lesson-state">Start ▸</span>
