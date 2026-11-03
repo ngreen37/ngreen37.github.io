@@ -390,9 +390,12 @@ window.__t = {
       out.dogFlown = G.dog.x < G.px - 120 && Math.abs(G.dog.x - G.dog.p2x) < 12;
       out.dogWhere = Math.round(G.dog.x) + ' vs her ' + Math.round(G.px);
       // he picks a power-up up by flying onto it, and hands it over by flying home
+      /* ⚠ THIS TOKEN, BY REFERENCE, NOT "NONE LEFT": three seconds of flying above can spawn one of the game's own (11
+         runs in 400, measured 2026-11-02), and a count of zero failed the game for doing its job. */
       G.pwr.bishop = 0;
-      G.tokens.push({ kind: 'bishop', x: G.dog.x, y: G.dog.y, bx: G.dog.x, seed: 0, vy: 0, t: 0 });
-      updateDog(0.001); out.picked = !!G.dog.carry && G.tokens.length === 0;
+      const tok = { kind: 'bishop', x: G.dog.x, y: G.dog.y, bx: G.dog.x, seed: 0, vy: 0, t: 0 };
+      G.tokens.push(tok);
+      updateDog(0.001); out.picked = !!G.dog.carry && G.tokens.indexOf(tok) < 0;
       out.notYet = G.pwr.bishop === 0;
       G.dog.x = G.px; G.dog.y = G.py; updateDog(0.001);
       out.delivered = G.pwr.bishop > 0 && !G.dog.carry;
