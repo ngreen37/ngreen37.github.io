@@ -6290,7 +6290,7 @@ const server = http.createServer((req, res) => {
 
           /* ── the name ── */
           const stale = GD_LIST.filter((f) => f.endsWith('.gd'))
-            .filter((f) => /"Crockett"/.test(code(rd(f)).replace(/const RENAMED := \{[^}]*\}/, '')));
+            .filter((f) => /"[^"\n]*\bCrockett\b[^"\n]*"/.test(code(rd(f)).replace(/const RENAMED := \{[^}]*\}/, '')));
           ok(stale.length === 0 && /"Milo": \{ "key": "crockett", "elo": 750/.test(dg) && !/"key": "milo"/.test(dg + gsM + pkM),
             '⛑ he is MILO: nothing the game can show says Crockett, and his bench key did not move',
             stale.length ? 'still "Crockett" in: ' + stale.join(' ') : 'the site\'s seat, his square and every stamp are kept by `crockett`');
@@ -7277,6 +7277,7 @@ const server = http.createServer((req, res) => {
           /* ⭐ MATSU'S DOJO AT A TABLE ON SHOGI ISLAND  (his, 2026-10-29: "now start importing games … dealer's choice") */
           const djSbT = rd('shogi_book.gd'), djStT = rd('shogi_table.gd'), djSlT = rd('shogi_lessons.gd'), djTsT = rd('table_shogi.gd');
           const djTtT = rd('town_table.gd'), djIslT = rd('island.gd');
+          const djCloud = (/\n- \*\*What Steam Cloud should sync\*\*[\s\S]*?(?=\n- \*\*)/.exec(gdTxt('README.md')) || [''])[0];
           const djShogiPage = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_shogi.html'), 'utf8').replace(/\r\n/g, '\n');
           const djShogiSrc = (djShogiPage.match(/<script>\s*("use strict";[\s\S]*)<\/script>/) || [])[1] || '';
           const djShogiSha = require('crypto').createHash('sha1').update(djShogiSrc).digest('hex');
@@ -7354,8 +7355,8 @@ const server = http.createServer((req, res) => {
           const djMissingS = djWordsS.filter((w) => !djStT.includes(w) || !djShogiPage.includes(w));
           ok(djMissingS.length === 0, '…in the room\'s own words, Japanese and English', djMissingS.join(' | ') || djWordsS.length + ' phrases, both sides');
           ok(/\tdojo\.url = "\/games\/shogi-island\/"\n\tdojo\.lesson = "shogi"/.test(djIslT)
-             && /if str\(errand\.get\("lesson", ""\)\) == "shogi":\s*\n\t\tShogiTable\.open\(self, errand\)\s*\n\telse:\s*\n\t\tChessTable\.open\(self, errand\)/.test(fnGd(znT, '_open_errand'))
-             && /lesson_wanted\.emit\(\{ "who": "Matsu" if id == "shogi" else PircBook\.TEACHER, "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
+             && /match str\(errand\.get\("lesson", ""\)\):\s*\n\t\t"shogi":\s*\n\t\t\tShogiTable\.open\(self, errand\)\n[\s\S]*?\n\t\t_:\s*\n\t\t\tChessTable\.open\(self, errand\)/.test(fnGd(znT, '_open_errand'))
+             && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"shogi": "Matsu"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
              && /"un": \["shogi-island", 5\]/.test(brdT)
              && /var e: Dictionary = ShogiBook\.MATE\[int\(rng\.next\(\) \* ShogiBook\.MATE\.size\(\)\)\]/.test(fnGd(djSlT, 'pick_mate'))
              && /return genTsume\(1\);/.test(fn(djShogiPage, 'pickProblem') || djShogiPage),
@@ -7367,10 +7368,87 @@ const server = http.createServer((req, res) => {
           ok(/const PATH := "user:\/\/shogi\.json"/.test(djTsT)
              && /st\["solved"\] = solved\(\) \+ 1\s*\n\tst\["best"\] = maxi\(best\(\), int\(st\["solved"\]\)\)\s*\n\tst\["decoded"\] = mini\(decoded\(\) \+ 1, codex_size\(\)\)/.test(fnGd(djTsT, 'solve'))
              && /st\.solved\+\+; if\(st\.solved>st\.best\) st\.best=st\.solved;\s*\n\s*var before=st\.decoded; if\(st\.decoded<TOTAL_SEG\) st\.decoded\+\+;/.test(djShogiPage)
-             && /"\$SAVE\/shogi\.json"/.test(gdTxt('tests/cases.sh')) && /`shogi\.json` \(your Pirc\s*book and your dojo record/.test(gdTxt('README.md'))
+             && /"\$SAVE\/shogi\.json"/.test(gdTxt('tests/cases.sh')) && djCloud.includes('`shogi.json`') && /your dojo record/.test(djCloud)
              && /^[^#\n]*bash "\$S\/shogi\.sh"/m.test(suiteT) && ['shogidojo', 'shogirules', 'shogimate', 'shogiphone'].every((c) => new RegExp('\\b' + c + '\\b').test(suiteT))
              && saT.includes('jrows:Solve 5 on Shogi Island.'),
             '…your record is yours, not a save\'s, kept as the page keeps it (one for all three, user://shogi.json), and the suite plays it: the port against the page row for row and seed for seed (shogi.sh), five through the real door, a wrong move, Show me, a mate, the codex, 28, a phone, and the standalone CEO waiting on it');
+
+          /* ⭐ AUSTON'S BOOTCAMP AT A TABLE IN THE ACADEMY  (his, 2026-10-29: "now start importing games … dealer's choice") */
+          const bcBkT = rd('bootcamp_book.gd'), bcDtT = rd('drill_table.gd'), bcTdT = rd('table_drill.gd');
+          const bcPage = fs.readFileSync(path.join(ROOT, 'academy-bootcamp.md'), 'utf8').replace(/\r\n/g, '\n');
+          const bcMilo = (/const RENAMED := \{[^}]*"Crockett": "([^"]+)"/.exec(gsAll) || [])[1] || '';
+          const bcTown = (s) => String(s).replace(/\bCrockett\b/g, bcMilo);
+          let bcPieces = [];
+          try { bcPieces = require('vm').runInNewContext('(' + ((/var PIECES = (\[[\s\S]*?\n {2}\]);/.exec(bcPage) || [])[1] || '[]') + ')'); } catch (e) { bcPieces = []; }
+          const bcSays = [...bcPage.matchAll(/say\("([^"]*)"\)/g)].map((m) => m[1]);
+          const bcWant = {
+            TITLE: (/\ntitle: (.*)\n/.exec(bcPage) || [])[1],
+            COACH: ((/<div class="ac-coach-who">([^<]*)<\/div>/.exec(bcPage) || [])[1] || '').replace('&middot;', '·'),
+            INTRO: (/<p class="ac-coach-say" id="bc-say">([^<]*)<\/p>/.exec(bcPage) || [])[1],
+            PROMOTED: bcSays.find((s) => s.startsWith('Promotion!')), CAPTURED: bcSays.find((s) => s.startsWith('Boom')),
+            FIRST: bcSays.find((s) => s.startsWith('There you go')), STUCK: bcSays.find((s) => s.startsWith('Nowhere left')),
+            GRAD_H: (/<h2 class="bc-grad-h">([^<]*)<\/h2>/.exec(bcPage) || [])[1],
+            GRAD: (/\n\s*"(You know where every piece goes now[^"]*)";/.exec(bcPage) || [])[1],
+          };
+          const bcConst = (n) => { const m = new RegExp('\\nconst ' + n + ' := (".*")\\n').exec(bcBkT); try { return m ? JSON.parse(m[1]) : null; } catch (e) { return null; } };
+          const bcOffW = Object.keys(bcWant).filter((k) => !bcWant[k] || bcConst(k) !== bcTown(bcWant[k]));
+          const bcRowsG = [...bcBkT.matchAll(/\t\{ "k": ("[^"]*"), "name": ("[^"]*"), "home": ("[^"]*"), "extras": (\[[^\n]*\]),\n\t {2}"line": ("(?:[^"\\]|\\.)*") \},/g)]
+            .map((m) => JSON.stringify(m.slice(1, 6).map((x) => JSON.parse(x))));
+          const bcRowsP = bcPieces.map((p) => JSON.stringify([p.k, p.name, p.home, p.extras, bcTown(p.line)]));
+          ok(bcMilo === 'Milo' && bcSays.length === 4 && bcPieces.length === 6 && bcOffW.length === 0 && bcRowsG.join('\n') === bcRowsP.join('\n')
+             && /GENERATED, DO NOT EDIT BY HAND: node tests\/gen_bootcamp\.js/.test(bcBkT),
+            '⭐⭐ Auston\'s Bootcamp is played at a table in the Academy off the web  (his 10-29: "start importing games … dealer\'s choice"): its six pieces, each set out where the room sets it, and every word the room says, out of THIS page (rerun gen_bootcamp.js when the page changes), the page\'s Crockett said as the town\'s Milo',
+            bcOffW.length ? 'not the page\'s: ' + bcOffW.join(' ') : bcRowsG.length + ' pieces and ' + Object.keys(bcWant).length + ' lines, word for word');
+          const bcF = (n) => fnGd(bcDtT, n);
+          ok(/var S := \{ "b": b\.duplicate\(\), "turn": col if col != "" else "w",\s*\n\t\t"cast": \{ "K": false, "Q": false, "k": false, "q": false \}, "ep": -1, "half": 0, "full": 1 \}/.test(bcF('moves_for'))
+             && /if not out\.has\(to\) or str\(mv\.get\("promo", ""\)\)\.to_upper\(\) == "Q":\s*\n\t\t\tout\[to\] = mv/.test(bcF('moves_for'))
+             && bcPage.includes('var S = { b: b.slice(), turn: col, cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 };')
+             && bcPage.includes("if (!(m.to in out) || (m.promo && String(m.promo).toUpperCase() === 'Q')) out[m.to] = m;")
+             && /board\[to\] = "Q" if promo else piece/.test(bcF('_walk')) && bcPage.includes("board[to] = promo ? 'Q' : pieceLetter;")
+             && /var first := TableDrill\.learn\(str\(_piece_row\(cur\)\["k"\]\)\)\s*\n\tif promo:\s*\n\t\tsaid = BootcampBook\.PROMOTED\s*\n\telif cap:\s*\n\t\tsaid = BootcampBook\.CAPTURED\s*\n\telif first:\s*\n\t\tsaid = BootcampBook\.FIRST\n/.test(bcF('_walk'))
+             && /if moves\.is_empty\(\):\s*\n\t\tsaid = BootcampBook\.STUCK\s*\n\t\tstuck_t = STUCK_SECS\n/.test(bcF('_walk'))
+             && /const STUCK_SECS := 0\.95 /.test(bcDtT) && bcPage.includes('setTimeout(function () { selectPiece(current, true); }, 950);')
+             && /if stuck_t < 0\.0:\s*\n\t\t\t_set_out\(cur, true\)/.test(bcF('_process')) && bcPage.includes('if (current) selectPiece(current, true);')
+             && /if learned\(k\):\s*\n\t\treturn false\s*\n\tstate\(\)\[k\] = true/.test(fnGd(bcTdT, 'learn')) && /var firstTime = !learned\[current\.k\];\s*\n\s*learned\[current\.k\] = true; save\(\);/.test(bcPage),
+            '⭐ …and its rules, the room\'s: a piece\'s own moves with its color to move and nothing to castle or take en passant, one a square and a promotion kept as the queen; drilled the first time it moves; a promotion, a capture or a first move said in the room\'s order; a piece with nowhere left to go set back on the room\'s 0.95 s beat, keeping what she said');
+          ok(/"%d %s it can go" % \[n, "square" if n == 1 else "squares"\]/.test(bcF('_moves_words')) && bcPage.includes("? opts + (opts === 1 ? ' square' : ' squares') + ' it can go'")
+             && /"%d %s made" % \[made, "move" if made == 1 else "moves"\]/.test(bcF('_moves_words')) && bcPage.includes(": moveCount + (moveCount === 1 ? ' move' : ' moves') + ' made';")
+             && bcDtT.includes('"%d / %d pieces drilled"') && bcPage.includes("label.textContent = n + ' / 6 pieces drilled';")
+             && bcDtT.includes('_button("Reset the Piece",') && bcPage.includes('>↻ Reset the Piece</button>')
+             && bcDtT.includes('_button("Back to the Academy ›",') && bcPage.includes('>Back to the Academy ▸</a>')
+             && ['TITLE', 'COACH', 'INTRO', 'PROMOTED', 'CAPTURED', 'FIRST', 'STUCK', 'GRAD_H', 'GRAD'].every((k) => new RegExp('\\bBootcampBook\\.' + k + '\\b').test(bcDtT))
+             && !/"(Welcome to Bootcamp|Promotion!|Boom|There you go|Nowhere left|That's the whole army|You know where)/.test(bcDtT),
+            '…in the room\'s own words, every line out of the book and none copied into the table: the moves under the board, the count, Reset the Piece and Back to the Academy (› and no ↻: no font in the game draws ▸ or ↻)');
+          ok(/said = BootcampBook\.INTRO\s*\n\tgrad_up = TableDrill\.all_done\(\)\s*\n\t_set_out\(0, true\)/.test(bcF('_ready')) && /\n {2}selectPiece\(PIECES\[0\]\);\n/.test(bcPage),
+            '⚑ …and you sit down to Auston\'s welcome, which the page\'s own script writes over with the pawn\'s line as it loads (asked of him 11-02): the room\'s first line is followed, not that slip',
+            'when the page shows it too (selectPiece(PIECES[0], true)), this note goes');
+          ok(/"\/academy\/bootcamp\/",\s*\n\t\tVector2\(-330\.0, -H \+ 200\.0\), Color\("2f5d3a"\)\)\.lesson = "bootcamp"/.test(acadT)
+             && /\n\t\t"bootcamp":\s*\n\t\t\tDrillTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
+             && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"bootcamp": "Auston"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
+             && /^class_name DrillTable\nextends TownTable\n/.test(bcDtT) && !/\nsignal closed/.test(bcDtT) && !/func _input\(/.test(bcDtT)
+             && /add_to_group\("town_cover"\)/.test(bcF('_ready')) && /if _wait_cover or TownJournal\.is_open\(get_tree\(\)\):\s*\n\t\treturn/.test(bcF('_process')),
+            '⭐ …through the Academy\'s own Lesson 1 door (on the website the page still opens), one more kind of table to the town: a cover nobody walks under, the map opening over it, its beat waiting while the map is up');
+          const bcCases = gdTxt('tests/cases.sh');
+          const bcCase = (c) => (new RegExp('\\n\\s*' + c + '\\) [^\\n]*').exec(bcCases) || [''])[0];
+          ok(/const PATH := "user:\/\/bootcamp\.json"/.test(bcTdT) && !/bootcamp|TableDrill/.test(fnGd(gsAll, 'save_state'))
+             && bcPage.includes("var SAVE = 'pjcc.academy.bootcamp';")
+             && /"\$SAVE\/bootcamp\.json"/.test(bcCases) && djCloud.includes('`bootcamp.json`') && /the pieces you have drilled/.test(djCloud)
+             && ['drillwalk', 'drillqueen', 'drillphone', 'drillland'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+             && /drillto:f3;drillis:said:capture;drillis:count:1;/.test(bcCase('drillwalk')) && /drillis:count:6;/.test(bcCase('drillwalk'))
+             && /drillto:e8;drillis:said:Promotion;drillis:piece:Q;/.test(bcCase('drillqueen'))
+             && /drillput:p:e4;drillis:moves:3;drillto:e3;drillis:said:Nowhere left;[^"]*wait:90;drillis:at:e2;drillis:made:0;/.test(bcCase('drillqueen')),
+            '…what you have drilled is yours, not a save\'s, as on the site (one for all three, user://bootcamp.json, every test starting without one, in the Steam Cloud list), and the suite plays it: through the real door, every piece, the pawn\'s capture and its queen, a piece boxed in and set back, the army drilled');
+          ok(/_compact = cells\[0\] < cells\[1\] \* 0\.8\n/.test(bcF('_layout'))
+             && /_compact = _words\(0\.0, 0\.0, pw\) \+ _controls\(0\.0, 0\.0, pw, done\) > s\.y - m \* 2\.0/.test(bcF('_layout'))
+             && /var room := _say_room\(w\)[\s\S]*return y \+ room \+ 10\.0 \* k/.test(bcF('_words')) && /if _compact:\s*\n\t\tlines\.append\(BootcampBook\.GRAD\)/.test(bcF('_say_room'))
+             && /BootcampBook\.GRAD if _compact and grad_up and TableDrill\.all_done\(\) else said/.test(bcF('_shown_say'))
+             && /drillis:_compact:true;drillfits:30;drillmark;[^"]*drillsame;[^"]*drillis:shown:with Milo;drillsame;drillfits:30;/.test(bcCase('drillphone'))
+             && /drillis:_compact:false;drillfits:60;drillmark;[^"]*drillsame;/.test(bcCase('drillwalk')) && /drillfits:40;drillmark;[^"]*drillsame;[^"]*drillfits:40;/.test(bcCase('drillland')),
+            '⛑ …and nothing runs off a phone (it did: Get up fell below the screen): the board takes what the words and buttons leave, laid out to be measured; a phone too short for the whole room gets one row of pieces and one of buttons, the graduation in Auston\'s place; and the board and the buttons hold still while she talks  (probed: every button and word on screen, a phone\'s squares 30 px of the window\'s)');
+          ok(/if maxi\(int\(s\.get\("trainer-pirc", 0\)\), TablePirc\.held_count\(\)\) > 0:\s*\n\t\treturn 3/.test(fnGd(gsAll, 'academy_stage'))
+             && /if maxi\(int\(s\.get\("academy-bootcamp", 0\)\), TableDrill\.count\(\)\) > 0:\s*\n\t\treturn 1/.test(fnGd(gsAll, 'academy_stage'))
+             && /;stage:0;drillis:cur:0;[^"]*drillis:count:1;stage:1;/.test(bcCase('drillwalk')) && /You hold 1 of the six Pirc lines;stage:3"/.test(bcCase('pircwalk')),
+            '⭐ …and what you did at the Academy\'s tables counts at home as the pages\' scores do: a piece drilled is Lesson 1, a Pirc line held Lesson 3, so off the web Princess can be shown a lesson at last (it was 0 forever)');
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
