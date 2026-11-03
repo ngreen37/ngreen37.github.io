@@ -269,7 +269,9 @@ body_class: theme-academy
   document.getElementById('bc-reset').addEventListener('click', function () { if (current) selectPiece(current, true); });
 
   renderProg();
-  selectPiece(PIECES[0]);
+  /* ⚠ true KEEPS HER WELCOME: without it the pawn's line wrote over it as the page loaded, and from 07-15 to 11-03
+     nobody saw it. The game's table opens on it too (his 11-03: "the website version should always match our game"). */
+  selectPiece(PIECES[0], true);
 })();
 </script>
 

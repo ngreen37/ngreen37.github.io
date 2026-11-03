@@ -1289,11 +1289,16 @@ const server = http.createServer((req, res) => {
         ok(/class_name TownPortal\s*\nextends TownDoor/.test(por) && !/const BOARD :=/.test(por),
           '⭐ a portal is a door underneath, and no ring opens the dream\'s board any more');
         ok(/walk_in = false/.test(fnGd(por, '_init')),
-          '…pressed, never walked into  (⚠ the camp\'s board is on the path through the camp)');
+          '…pressed, never walked into  (⚠ a ring lies in a board you walk across)');
         /* ⭐ EACH RING ITS OWN GAME (2026-10-03, his: "for the chessboards themselves, each three should
            have a different mini-game theme"). Driven by a probe: 24 checks on the two site rings. */
-        ok(/_draw_board\(CAMP_BOARD,/.test(tw) && /portal\.game = "marchland"\s*\n\s*portal\.position = CAMP_BOARD/.test(tw),
-          '…the camp\'s ring opens CAMPAIGN, off the same number the board is drawn at  (his: "Let\'s put Campaign in one of them")');
+        const mxh = rdc('maxwell_home.gd');
+        ok(/var ring := TownPortal\.new\(\)\s*\n\tring\.game = "marchland"\s*\n\tring\.position = BOARD_AT\s*\n\tadd_child\(ring\)/.test(fnGd(mxh, '_furnish_room'))
+           && /Rect2\(BOARD_AT \+ Vector2\(float\(f\) - 4\.0, float\(r\) - 4\.0\) \* BOARD_CELL/.test(fnGd(mxh, '_decor'))
+           && !/"marchland"/.test(tw) && /_draw_board\(CAMP_BOARD,/.test(tw)
+           && /useat:-250,90;bubble:Building\. Not open to visitors\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*nouse:1770,370;/.test(
+             fs.existsSync(path.join(GD, 'tests/cases.sh')) ? fs.readFileSync(path.join(GD, 'tests/cases.sh'), 'utf8') : ''),
+          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house"); the camp\'s board keeps no ring (probed: his ring says Building, nothing at the camp\'s)');
         ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.game = "sky-run"\s*\n\s*portal\.position = SEA_BOARD/.test(tw),
           '…the dock\'s ring opens SKY RUN  (his: "Make the sky run be the portal game for the near-the-Sea chessboard")');
         ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
@@ -7419,9 +7424,9 @@ const server = http.createServer((req, res) => {
              && ['TITLE', 'COACH', 'INTRO', 'PROMOTED', 'CAPTURED', 'FIRST', 'STUCK', 'GRAD_H', 'GRAD'].every((k) => new RegExp('\\bBootcampBook\\.' + k + '\\b').test(bcDtT))
              && !/"(Welcome to Bootcamp|Promotion!|Boom|There you go|Nowhere left|That's the whole army|You know where)/.test(bcDtT),
             '…in the room\'s own words, every line out of the book and none copied into the table: the moves under the board, the count, Reset the Piece and Back to the Academy (› and no ↻: no font in the game draws ▸ or ↻)');
-          ok(/said = BootcampBook\.INTRO\s*\n\tgrad_up = TableDrill\.all_done\(\)\s*\n\t_set_out\(0, true\)/.test(bcF('_ready')) && /\n {2}selectPiece\(PIECES\[0\]\);\n/.test(bcPage),
-            '⚑ …and you sit down to Auston\'s welcome, which the page\'s own script writes over with the pawn\'s line as it loads (asked of him 11-02): the room\'s first line is followed, not that slip',
-            'when the page shows it too (selectPiece(PIECES[0], true)), this note goes');
+          ok(/said = BootcampBook\.INTRO\s*\n\tgrad_up = TableDrill\.all_done\(\)\s*\n\t_set_out\(0, true\)/.test(bcF('_ready'))
+             && /\n {2}selectPiece\(PIECES\[0\], true\);\n/.test(bcPage) && !/selectPiece\(PIECES\[0\]\)/.test(bcPage),
+            '⭐ …and you sit down to Auston\'s welcome, at the table and on the page alike  (his 11-03: "the website version should always match our game"; from 07-15 the page\'s own script wrote it over as it loaded)');
           ok(/"\/academy\/bootcamp\/",\s*\n\t\tVector2\(-330\.0, -H \+ 200\.0\), Color\("2f5d3a"\)\)\.lesson = "bootcamp"/.test(acadT)
              && /\n\t\t"bootcamp":\s*\n\t\t\tDrillTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
              && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"bootcamp": "Auston"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
