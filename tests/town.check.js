@@ -7579,7 +7579,7 @@ const server = http.createServer((req, res) => {
               '⭐⭐ ONE SET OF EFFECTS FOR EVERY TABLE  (his 11-03: "do numbers eight and nine and ten please", the first): a freeze on a hit, a shake that sways and eases out, a squash and a stretch, numbers, bursts and rings (table_fx.gd); Motion: Reduced stills the shake, the freeze, the squash, the stretch and the flash');
             const fxTables = { 'notation_table.gd': nrT, 'mine_table.gd': mnT, 'drill_table.gd': dtT, 'chess_table.gd': ctT, 'shogi_table.gd': stT };
             const fxOff = Object.keys(fxTables).filter((f) => !(/var _fx := TableFX\.new\(\)/.test(fxTables[f])
-              && /_fx\.step\((delta|dt)\)/.test(fnGd(fxTables[f], '_process')) && /_fx\.paint\(_art, /.test(fxTables[f])));
+              && /_fx\.step\((delta|dt)\)/.test(fnGd(fxTables[f], '_process')) && /_fx\.paint\((_art|_stage), /.test(fxTables[f])));
             const fxCases = ['fxunit', 'fxmotion', 'fxmotionphone', 'nrlean', 'minedrop', 'mineshade', 'minecave', 'drillfx', 'tablefx', 'shogifx'];
             ok(fxOff.length === 0 && fxCases.every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
                && /fxunit;minewalls/.test(bcCase('fxunit'))
@@ -7654,6 +7654,22 @@ const server = http.createServer((req, res) => {
                && /a press in the drop ends it, and hops nowhere/.test(fs.readFileSync(path.join(ROOT, 'tests/sandmine.check.js'), 'utf8')),
               '⭐ …and the WEBSITE\'S Notation Run and Sand Mine Depths have them too, numbers equal to the game\'s (the lean, the pulse, the drop): a press read back through the lean, the flood, the drop that a press ends and whose floor\'s clock starts when she lands, the shadows, the relics glinting (the page never drew them), the device\'s Reduce Motion; test:games plays both in a browser',
               viewOff.length ? 'not the game\'s: ' + viewOff.join(' ') : 'the lean, the pulse and the drop, the game\'s numbers');
+            /* ⭐ TV-STYLE CUTS AT THE CHESS TABLE (his 11-04: "tv-style camera cuts next") */
+            const ctF = (n) => fnGd(ctT, n);
+            ok(/"capture": \{ "secs": 0\.40,/.test(ctT) && /"check": \{ "secs": 0\.45,/.test(ctT) && /"mate": \{ "secs": 1\.60,/.test(ctT)
+               && /const CARD_AFTER := 0\.5\b/.test(ctT) && /float\(_cut\["t"\]\) < CARD_AFTER/.test(ctF('_card_held')) && /if _card_held\(\):\s*\n\t\tpass/.test(ctT)
+               && /if cut != "" and not TableFX\.calm\(\):\s*\n\t\t_cut = \{ "kind": cut, "at": at, "t": 0\.0 \}/.test(ctF('_landed'))
+               && /and _clock_on\(\) and _cut\.is_empty\(\):/.test(ctF('_process'))
+               && /var sq := _sq_at\(_on_board\(e\.position\)\)\s*\n\t\tif e\.pressed:\s*\n\t\t\t_end_cut\(\)/.test(ctF('_board_input'))
+               && /return _stage\.get_transform\(\)\.affine_inverse\(\) \* \(p - _clip\.position\)/.test(ctF('_on_board'))
+               && /not event\.is_pressed\(\):\s*\n\t\treturn\n\t_end_cut\(\)/.test(ctF('_take'))
+               && /_clip\.clip_contents = true/.test(ctT) && /_stage\.draw\.connect\(_paint_stage\)/.test(ctT)
+               && /tablecut:check:e1;[^"]*tablepress:e1;cutis:none;tableis:sel:60;/.test(bcCase('tablecut'))
+               && /tablemove:a1a8;wait:6;cutis:check;tleft:b:mark;wait:10;tleft:b:same;/.test(bcCase('tablecut'))
+               && /gs:motion_on=false;[^"]*tablemove:a1a8;wait:6;cutis:none;/.test(bcCase('tablecut'))
+               && /cutis:mate;tablenobtn:close;[^"]*wait:30;cutis:mate;tableshows:close;/.test(bcCase('tablefx'))
+               && new RegExp('^[^#\\n]*\\btablecut\\b', 'm').test(suiteT),
+              '⭐⭐ TV-STYLE CUTS AT THE CHESS TABLE  (his 11-04: "tv-style camera cuts next"): the board is drawn on a stage the camera moves inside its frame: a capture\'s close-up, a check\'s push in on the king, a mate\'s slow circle round him; a cut pauses the clock, any press ends it and is read through the camera onto the square drawn under it, the game\'s card waits half a second at most, and Motion: Reduced has none (probed: a forced cut pressed through, a check\'s cut with Black\'s clock still, a mate\'s card up while it circles)');
           }
         }
 
