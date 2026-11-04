@@ -1300,7 +1300,7 @@ const server = http.createServer((req, res) => {
            && /useat:-250,90;bubble:Building\. Not open to visitors\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*useis:1770,370:Sand Mine Depths;/.test(ctCases),
           '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house")  (probed: his ring says Building)');
         ok(/var mine := TownPortal\.new\(\)\s*\n\tmine\.game = "sand-mine-depths"\s*\n\tmine\.position = CAMP_BOARD\s*\n\tadd_child\(mine\)/.test(tw)
-           && /"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/" \}/.test(por),
+           && /"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/"[ ,]/.test(por),
           '…the camp\'s ring opens SAND MINE DEPTHS  (his 11-03: "go ahead and use the camp board too for whatever"): the camp is the sand mine\'s, and the Martyr\'s square is won in it  (probed: the ring there says so)');
         ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.game = "sky-run"\s*\n\s*portal\.position = SEA_BOARD/.test(tw),
           '…the dock\'s ring opens SKY RUN  (his: "Make the sky run be the portal game for the near-the-Sea chessboard")');
@@ -2321,9 +2321,9 @@ const server = http.createServer((req, res) => {
           && /if dark\(\):\s*\n\s*say\(/.test(fnGd(ringCode, 'interact')),
           '…and a shut ring says its own price AND how far you have got, and a press only says so',
           '⚠ "Locked" alone is a door refusing to say what it wants');
-        ok(/TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\) or GameState\.worlds\.later\(url\)\)/.test(ringCode)
+        ok(/TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\) or \(GameState\.worlds\.later\(url\) and not _at_table\(\)\)\)/.test(ringCode)
           && /RING_DARK if shut else RING/.test(fnGd(ringCode, 'paint')),
-          '…and is painted dark until it opens, and while what it opens is still being built');
+          '…and is painted dark until it opens, and while what it opens is still being built  (a game the town plays at its own table is open off the web)');
         ok(/GameState\.board\.army_changed\.connect\(/.test(fnGd(ringCode, '_ready_extra')),
           '⚠ it lights while you stand at it: a square can fill from another tab');
       }
@@ -7004,7 +7004,7 @@ const server = http.createServer((req, res) => {
           ok(/static func no_site\(\) -> bool:\s*\n\treturn OS\.has_feature\("standalone"\)/.test(wdS)
              && /return LATER\.has\(at\) or \(no_site\(\) and at\.begins_with\("\/"\)\)/.test(fnGd(wdS, 'later'))
              && /if no_site\(\):\s*\n\t\treturn not in_town\(game\)/.test(fnGd(wdS, 'later_game'))
-             && /TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\) or GameState\.worlds\.later\(url\)\)/.test(fnGd(rd('portal.gd'), '_draw'))
+             && /TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\) or \(GameState\.worlds\.later\(url\) and not _at_table\(\)\)\)/.test(fnGd(rd('portal.gd'), '_draw'))
              && !/ring_later/.test(rd('portal.gd') + rd('home.gd') + rd('board_view.gd')),
             '⛑ …where there is no site, so every site page is later: its door says Building and its square is not asked, and the CEO waits on the squares won at the tables and the Puzzle Champ\'s own  (as Wes\'s was in the desktop program)',
             'every ring paints itself shut while its page is later; none is painted by a board any more');
@@ -7176,8 +7176,8 @@ const server = http.createServer((req, res) => {
              && /PJCC\.settlePuzzle\(G\.p\.rating, score\)/.test(forkT),
             '⭐ …and on the website a puzzle at the table is one of the site\'s: its puzzle rating settles through the room\'s own PJCC.settlePuzzle, a full score only for a clean solve  (his 10-29: "give the website the table, too")');
           ok(/"un": \["fork-in-the-road", 20\], "un_say": "solve 20 of the Puzzle Champ's puzzles"/.test(brdT)
-             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean, "trainer-pirc": TablePirc\.held_count\(\),\s*"shogi-island": TableShogi\.best\(\) \}/.test(fnGd(brdT, 'town_scores'))
-             && /const IN_TOWN := \["fork-in-the-road", "trainer-pirc", "shogi-island"\]/.test(wdS)
+             && /return \{ "fork-in-the-road": GameState\.challenge\.puzzles_clean, "trainer-pirc": TablePirc\.held_count\(\),\s*"shogi-island": TableShogi\.best\(\), "sand-mine-depths": TableMine\.best_score\(\) \}/.test(fnGd(brdT, 'town_scores'))
+             && /const IN_TOWN := \["fork-in-the-road", "trainer-pirc", "shogi-island", "sand-mine-depths"\]/.test(wdS)
              && /for g in own:\s*\n\t\t_scores\[g\] = maxi\(int\(_scores\.get\(g, 0\)\), int\(own\[g\]\)\)/.test(fnGd(jrnT, 'open'))
              && /if GameState\.worlds\.in_town\(GameState\.board\.game_at\(i\)\):/.test(fnGd(jrnT, '_next_step'))
              && /\btablesys champrun champmiss champone champleave champforfeit champhint champsquare champphone\b/.test(suiteT),
@@ -7466,6 +7466,105 @@ const server = http.createServer((req, res) => {
              && /if maxi\(int\(s\.get\("academy-bootcamp", 0\)\), TableDrill\.count\(\)\) > 0:\s*\n\t\treturn 1/.test(fnGd(gsAll, 'academy_stage'))
              && /;stage:0;drillis:cur:0;[^"]*drillis:count:1;stage:1;/.test(bcCase('drillwalk')) && /You hold 1 of the six Pirc lines;stage:3"/.test(bcCase('pircwalk')),
             '⭐ …and what you did at the Academy\'s tables counts at home as the pages\' scores do: a piece drilled is Lesson 1, a Pirc line held Lesson 3, so off the web Princess can be shown a lesson at last (it was 0 forever)');
+
+          /* ⭐ MILO'S NOTATION BLITZ AND SAND MINE DEPTHS, IN THE GAME  (his, 2026-11-03: "Then do Notation Run and Sand Mine
+             Depths, all in an effort to use my dog opening idea"; "Martyr square is Sand Mine Depths") */
+          const nrPage = fs.readFileSync(path.join(ROOT, 'assets/games/notation_run.html'), 'utf8').replace(/\r\n/g, '\n');
+          const smPage = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_sandmine.html'), 'utf8').replace(/\r\n/g, '\n');
+          const bookOf = (gen, page) => {
+            try { const f = path.join(GD, 'tests', gen); delete require.cache[require.resolve(f)]; return require(f).build(page); }
+            catch (e) { return 'NO BOOK: ' + e.message; }
+          };
+          const nrBook = rd('notation_book.gd'), smBook = rd('sandmine_book.gd');
+          const nrT = rd('notation_table.gd'), tnT = rd('table_notation.gd'), mnT = rd('mine_table.gd'), tmT = rd('table_mine.gd');
+          const nrMade = bookOf('gen_notation.js', nrPage), smMade = bookOf('gen_sandmine.js', smPage);
+          ok(nrMade === nrBook && smMade === smBook,
+            '⭐⭐ Milo\'s Notation Blitz and Sand Mine Depths are played in the game off the web  (his 11-03: "Then do Notation Run and Sand Mine Depths, all in an effort to use my dog opening idea"): each book is what THIS page makes (rerun gen_notation.js or gen_sandmine.js when its page changes)',
+            nrMade === nrBook && smMade === smBook ? 'both books, byte for byte' : 'not the pages\' books: ' + (nrMade === nrBook ? '' : 'notation ') + (smMade === smBook ? '' : 'sandmine'));
+          const nrF = (n) => fnGd(nrT, n);
+          ok(/var mult := 1\.0 \+ float\(mini\(combo, 20\)\) \* 0\.05/.test(nrF('_register')) && nrPage.includes('const mult = 1 + Math.min(G.combo, 20) * 0.05;')
+             && /var fever := 2 if combo >= 10 else 1/.test(nrF('_register')) && nrPage.includes('const feverMult = G.combo >= 10 ? 2 : 1;')
+             && /if perfect_run >= 3:\s*\n\t+sharp_calls = 6/.test(nrF('_register')) && nrPage.includes('if (G.perfectRun >= 3) { G.sharpCalls = 6;')
+             && /var m := 1\.3 if sharp else 1\.0/.test(nrF('_windows')) && nrPage.includes('return (G && G.sharp) ? 1.3 : 1;')
+             && /if since_guard >= 8 and guards < 2:/.test(nrF('_register')) && nrPage.includes('if (G.sinceGuard >= 8 && G.guards < 2)')
+             && /base = int\(round\(82\.0 - f \* 30\.0\)\)/.test(nrF('resolve_at')) && nrPage.includes('base = Math.round(82 - f * 30)')
+             && /base = int\(round\(58\.0 - f \* 25\.0\)\)/.test(nrF('resolve_at')) && nrPage.includes('base = Math.round(58 - f * 25)')
+             && /base = int\(round\(34\.0 - f \* 12\.0\)\)/.test(nrF('resolve_at')) && nrPage.includes('base = Math.round(34 - f * 12)')
+             && /const WRONG := 50\b/.test(nrT) && nrPage.includes('const penalty = 50;') && /const TAIL_SAVE := 30\b/.test(nrT) && nrPage.includes("registerResult('save', tail, 30)")
+             && nrF('_finish').includes('(float(res["perfect"]) + float(res["great"]) * 0.8 + float(res["good"]) * 0.5 + float(res["save"]) * 0.4)')
+             && nrPage.includes('(r.perfect + r.great * 0.8 + r.good * 0.5 + (r.save || 0) * 0.4)')
+             && /if int\(res\["miss"\]\) == 0 and acc_v >= 0\.97:[\s\S]*elif acc_v >= 0\.88:[\s\S]*elif acc_v >= 0\.72:[\s\S]*elif acc_v >= 0\.52:/.test(nrF('_finish'))
+             && nrPage.includes('if (r.miss === 0 && accVal >= 0.97)') && nrPage.includes('else if (accVal >= 0.88)') && nrPage.includes('else if (accVal >= 0.52)')
+             && nrT.includes('return 18 if the_bpm < 52 else (22 if the_bpm <= 78 else 28)') && nrPage.includes('return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28;')
+             && /const LIVES := 3\b/.test(nrT) && nrPage.includes('lives: infinite ? 3 : Infinity')
+             && /const RAMP_EVERY := 16\b/.test(nrT) && /const RAMP_STEP := 7\b/.test(nrT) && /const RAMP_TOP := 150\b/.test(nrT)
+             && nrPage.includes('Math.min(150, G.bpm + 7)') && nrPage.includes('G.rampAt += 16'),
+            '⭐ …and Notation Blitz\'s rules are the room\'s: the streak\'s multiplier and its Fever, Sharp Eye\'s three Perfects and its wider window, a Guard every eight, each band\'s worth, a wrong square\'s 50 and a tail save\'s 30, the weighted accuracy and its ranks, the calls a tempo plays, Endless\'s three lives and its ramp');
+          const nrWords = ['NOTATION BLITZ', 'Checker Town · Coordinate Drill', 'ENDLESS · the tempo ramps up until your lives run out', 'fixed run', 'ramps up',
+            'START', 'REPLAY', 'Change mode', 'FULL COMBO', 'Max Combo', 'Avg offset', 'NEW BEST!', 'Timing trend (last ', 'dead-on', 'tend LATE', 'tend EARLY',
+            'PERFECT!', 'GREAT · ', 'GOOD · ', 'TAIL SAVE +', 'WRONG → ', 'FEVER — DOUBLE POINTS', 'SHARP EYE — WIDER WINDOW', 'GUARD READY ×', 'Endless · top ',
+            "Princess's opening"];
+          const nrMissing = nrWords.filter((w) => !nrT.includes(w) || !nrPage.includes(w));
+          ok(nrMissing.length === 0, '…in the room\'s own words, its emoji left out (no font in the game draws them)', nrMissing.join(' | ') || nrWords.length + ' phrases, both sides');
+          ok(/"\/games\/notation-run\/",\s*\n\t\tVector2\(0\.0, -H \+ 200\.0\), Color\("5d5a2f"\)\)\.lesson = "notation"/.test(acadT)
+             && /\n\t\t"notation":\s*\n\t\t\tNotationTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
+             && /"notation": "Milo"/.test(fnGd(chT, 'sit_lesson'))
+             && /if maxi\(int\(s\.get\("notation-run", 0\)\), TableNotation\.best_score\(\)\) > 0:\s*\n\t\treturn 2/.test(fnGd(gsAll, 'academy_stage'))
+             && /^class_name NotationTable\nextends TownTable\n/.test(nrT) && !/func _input\(/.test(nrT)
+             && /if _wait_cover or TownJournal\.is_open\(get_tree\(\)\):\s*\n\t\treturn\n\t_now \+= delta/.test(fnGd(nrT, '_process'))
+             && nrT.includes('["pirc", "Pirc", "Princess\'s opening"]') && nrPage.includes('<button class="pick" data-mode="pirc">Pirc<small>Princess\'s opening</small></button>'),
+            '⭐ …through the Academy\'s own Lesson 2 door to Milo\'s table, its clock stopped dead under the map; Princess can be shown Lesson 2 at home once it is played here; and PRINCESS\'S PIRC is a chart in the game and on the site alike  (his dog-opening idea; "the website version should always match our game")');
+          ok(/const PATH := "user:\/\/notation\.json"/.test(tnT) && !/notation|TableNotation/.test(fnGd(gsAll, 'save_state'))
+             && /"\$SAVE\/notation\.json"/.test(bcCases) && djCloud.includes('`notation.json`')
+             && ['nrdrill', 'nrbands', 'nrendless', 'nrpirc', 'nrmap', 'nrphone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+             && /nris:score:5775;/.test(bcCase('nrdrill'))
+             && /nris:score:105;[^"]*nris:score:189;[^"]*nris:score:276;[^"]*nris:score:305;[^"]*nris:score:255;[^"]*nris:score:287;/.test(bcCase('nrbands'))
+             && /nris:bpm:67;[^"]*nris:res\.shielded:2;[^"]*nris:lives:0;/.test(bcCase('nrendless')) && /nris:next:e4;[^"]*nris:best:pirc_medium:3435/.test(bcCase('nrpirc'))
+             && /jrn:4;nrclock:mark;wait:60;nrclock:same/.test(bcCase('nrmap')),
+            '…your bests are yours, not a save\'s, as on the site (user://notation.json, in the Steam Cloud list), and the suite plays it: a perfect Medium Drill is the page\'s own 5775, every band at its moment and its sum, Endless\'s ramp to 67, its guards and its lives, the Pirc from e4 to an S, the map stopping its clock, and a phone');
+          const mnF = (n) => fnGd(mnT, n);
+          ok(/if princess == Vector2i\(ex - 1, ey \+ 1\):[\s\S]*if princess == Vector2i\(ex \+ 1, ey \+ 1\):[\s\S]*if _inb\(ex, ey \+ 1\) and not _occupied\(ex, ey \+ 1\) and princess != Vector2i\(ex, ey \+ 1\):/.test(mnF('_candidates'))
+             && smPage.includes('if (px === e.x - 1 && py === e.y + 1)') && smPage.includes('if (inb(e.x, e.y + 1) && !occupied(e.x, e.y + 1) && !(px === e.x && py === e.y + 1))')
+             && /if cands\.has\(princess\):\s*\n\t\treturn princess/.test(mnF('_choose')) && mnF('_choose').includes('var d := absi(v.x - princess.x) + absi(v.y - princess.y)')
+             && smPage.includes('const d = Math.abs(c.x-px) + Math.abs(c.y-py);')
+             && mnF('new_floor').includes('var count := mini(3 + f / 2, 8)') && smPage.includes('const count = Math.min(3 + Math.floor(f / 2), 8);')
+             && mnF('new_floor').includes('if f >= 9 and rng.randf() < 0.42:') && smPage.includes('if (f >= 9 && rnd() < 0.42)')
+             && mnF('new_floor').includes('var chance := minf(0.42, 0.15 + float(f) * 0.02) + float(TableMine.perk("luck")) * 0.05')
+             && smPage.includes('const relicChance = Math.min(0.42, 0.15 + f*0.02) + (S.perks.luck ? S.perks.luck*0.05 : 0);')
+             && mnF('_reward').includes('var bonus := (combo - 1) * 2 if combo >= 2 else 0') && smPage.includes('const bonus = S.combo >= 2 ? (S.combo - 1) * 2 : 0;')
+             && mnF('_descend').includes('score += B.PTS_DESCEND + speed + (B.PTS_HARDWAY if hardway else 0)') && smPage.includes('S.score += PTS_DESCEND + speed + (hardway ? PTS_HARDWAY : 0);')
+             && mnF('_descend').includes('var hardway := floor_hops >= B.HARDWAY_HOPS and not floor_shovel') && smPage.includes('const hardway = (S.floorHops >= HARDWAY_HOPS && !S.floorShovel);')
+             && mnF('torch_radius').includes('var base := 3.5 - float(depth) / 110.0') && smPage.includes('let base = 3.5 - S.depth / 110;')
+             && mnF('_foes_turn').includes('if str(e["t"]) == "P" and int(e["y"]) + 1 >= B.ROWS:') && smPage.includes("if (e.t === 'P' && e.y + 1 >= ROWS){ e.dead = true; return; }")
+             && /if knight_moves\(princess\.x, princess\.y\)\.is_empty\(\):\s*\n\t\tholes = \{\}\s*\n\t\thp = maxi\(0, hp - 1\)/.test(mnF('_finish_foes')),
+            '⭐ …and the Sand Mine\'s rules are the room\'s: a pawn bites only diagonally down and is pinned by her standing in its way, every piece goes for her or the free square nearest her, a floor\'s count and Subject Zero\'s odds, a relic\'s odds, the streak\'s bonus, the shaft\'s pay and THE HARD WAY, the torch closing with depth, the pawns that march off the bottom, and the sand that caves in when she has no hop left');
+          /* ⚠ ONLY THE PAGE'S MARKUP: a bare <[^>]+> eats the code's "S.hp < S.maxhp" up to the next > (three words lost). */
+          const smText = smPage.replace(/<\/?(?:b|i|em|strong|span|small|br)\b[^>]*>/g, '');
+          const smWords = ['SAND MINE DEPTHS', 'DESCEND', 'SURFACE CAMP', 'DOWN IN THE DARK', 'DESCEND AGAIN', 'The mine keeps what it takes.', 'A new best score!',
+            'saved at camp.', 'Gold you carry out of the mine is banked here. Spend it on gear that lasts every run.', 'Something else is down here. It moves like you.',
+            'CAPTURE STREAK ×', 'Streak bonus — patched up! +♥', 'SUBJECT ZERO captured — it drops something.', 'RELIC · Long Reach — bigger L-leaps for 3 floors',
+            'RELIC · Lantern Oil — the dark pulls back for 4 floors', 'RELIC · Ration — patched up', 'The sand caves in!', 'Path reopened — the exit ▼ is reachable again',
+            'HIDDEN CHAMBER — fragment recovered: SUBJECT ZERO', 'THE HARD WAY +', 'No hop reaches the exit ▼', 'with no shovel, the sand must cave in (costs ♥)',
+            'a cave-in is coming (−♥)', 'STREAK ×', ' · deepest: ', 'The sand caves in behind every hop — and the pieces below answer the moment you land.',
+            'Land on a piece to capture it for points; chain captures without a scratch for a streak bonus.',
+            'Fast floors pay extra — and so does THE HARD WAY: 8+ hops to the exit, no shovel.'];
+          const smMissing = smWords.filter((w) => !mnT.includes(w) || !smText.includes(w))
+            .concat(['Beneath Checker Town', 'The mine keeps its secrets', 'Back on the surface'].filter((w) => !smPage.includes(w) || !mnT.includes(w.toUpperCase())));
+          ok(smMissing.length === 0, '…in the room\'s own words  (the eyebrows its page sets in capitals; the shovel, the gold and the camp named where its emoji stood)',
+            smMissing.join(' | ') || smWords.length + 3 + ' phrases, both sides');
+          const ptS = rd('portal.gd');
+          ok(/"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/", "table": "sandmine" \}/.test(ptS)
+             && /if _at_table\(\):\s*\n\t\tif dark\(\):[\s\S]*?GameState\.challenge\.sit_lesson\(str\(GAMES\[game\]\["table"\]\)\)/.test(fnGd(ptS, 'interact'))
+             && fnGd(ptS, '_at_table').includes('return game != "" and str(GAMES[game].get("table", "")) != "" and not OS.has_feature("web")')
+             && /\n\t\t"sandmine":\s*\n\t\t\tMineTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
+             && fnGd(rd('state_board.gd'), 'town_scores').includes('"sand-mine-depths": TableMine.best_score()')
+             && /const IN_TOWN := \[[^\]]*"sand-mine-depths"\]/.test(rd('state_worlds.gd')) && rd('state_board.gd').includes('"un": ["sand-mine-depths", 300]')
+             && /new_best = TableMine\.bank\(depth, score, gold_run\)[\s\S]*GameState\.board\.check_town_unlocks\(\)/.test(mnF('_game_over'))
+             && /const PATH := "user:\/\/sandmine\.json"/.test(tmT) && /"\$SAVE\/sandmine\.json"/.test(bcCases) && djCloud.includes('`sandmine.json`')
+             && saT.includes('jrows:Score 300 in the Sand Mine.')
+             && ['minedoor', 'minerules', 'minetools', 'minesquare', 'minephone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+             && /mineis:score:60;mineis:depth:20;/.test(bcCase('minerules')) && /gseq:board\.army=\[14\]/.test(bcCase('minesquare')),
+            '⭐ …through the camp\'s own ring, which sits you at its table off the web, and a run of 300 wins THE MARTYR\'S SQUARE, said when you get up, so the standalone build\'s CEO waits on thirteen; what the mine keeps is yours, not a save\'s (user://sandmine.json, in the Steam Cloud list), and the suite plays it: a first floor, the rules on floors laid out by hand, the shaft\'s 60, the shovel and a relic, the square at 300, the camp\'s gear, and a phone');
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7
@@ -7573,7 +7672,7 @@ const server = http.createServer((req, res) => {
               '⛑ …every door asks it before it spends or opens anything: the west gate past the CEO, the camp\'s ring, the room behind the west wall',
               'a door that took your energy and then refused would charge you to read a sign');
             ok(/if GameState\.worlds\.later\(url\):\s*\n\t\tsay\(GameState\.worlds\.BUILDING, [\d.]+\)\s*\n\t\treturn\s*\n\tif dark\(\):/.test(fnGd(ptW, 'interact'))
-               && /if GameState\.worlds\.later\(url\):\s*\n\t\treturn "%s  —  %s" % \[title, GameState\.worlds\.BUILDING\]\s*\n\tif dark\(\):/.test(fnGd(ptW, '_line'))
+               && /if GameState\.worlds\.later\(url\) and not _at_table\(\):\s*\n\t\treturn "%s  —  %s" % \[title, GameState\.worlds\.BUILDING\]\s*\n\tif dark\(\):/.test(fnGd(ptW, '_line'))
                && /elif GameState\.worlds\.later\(url\):\s*\n\t\trelabel\("The road west, to Chess City  —  %s" % GameState\.worlds\.BUILDING\)/.test(fnGd(cgW, '_relabel')),
               '…and says so before you press: the camp\'s ring ahead of its half-the-Assembly price, the gate on its label');
             ok(/^\treturn -size\.y \* 0\.5$/m.test(fnGd(cgW, 'speech_top')),
