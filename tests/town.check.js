@@ -7565,6 +7565,96 @@ const server = http.createServer((req, res) => {
              && ['minedoor', 'minerules', 'minetools', 'minesquare', 'minephone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
              && /mineis:score:60;mineis:depth:20;/.test(bcCase('minerules')) && /gseq:board\.army=\[14\]/.test(bcCase('minesquare')),
             '⭐ …through the camp\'s own ring, which sits you at its table off the web, and a run of 300 wins THE MARTYR\'S SQUARE, said when you get up, so the standalone build\'s CEO waits on thirteen; what the mine keeps is yours, not a save\'s (user://sandmine.json, in the Steam Cloud list), and the suite plays it: a first floor, the rules on floors laid out by hand, the shaft\'s 60, the shovel and a relic, the square at 300, the camp\'s gear, and a phone');
+
+          /* ══ THE TABLES' EFFECTS, NOTATION BLITZ ON THE BEAT, THE SAND MINE'S DESCENT (his, 2026-11-03: "do numbers eight
+             and nine and ten please", three of the view ideas) ══ */
+          {
+            const fxT = rd('table_fx.gd'), jnT = rd('journal.gd'), dtT = rd('drill_table.gd'), ctT = rd('chess_table.gd'), stT = rd('shogi_table.gd');
+            ok(/static func calm\(\) -> bool:\s*\n\treturn not GameState\.motion_on/.test(fxT)
+               && /func kick\(px: float\) -> void:\s*\n\tif calm\(\):\s*\n\t\treturn/.test(fxT) && /func kick_more\(px: float, cap: float\) -> void:\s*\n\tif calm\(\):\s*\n\t\treturn/.test(fxT)
+               && /func hit\(secs := 0\.06\) -> void:\s*\n\tif calm\(\):\s*\n\t\treturn/.test(fxT) && /func flash_all\(col: Color, frames := 10\.0\) -> void:\s*\n\tif calm\(\):\s*\n\t\treturn/.test(fxT)
+               && /func offset\(\) -> Vector2:\s*\n\tif trauma <= 0\.0 or calm\(\):\s*\n\t\treturn Vector2\.ZERO/.test(fxT) && /func land\(who: String\) -> void:\s*\n\tif not calm\(\):/.test(fxT)
+               && /if not lands\.has\(who\) or calm\(\):\s*\n\t\treturn Vector2\.ONE/.test(fxT) && /static func stretch\(speed: float\) -> Vector2:\s*\n\tif calm\(\):\s*\n\t\treturn Vector2\.ONE/.test(fxT)
+               && /if hold > 0\.0:\s*\n\t\thold = maxf\(0\.0, hold - dt\)\s*\n\t\treturn/.test(fnGd(fxT, 'step')),
+              '⭐⭐ ONE SET OF EFFECTS FOR EVERY TABLE  (his 11-03: "do numbers eight and nine and ten please", the first): a freeze on a hit, a shake that sways and eases out, a squash and a stretch, numbers, bursts and rings (table_fx.gd); Motion: Reduced stills the shake, the freeze, the squash, the stretch and the flash');
+            const fxTables = { 'notation_table.gd': nrT, 'mine_table.gd': mnT, 'drill_table.gd': dtT, 'chess_table.gd': ctT, 'shogi_table.gd': stT };
+            const fxOff = Object.keys(fxTables).filter((f) => !(/var _fx := TableFX\.new\(\)/.test(fxTables[f])
+              && /_fx\.step\((delta|dt)\)/.test(fnGd(fxTables[f], '_process')) && /_fx\.paint\(_art, /.test(fxTables[f])));
+            const fxCases = ['fxunit', 'fxmotion', 'fxmotionphone', 'nrlean', 'minedrop', 'mineshade', 'minecave', 'drillfx', 'tablefx', 'shogifx'];
+            ok(fxOff.length === 0 && fxCases.every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+               && /fxunit;minewalls/.test(bcCase('fxunit'))
+               && /drillto:f3;wait:12;num:DrillTable:_fx\.parts:>0;num:DrillTable:_fx\.rings:>0;/.test(bcCase('drillfx'))
+               && /tablemove:a1a8;wait:12;num:ChessTable:_fx\.rings:>0;[^"]*tablemove:a8b8;wait:12;[^"]*num:ChessTable:_fx\.parts:>0;/.test(bcCase('tablefx'))
+               && /shogiwrong;num:ShogiTable:_fx\.trauma:>0;shogisolve;num:ShogiTable:_fx\.rings:>0;/.test(bcCase('shogifx')),
+              '⭐ …kept, stepped and painted by all five tables (Notation Blitz, Sand Mine Depths, Auston\'s Bootcamp, the chess table with the Puzzle Champ and the Pirc, Matsu\'s dojo), and the suite sees each fire at its moment: a capture, a promotion, a check, a mate, a solve and an おしい',
+              fxOff.length ? 'not wired: ' + fxOff.join(' ') : '5 tables, ' + fxCases.length + ' cases');
+            ok(/_now \+= delta[\s\S]*if not _fx\.frozen\(\):\s*\n\t\tif not _anim\.is_empty\(\):[\s\S]*if not _foes\.is_empty\(\):/.test(fnGd(mnT, '_process'))
+               && !/frozen/.test(fnGd(nrT, '_process')) && !/frozen/.test(fnGd(ctT, '_process'))
+               && /left\[turn\] = maxf\(0\.0, float\(left\[turn\]\) - minf\(delta, 0\.25\) \* 1000\.0\)/.test(fnGd(ctT, '_process')),
+              '⚠ …and the freeze never stops a clock: the mine holds the hop and the pieces\' answer through it, never the floor\'s clock; Notation Blitz\'s beat and the chess clock run on');
+            const nrF2 = (n) => fnGd(nrT, n);
+            ok(/var c := _unlean\(\(p - _o\) \/ _s\)/.test(nrF2('_square_at'))
+               && /_beat = 0\.0 if calm else pow\(1\.0 - minf\(since \* 2\.5, 1\.0\), 2\.0\)/.test(nrF2('_on_beat')) && /if screen == "run" and not calm:/.test(nrF2('_on_beat'))
+               && /const LEAN_MIN := 3\.0\b/.test(nrT) && /const LEAN_SPAN := 13\.0\b/.test(nrT) && /const LEAN_FEVER := 3\.0\b/.test(nrT)
+               && /\(float\(bpm\) - slow\) \/ \(float\(RAMP_TOP\) - slow\)/.test(nrF2('_on_beat'))
+               && /_paint_flood\(\)/.test(nrF2('_paint')) && /draw_colored_polygon\(_quad\(col, row\)/.test(nrF2('_paint_board'))
+               && /nrbtn:start;wait:30;num:NotationTable:_lean:>0\.07;nrtapmap;nrbeat:on;nrhit:click;nris:res\.perfect:1;/.test(bcCase('nrlean'))
+               && /num:NotationTable:_fever_lv:>0\.9;num:NotationTable:_lean:>0\.12;/.test(bcCase('nrlean'))
+               && /gs:motion_on=false;wait:60;num:NotationTable:_lean:<0\.001;nrtapmap;nrbeat:off;/.test(bcCase('nrlean')),
+              '⭐⭐ NOTATION BLITZ ON THE BEAT  (his 11-03, the second): the board pulses every beat and leans back further as the tempo climbs (3° at the slowest, 16° by 150 BPM, 3° more in Fever), every square pressed where it is drawn (probed: all 64, and a real click), and Fever floods the cabinet; Motion: Reduced keeps the board flat and still');
+            const mnF2 = (n) => fnGd(mnT, n);
+            const stopAt = +(0.32 + 0.72 * (1 - 0.32)).toFixed(4);
+            ok(/new_floor\(\)\s*\n\tphase = "await"\s*\n\tif not TableFX\.calm\(\):\s*\n\t\t_fall = \{ "t": 0\.0, "old": old, "depth": depth \}/.test(mnF2('_descend'))
+               && /if not _fall\.is_empty\(\):\s*\n\t\t_land_fall\(\)\s*\n\t\treturn/.test(mnF2('press')) && /_fall = \{\}\s*\n\tfloor_start = _now/.test(mnF2('_land_fall'))
+               && /minehop:5,7;num:MineTable:_fall:>0;[^"]*wait:30;num:MineTable:_fall:=0;mineclock:0\.4;/.test(bcCase('minedrop'))
+               && /minepress:0,0;num:MineTable:_fall:=0;mineis:floor_hops:0;/.test(bcCase('minedrop')) && /gs:motion_on=false;[^"]*minehop:5,7;num:MineTable:_fall:=0;/.test(bcCase('minedrop'))
+               && /_outside\(get_viewport\(\)\.get_visible_rect\(\), rim\)/.test(mnF2('_paint_fall')),
+              '⭐⭐ THE SAND MINE AS A REAL DESCENT  (his 11-03, the third): the exit drops her through the rock to the next floor, and the drop is only drawn: that floor is in play the moment she lands in the exit, a press ends the drop, its clock starts when she is down (probed: under 0.4 s run, not the drop\'s 0.65), no drop with Motion: Reduced, and nothing it moves is drawn past the shaft');
+            ok(/_paint_board\(_floor_live\(\), 0\.0, true\)\s*\n\t\t\t_paint_shadows\(light\)\s*\n\t\t\t_paint_pieces\(\)/.test(mnF2('_paint'))
+               && mnT.includes('_radial([0.0, 0.32, ' + stopAt + ', 1.0]')
+               && /var dark := Color\(0\.016, 0\.012, 0\.004, minf\(0\.93, 0\.30 \+ float\(depth\) \/ 240\.0\)\)/.test(mnF2('_paint_light'))
+               && smPage.includes('const g = ctx.createRadialGradient(c.x, c.y, r*0.32, c.x, c.y, r*fl);')
+               && smPage.includes("g.addColorStop(0.72, 'rgba(4,3,1,' + (maxDark*0.5).toFixed(3) + ')');") && smPage.includes('const maxDark = Math.min(0.93, 0.30 + S.depth / 240);')
+               && /mineput:p=3,3\|s=7,7\|e=P@3,5\|h=\|g=\|r=;wait:20;mineshade:3,6:6,3;/.test(bcCase('mineshade'))
+               && /var lo := clampf\(tail\.x, 0\.0, W\)/.test(mnF2('_paint_wind')),
+              '⭐ …her torch is a real light, smooth and flickering, falling off as the page\'s own gradient does (clear for a third, half dark at ' + stopAt + ', full at the edge), and everything on the sand throws a shadow from it (probed by its pixels: the sand behind a pawn is darker than open sand as far from her); the blowing sand stays in the cabinet');
+            ok(/_cave_in\(pits\)/.test(mnF2('_finish_foes')) && /_fx\.pour\(/.test(mnF2('_cave_in')) && /_fx\.kick\(16\.0\)/.test(mnF2('_cave_in'))
+               && /minehop:2,2;mineis:holes:0;mineis:hp:2;mineis:toast:caves in;num:MineTable:_fx\.parts:>20;/.test(bcCase('minecave'))
+               && /static func rocks_for\(n: int, d: float\) -> Array:\s*\n\tvar r := RandomNumberGenerator\.new\(\)\s*\n\tr\.seed = hash\("rocks %d" % n\)/.test(mnT),
+              '…a cave-in pours the sand back into every pit and shakes the mine, and the shaft has stone walls, the same stones for the same floor (their own dice, never the floor\'s)');
+            const jnF = (n) => fnGd(jnT, n);
+            ok(/"motion": motion_on if motion_chosen else null/.test(fnGd(gsAll, 'save_state')) && !/motion/.test(fnGd(gsAll, 'push_to_site'))
+               && /motion_chosen = d\.get\("motion"\) != null\s*\n\tmotion_on = bool\(d\["motion"\]\) if motion_chosen else device_motion\(\)/.test(fnGd(gsAll, 'load_state'))
+               && /var keep := \[sound_on, clock_shift, motion_on, motion_chosen\]/.test(fnGd(gsAll, 'use_save'))
+               && /var keep := \[sound_on, clock_shift, character, motion_on, motion_chosen\]/.test(fnGd(gsAll, '_take_their_run'))
+               && /prefers-reduced-motion: reduce/.test(fnGd(gsAll, 'device_motion'))
+               && /_motion\.text = "Motion: Full" if GameState\.motion_on else "Motion: Reduced"/.test(jnF('_refresh'))
+               && /GameState\.set_motion\(not GameState\.motion_on\)/.test(jnF('_toggle_motion'))
+               && /above = h - _top - 18\.0 \* k - bar - \(bh \+ 6\.0 \* k\) - 26\.0 \* k >= float\(_rows\(\)\.size\(\)\) \* MIN_PITCH \* k/.test(jnF('_layout'))
+               && /clampf\(\(_body\.size\.y - 26\.0 \* k\) \/ float\(rows\.size\(\)\), MIN_PITCH \* k, 30\.0 \* k\)/.test(jnF('_paint'))
+               && /"motion": False/.test(gdTxt('tests/savefix.py'))
+               && /jbtn:Motion: Full;gseq:motion_on=false;gseq:motion_chosen=true;/.test(bcCase('fxmotion')) && /jnobtn:Motion;jfits;/.test(bcCase('fxmotionphone')),
+              '⭐ …and MOTION, FULL OR REDUCED, on the Journal\'s Town tab by the time zone: a device preference like the mute (saved, never pushed, kept through a change of save and a run come down), following the device until it is chosen (the phone\'s own Reduce Motion on the website), shown only where the card still holds every row, so on a phone its own setting is the switch (probed on his 352×560)');
+            /* ⭐ THE WEBSITE'S TWO ROOMS, AS THE GAME HAS THEM (his 11-03: "the website version should always match our game") */
+            const pageN = (src, name) => +((new RegExp('\\b' + name + ' = ([\\d.]+)[,;]').exec(src) || [])[1]);
+            const gameN = (src, name) => +((new RegExp('const ' + name + ' := ([\\d.]+)').exec(src) || [])[1]);
+            const viewOff = ['PULSE', 'LEAN_MIN', 'LEAN_SPAN', 'LEAN_FEVER', 'FOCAL'].filter((n) => !(pageN(nrPage, n) > 0 && pageN(nrPage, n) === gameN(nrT, n)))
+              .concat(['FALL_SECS', 'STRATA'].filter((n) => !(pageN(smPage, n) > 0 && pageN(smPage, n) === gameN(mnT, n))));
+            const pkgT = fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8');
+            const gamesRun = ((/"test:games": "([^"]*)"/.exec(pkgT) || [])[1] || '');
+            ok(viewOff.length === 0
+               && /const fp = unlean\(mx, my\);/.test(nrPage) && /function drawFlood\(\)/.test(nrPage) && /if \(kind === 'perfect' && !calm\(\)\) V\.hold = 0\.045;/.test(nrPage)
+               && nrPage.includes("matchMedia('(prefers-reduced-motion: reduce)')") && smPage.includes("matchMedia('(prefers-reduced-motion: reduce)')")
+               && smPage.includes('if (fall){ e.preventDefault(); landFall(); return; }') && smPage.includes('if (!calm()) fall = { t: 0, old, depth: S.depth };')
+               && /function landFall\(\)\{\s*\n\s*fall = null;\s*\n\s*if \(!S\) return;\s*\n\s*S\.floorStart = Date\.now\(\);/.test(smPage)
+               && smPage.includes('else { L = torchAt(); drawWalls(0, S.depth, rocks, L); drawBoard(); drawShadows(L); drawEntities(); }')
+               && smPage.includes('S.relics.forEach(r => drawRelic(center(r.x, r.y)));')
+               && /node tests\/notation\.check\.js/.test(gamesRun) && /node tests\/sandmine\.check\.js/.test(gamesRun)
+               && /every square of the leaning board is pressed where it is drawn/.test(fs.readFileSync(path.join(ROOT, 'tests/notation.check.js'), 'utf8'))
+               && /a press in the drop ends it, and hops nowhere/.test(fs.readFileSync(path.join(ROOT, 'tests/sandmine.check.js'), 'utf8')),
+              '⭐ …and the WEBSITE\'S Notation Run and Sand Mine Depths have them too, numbers equal to the game\'s (the lean, the pulse, the drop): a press read back through the lean, the flood, the drop that a press ends and whose floor\'s clock starts when she lands, the shadows, the relics glinting (the page never drew them), the device\'s Reduce Motion; test:games plays both in a browser',
+              viewOff.length ? 'not the game\'s: ' + viewOff.join(' ') : 'the lean, the pulse and the drop, the game\'s numbers');
+          }
         }
 
         /* ══ THE TEN WAYS, HIS PICKS (2026-10-26) ══ His: "let's do 1, 2, 4, 5 (each character their own narrator), 6, 7

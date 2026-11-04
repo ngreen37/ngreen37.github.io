@@ -347,6 +347,61 @@ const TRACK_Y = 80;                // center of the rhythm track
 const APPROACH = 3.0;              // seconds a call is visible before its hit
 const PXPS = (W - 14 - HITX) / APPROACH; // px per second the calls travel
 
+// ⭐ ON THE BEAT, AS THE GAME HAS IT (2026-11-03, his "do numbers eight and nine and ten"): the board pulses on every
+// beat and leans back further as the tempo climbs (to Endless's top, 150 BPM), Fever floods the cabinet with color, a
+// shake sways and eases out, a Perfect holds its burst a moment, numbers pop as they rise, and Princess squashes as
+// she lands. A press is read back through the lean. The device's own Reduce Motion keeps the board flat and still.
+const PULSE = 0.025, LEAN_MIN = 3, LEAN_SPAN = 13, LEAN_FEVER = 3, FOCAL = 700, NEAR = BY + BOARD;
+const CALM_MQ = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+function calm() { return !!(CALM_MQ && CALM_MQ.matches); }
+const V = { beat: 0, lean: 0, fever: 0, hold: 0, land: -1, flash: 0, rings: [], t: 0 };
+// A point on the flat board -> where the leaning, pulsing board draws it.
+function leanPt(x, y) {
+  const cx = BX + BOARD / 2, cy = BY + BOARD / 2, m = 1 + PULSE * V.beat;
+  const px = cx + (x - cx) * m, py = cy + (y - cy) * m;
+  const v = NEAR - py, sc = FOCAL / (FOCAL + v * Math.sin(V.lean));
+  return { x: cx + (px - cx) * sc, y: NEAR - v * Math.cos(V.lean) * sc };
+}
+// ...and back: where something is drawn -> the point of the flat board under it.
+function unlean(x, y) {
+  const cx = BX + BOARD / 2, cy = BY + BOARD / 2, m = 1 + PULSE * V.beat;
+  const d = NEAR - y, v = d * FOCAL / (FOCAL * Math.cos(V.lean) - d * Math.sin(V.lean));
+  const sc = FOCAL / (FOCAL + v * Math.sin(V.lean));
+  const px = cx + (x - cx) / sc, py = NEAR - v;
+  return { x: cx + (px - cx) / m, y: cy + (py - cy) / m };
+}
+// How big something on the board at height y is drawn, against the flat board.
+function leanScale(y) {
+  const cy = BY + BOARD / 2, m = 1 + PULSE * V.beat;
+  return FOCAL / (FOCAL + (NEAR - (cy + (y - cy) * m)) * Math.sin(V.lean)) * m;
+}
+// The beat, the lean, the flood and the effects' clocks, each eased from where it is.
+function onBeat() {
+  const now = nowSec(), dt = Math.min(0.05, Math.max(0, now - (V.t || now)));
+  V.t = now;
+  const still = calm(), run = !!(G && G.running);
+  const since = run && now >= G.startTime ? ((((now - G.startTime) % G.spb) + G.spb) % G.spb) / G.spb : 1;
+  V.beat = still ? 0 : Math.pow(1 - Math.min(since * 2.5, 1), 2);
+  const slow = DIFFS.easy.bpm;
+  const want = run && !still ? (LEAN_MIN + LEAN_SPAN * Math.max(0, Math.min(1, (G.bpm - slow) / (150 - slow)))
+    + (G.feverOn ? LEAN_FEVER : 0)) * Math.PI / 180 : 0;
+  const step = dt * 14 * Math.PI / 180;
+  V.lean = V.lean < want ? Math.min(want, V.lean + step) : Math.max(want, V.lean - step);
+  const fv = run && G.feverOn ? 1 : 0;
+  V.fever = V.fever < fv ? Math.min(fv, V.fever + dt / 0.3) : Math.max(fv, V.fever - dt / 0.5);
+  if (V.hold > 0) V.hold = Math.max(0, V.hold - dt);
+  if (V.land >= 0) { V.land += dt; if (V.land > 0.16) V.land = -1; }
+  if (V.flash > 0) V.flash = Math.max(0, V.flash - dt * 60);
+  V.rings = V.rings.filter(r => (r.life -= dt * 60) > 0);
+}
+function ring(x, y, color, r, frames, w) { V.rings.push({ x, y, color, r, life: frames, max: frames, w }); }
+// Her landing's squash: wide and low on impact, springing back to her own shape.
+function squashNow() {
+  if (V.land < 0 || calm()) return { x: 1, y: 1 };
+  const f = 1 - Math.min(1, V.land / 0.16), q = f * f;
+  return { x: 1 + 0.22 * q, y: 1 - 0.18 * q };
+}
+
 const COLORS = {
   light: '#22468f', dark: '#163169', gold: '#3d9bff', goldDim: '#1f5bb0',
   good: '#6bffb8', bad: '#ff6b6b', text: '#ffffff', muted: '#9fb0d0',
@@ -666,8 +721,10 @@ function update() {
   // Princess glide
   const pr = G.princess;
   const tgt = boardCenter(pr.tx, pr.ty);
+  const was = Math.hypot(tgt.x - pr.px, tgt.y - pr.py);
   pr.px += (tgt.x - pr.px) * 0.35;
   pr.py += (tgt.y - pr.py) * 0.35;
+  if (was > 4 && Math.hypot(tgt.x - pr.px, tgt.y - pr.py) <= 4 && !calm()) V.land = 0;   // she lands: a squash
   if (pr.dizzy > 0) pr.dizzy--;
   if (pr.emoteT > 0) pr.emoteT--; else pr.emote = null;
   // Look ahead: she turns to face (in screen space) the next call still in flight.
@@ -675,12 +732,13 @@ function update() {
   G.calls.forEach(c => { if (c.status === 'pending' && (!peek || c.hitTime < peek.hitTime)) peek = c; });
   if (peek && !pr.dizzy) { const ddx = (G.flip ? -1 : 1) * (peek.x - pr.tx); if (ddx > 0) pr.dir = 1; else if (ddx < 0) pr.dir = -1; }
 
-  // Particles
-  G.particles = G.particles.filter(p => {
-    p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1; return p.life > 0;
-  });
-  // Floaters
-  G.floaters = G.floaters.filter(f => { f.y -= 0.7; f.life -= 1; return f.life > 0; });
+  // Particles and floaters, held still through a Perfect's freeze (V.hold)
+  if (V.hold <= 0) {
+    G.particles = G.particles.filter(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1; return p.life > 0;
+    });
+    G.floaters = G.floaters.filter(f => { f.life -= 1; return f.life > 0; });
+  }
   // Square flashes
   G.flashSq = G.flashSq.filter(s => { s.t -= 1; return s.t > 0; });
 
@@ -731,7 +789,8 @@ function registerResult(kind, call, base) {
     G.scorePulse = 1;
     if (G.combo >= 3) G.shake = Math.min(G.combo >= 15 ? 19 : 11, 2 + G.combo * 0.5);
     checkMilestone(G.combo);
-    if (!G.feverOn && G.combo >= 10) { G.feverOn = true; G.milestone = { text: '✦ FEVER — DOUBLE POINTS 🔥', life: 74 }; setEmote('🤩', 80); }
+    if (!G.feverOn && G.combo >= 10) { G.feverOn = true; G.milestone = { text: '✦ FEVER — DOUBLE POINTS 🔥', life: 74 }; setEmote('🤩', 80);
+      if (!calm()) V.flash = 12; ring(HITX, TRACK_Y, '#ff6bb5', 150, 26, 5); }
     // 🎯 SHARP EYE: three Perfects in a row lock in your focus — the window opens up for a spell.
     if (kind === 'perfect') {
       G.perfectRun++;
@@ -803,6 +862,7 @@ function resolveAt(sqx, sqy) {
     G.res.offSum += dtSigned; G.res.offCount++; G.res.absSum = (G.res.absSum || 0) + Math.abs(dtSigned);
     best.status = 'hit';
     const gained = registerResult(kind, best, base);
+    if (kind === 'perfect' && !calm()) V.hold = 0.045;
     movePrincess(best.x, best.y);
     popParticles(best.x, best.y, color);
     gateExplode(HITX + (best.hitTime - now) * PXPS, color, kind === 'perfect', laneY(best)); // burst on the track
@@ -873,11 +933,11 @@ function movePrincess(x, y) {
 }
 function flashSquare(x, y, color) { G.flashSq.push({ x, y, color, t: 22 }); }
 function floater(text, call, color) {
-  const c = boardCenter(call.x, call.y);
-  G.floaters.push({ text, x: c.x, y: c.y - 6, life: 46, color });
+  const c = boardCenter(call.x, call.y), p = leanPt(c.x, c.y);
+  G.floaters.push({ text, x: p.x, y: p.y - 6, life: 52, max: 52, drift: (Math.random() - 0.5) * 12, color });
 }
 function popParticles(x, y, color) {
-  const c = boardCenter(x, y);
+  const b = boardCenter(x, y), c = leanPt(b.x, b.y);
   for (let i = 0; i < 12; i++) {
     const a = (Math.PI * 2 * i) / 12 + Math.random() * 0.4;
     const s = 1.5 + Math.random() * 2.5;
@@ -893,14 +953,16 @@ function gateExplode(px, color, big, py) {
     const s = (big ? 2.5 : 1.8) + Math.random() * (big ? 4 : 3);
     G.particles.push({ x: px, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 20 + Math.random() * 16, color });
   }
+  if (big) ring(px, y, color, 34, 16, 3);
 }
 
 function canvasToSquare(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
   const mx = (clientX - r.left) * (W / r.width);
   const my = (clientY - r.top) * (H / r.height);
-  let col = Math.floor((mx - BX) / TILE);
-  let row = Math.floor((my - BY) / TILE);
+  const fp = unlean(mx, my);       // read back through the lean: a square is where it is drawn
+  let col = Math.floor((fp.x - BX) / TILE);
+  let row = Math.floor((fp.y - BY) / TILE);
   if (col < 0 || col > 7 || row < 0 || row > 7) return null;
   if (G && G.flip) { col = 7 - col; row = 7 - row; }   // screen → logical
   return { x: col, y: row };
@@ -915,20 +977,55 @@ canvas.addEventListener('pointerdown', e => {
 function render() {
   ctx.clearRect(0, 0, W, H);
   if (!G) return;
+  onBeat();
+  if (V.beat > 0) { ctx.fillStyle = 'rgba(255,255,255,' + (0.05 * V.beat).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
+  drawFlood();
 
   ctx.save();
-  if (G.shake > 0.25) ctx.translate((Math.random() - 0.5) * G.shake, (Math.random() - 0.5) * G.shake);
+  // a sway, never a jitter, and none at all with the device's Reduce Motion
+  if (G.shake > 0.25 && !calm()) {
+    const t = nowSec();
+    ctx.translate((Math.sin(t * 61) + Math.sin(t * 37.3 + 1.3) * 0.7) / 1.7 * G.shake,
+      (Math.sin(t * 53 + 0.6) + Math.sin(t * 29.1 + 2.1) * 0.7) / 1.7 * G.shake);
+  }
 
   drawTrack();
   drawBoard();
   drawPrincess();
   drawParticles();
+  drawRings();
   drawFloaters();
   drawBolts();
+  if (V.flash > 0) { ctx.fillStyle = 'rgba(255,107,184,' + (0.5 * V.flash / 12).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
   drawHUD();
 
   ctx.restore();
   drawOverload();
+}
+
+// ⭐ FEVER FLOODS THE CABINET WITH COLOR: a wash over all of it, its edges burning brightest, swelling on the beat.
+function floodHue(down) { return ((0.94 + 0.05 * Math.sin(nowSec() * 0.9) + 0.1 * down) % 1) * 360; }
+function drawFlood() {
+  if (V.fever <= 0) return;
+  const lv = V.fever, b = V.beat;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, 'hsla(' + floodHue(0).toFixed(1) + ',100%,57%,' + (lv * (0.26 + 0.14 * b)).toFixed(3) + ')');
+  g.addColorStop(1, 'hsla(' + floodHue(1).toFixed(1) + ',100%,57%,' + (lv * (0.18 + 0.12 * b)).toFixed(3) + ')');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const e = 'hsla(' + floodHue(0.5).toFixed(1) + ',100%,64%,', a = (lv * (0.55 + 0.3 * b)).toFixed(3), d = 70 + 24 * b;
+  [[0, 0, 0, d, 0, 0, W, d], [0, H, 0, H - d, 0, H - d, W, d], [0, 0, d, 0, 0, 0, d, H], [W, 0, W - d, 0, W - d, 0, d, H]].forEach(q => {
+    const eg = ctx.createLinearGradient(q[0], q[1], q[2], q[3]);
+    eg.addColorStop(0, e + a + ')'); eg.addColorStop(1, e + '0)');
+    ctx.fillStyle = eg; ctx.fillRect(q[4], q[5], q[6], q[7]);
+  });
+}
+function drawRings() {
+  V.rings.forEach(r => {
+    const f = 1 - r.life / r.max, e = 1 - (1 - f) * (1 - f);
+    ctx.globalAlpha = 1 - f; ctx.strokeStyle = r.color; ctx.lineWidth = Math.max(1, r.w * (1 - f * 0.6));
+    ctx.beginPath(); ctx.arc(r.x, r.y, Math.max(1, r.r * (0.2 + 0.8 * e)), 0, Math.PI * 2); ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
 }
 
 // Streak >=15: a pulsing electric frame + occasional strobe around the arena
@@ -978,39 +1075,55 @@ function drawBolts() {
   ctx.globalAlpha = 1;
 }
 
+// A rectangle of the flat board as the leaning board draws it: its path, to fill or stroke.
+function leanQuad(x0, y0, w, h) {
+  const a = leanPt(x0, y0), b = leanPt(x0 + w, y0), c = leanPt(x0 + w, y0 + h), d = leanPt(x0, y0 + h);
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.closePath();
+}
 function drawBoard() {
+  // the whole board in its dark square, then the light ones over it: no seam between neighbors
+  ctx.fillStyle = COLORS.dark;
+  leanQuad(BX, BY, BOARD, BOARD); ctx.fill();
+  ctx.fillStyle = COLORS.light;
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
-      ctx.fillStyle = (row + col) % 2 === 0 ? COLORS.light : COLORS.dark;
-      ctx.fillRect(BX + col * TILE, BY + row * TILE, TILE, TILE);
+      if ((row + col) % 2 === 0) { leanQuad(BX + col * TILE, BY + row * TILE, TILE, TILE); ctx.fill(); }
     }
   }
   // Square flashes (logical → screen)
   G.flashSq.forEach(s => {
     const sc = G.flip ? 7 - s.x : s.x, sr = G.flip ? 7 - s.y : s.y;
     ctx.fillStyle = s.color;
-    ctx.fillRect(BX + sc * TILE, BY + sr * TILE, TILE, TILE);
+    leanQuad(BX + sc * TILE, BY + sr * TILE, TILE, TILE); ctx.fill();
   });
+  if (V.fever > 0) {
+    ctx.fillStyle = 'hsla(' + floodHue(0).toFixed(1) + ',100%,57%,' + (0.10 * V.fever).toFixed(3) + ')';
+    leanQuad(BX, BY, BOARD, BOARD); ctx.fill();
+  }
   // Grid lines + border
   ctx.strokeStyle = 'rgba(' + TH.rgb + ',0.10)';
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= 8; i++) {
-    ctx.beginPath(); ctx.moveTo(BX + i * TILE, BY); ctx.lineTo(BX + i * TILE, BY + BOARD); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(BX, BY + i * TILE); ctx.lineTo(BX + BOARD, BY + i * TILE); ctx.stroke();
+    const a = leanPt(BX + i * TILE, BY), b = leanPt(BX + i * TILE, BY + BOARD);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    const c = leanPt(BX, BY + i * TILE), d = leanPt(BX + BOARD, BY + i * TILE);
+    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
   }
   ctx.strokeStyle = 'rgba(' + TH.rgb + ',0.4)';
   ctx.lineWidth = 1.5;
-  ctx.strokeRect(BX, BY, BOARD, BOARD);
+  leanQuad(BX, BY, BOARD, BOARD); ctx.stroke();
 
-  // File / rank labels (the player's reading aid) — bold + brighter to find squares fast
+  // File / rank labels (the player's reading aid) — bold + brighter to find squares fast, drawn where their squares are
   ctx.fillStyle = 'rgba(' + TH.rgb + ',0.7)';
-  ctx.font = 'bold 13px Courier New';
   ctx.textBaseline = 'alphabetic';
   const files = 'abcdefgh';
   for (let i = 0; i < 8; i++) {
     ctx.textAlign = 'left';
-    ctx.fillText(files[G.flip ? 7 - i : i], BX + i * TILE + 3, BY + BOARD - 4);   // files along bottom
-    ctx.fillText(G.flip ? i + 1 : 8 - i, BX + 3, BY + i * TILE + 15);             // ranks down the left
+    const f = leanPt(BX + i * TILE + 3, BY + BOARD - 4), r = leanPt(BX + 3, BY + i * TILE + 15);
+    ctx.font = 'bold ' + (13 * leanScale(BY + BOARD - 4)).toFixed(1) + 'px Courier New';
+    ctx.fillText(files[G.flip ? 7 - i : i], f.x, f.y);                             // files along bottom
+    ctx.font = 'bold ' + (13 * leanScale(BY + i * TILE + 15)).toFixed(1) + 'px Courier New';
+    ctx.fillText(G.flip ? i + 1 : 8 - i, r.x, r.y);                                // ranks down the left
   }
 
 }
@@ -1160,20 +1273,23 @@ princessImg.src = '/assets/images/Princess_Color_v01.jpg';
 
 function drawPrincess() {
   const pr = G.princess;
-  const cx = pr.px, cy = pr.py;
+  const lp = leanPt(pr.px, pr.py), ls = leanScale(pr.py);
+  const cx = lp.x, cy = lp.y;
   const t = Date.now() / 600;
-  const bob = Math.sin(t) * 1.5;
-  const r = 17;
+  const bob = Math.sin(t) * 1.5 * ls;
+  const r = 17 * ls;
   // When dizzy, she wobbles; otherwise she sits upright.
   const tilt = pr.dizzy > 0 ? Math.sin(Date.now() / 70) * 0.35 * (pr.dizzy / 90) : 0;
 
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.beginPath(); ctx.ellipse(cx, cy + 15, 13, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx, cy + 15 * ls, 13 * ls, 5 * ls, 0, 0, Math.PI * 2); ctx.fill();
 
   ctx.save();
   ctx.translate(cx, cy + bob);
   ctx.rotate(tilt);
+  const sq = squashNow();
+  ctx.translate(0, r); ctx.scale(sq.x, sq.y); ctx.translate(0, -r);
   // The 3D render faces left; mirror horizontally so she can look to her right.
   if (pr.dir > 0) ctx.scale(-1, 1);
 
@@ -1238,13 +1354,17 @@ function drawParticles() {
   ctx.globalAlpha = 1;
 }
 
+// A number pops, rises fast then slow, and fades at the end of its rise.
 function drawFloaters() {
   G.floaters.forEach(f => {
-    ctx.globalAlpha = Math.max(0, f.life / 46);
+    const age = f.max - f.life, k = age / f.max;
+    const pop = calm() ? 1 : 1 + 0.4 * Math.max(0, 1 - age / 7);
+    const up = (calm() ? 18 : 34) * (1 - Math.pow(1 - k, 3));
+    ctx.globalAlpha = k < 0.6 ? 1 : Math.max(0, 1 - (k - 0.6) / 0.4);
     ctx.fillStyle = f.color;
-    ctx.font = 'bold 13px Courier New';
+    ctx.font = 'bold ' + (13 * pop).toFixed(1) + 'px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(f.text, f.x, f.y);
+    ctx.fillText(f.text, f.x + f.drift * k, f.y - up);
   });
   ctx.globalAlpha = 1;
 }
@@ -1310,7 +1430,7 @@ function drawHUD() {
     ctx.font = 'bold 26px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 16;
-    ctx.fillText(G.milestone.text, W / 2, BY - 16 - rise);
+    ctx.fillText(G.milestone.text, W / 2, leanPt(BX + BOARD / 2, BY).y - 16 - rise);
     ctx.restore();
     ctx.globalAlpha = 1;
   }
@@ -1339,10 +1459,11 @@ function drawHUD() {
   const now = nowSec();
   if (G.running && !G.begun && now < G.startTime + G.countIn * G.spb) {
     const beatsLeft = Math.ceil((G.startTime + G.countIn * G.spb - now) / G.spb);
+    const mid = leanPt(BX + BOARD / 2, BY + BOARD / 2);
     ctx.fillStyle = 'rgba(' + TH.rgb + ',0.85)';
-    ctx.font = 'bold 30px Courier New';
+    ctx.font = 'bold ' + (30 * (1 + 0.3 * V.beat)).toFixed(1) + 'px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(beatsLeft > 0 ? beatsLeft : 'GO', W / 2, BY + BOARD / 2);
+    ctx.fillText(beatsLeft > 0 ? beatsLeft : 'GO', mid.x, mid.y);
   }
 }
 

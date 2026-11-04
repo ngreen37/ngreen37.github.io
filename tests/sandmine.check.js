@@ -163,6 +163,60 @@ window.__t = {
     const gain3 = b3.score - d3.score;
     ok(gain3 >= 24 && gain3 <= 27,
        'a fast floor pays the speed bonus (~+16 on top of +10)  [gained ' + gain3 + ']');
+
+    // ⭐ A REAL DESCENT, AS THE GAME HAS IT (his 11-03 "do numbers eight and nine and ten"): the drop is only drawn,
+    // a press ends it, the floor's clock starts when she lands; a piece's shadow, by its pixels; the cave-in; and the
+    // device's Reduce Motion, with no drop.
+    const lay = (p, sh, en, holes) => page.evaluate((p, sh, en, holes) => {
+      S.princess = { x: p[0], y: p[1] }; S.shaft = { x: sh[0], y: sh[1] };
+      S.enemies = en.map((e) => ({ t: e[0], x: e[1], y: e[2] })); S.holes = new Set(holes.map((h) => h[0] + ',' + h[1]));
+      S.gold = []; S.relics = []; S.floorStart = Date.now(); computeThreats(); S.trapped = false; updateTrapped();
+    }, p, sh, en, holes);
+    await sleep(800);
+    await lay([4, 5], [5, 7], [], []);
+    const fl0 = (await G()).floor;
+    await page.evaluate(() => window.__t.hop(5, 7));
+    await sleep(480);
+    const mid = await page.evaluate(() => ({ falling: !!fall, floor: S.floor }));
+    ok(mid.falling && mid.floor === fl0 + 1, 'the exit drops her to the next floor, drawn as she falls, with that floor in play at once  [' + JSON.stringify(mid) + ']');
+    await sleep(700);
+    const down = await page.evaluate(() => ({ falling: !!fall, ran: (Date.now() - S.floorStart) / 1000 }));
+    ok(!down.falling && down.ran < 0.75, '…and the floor\'s clock starts when she is down  [' + JSON.stringify(down) + ']');
+    await lay([4, 5], [5, 7], [], []);
+    await page.evaluate(() => window.__t.hop(5, 7));
+    await sleep(380);
+    const pressed = await page.evaluate(() => {
+      const was = !!fall, r = canvas.getBoundingClientRect();
+      canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.left + 10, clientY: r.top + 10 }));
+      return { was, now: !!fall, hops: S.floorHops };
+    });
+    ok(pressed.was && !pressed.now && pressed.hops === 0, 'a press in the drop ends it, and hops nowhere  [' + JSON.stringify(pressed) + ']');
+    await lay([3, 3], [7, 7], [['P', 3, 5]], []);
+    await sleep(250);
+    const lums = await page.evaluate(() => {
+      const k = canvas.width / W, lum = (x, y) => {
+        const d = ctx.getImageData(Math.round(x * k) - 2, Math.round(y * k) - 2, 5, 5).data;
+        let t = 0;
+        for (let i = 0; i < d.length; i += 4) t += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+        return t / (d.length / 4);
+      };
+      const a = center(3, 6), b = center(6, 3);
+      return [lum(a.x, a.y), lum(b.x, b.y)];
+    });
+    ok(lums[0] < lums[1] * 0.9, 'the sand behind a pawn lies in its shadow, darker than open sand as far from her torch  [' + lums.map((v) => v.toFixed(1)).join(' < ') + ']');
+    await lay([1, 0], [7, 7], [], [[0, 2], [3, 1], [0, 1], [0, 3], [1, 4], [3, 0], [3, 4], [4, 1], [4, 3]]);
+    const hp0 = (await G()).hp;
+    await page.evaluate(() => window.__t.hop(2, 2));
+    await sleep(300);
+    const cave = await page.evaluate(() => ({ holes: S.holes.size, hp: S.hp, toast: toast.text, dust: dust.length }));
+    ok(hp0 >= 2 && cave.holes === 0 && cave.hp === hp0 - 1 && cave.toast.includes('caves in') && cave.dust > 20,
+       'nowhere left to hop: the sand caves in, pouring back into every pit  [' + JSON.stringify(cave) + ']');
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    await lay([4, 5], [5, 7], [], []);
+    await page.evaluate(() => window.__t.hop(5, 7));
+    await sleep(300);
+    const still = await page.evaluate(() => ({ falling: !!fall, floor: S.floor, dead: S.dead }));
+    ok(!still.falling && !still.dead, 'with the device\'s Reduce Motion there is no drop  [' + JSON.stringify(still) + ']');
   });
 
   process.exit(report('Sand Mine Depths v3.0', results, errors) ? 0 : 1);
