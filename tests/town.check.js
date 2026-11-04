@@ -1293,18 +1293,32 @@ const server = http.createServer((req, res) => {
         /* ⭐ EACH RING ITS OWN GAME (2026-10-03, his: "for the chessboards themselves, each three should
            have a different mini-game theme"). Driven by a probe: 24 checks on the two site rings. */
         const mxh = rdc('maxwell_home.gd');
+        const ctCases = fs.existsSync(path.join(GD, 'tests/cases.sh')) ? fs.readFileSync(path.join(GD, 'tests/cases.sh'), 'utf8').replace(/\r\n/g, '\n') : '';
         ok(/var ring := TownPortal\.new\(\)\s*\n\tring\.game = "marchland"\s*\n\tring\.position = BOARD_AT\s*\n\tadd_child\(ring\)/.test(fnGd(mxh, '_furnish_room'))
            && /Rect2\(BOARD_AT \+ Vector2\(float\(f\) - 4\.0, float\(r\) - 4\.0\) \* BOARD_CELL/.test(fnGd(mxh, '_decor'))
            && !/"marchland"/.test(tw) && /_draw_board\(CAMP_BOARD,/.test(tw)
-           && /useat:-250,90;bubble:Building\. Not open to visitors\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*nouse:1770,370;/.test(
-             fs.existsSync(path.join(GD, 'tests/cases.sh')) ? fs.readFileSync(path.join(GD, 'tests/cases.sh'), 'utf8') : ''),
-          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house"); the camp\'s board keeps no ring (probed: his ring says Building, nothing at the camp\'s)');
+           && /useat:-250,90;bubble:Building\. Not open to visitors\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*useis:1770,370:Sand Mine Depths;/.test(ctCases),
+          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house")  (probed: his ring says Building)');
+        ok(/var mine := TownPortal\.new\(\)\s*\n\tmine\.game = "sand-mine-depths"\s*\n\tmine\.position = CAMP_BOARD\s*\n\tadd_child\(mine\)/.test(tw)
+           && /"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/" \}/.test(por),
+          '…the camp\'s ring opens SAND MINE DEPTHS  (his 11-03: "go ahead and use the camp board too for whatever"): the camp is the sand mine\'s, and the Martyr\'s square is won in it  (probed: the ring there says so)');
         ok(/_draw_board\(SEA_BOARD,/.test(tw) && /portal\.game = "sky-run"\s*\n\s*portal\.position = SEA_BOARD/.test(tw),
           '…the dock\'s ring opens SKY RUN  (his: "Make the sky run be the portal game for the near-the-Sea chessboard")');
-        ok(/_portal = TownPortal\.new\(\)/.test(hbx) && /_portal\.monitoring = false/.test(hbx)
-          && /_portal\.game = "dungeon"/.test(hbx)
-          && (hbx.match(/"id": "portal"/g) || []).length === 2 && /if id == "portal":/.test(fnGd(hbx, '_on_chose')),
-          '…and the ring at home opens PRINCESS DUNGEON, from its menu with or without Princess  (his: "Princess Dungeon and Pawn Crossing sounds awesome. Let\'s do both.")');
+        ok(/if not GameState\.story\.found\("princess"\):[\s\S]*?\n\t\treturn\n\tvar ring := TownPortal\.new\(\)\s*\n\tring\.game = "dungeon"\s*\n\tring\.position = DUNGEON_BOARD\s*\n\tadd_child\(ring\)/.test(fnGd(tw, '_furnish_crater'))
+           && /if GameState\.story\.found\("princess"\) and pr\.has_point\(DUNGEON_BOARD\):\s*\n\t\t_draw_board\(DUNGEON_BOARD, DUNGEON_CELL,/.test(tw)
+           && !/TownPortal|"portal"|ring_later/.test(hbx) && !/ring_later\("dungeon"\)|scene\.get\("ring"/.test(rdc('board_view.gd'))
+           && /useis:640,-1470:Princess Dungeon;[^"]*useat:230,-110;wait:10;has:Set the pieces up and show her;hasnt:Step into the portal"/.test(ctCases),
+          '…and PRINCESS DUNGEON\'s ring is in a board of its own by the crater where you find her, once you have  (his 11-03: "move whatever mini-game is there now elsewhere - make another board if you have to"); her board at home has no portal, up close or across the room  (probed both)');
+        const sdT = rdc('stray_dog.gd');
+        const strayRows = [...tw.matchAll(/\{ "at": Vector2\((-?[\d.]+), (-?[\d.]+)\), "coat": \[[^\]]*\], "breed": "", "opening": "" \},/g)];
+        ok(strayRows.length === 6 && /^extends Node2D\n/.test(sdT) && !/Interactable|Area2D|solid|interact|prompt/.test(sdT)
+           && /TownDog\.paint_sitting\(self, "", Vector2\.ZERO, 1\.0, false, 0\.0, coat\)/.test(sdT)
+           && /for s in STRAYS:\s*\n\t\tvar d := StrayDog\.new\(\)\s*\n\t\td\.coat = s\["coat"\]\s*\n\t\td\.position = s\["at"\]/.test(fnGd(tw, '_furnish_strays'))
+           && /var c: Array = coat if not coat\.is_empty\(\) else _coat\(who\)/.test(fnGd(rdc('dog.gd'), 'paint_sitting'))
+           && ['square', 'west', 'east', 'south', 'woods', 'north'].every((r) => new RegExp('town:' + r + ';nstrays:1;').test(ctCases))
+           && /town:crater;nstrays:0;/.test(ctCases)
+           && /^[^#\n]*\bstrays\b/m.test(fs.existsSync(path.join(GD, 'tests/suite.sh')) ? fs.readFileSync(path.join(GD, 'tests/suite.sh'), 'utf8') : ''),
+          '⭐ …and SIX DOGS HE IS DRAWING sit placeheld, one in each outdoor window  (his 11-03: "We\'re collecting dogs … Leave dogs around as placeholders"): scenery, not the cast, with no name, words, opening or breed until he gives them  (probed: one in each window)');
         ok(/url = str\(GAMES\[game\]\["url"\]\) \+ "\?town=1"/.test(fnGd(por, '_ready_extra'))
           && /if game != "":\s*\n\s*super\.interact\(you\)\s*\n\s*if return_at\.is_finite\(\):\s*\n\s*you\.global_position = return_at\s*\n\s*you\.rise\(\)/.test(fnGd(por, '_enter'))
           && fnGd(por, '_enter').indexOf('await you.swallowed') < fnGd(por, '_enter').indexOf('super.interact(you)'),
@@ -6437,9 +6451,8 @@ const server = http.createServer((req, res) => {
             ax && dn ? 'across ' + xs[0].toFixed(2) + ' to ' + xs[1].toFixed(2) + ', down ' + ys[0].toFixed(2) + ' to ' + ys[1].toFixed(2)
               + ' squares; a square each on a 9 × 9, found by a counted loop' : 'not found');
           ok(/if scene\.has\("pieces"\):\s*\n\s*if act\(\) == "mess":\s*\n\s*_paint_prints\(\)\s*\n\s*for p in \(scene\["pieces"\] as Array\):\s*\n\s*_piece\(str\(p\[0\]\), bool\(p\[1\]\), _board\.position \+ Vector2\(float\(p\[2\]\), float\(p\[3\]\)\) \* c, float\(p\[4\]\)\)/.test(fnGd(bvM, '_paint'))
-             && /if bool\(scene\.get\("ring", true\)\):\s*\n\s*TownPortal\.paint\(/.test(fnGd(bvM, '_paint'))
-             && /scene\["ring"\] = dog == "Princess"/.test(fnInM(hbM, '_open')),
-            '⭐ the close-up paints whatever stands where home.gd says, and the portal\'s ring is in HER board only');
+             && !/TownPortal|scene\.get\("ring"/.test(fnGd(bvM, '_paint')) && !/scene\["ring"\]/.test(fnInM(hbM, '_open')),
+            '⭐ the close-up paints whatever stands where home.gd says, and no portal\'s ring: Princess Dungeon\'s is by the crater since 11-03');
 
           /* ── Argus's ── */
           const rowFn = fnGd(hm, 'row');
@@ -6991,11 +7004,10 @@ const server = http.createServer((req, res) => {
           ok(/static func no_site\(\) -> bool:\s*\n\treturn OS\.has_feature\("standalone"\)/.test(wdS)
              && /return LATER\.has\(at\) or \(no_site\(\) and at\.begins_with\("\/"\)\)/.test(fnGd(wdS, 'later'))
              && /if no_site\(\):\s*\n\t\treturn not in_town\(game\)/.test(fnGd(wdS, 'later_game'))
-             && /return GAMES\.has\(the_game\) and GameState\.worlds\.later\(str\(GAMES\[the_game\]\["url"\]\)\)/.test(fnGd(rd('portal.gd'), 'ring_later'))
-             && /TownPortal\.paint\(self, o \+ Vector2\(cell \* 2\.0, cell \* 2\.0\), cell, TownPortal\.ring_later\("dungeon"\)\)/.test(rd('home.gd'))
-             && /TownPortal\.paint\(_art, _board\.get_center\(\), c \* 1\.25, TownPortal\.ring_later\("dungeon"\)\)/.test(rd('board_view.gd')),
+             && /TownPortal\.paint\(self, Vector2\.ZERO, size\.x \* 0\.5, dark\(\) or GameState\.worlds\.later\(url\)\)/.test(fnGd(rd('portal.gd'), '_draw'))
+             && !/ring_later/.test(rd('portal.gd') + rd('home.gd') + rd('board_view.gd')),
             '⛑ …where there is no site, so every site page is later: its door says Building and its square is not asked, and the CEO waits on the squares won at the tables and the Puzzle Champ\'s own  (as Wes\'s was in the desktop program)',
-            'the ring at home is drawn shut by the board that paints it');
+            'every ring paints itself shut while its page is later; none is painted by a board any more');
           ok(/if not OS\.has_feature\("web"\) and not GameState\.worlds\.no_site\(\):\s*\n\t\tadd_child\(DevReferee\.new\(\)\)/.test(znS2)
              && /if worlds\.no_site\(\):\s*\n\t\tget_tree\(\)\.root\.title = "Checker Town"/.test(fnGd(gsS2, '_ready'))
              && /config\/name="CheckerTown"/.test(projT),
