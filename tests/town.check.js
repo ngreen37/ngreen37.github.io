@@ -7660,7 +7660,7 @@ const server = http.createServer((req, res) => {
                && /const CARD_AFTER := 0\.5\b/.test(ctT) && /float\(_cut\["t"\]\) < CARD_AFTER/.test(ctF('_card_held')) && /if _card_held\(\):\s*\n\t\tpass/.test(ctT)
                && /if cut != "" and not TableFX\.calm\(\):\s*\n\t\t_cut = \{ "kind": cut, "at": at, "t": 0\.0 \}/.test(ctF('_landed'))
                && /and _clock_on\(\) and _cut\.is_empty\(\):/.test(ctF('_process'))
-               && /var sq := _sq_at\(_on_board\(e\.position\)\)\s*\n\t\tif e\.pressed:\s*\n\t\t\t_end_cut\(\)/.test(ctF('_board_input'))
+               && /var sq := _sq_at_screen\(e\.position\)\s*\n\t\tif e\.pressed:\s*\n\t\t\t_end_cut\(\)/.test(ctF('_board_input'))
                && /return _stage\.get_transform\(\)\.affine_inverse\(\) \* \(p - _clip\.position\)/.test(ctF('_on_board'))
                && /not event\.is_pressed\(\):\s*\n\t\treturn\n\t_end_cut\(\)/.test(ctF('_take'))
                && /_clip\.clip_contents = true/.test(ctT) && /_stage\.draw\.connect\(_paint_stage\)/.test(ctT)
@@ -7670,6 +7670,53 @@ const server = http.createServer((req, res) => {
                && /cutis:mate;tablenobtn:close;[^"]*wait:30;cutis:mate;tableshows:close;/.test(bcCase('tablefx'))
                && new RegExp('^[^#\\n]*\\btablecut\\b', 'm').test(suiteT),
               '⭐⭐ TV-STYLE CUTS AT THE CHESS TABLE  (his 11-04: "tv-style camera cuts next"): the board is drawn on a stage the camera moves inside its frame: a capture\'s close-up, a check\'s push in on the king, a mate\'s slow circle round him; a cut pauses the clock, any press ends it and is read through the camera onto the square drawn under it, the game\'s card waits half a second at most, and Motion: Reduced has none (probed: a forced cut pressed through, a check\'s cut with Black\'s clock still, a mate\'s card up while it circles)');
+            /* ⭐ THE TILTED 3D BOARD (his 11-04: "then tilted 3d chess board") */
+            const b3T = rd('board3d.gd');
+            const b3F = (n) => fnGd(b3T, n);
+            const genP = gdTxt('tests/gen_pieces3d.js');
+            const genH = (/const HEIGHT = \{([^}]*)\}/.exec(genP) || [])[1] || '';
+            const tallOff = ['K', 'Q', 'B', 'N', 'R', 'P'].filter((L) => {
+              const g = +((new RegExp('\\b' + L + ': ([\\d.]+)').exec(genH) || [])[1]);
+              const b = +((new RegExp('"' + L + '": ([\\d.]+)').exec(b3F('tall')) || [])[1]);
+              return !(g > 0 && Math.abs(g - b) < 0.0015);
+            });
+            const glbOff = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb'))
+              || !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb.import')));
+            const tapT = (/\n\t{3}"tapmap":[\s\S]*?(?=\n\t{3}"|\n\S)/.exec(gdTxt('tests/probe.gd')) || [''])[0];
+            ok(/^class_name Board3D\nextends SubViewportContainer/.test(b3T) && /_vp\.own_world_3d = true/.test(b3T)
+               && /const TILT := 54\.0/.test(b3T) && /const FOV := 24\.0/.test(b3T)
+               && /func rest_camera\(\) -> void:\s*\n\t_fit\(\)\s*\n\t_pose\(_aim, 0\.0, _dist\)/.test(b3T)
+               && /<= EDGE:/.test(b3F('_fit')) && /pts\.append\(Vector3\(x \* 0\.8, TALLEST, -3\.5 \* SQ\)\)/.test(b3F('_fit'))
+               && /_pose\(aim, orbit \* a, _dist \/ lerpf\(1\.0, zoom \* 1\.25, a\)\)/.test(b3F('cam_cut'))
+               && /minf\(_ray_post\(o, d, world\(v\), 0\.33 \* SIZE, h \* 0\.55\), _ray_post\(o, d, world\(v\), 0\.2 \* SIZE, h\)\)/.test(b3F('square_at'))
+               && /if square_at\(p\) == v:\s*\n\t\t\treturn p/.test(b3F('press_point'))
+               && /for pair in \[\[code, true\], \[code\.substr\(1, 1\), false\]\]:/.test(b3F('_model')) && /"res:\/\/pieces3d\/%s\.glb"/.test(b3F('_model'))
+               && /material_override = _skin\("w" if white else "b"\)/.test(b3F('_make'))
+               && /for v in _pieces:\s*\n\t\t\(_pieces\[v\]\["node"\] as Node3D\)\.queue_free\(\)\s*\n\t_pieces\.clear\(\)/.test(b3F('build'))
+               && /render_target_update_mode = SubViewport\.UPDATE_ONCE/.test(b3F('paint')) && /UPDATE_ALWAYS/.test(b3F('live'))
+               && tallOff.length === 0 && glbOff.length === 0 && /--python', path\.join\(__dirname, 'blender_glb\.py'\)/.test(genP)
+               && /_b3 = Board3D\.new\(\)\s*\n\t_clip\.add_child\(_b3\)/.test(ctT)
+               && /var sq := _sq_at_screen\(e\.position\)/.test(ctF('_board_input'))
+               && /return _sq_at\(_on_board\(p\)\)/.test(ctF('_sq_at_screen')) && /_b3\.square_at\(/.test(ctF('_sq_at_screen'))
+               && /_b3\.press_point\(_view\(i\)\)/.test(ctF('_screen_of'))
+               && /_clip\.position \+ _b3\.rest_point\(_view\(i\)\)/.test(ctF('_fx_pt')) && /_b3\.fx_map\(_view\(int\(_cut\["at"\]\)\)\)/.test(ctF('_fx_map'))
+               && /var fm := _fx_map\(\)\s*\n\t\t_fx\.paint\(_art, fm\[0\], float\(fm\[1\]\), null\)/.test(ctF('_paint'))
+               && /var cap_sq := int\(m\.to\) if not m\.get\("ep", false\) else int\(m\.to\) \+ \(8 if mover == "w" else -8\)/.test(ctF('_apply'))
+               && /_b3\.cam_cut\(/.test(ctF('_apply_cam')) && /var c := _fx_pt\(to\)/.test(ctF('_landed'))
+               && /"Board: 3D" if not _flat\(\) else "Board: Flat"/.test(ctF('_layout')) && /tools\.append\(_btns\["view"\]\)/.test(ctT)
+               && /kv\.keycode == KEY_V\) or Pad\.hit\(event, Pad\.R\)\):\s*\n\t\t_toggle_view\(\)/.test(ctF('_take'))
+               && /"board_flat": board_flat/.test(fnGd(gsAll, 'save_state')) && !/board_flat/.test(fnGd(gsAll, 'push_to_site'))
+               && /board_flat = bool\(d\.get\("board_flat", false\)\)/.test(fnGd(gsAll, 'load_state'))
+               && /board_flat = keep_flat/.test(fnGd(gsAll, 'use_save')) && /board_flat = keep_flat/.test(fnGd(gsAll, '_take_their_run'))
+               && /"board_flat": True/.test(gdTxt('tests/savefix.py'))
+               && /for i in 64:/.test(tapT) && /tm\.call\("_sq_at_screen", tm\.call\("_screen_of", i\)\)/.test(tapT)
+               && /num:ChessTable:_b3\.visible:=1;tapmap;/.test(bcCase('table3d')) && /cutis:check;tapmap;/.test(bcCase('table3d'))
+               && /wait:7;cutis:check;ringon:e8:12;tapmap;/.test(bcCase('table3d'))
+               && /tablemove:e4d5;wait:4;num:ChessTable:_b3\._falling:>0;/.test(bcCase('table3d'))
+               && /key:v;num:ChessTable:_b3\.visible:=0;gseq:board_flat=true;tapmap;/.test(bcCase('table3d'))
+               && new RegExp('^[^#\\n]*\\btable3d\\b', 'm').test(suiteT),
+              '⭐⭐ THE TILTED 3D BOARD  (his 11-04: "then tilted 3d chess board"): every table\'s board in 3D at a tilt, in his own Blender pieces (his pawns and bishops; the May set\'s king, queen, rook and knight in his two materials), the table\'s woods under a lamp with real shadows, fitted to its frame whatever its shape; a move arcs, a capture knocks the taken piece aside, the cuts move its camera and a ring rides it with its piece; a press is the piece or the square under it, as drawn; "Board: Flat" (V, a pad\'s R) is a device preference (probed: all 64 squares pressed where they are drawn, at rest, in a cut and flat; a check\'s ring held on the king through the cut)',
+              tallOff.length || glbOff.length ? 'off: ' + tallOff.concat(glbOff).join(' ') : 'eight models, at the canon heights');
           }
         }
 
