@@ -13,6 +13,7 @@
      dice decide WHO SHOWS UP; from the first move onward the rules are the rules.
      [[accuracy-above-all]] — a game that lies about chess is worse than no game. -->
 <script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-board3d.js"></script>
 <!-- THE VS RAILS (2026-08-13). ⚠ ORDER: config → profile → vs; PJCCVs.color() reads
      PJCC.auraColor() and keeps no palette of its own. -->
 <script src="/assets/js/pjcc-config.js"></script>
@@ -325,6 +326,8 @@
 
   /* ── THE BOARD (park-table standard) ── */
   .clockbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .mc-view { display: inline-block; margin: 6px 0 0; padding: 4px 11px; border: 1px solid var(--rule); border-radius: 6px;
+    background: transparent; color: var(--ink-2); font: 600 12px 'Trebuchet MS', 'Segoe UI', sans-serif; cursor: pointer; }
   /* TWO clocks side by side — yours, then theirs. The one that is RUNNING is the bright
      one; the idle side dims, so a glance tells you whose second it is without reading. */
   .clock { font: 900 23px 'Share Tech Mono', ui-monospace, monospace; letter-spacing: 1px; }
@@ -693,6 +696,7 @@
     <div class="vs-aura" id="mc-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
     <p class="ready" id="ready">&nbsp;</p>
     <p class="say" id="say">&nbsp;</p>
+    <p id="mc-view-row" style="text-align:center"></p>
     <!-- ⛑ the battle's verdict, on the board — see `.endcard` in the stylesheet above -->
     <div class="endcard" id="endcard">
       <p class="eword" id="eword"></p>
@@ -911,6 +915,18 @@ var LEVELS = {
 
 var G = null;          // campaign state
 var B = null;          // battle state
+/* ⭐ THE TILTED 3D BOARD AND THE TV CUTS (his 11-04, of the chess rooms: "add them there too"): a lens over the battle
+   board (assets/js/pjcc-board3d.js). It presses the square drawn under the finger, so onSquare plays every move; the
+   trap a mate seals is lit on it. */
+var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
+  board: function () { return B && $('screen-battle').classList.contains('on') ? $('board') : null; },
+  read: function () {
+    if (!B) return null;
+    return { b: B.S.b, flip: false, last: B.last ? [B.last.from, B.last.to] : null, sel: B.sel,
+      dots: B.moves.map(function (m) { return m.to; }), turn: B.S.turn, hint: B.mate ? B.mate.sealed : [] };
+  },
+}) : null;
+if (B3) $('mc-view-row').appendChild(B3.button('mc-view'));
 
 /* mode: 'solo' | 'daily' | 'two'. G.side is whose turn it is at the device — always 'm' outside two-player.
    ⚠ 'm'/'t' stay the COLORS (green/red); player-action code asks G.side, never 'm'. */
@@ -2356,6 +2372,8 @@ function goLive() {
    extra seconds. Subtracting real elapsed time cannot drift. */
 function tickClock() {
   if (B.over || !B.running) return;
+  // ⚠ A CUT COSTS NOBODY TIME: the clock stands still through one, and the time it took is never charged
+  if (window.PJCCBoard3D && PJCCBoard3D.cutting()) { B.tLast = Date.now(); return; }
   var now = Date.now(), dt = (now - B.tLast) / 1000;
   B.tLast = now;
   B.clk[B.S.turn] -= dt;

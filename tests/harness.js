@@ -145,4 +145,42 @@ function inkAt(page, sel, file, row) {
   }, sel, file, row);
 }
 
-module.exports = { withGame, report, sleep, findChrome, bottomSide, inkAt };
+/* ── A JEKYLL PAGE WITHOUT JEKYLL (moved here from parktables.check.js, 2026-11-04, so two tests render one page) ──
+   There is no local Jekyll: this strips the front matter, resolves the Liquid the page actually uses, and wraps it
+   in the shell `layout: page` gives it (the stylesheet, `body_class`). Anything else FAILS the run rather than being
+   silently dropped — a harness that renders a different page from the one that ships is worse than no harness. */
+function jekyllPage(src, css, bodyClass) {
+  let s = src.replace(/^---[\s\S]*?\n---\s*\n/, '');
+  s = s.replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
+  /* ⚠ EITHER QUOTE. Jekyll does not care which, and games/checker-town/ has used the
+     double-quoted form since it shipped — so a stripper that knows only one of them fails
+     a page over a difference the build cannot even see. Caught 2026-09-09 by the way home
+     to Checker Town, whose one Liquid tag is written the other way round. */
+  s = s.replace(/\{\{\s*'([^']+)'\s*\|\s*relative_url\s*\}\}/g, '$1');
+  s = s.replace(/\{\{\s*"([^"]+)"\s*\|\s*relative_url\s*\}\}/g, '$1');
+  const leftover = s.match(/\{[{%][\s\S]{0,60}/);
+  if (leftover) {
+    console.error('  ✗ unhandled Liquid in the page — this harness would test the wrong file:');
+    console.error('    ' + leftover[0].replace(/\n/g, ' '));
+    process.exit(2);
+  }
+  return '<!doctype html><html><head><meta charset="utf-8">' +
+         '<link rel="stylesheet" href="' + css + '">' +
+         '<style>body{background:#15161a;color:#dfe4ea;font-family:system-ui,sans-serif;' +
+         'margin:0;padding:18px}</style></head><body class="' + bodyClass + '">' + s + '</body></html>';
+}
+
+/* The site's real stylesheet, compiled with dart-sass (the board's woods are canon tokens — a harness without them
+   measures a different board). ⚠ `@view-transition` IS STRIPPED from this copy only: a harness's back-to-back
+   location hops supersede each other's transitions, and Chrome's wording for that rejection changes between versions. */
+function siteCss() {
+  const fs = require('fs'), path = require('path');
+  let sass;
+  try { sass = require('sass'); } catch (e) { console.error('dart-sass not installed. Run `npm install` first.'); process.exit(2); }
+  const root = path.join(__dirname, '..');
+  return sass.compileString(fs.readFileSync(path.join(root, 'assets/css/style.scss'), 'utf8')
+    .replace(/^---[\s\S]*?---\s*/, ''), { loadPaths: [path.join(root, '_sass')], style: 'expanded' }).css
+    .replace(/@view-transition\s*\{[^}]*\}/g, '');
+}
+
+module.exports = { withGame, report, sleep, findChrome, bottomSide, inkAt, jekyllPage, siteCss };

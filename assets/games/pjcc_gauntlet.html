@@ -18,6 +18,7 @@
 <script src="/assets/js/pjcc-vs.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
 <script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-board3d.js"></script>
 <script src="/assets/js/pjcc-chess-ai.js"></script>
 <script src="/assets/js/pjcc-gauntlet-engine.js"></script>
 <!-- the opening book: the Game Review already knows how to tag Book moves, but this file
@@ -112,6 +113,10 @@
     box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
   #resign-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
   #resign-btn.hidden { display:none; }
+  /* the board's view, beside Resign and only while it is (off the game the row stays zero high) */
+  .g-view { margin:8px 0 0 8px; font-family:inherit; font-weight:bold; font-size:13px; line-height:1; background:transparent;
+    color:#cdbcf2; border:1px solid #4a3a7a; border-radius:999px; padding:12px 18px; min-height:44px; cursor:pointer; }
+  #resign-btn.hidden + .g-view { display:none; }
   /* the move browser (pjcc-replay.js) — only on while a game is actually running */
   #replay-bar { display:none; }
   #replay-bar.on { display:flex; }
@@ -401,7 +406,7 @@
        (2026-07-27). ⚑ Resign used to be the other one; it is in the flow below now
        (2026-08-19) — see the note by #ctl-row in the stylesheet above. -->
   <div id="replay-bar" aria-label="Move history"></div>
-  <div id="ctl-row"><button class="hidden" id="resign-btn">⚑ Resign</button></div>
+  <div id="ctl-row"><button class="hidden" id="resign-btn">⚑ Resign</button><span id="g-view-slot"></span></div>
 
   <div class="booth hidden" id="booth" aria-hidden="true">
     <div class="booth-card" id="booth-card"><span class="booth-who" id="booth-who">RANDY</span><span class="booth-line" id="booth-line"></span></div>
@@ -507,6 +512,41 @@ function clockMsFor(idx){ return idx >= 4 ? (20 + 2.5 * (idx - 4)) * 60000 : 0; 
 function fmtClock(ms){ var s = Math.max(0, Math.ceil(ms / 1000)); var m = (s / 60) | 0; s = s % 60;
   return m + ':' + (s < 10 ? '0' : '') + s; }
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+/* ⭐ THE TILTED 3D BOARD AND THE TV CUTS (his 11-04, of the chess rooms: "add them there too"): the 3D board's picture
+   drawn where this canvas draws its board (assets/js/pjcc-board3d.js), each floor's own woods, a press read through it.
+   ⚠ UNDER BLINDFOLD THE RIVAL'S MEN ARE LEFT OFF IT TOO: a 3D board that drew them would be the leak; check and mate are
+   read off the whole position. */
+var b3key = '', b3judge = { check: -1, mate: false };
+var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
+  into: true,
+  rect: function () { var r = cv.getBoundingClientRect(), k = r.width / W; return { left: r.left + BX * k, top: r.top + BY * k, width: BOARD * k, height: BOARD * k }; },
+  read: function () {
+    if (!G || !G.S) return null;
+    var VW = G.viewPos, VS = VW ? VW.S : G.S, VLAST = VW ? VW.last : G.last, SET = setFor(G.floor), b = VS.b.slice(), i;
+    if (G.mod === 'blind') for (i = 0; i < 64; i++) if (b[i] && C.colorOf(b[i]) !== G.pc) b[i] = '';
+    var k = VS.b.join('') + VS.turn;
+    if (k !== b3key) { b3key = k; var chk = C.inCheck(VS, VS.turn); b3judge = { check: chk ? C.kingSq(VS.b, VS.turn) : -1, mate: chk && C.legalMoves(VS).length === 0 }; }
+    var dots = [];
+    if (G.sel >= 0 && !VW) G.legal.forEach(function (m) { if (m.from === G.sel) dots.push(m.to); });
+    return { b: b, flip: G.pc !== 'w', last: VLAST ? [VLAST.from, VLAST.to] : null, sel: VW ? -1 : G.sel, dots: dots,
+      turn: VS.turn, check: b3judge.check, mate: b3judge.mate, quiet: !!VW, hint: (!VW && G.coachSq >= 0) ? [G.coachSq] : [],
+      woods: { lt: SET.light, dk: SET.dark, frame: SET.frame } };
+  },
+  // ⚠ A CUT STOPS THE PLAYER'S CLOCK (floors 5+), and only a clock the cut stopped starts again after it
+  onCut: function (kind) {
+    if (!G || !G.clockOn) return;
+    if (kind && G.clockTick) { G.clockMs = Math.max(0, G.clockMs - (Date.now() - G.clockTick)); G.clockTick = null; G.cutHeld = true; }
+    else if (!kind && G.cutHeld) { G.cutHeld = false; if (!G.over && G.S.turn === G.pc) G.clockTick = Date.now(); }
+  },
+}) : null;
+if (B3) { var gv = B3.button('g-view'), slot = document.getElementById('g-view-slot'); slot.parentNode.replaceChild(gv, slot); }
+/* Where a square's middle is drawn on this canvas now: through the 3D camera, or on the flat grid. */
+function b3cell(i) {
+  var p = B3 && B3.on() ? B3.pressIn(i) : null;
+  if (!p) return cellXY(i);
+  var k = W / cv.getBoundingClientRect().width;
+  return { x: BX + p[0] * k, y: BY + p[1] * k };
+}
 var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
 
 /* ══ THE BOARD GOT BIGGER, SO IT HAD TO GET SHARPER FIRST (2026-08-04) ═══════════════════
@@ -1057,10 +1097,24 @@ cv.addEventListener('pointerdown', function(e){
   if (G.S.turn !== G.pc) return;                       // not your move
   var rect = cv.getBoundingClientRect();
   var mx = (e.clientX-rect.left)*(W/rect.width), my = (e.clientY-rect.top)*(H/rect.height);
-  var col = Math.floor((mx-BX)/TILE), row = Math.floor((my-BY)/TILE);
-  if (col<0||col>7||row<0||row>7) return;
+  var i;
+  if (B3 && B3.on()) {
+    // the 3D board: the square drawn under the finger, through its camera
+    i = B3.squareAt(e.clientX, e.clientY);
+    if (i < 0) return;
+  } else {
+    // flat, a cut's camera is undone first: the square drawn under the finger
+    var fm = B3 ? B3.flatMatrix() : null;
+    if (fm) {
+      var kz = W / rect.width, ux = mx - BX - fm[4] * kz, uy = my - BY - fm[5] * kz, det = fm[0] * fm[3] - fm[1] * fm[2];
+      mx = BX + (fm[3] * ux - fm[2] * uy) / det; my = BY + (-fm[1] * ux + fm[0] * uy) / det;
+    }
+    var col = Math.floor((mx-BX)/TILE), row = Math.floor((my-BY)/TILE);
+    if (col<0||col>7||row<0||row>7) return;
+    i = screenToIdx(col, row);
+  }
   e.preventDefault();
-  var i = screenToIdx(col, row), p = G.S.b[i], mine = p && C.colorOf(p)===G.pc;
+  var p = G.S.b[i], mine = p && C.colorOf(p)===G.pc;
   if (G.sel < 0){ if (mine) G.sel = i; return; }
   if (i === G.sel){ G.sel = -1; return; }
   if (mine){ G.sel = i; return; }                      // reselect
@@ -1850,6 +1904,15 @@ function render(){
   if (mat !== G.crowdMat){ G.crowdRoar = 1; G.crowdMat = mat; }   // something was taken
   G.crowdRoar = Math.max(0, (G.crowdRoar || 0) - 1/90);           // ~1.5s of noise
   drawHud();
+  var on3 = !!(B3 && B3.on()), fm = (!on3 && B3) ? B3.flatMatrix() : null;
+  if (on3) B3.drawInto(ctx, BX, BY, BOARD, BOARD);
+  // ⭐ FLAT, A CUT MOVES THE BOARD ITSELF (the game's stage), clipped to its frame
+  if (fm) {
+    var kz = W / cv.getBoundingClientRect().width;
+    ctx.save(); ctx.beginPath(); ctx.rect(BX - 6, BY - 6, BOARD + 12, BOARD + 12); ctx.clip();
+    ctx.translate(BX, BY); ctx.transform(fm[0], fm[1], fm[2], fm[3], fm[4] * kz, fm[5] * kz); ctx.translate(-BX, -BY);
+  }
+  if (!on3) {
   // board frame
   ctx.fillStyle = SET.frame; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();   // canon timber frame
   ctx.strokeStyle = G.rung.accent; ctx.lineWidth = 3; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.stroke();
@@ -1900,13 +1963,16 @@ function render(){
     if (G.mod === 'blind' && C.colorOf(p) !== G.pc) continue;
     var c=cellXY(j);
     PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), SET.pal); }
+  }
+  if (on3 && VW) { ctx.fillStyle = 'rgba(12,8,32,0.28)'; ctx.fillRect(BX, BY, BOARD, BOARD); }
   // two faint spots on the opposition's e-pawn — visually unremarkable, never explained
   if (G.crockett >= 0 && !VW && G.mod !== 'blind' && G.S.b[G.crockett]){
-    var cd = cellXY(G.crockett), aiIsWhite = (G.pc !== 'w');
+    var cd = b3cell(G.crockett), aiIsWhite = (G.pc !== 'w');
     ctx.fillStyle = aiIsWhite ? 'rgba(74,54,24,0.5)' : 'rgba(239,228,255,0.26)';
     ctx.beginPath(); ctx.arc(cd.x - TILE*0.07, cd.y + TILE*0.10, TILE*0.048, 0, 7); ctx.fill();
     ctx.beginPath(); ctx.arc(cd.x + TILE*0.10, cd.y + TILE*0.19, TILE*0.038, 0, 7); ctx.fill();
   }
+  if (fm) ctx.restore();
   // the gallery, from floor 8 — foreground, so after the pieces, but it only ever reaches
   // the outer edge of the frame
   drawCrowd(G.floor, G.crowdRoar);

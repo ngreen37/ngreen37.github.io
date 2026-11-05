@@ -100,6 +100,7 @@ body_class: theme-hall
      dependency. Same rule as face-art-before-creator on /dossier/. {% endcomment %}
 <script src="{{ '/assets/js/pjcc-vs.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-board3d.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-pieces.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-openings.js' | relative_url }}"></script>
 {%- comment -%}
@@ -149,6 +150,21 @@ body_class: theme-hall
   'use strict';
   var C = window.PJCCChess, M = window.PJCCMatch;
   var app = document.getElementById('pt-app');
+  /* ⭐ THE TILTED 3D BOARD AND THE TV CUTS (his 11-04, of the chess rooms: "add them there too"): a lens over the board
+     this file draws (assets/js/pjcc-board3d.js). It reads what the two renders say is on it (b3view) and presses the
+     square drawn under the finger, so every move is still this file's. */
+  var b3view = null;
+  var b3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
+    board: function () { return app.querySelector('.pt-board'); },
+    read: function () { return app.querySelector('.pt-board') ? b3view : null; },
+    press: function (i) {
+      var sq = app.querySelector('.pt-board [data-sq="' + i + '"], .pt-board [data-bsq="' + i + '"]');
+      if (sq) sq.click();
+    },
+    // ⚠ A CUT STOPS THE BOT TABLE'S CLOCK (clockSync asks), as the game's table's does: a cut costs nobody time
+    onCut: function () { if (botCur) clockSync(); },
+  }) : null;
+  var b3btn = b3 ? b3.button('pjcc-btn-ghost pt-view') : null;
 
   /* ══ IF A SCRIPT DIDN'T ARRIVE, SAY SO — don't hang (2026-07-28) ═══════════════
      Caught by blocking one file at a time and watching what a visitor gets. With
@@ -1529,7 +1545,7 @@ body_class: theme-hall
        clock, and it belongs to whoever is to move. With the regular's clock switched off,
        its whole turn is untimed, so nothing runs and nothing can flag while it thinks. */
     var run = !!tc && !!st && !st.done && !botLab && plyCount(st.moves) > 0 &&
-              clockOnFor(st, clockSide(st)) &&
+              clockOnFor(st, clockSide(st)) && !(window.PJCCBoard3D && PJCCBoard3D.cutting()) &&
               (typeof document.visibilityState !== 'string' || document.visibilityState !== 'hidden');
     if (run && !clockRunAt) clockRunAt = Date.now();
     if (!run && clockRunAt) clockBank(st, false);
@@ -2866,6 +2882,8 @@ body_class: theme-hall
       for (var h = 0; h < lm.length; h++) if (lm[h].from === botSel) hints[lm[h].to] = 1;
     }
     var last = lastMove(lab ? lab.moves : st.moves);
+    b3view = { b: S.b, flip: !white, last: last ? [last.from, last.to] : null, sel: botSel,
+      dots: Object.keys(hints).map(Number), turn: S.turn, quiet: !!lab };
     /* THE BOARD TURNS AROUND WHEN YOU DO (2026-08-18). Same two-coordinate walk the live
        tables have always used: `vr`/`vf` step down the SCREEN, `r`/`f` are the true square
        the piece is on, and playing Black reverses the mapping between them. Everything
@@ -3085,6 +3103,8 @@ body_class: theme-hall
       botSay = null; botRender();
     };
     paintPieces(app);
+    var b3tl = app.querySelector('.pt-tools');
+    if (b3btn && b3tl) b3tl.appendChild(b3btn);
     if (myTurn) {
       Array.prototype.forEach.call(app.querySelectorAll('[data-bsq]'), function (b) {
         b.onclick = function(){ botTap(+b.getAttribute('data-bsq')); };
@@ -3769,6 +3789,8 @@ body_class: theme-hall
 
     // board (flipped for black)
     var last = vw ? (vw.last ? { from: vw.last.from, to: vw.last.to, mover: (viewPly % 2 ? 'b' : 'w') } : null) : lastMove(m.moves);
+    b3view = { b: S.b, flip: !white, last: last ? [last.from, last.to] : null, sel: sel,
+      dots: Object.keys(hints).map(Number), turn: S.turn, quiet: viewing };
     var rows = '';
     for (var vr = 0; vr < 8; vr++) {
       for (var vf = 0; vf < 8; vf++) {
@@ -3898,6 +3920,8 @@ body_class: theme-hall
       }).catch(function(e){ toast(e.message); });
     };
     paintPieces(app);
+    var b3tl2 = app.querySelector('.pt-tools');
+    if (b3btn && b3tl2) b3tl2.appendChild(b3btn);
     if (myTurn && !g.result) {
       Array.prototype.forEach.call(app.querySelectorAll('.pt-sq'), function (b) {
         b.onclick = function(){ tap(+b.getAttribute('data-sq')); };

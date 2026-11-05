@@ -42,7 +42,7 @@ _config.yml ──> Jekyll ──> _layouts/<layout>.html
 | `assets/js/` | 48 scripts, one job each. Nothing bundles; pages load what they need. |
 | `assets/games/` | 19 games. Each is one self-contained file. |
 | `assets/vendor/` | Third-party slices: three.js, Stockfish. Never edited by hand. |
-| `assets/models/` | Blender exports (`.glb`). Written by `npm run gen:models`. |
+| `assets/models/` | Blender exports (`.glb`). Written by `npm run gen:models`; `pieces3d/` by `npm run gen:pieces3d`. |
 | `_characters/` `_locations/` `_evolutions/` `_tag_pages/` | Jekyll collections — lore, one file per entry. |
 | `_posts/` | The blog. |
 | `_data/` | YAML the templates read. |
@@ -87,7 +87,7 @@ handful that every page needs.
 | **Chess** | `pjcc-chess.js`, `pjcc-chess-ai.js`, `pjcc-openings.js`, `pjcc-analysis.js`, `pjcc-game-review.js`, `pjcc-pgn.js` |
 | **Opponents** | `pjcc-auston.js`, `pjcc-adapt.js`, `pjcc-match.js`, `pjcc-systems.js`, `pjcc-gauntlet-engine.js` |
 | **Rooms + doors** | `pjcc-hall.js`, `pjcc-games-data.js`, `pjcc-gauntlet-door.js`, `pjcc-vs.js`, `pjcc-portal.js` |
-| **Art at runtime** | `pjcc-pieces.js`, `pjcc-face-art.js`, `pjcc-pet-art.js`, `pjcc-stage.js` (3D) |
+| **Art at runtime** | `pjcc-pieces.js`, `pjcc-face-art.js`, `pjcc-pet-art.js`, `pjcc-stage.js` (3D), `pjcc-board3d.js` (the chess rooms' tilted 3D board and TV cuts) |
 | **Secrets** | `pjcc-eggs.js`, `pjcc-fragments.js` |
 | **Economy** | `pjcc-gift.js`, `pjcc-leaderboard.js`, `pjcc-creator.js` |
 
@@ -122,6 +122,7 @@ Nothing here runs on a visitor's machine. These write files you commit.
 |---|---|
 | `gen:models` | Blender `.blend` → `.glb` for the site **and** the Godot project |
 | `gen:pieces` | Blender → 512px piece PNGs for the Tournament Board |
+| `gen:pieces3d` | His 3D chess pieces for the chess rooms' tilted board, copied byte for byte from Checker Town's `pieces3d/` (the game's `node tests/gen_pieces3d.js` makes them from his Blender saves) |
 | `gen:clock` | `_includes/pjcc-time.js` → `assets/js/pjcc-time.js` |
 | `gen:city` `gen:puzzles` `gen:rating` `gen:marchland` | Baked data — skylines, puzzle pools, ladders |
 | `gen:three` | The three.js slice in `assets/vendor/` |

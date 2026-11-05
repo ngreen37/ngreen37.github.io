@@ -16,6 +16,8 @@
 <script src="/assets/js/pjcc-vs.js"></script>
 <link rel="stylesheet" href="/assets/css/vs-aura.css">
 <script src="/assets/js/pjcc-pieces.js"></script>
+<script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-board3d.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { user-select: none; -webkit-user-select: none; -moz-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -56,6 +58,10 @@
     padding: 5px 12px; font-size: 11px; border: 1px solid #6a4a22;
   }
   .float-btn.hidden { display: none; }
+  /* the board's view, top left, while the lesson's menu button is up */
+  .p-view { top: 10px; left: 10px; background: #3a2812; color: #ead9b8; padding: 5px 12px; font-size: 11px;
+    border: 1px solid #6a4a22; }
+  #menu-btn.hidden ~ .p-view { display: none; }
 
   /* ── Overlays ────────────────────────────────────────────────────────────────────
      ⚠⚠ EVERY SCREEN IN THIS GAME WAS CLIPPED, AT EVERY SIZE (fixed 2026-08-10).
@@ -219,6 +225,7 @@
 
   <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
   <button class="float-btn hidden" id="hint-btn">📖 Show me</button>
+  <span id="p-view-slot"></span>
 
   <!-- DECK SELECT -->
   <div class="overlay" id="menu-screen">
@@ -603,6 +610,25 @@ let floaters = [];
 let shake = 0, vignette = 0;
 let coach = { mood: 'think', say: '', mouth: 0, bob: 0 };
 let arrow = null;      // hint arrow {from,to,t}
+/* ⭐ THE TILTED 3D BOARD AND THE TV CUTS (his 11-04, of the chess rooms: "add them there too"): the 3D board's picture
+   drawn where this canvas draws its board (assets/js/pjcc-board3d.js), the library's own woods, a press read through
+   it, and the hint's arrow and the bursts drawn where its squares are. */
+let b3last = null;
+const B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
+  into: true,
+  rect: function () { const r = canvas.getBoundingClientRect(), k = r.width / W; return { left: r.left + BX * k, top: r.top + BY * k, width: BOARD * k, height: BOARD * k }; },
+  read: function () {
+    if (!G || !G.board) return null;
+    const b = [];
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+      const p = G.board[y][x];
+      b.push(p ? (p.c === 'w' ? p.t.toUpperCase() : p.t.toLowerCase()) : '');
+    }
+    return { b: b, flip: G.orient === 'b', last: b3last, sel: G.selected ? G.selected.y * 8 + G.selected.x : -1, dots: [],
+      woods: { lt: C.light, dk: C.dark, frame: '#3a2812' } };
+  },
+}) : null;
+if (B3) { const pv = B3.button('float-btn p-view'), slot = document.getElementById('p-view-slot'); slot.parentNode.replaceChild(pv, slot); }
 
 const PRAISE = ['Textbook! ⭐', 'You know this line.', "That's the one.", 'Crisp play.', 'Booked up!', 'Clean.'];
 const NUDGE = ['Not that one…', 'Wrong move order.', 'Hmm, try again.', 'Look again.'];
@@ -732,6 +758,7 @@ function doMove(ply, onDone) {
   const fromC = cellCenter(ply.from.x, ply.from.y);
   const toC = cellCenter(ply.to.x, ply.to.y);
   const piece = G.board[ply.from.y][ply.from.x];
+  b3last = [ply.from.y * 8 + ply.from.x, ply.to.y * 8 + ply.to.x];
   const cap = applyPly(G.board, ply);
   sfx('move');
   anim = {
@@ -776,9 +803,20 @@ function lineComplete() {
 
 // ---- Input ----
 function cellFromXY(clientX, clientY) {
+  // the 3D board: the square drawn under the finger, through its camera (the referee's numbering, so no turning)
+  if (B3 && B3.on()) {
+    const i = B3.squareAt(clientX, clientY);
+    return i < 0 ? null : { x: i % 8, y: (i / 8) | 0 };
+  }
   const r = canvas.getBoundingClientRect();
-  const mx = (clientX - r.left) * (W / r.width);
-  const my = (clientY - r.top) * (H / r.height);
+  let mx = (clientX - r.left) * (W / r.width);
+  let my = (clientY - r.top) * (H / r.height);
+  // flat, a cut's camera is undone first: the square drawn under the finger
+  const fm = B3 ? B3.flatMatrix() : null;
+  if (fm) {
+    const kz = W / r.width, ux = mx - BX - fm[4] * kz, uy = my - BY - fm[5] * kz, det = fm[0] * fm[3] - fm[1] * fm[2];
+    mx = BX + (fm[3] * ux - fm[2] * uy) / det; my = BY + (-fm[1] * ux + fm[0] * uy) / det;
+  }
   const col = Math.floor((mx - BX) / TILE), row = Math.floor((my - BY) / TILE);
   if (col < 0 || col > 7 || row < 0 || row > 7) return null;
   // screen col/row -> board x/y depending on orientation
@@ -829,6 +867,8 @@ document.getElementById('hint-btn').addEventListener('click', () => {
 
 // ---- Effects ----
 function cellCenter(x, y) {
+  const p3 = B3 && B3.on() ? B3.seenIn(y * 8 + x) : null;
+  if (p3) { const k = W / canvas.getBoundingClientRect().width; return { x: BX + p3[0] * k, y: BY + p3[1] * k }; }
   let col, row;
   if (G.orient === 'w') { col = x; row = y; } else { col = 7 - x; row = 7 - y; }
   return { x: BX + col * TILE + TILE / 2, y: BY + row * TILE + TILE / 2 };
@@ -860,7 +900,19 @@ function render() {
   drawBg();
   ctx.save();
   if (shake > 0) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake -= 0.6; }
-  if (G) { drawBoard(); drawPieces(); drawArrow(); }
+  if (G) {
+    const on3 = !!(B3 && B3.on()), fm = (!on3 && B3) ? B3.flatMatrix() : null;
+    if (on3) B3.drawInto(ctx, BX, BY, BOARD, BOARD);
+    // ⭐ FLAT, A CUT MOVES THE BOARD ITSELF (the game's stage), clipped to its frame
+    if (fm) {
+      const kz = W / canvas.getBoundingClientRect().width;
+      ctx.save(); ctx.beginPath(); ctx.rect(BX - 7, BY - 7, BOARD + 14, BOARD + 14); ctx.clip();
+      ctx.translate(BX, BY); ctx.transform(fm[0], fm[1], fm[2], fm[3], fm[4] * kz, fm[5] * kz); ctx.translate(-BX, -BY);
+    }
+    if (!on3) { drawBoard(); drawPieces(); }
+    drawArrow();
+    if (fm) ctx.restore();
+  }
   ctx.restore();
   drawConfetti();
   drawFloaters();

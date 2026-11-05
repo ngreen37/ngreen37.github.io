@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Board 3D fixture</title>
+<!-- tests/board3d.check.js plays this: a room with Park Tables' board (64 buttons, data-sq) played by the referee,
+     a clock that a cut pauses, and the tilted board mounted over it the way a room mounts it. Not published. -->
+<script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-board3d.js"></script>
+<style>
+  :root { --chess-lt: #e9d3a4; --chess-dk: #9c5f33; --chess-frame: #4a3320; }
+  body { margin: 0; background: #0d0a17; color: #eee; font-family: sans-serif; }
+  .wrap { position: relative; width: 480px; margin: 20px; }
+  .pt-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-auto-rows: 1fr; aspect-ratio: 1;
+    border: 3px solid var(--chess-frame); border-radius: 6px; }
+  .pt-sq { border: 0; padding: 0; font-size: 40px; line-height: 1; }
+  .pt-sq.lt { background: var(--chess-lt); } .pt-sq.dk { background: var(--chess-dk); }
+  .pt-sq.sel { outline: 3px solid #6bffb8; outline-offset: -3px; }
+  #clock { margin: 8px 20px; }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="pt-board" id="board"></div></div>
+<p id="clock">300.0</p>
+<div id="tools"></div>
+<script>
+  var C = window.PJCCChess, S = C.parseFEN(), sel = -1, last = null, left = 300, flip = false;
+  var GLYPH = { K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘', P: '♙', k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+  function render() {
+    var h = '';
+    for (var vr = 0; vr < 8; vr++) for (var vf = 0; vf < 8; vf++) {
+      var r = flip ? 7 - vr : vr, f = flip ? 7 - vf : vf, i = r * 8 + f;
+      h += '<button class="pt-sq ' + ((r + f) % 2 ? 'dk' : 'lt') + (i === sel ? ' sel' : '') + '" data-sq="' + i + '">' +
+        (S.b[i] ? GLYPH[S.b[i]] : '') + '</button>';
+    }
+    // ⚠ A NEW ELEMENT EVERY TIME, as Park Tables draws it: the lens must find the board each frame
+    var old = document.getElementById('board'), nb = document.createElement('div');
+    nb.className = 'pt-board'; nb.id = 'board'; nb.innerHTML = h;
+    old.parentNode.replaceChild(nb, old);
+    Array.prototype.forEach.call(nb.querySelectorAll('.pt-sq'), function (b) {
+      b.onclick = function () { tap(+b.getAttribute('data-sq')); };
+    });
+  }
+  function tap(i) {
+    var mine = S.b[i] && (S.b[i] === S.b[i].toUpperCase()) === (S.turn === 'w');
+    if (sel === -1 || mine) { sel = mine ? i : -1; return render(); }
+    var mv = C.findMove(S, sel, i, null);
+    sel = -1;
+    if (mv) { S = C.makeMove(S, mv); last = [mv.from, mv.to]; }
+    render();
+  }
+  function setFen(fen) { S = C.parseFEN(fen); sel = -1; last = null; render(); }
+  function moveUci(u) {
+    var mv = C.findMove(S, C.sqFromName(u.slice(0, 2)), C.sqFromName(u.slice(2, 4)), u[4] || null);
+    if (!mv) return false;
+    S = C.makeMove(S, mv); last = [mv.from, mv.to]; render(); return true;
+  }
+  render();
+  var b3 = PJCCBoard3D.mount({
+    board: function () { return document.getElementById('board'); },
+    read: function () {
+      var dots = [];
+      if (sel >= 0) C.legalMoves(S).forEach(function (m) { if (m.from === sel) dots.push(m.to); });
+      return { b: S.b, flip: flip, last: last, sel: sel, dots: dots, turn: S.turn };
+    },
+  });
+  document.getElementById('tools').appendChild(b3.button());
+  // ⚠ THE CLOCK STANDS STILL THROUGH A CUT, as the game's table's does
+  setInterval(function () {
+    if (!PJCCBoard3D.cutting()) left = Math.max(0, left - 0.1);
+    document.getElementById('clock').textContent = left.toFixed(1);
+  }, 100);
+  window.T3 = { b3: b3, tap: tap, setFen: setFen, moveUci: moveUci, flipTo: function (v) { flip = v; render(); },
+    S: function () { return S; }, left: function () { return left; } };
+</script>
+</body>
+</html>

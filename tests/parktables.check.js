@@ -38,11 +38,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
-const { findChrome, bottomSide, inkAt } = require('./harness');
+const { findChrome, bottomSide, inkAt, jekyllPage, siteCss } = require('./harness');
 
-let sass;
-try { sass = require('sass'); }
-catch (e) { console.error('dart-sass not installed. Run `npm install` first.'); process.exit(2); }
 
 const ROOT = path.join(__dirname, '..');
 const PORT = 8107;
@@ -59,32 +56,9 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascri
                '.wasm': 'application/wasm', '.css': 'text/css; charset=utf-8',
                '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
-/* The Liquid this page actually uses. Anything else FAILS the run rather than being
-   silently dropped — a harness that renders a different page from the one that ships is
-   worse than no harness. */
-function render(src) {
-  let s = src.replace(/^---[\s\S]*?\n---\s*\n/, '');
-  s = s.replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '');
-  /* ⚠ EITHER QUOTE. Jekyll does not care which, and games/checker-town/ has used the
-     double-quoted form since it shipped — so a stripper that knows only one of them fails
-     a page over a difference the build cannot even see. Caught 2026-09-09 by the way home
-     to Checker Town, whose one Liquid tag is written the other way round. */
-  s = s.replace(/\{\{\s*'([^']+)'\s*\|\s*relative_url\s*\}\}/g, '$1');
-  s = s.replace(/\{\{\s*"([^"]+)"\s*\|\s*relative_url\s*\}\}/g, '$1');
-  const leftover = s.match(/\{[{%][\s\S]{0,60}/);
-  if (leftover) {
-    console.error('  ✗ unhandled Liquid in the page — this harness would test the wrong file:');
-    console.error('    ' + leftover[0].replace(/\n/g, ' '));
-    process.exit(2);
-  }
-  /* The page ships inside `layout: page`, which is where the stylesheet and `body_class`
-     live. Both matter here: the board reads --chess-lt/dk/frame out of the canon, and the
-     room is `theme-hall`. Rebuilt around the stripped page rather than mocked. */
-  return '<!doctype html><html><head><meta charset="utf-8">' +
-         '<link rel="stylesheet" href="/assets/css/__pt_test.css">' +
-         '<style>body{background:#15161a;color:#dfe4ea;font-family:system-ui,sans-serif;' +
-         'margin:0;padding:18px}</style></head><body class="theme-hall">' + s + '</body></html>';
-}
+/* The page, rendered the way the build would (tests/harness.js jekyllPage: the Liquid it uses, inside the shell
+   `layout: page` gives it — the stylesheet and `body_class`; the room is `theme-hall`). */
+const render = (src) => jekyllPage(src, '/assets/css/__pt_test.css', 'theme-hall');
 
 const server = http.createServer((req, res) => {
   /* ⚠ THE TOWN'S ADDRESS ANSWERS WITH AN EMPTY PAGE. Section 14 watches a visit go home; with no
@@ -123,9 +97,7 @@ const BOT = 'maxwell';
      artifact cannot happen at all. ⚠ Verified 2026-09-19 in Chrome 153 that a REAL click between
      two opted-in pages still transitions (`pagereveal` carries a viewTransition) — the site's
      feature is untouched and this is only the harness declining to use it. */
-  fs.writeFileSync(TMPCSS, sass.compileString(fs.readFileSync(path.join(ROOT, 'assets/css/style.scss'), 'utf8')
-    .replace(/^---[\s\S]*?---\s*/, ''), { loadPaths: [path.join(ROOT, '_sass')], style: 'expanded' }).css
-    .replace(/@view-transition\s*\{[^}]*\}/g, ''));
+  fs.writeFileSync(TMPCSS, siteCss());
   if (SHOTS) fs.mkdirSync(SHOTDIR, { recursive: true });
   await new Promise(r => server.listen(PORT, r));
   const b = await puppeteer.launch({ executablePath: findChrome(), args: ['--no-sandbox'] });

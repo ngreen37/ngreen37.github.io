@@ -40,6 +40,7 @@
 <!-- THE REFEREE. Every move below is played through the site's perft-verified referee, so
      the board can never show a position the rules would not allow. -->
 <script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-board3d.js"></script>
 <!-- THE VS RAILS (2026-08-13, Nate: "Let's keep it this way for all chess games"). ⚠ ORDER:
      config → profile → vs. PJCCVs.color() reads PJCC.auraColor() and keeps no palette of
      its own, and pjcc-profile.js no-ops harmlessly when the site is not configured — so a
@@ -116,6 +117,8 @@
      black sits at the bottom where their hands are. */
   .boardwrap { position: relative; width: 100%; aspect-ratio: 1; border: 3px solid var(--chess-frame);
     border-radius: 6px; overflow: hidden; flex: 0 0 auto; container-type: inline-size; }
+  .du-view { padding: 3px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 6px; background: transparent;
+    color: inherit; opacity: .75; font: 600 12px inherit; cursor: pointer; }
   .sqs, .men { position: absolute; inset: 0; display: grid;
     grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
   .men { pointer-events: none; }
@@ -200,6 +203,7 @@
     <div class="vs-aura" id="du-aura-opp" aria-hidden="true" style="--dir:1"><i></i></div>
     <div class="boardwrap"><div class="sqs" id="sqs"></div><div class="men" id="men"></div></div>
     <div class="vs-aura" id="du-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
+    <p id="du-view-row" style="text-align:center;margin:4px 0 0"></p>
     <div class="talk">
       <div class="say" id="say"></div>
       <div class="picks" id="picks"></div>
@@ -315,12 +319,24 @@ var TRAPS = [], FOES = [];
   }
 
   var S = null;
-  function reset() { S = C.parseFEN(C.START_FEN); clearMarks(); paint(S); }
+  /* ⭐ THE TILTED 3D BOARD AND THE TV CUTS (his 11-04, of the chess rooms: "add them there too"): a lens over the board
+     the traps are laid out on (assets/js/pjcc-board3d.js). Nothing here is pressed, so it is inert. ⚠ A LINE IS LAID
+     OUT QUIETLY and only its last move cuts, the trap springing: a close-up on every capture of a line laid out at a
+     move every 95ms would jerk the camera, not cut it. */
+  var b3last = null, b3quiet = true;
+  var b3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
+    board: function () { var w = document.querySelector('.boardwrap'); return S && w && w.offsetParent !== null ? w : null; },
+    read: function () { return S ? { b: S.b, flip: true, last: b3last, sel: -1, dots: [], turn: S.turn, quiet: b3quiet } : null; },
+    inert: true,
+  }) : null;
+  if (b3) $('du-view-row').appendChild(b3.button('du-view'));
+  function reset() { S = C.parseFEN(C.START_FEN); b3last = null; clearMarks(); paint(S); }
   function step(uci, hostile) {
     var from = C.sqFromName(uci.slice(0, 2)), to = C.sqFromName(uci.slice(2, 4));
     var m = C.findMove(S, from, to, uci.length > 4 ? uci[4] : null);
     if (!m) return false;                       /* proved at build time; never silent here */
     S = C.makeMove(S, m);
+    b3last = [from, to];
     clearMarks();
     var a = cell(from), b = cell(to);
     if (a) a.classList.add('from');
@@ -339,6 +355,7 @@ var TRAPS = [], FOES = [];
     var i = 0;
     (function next() {
       if (i >= list.length) { done && done(); return; }
+      b3quiet = i < list.length - 1;
       step(list[i][0], hostile);
       i++;
       setTimeout(next, ms);

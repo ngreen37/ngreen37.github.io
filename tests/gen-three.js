@@ -15,6 +15,9 @@ const VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, 'node_modules', 'thre
 const EXPORTS = [
   'WebGLRenderer', 'Scene', 'PerspectiveCamera', 'Group', 'Color', 'Box3', 'Vector3',
   'HemisphereLight', 'DirectionalLight', 'PointLight', 'SRGBColorSpace', 'ACESFilmicToneMapping',
+  // the chess rooms' tilted board (pjcc-board3d.js)
+  'Mesh', 'PlaneGeometry', 'BoxGeometry', 'CylinderGeometry', 'MeshStandardMaterial', 'MeshBasicMaterial',
+  'CanvasTexture', 'AmbientLight', 'Quaternion', 'NoToneMapping', 'PCFShadowMap',
 ];
 
 const entry = `export { ${EXPORTS.join(', ')} } from 'three';
