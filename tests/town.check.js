@@ -2803,9 +2803,9 @@ const server = http.createServer((req, res) => {
       /* his: "measure it on a phone." */
       ok(/const BASE_H := 648\.0/.test(zone) && /static func ui_scale\(n: Node\) -> float:/.test(zone),
         'there is ONE number for how big a UI pixel is');
-      ok(/return maxf\(1\.0, v \/ BASE_H\)/.test(zone),
-        '\u26a0\u26a0 …and it is exactly 1.0 on a desktop  (648 / 648 \u2014 nothing about this machine changed)');
-      ok(/n\.get_viewport\(\)\.get_visible_rect\(\)\.size\.y/.test(zone),
+      ok(/return maxf\(1\.0, minf\(s\.y \/ BASE_H, s\.x \/ MIN_W\)\)/.test(zone) && /const MIN_W := 400\.0/.test(zone),
+        '\u26a0\u26a0 …and it is exactly 1.0 on a desktop  (648 / 648 \u2014 nothing about this machine changed), and never so big the screen is narrower than 400  (a tall phone full screen was 3.85 by its height alone, its Journal card 259 across; his 352x560 is 2.83 either way)');
+      ok(/var s := n\.get_viewport\(\)\.get_visible_rect\(\)\.size\n/.test(zone),
         '\u26a0 asked of the VIEWPORT, not of a CanvasItem rect  (a CanvasLayer is not a CanvasItem)');
       {
         /* Everything that draws UI has to be on the lever. */
@@ -3802,8 +3802,9 @@ const server = http.createServer((req, res) => {
         /* ⚠⚠ ONE ROW PER PERSON, NOT ONE PER FACT. Nine people with three facts each is 27
            extra rows and this card does not scroll — the header says so twice. */
         ok(/if not facts\.is_empty\(\):\s*\n\s*out\.append\(\{ "wide": true/.test(jrG)
-          && /w - 50\.0 \* k, size, DIM\)/.test(jrG),
-          '…as ONE line per person that runs the whole card, ellipsized like every other row',
+          && /return _body\.size\.x - 50\.0 \* _k/.test(jrG)
+          && /_value\(f, str\(r\.get\("b", ""\)\), 38\.0 \* k, y, _room\(f, r, size, bx\), size, DIM, two\)/.test(jrG),
+          '…as ONE row per person that runs the whole card, cut like every other row (or on a second line where the card has one)',
           '⚠ a row per fact would push the People tab off the bottom of a phone');
 
         /* ══ THE PARK KEEPS HOURS — 2026-09-24 ══ */
@@ -7635,6 +7636,21 @@ const server = http.createServer((req, res) => {
                && /"motion": False/.test(gdTxt('tests/savefix.py'))
                && /jbtn:Motion: Full;gseq:motion_on=false;gseq:motion_chosen=true;/.test(bcCase('fxmotion')) && /jnobtn:Motion;jfits;/.test(bcCase('fxmotionphone')),
               '⭐ …and MOTION, FULL OR REDUCED, on the Journal\'s Town tab by the time zone: a device preference like the mute (saved, never pushed, kept through a change of save and a run come down), following the device until it is chosen (the phone\'s own Reduce Motion on the website), shown only where the card still holds every row, so on a phone its own setting is the switch (probed on his 352×560)');
+            /* ⭐ THE JOURNAL WHOLE ON EVERY PHONE (his 11-04: "fix the journal") */
+            const prJ = gdTxt('tests/probe.gd');
+            const jfitsT = (/\n\t{3}"jfits":[\s\S]*?(?=\n\t{3}"|\n\S)/.exec(prJ) || [''])[0];
+            ok(/# ⚠ CLIPPED, NEVER WIDER[^\n]*\n\t\t_btns\[i\]\.clip_text = true/.test(jnF('_layout'))
+               && /if p2 \/ k >= float\(b\) \+ 11\.0 and _whole_in_two\(rows, cut, f, s2, bx2\):/.test(jnF('_paint'))
+               && /var p2 := body \/ float\(rows\.size\(\) \+ cut\.size\(\)\)/.test(jnF('_paint'))
+               && /var h := pitch \* \(2\.0 if two\.has\(i\) else 1\.0\)/.test(jnF('_paint'))
+               && /_cut_shown \+= 1/.test(jnF('_value')) && /var sp := _split\(f, t, room, size\) if two else/.test(jnF('_value'))
+               && /get_content_margin\(SIDE_LEFT\) \+ st\.get_content_margin\(SIDE_RIGHT\)/.test(jfitsT)
+               && /if want5 > bb\.size\.x \+ 0\.5:\s*\n\t+bad5\.append\("%s cut \(%\.0f of %\.0f\)"/.test(jfitsT)
+               && /RES=390x844;/.test(bcCase('jrnphone')) && /key:2;jrn:1;jfits;jcut:0;/.test(bcCase('jrnphone'))
+               && /key:4;jrn:3;jfits;jcut:0;/.test(bcCase('jrnphone')) && /RES=352x560;/.test(bcCase('jrnhis'))
+               && /key:5;jrn:4;jfits;/.test(bcCase('jrndesk'))
+               && ['jrnphone', 'jrndesk', 'jrnhis'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT)),
+              '⭐ …and THE JOURNAL WHOLE ON EVERY PHONE  (his 11-04: "fix the journal"): on a tall phone full screen People sat on Town and the time zone lost its words (the UI scale, now never narrower than 400 across); a tab is clipped, never wider; a value cut short takes a second line where the card has the lines for it, the font a step smaller only as far as those need, and a card with none to spare (his phone\'s Town) is as it was (probed: every tab at 390x844, on his 352x560 and on the desktop, every label whole, and on the tall phone\'s Town and Board no value cut short)');
             /* ⭐ THE WEBSITE'S TWO ROOMS, AS THE GAME HAS THEM (his 11-03: "the website version should always match our game") */
             const pageN = (src, name) => +((new RegExp('\\b' + name + ' = ([\\d.]+)[,;]').exec(src) || [])[1]);
             const gameN = (src, name) => +((new RegExp('const ' + name + ' := ([\\d.]+)').exec(src) || [])[1]);
