@@ -7733,6 +7733,74 @@ const server = http.createServer((req, res) => {
                && new RegExp('^[^#\\n]*\\btable3d\\b', 'm').test(suiteT),
               '⭐⭐ THE TILTED 3D BOARD  (his 11-04: "then tilted 3d chess board"): every table\'s board in 3D at a tilt, in his own Blender pieces (his pawns and bishops; the May set\'s king, queen, rook and knight in his two materials), the table\'s woods under a lamp with real shadows, fitted to its frame whatever its shape; a move arcs, a capture knocks the taken piece aside, the cuts move its camera and a ring rides it with its piece; a press is the piece or the square under it, as drawn; "Board: Flat" (V, a pad\'s R) is a device preference (probed: all 64 squares pressed where they are drawn, at rest, in a cut and flat; a check\'s ring held on the king through the cut)',
               tallOff.length || glbOff.length ? 'off: ' + tallOff.concat(glbOff).join(' ') : 'eight models, at the canon heights');
+            /* ⭐ PUSH IN WHEN YOU SIT, AND THE OPPONENT ACROSS (his 11-05, #1 of the view ideas) */
+            const tpT = rd('table_push.gd');
+            const tpF = (n) => fnGd(tpT, n);
+            const tsT = rd('table_seat.gd');
+            const tsF = (n) => fnGd(tsT, n);
+            const offOf = (needs) => Object.keys(needs).filter((k) => !needs[k]);
+            const pushOff = ['chess_table.gd', 'shogi_table.gd', 'drill_table.gd', 'notation_table.gd', 'mine_table.gd'].filter((f) => {
+              const t = rd(f);
+              const shut = fnGd(t, f === 'chess_table.gd' ? '_shut' : '_leave');
+              return !/add_child\(dim\)\s*\n\tTablePush\.push\(self, dim\)/.test(t)
+                || !/TablePush\.pull\(self, (ChessTable\.)?SHADE\)/.test(shut)
+                || shut.indexOf('TablePush.pull(') > shut.indexOf('closed.emit()');
+            }).concat(offOf({
+              'class': /^class_name TablePush\nextends Node/.test(tpT),
+              'reads the screen': /uniform sampler2D screen : hint_screen_texture/.test(tpT),
+              'zooms on the focus': /vec2 uv = focus \+ \(SCREEN_UV - focus\) \/ mix\(1\.0, zoom, a\);/.test(tpT),
+              'calm push': /if TableFX\.calm\(\):\s*\n\t\treturn/.test(tpF('push')),
+              'calm pull': /if TableFX\.calm\(\) or /.test(tpF('pull')),
+              'the town is yours': /dim\.mouse_filter = Control\.MOUSE_FILTER_IGNORE/.test(tpF('pull')),
+              'a press finishes it': /if event\.is_pressed\(\) and not event\.is_echo\(\)[^\n]*:\s*\n\t\t_step\(1\.0\)/.test(tpF('_input')),
+              'and is still the press': !/set_input_as_handled/.test(tpT),
+              'first frame': /if _first:\s*\n\t\t_first = false\s*\n\t\treturn\s*\n\t_t \+= minf\(delta, 0\.1\)/.test(tpF('_process')),
+              'lets go': /if _in:\s*\n\t\t_dim\.material = null\s*\n\t\tqueue_free\(\)\s*\n\telse:\s*\n\t\tget_parent\(\)\.queue_free\(\)/.test(tpF('_step')),
+              'where you sit': /get_first_node_in_group\("town_player"\)/.test(tpF('_focus')),
+              'case in/out': /pushis:in;shot:table_push_0;wait:9;pushis:in;[^"]*pushis:none;shot:table_pushed;tablebtn:leave;pushis:out;/.test(bcCase('tablepush')),
+              'case esc': /wait:10;pushis:in;key:escape:0;pushis:out;layer:ChessTable:0;/.test(bcCase('tablepush')),
+              'case calm': /gs:motion_on=false;sit:Maxwell:maxwell:10;wait:1;pushis:none;/.test(bcCase('tablepush')),
+              'case drill': /layer:DrillTable:1;pushis:in;wait:40;pushis:none;/.test(bcCase('tablepush')),
+              'suite': new RegExp('^[^#\\n]*\\btablepush\\b', 'm').test(suiteT),
+            }));
+            ok(pushOff.length === 0,
+              '⭐⭐ PUSH IN WHEN YOU SIT  (his 11-05, view idea #1: "the camera eases from the town into the table, the town blurs behind … getting up pulls back out"): at all five tables the town is read off the screen and eased in on where you sit, blurred and darkened to the table\'s shade as the table comes up over it; getting up pulls back out over a town that is yours at once; any press finishes it and still does what it does, the first frame\'s build time is not counted, and pushed in the table lets go of the screen; Motion: Reduced has neither (probed: in, still, out, an Esc mid-push standing you up, none when calm, the Drill table\'s own)',
+              pushOff.length ? 'off: ' + pushOff.join(' · ') : 'all five tables');
+            const shT = rd('people_sheet.gd');
+            const FRONT = +((/const FRONT := (\d+)/.exec(shT) || [])[1]);
+            const IDLES = +((/const IDLES := (\d+)/.exec(shT) || [])[1]);
+            const frPng = GDF('people_front.png'), frGlb = GDF('nate.glb');
+            const frHas = fs.existsSync(frPng) && fs.existsSync(frPng + '.import') && fs.existsSync(frGlb);
+            const frHead = frHas ? fs.readFileSync(frPng).subarray(16, 24) : null;
+            const frW = frHead ? frHead.readUInt32BE(0) : 0, frH = frHead ? frHead.readUInt32BE(4) : 0;
+            const seatOff = offOf({
+              'class': /^class_name TableSeat\nextends Control/.test(tsT),
+              'no presses': /mouse_filter = Control\.MOUSE_FILTER_IGNORE/.test(tsF('_init')),
+              'dressed': /_build = TownPeople\.dress\(self, who, key\)\["build"\]/.test(tsF('sit')),
+              'the front bank': /var t := TownPeople\.front\(_breath\)/.test(tsF('_draw')),
+              'through the camera': /var edge := board\.seen\(Vector3\(0\.0, 0\.0, -FAR\)\)/.test(tsF('_draw')) && /var top := board\.seen\(head\(_build\.y\)\)/.test(tsF('_draw')),
+              'redrawn as it moves': /if now != _cell or cam != _seen:/.test(tsF('_process')),
+              'the far edge': /const FAR := 4\.0 \* Board3D\.SQ \+ 0\.45/.test(tsT) && /bm\.size = Vector3\(8\.0 \* SQ \+ 0\.9, /.test(b3F('build')),
+              'in the fit': /if seat_at != Vector3\.ZERO:\s*\n\t\tpts\.append\(seat_at\)/.test(b3F('_fit')),
+              'seen': /return _cam\.unproject_position\(p\)/.test(b3F('seen')),
+              'under the board': /_seat = TableSeat\.new\(\)\s*\n\t_clip\.add_child\(_seat\)\s*\n\t_b3 = Board3D\.new\(\)\s*\n\t_clip\.add_child\(_b3\)\s*\n\t_seat\.board = _b3\s*\n\t_b3\.seat_at = _seat\.head\(\)/.test(ctT),
+              'with the board': /_seat\.size = frame\.size\s*\n\t_seat\.visible = _b3\.visible\s*\n\tif _seat\.visible:\s*\n\t\t_seat\.sit\(/.test(ctF('_layout')),
+              'shaken with it': /_b3\.position = _fx\.offset\(\)\s*\n\t\t_seat\.position = _b3\.position/.test(ctT),
+              'FRONT 384 x 4': FRONT === 384 && IDLES === 4,
+              'people_front.png': frHas,
+              'its size': frW === FRONT * IDLES && frH === FRONT,
+              'newer than nate.glb': frHas && fs.statSync(frPng).mtimeMs >= fs.statSync(frGlb).mtimeMs,
+              'never nobody': /if _front\[0\] == null:\s*\n\t\treturn cell\(Vector2\.DOWN, phase01, false\)/.test(fnGd(shT, 'front')),
+              'the bake': /fr\.pose_exact\(0\.0, float\(fi\) \/ float\(TownPeople\.IDLES\), false\)/.test(gdTxt('tests/probe.gd')),
+              'case frontsheet': /\n\s*frontsheet\) SEQ="wait:10;frontsheet"/.test(bcCases),
+              'case seated': /tablebtn:play;wait:10;seatis:Maxwell;/.test(bcCase('tableseat')),
+              'case cut': /cutis:check;shot:table_seat_cut;/.test(bcCase('tableseat')),
+              'case flat': /key:v;seatis:;key:v;seatis:Maxwell/.test(bcCase('tableseat')),
+              'suite': new RegExp('^[^#\\n]*\\btableseat\\b', 'm').test(suiteT),
+            });
+            ok(seatOff.length === 0,
+              '⭐⭐ THE OPPONENT SITS ACROSS FROM YOU  (his 11-05, view idea #1): whoever you play is behind the 3D board\'s far edge, dressed as the town dresses them and breathing, their own men in front of them; drawn under the board\'s picture and placed through its camera, so the pieces cover them and a cut brings them closer; the board moves down for their head and never shrinks; the picture is the town\'s own photograph of nate.glb, facing you, at 384px (people_front.png, baked by the probe\'s frontsheet, never older than the model) (probed: Maxwell seated with his head in the frame and the edge across his waist, through a check\'s cut, gone flat)',
+              seatOff.length ? 'off: ' + seatOff.join(' · ') : frW + 'x' + frH);
           }
         }
 
