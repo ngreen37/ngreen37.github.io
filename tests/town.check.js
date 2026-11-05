@@ -7779,7 +7779,7 @@ const server = http.createServer((req, res) => {
               'dressed': /_build = TownPeople\.dress\(self, who, key\)\["build"\]/.test(tsF('sit')),
               'the front bank': /var t := TownPeople\.front\(_breath\)/.test(tsF('_draw')),
               'through the camera': /var edge := board\.seen\(Vector3\(0\.0, 0\.0, -FAR\)\)/.test(tsF('_draw')) && /var top := board\.seen\(head\(_build\.y\)\)/.test(tsF('_draw')),
-              'redrawn as it moves': /if now != _cell or cam != _seen:/.test(tsF('_process')),
+              'redrawn as it moves': /if (moving or )?now != _cell or cam != _seen:/.test(tsF('_process')),
               'the far edge': /const FAR := 4\.0 \* Board3D\.SQ \+ 0\.45/.test(tsT) && /bm\.size = Vector3\(8\.0 \* SQ \+ 0\.9, /.test(b3F('build')),
               'in the fit': /if seat_at != Vector3\.ZERO:\s*\n\t\tpts\.append\(seat_at\)/.test(b3F('_fit')),
               'seen': /return _cam\.unproject_position\(p\)/.test(b3F('seen')),
