@@ -1897,9 +1897,11 @@ const server = http.createServer((req, res) => {
         const rigs = GD_LIST.filter((f) => f.endsWith('.gd'))
           .filter((f) => /TownPlayerModel\.make\(/.test(fs.readFileSync(GDF(f), 'utf8')));
         /* \u26a0 lift.gd IS THE THIRD (2026-10-15): it is HIM, up close on the bench, and goes when the lift does.
-           \u26a0 character_select.gd IS THE FOURTH (2026-10-23): a portrait of each person you can play, while the cards are up. */
-        ok(rigs.length === 4 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd') && rigs.includes('lift.gd')
-           && rigs.includes('character_select.gd'),
+           \u26a0 character_select.gd IS THE FOURTH (2026-10-23): a portrait of each person you can play, while the cards are up.
+           \u26a0 table_cutin.gd IS THE FIFTH (2026-11-05, his #12): whoever you play, cutting across a table on a big streak,
+           rendered only for the second the cut plays (UPDATE_DISABLED between). */
+        ok(rigs.length === 5 && rigs.includes('player.gd') && rigs.includes('people_sheet.gd') && rigs.includes('lift.gd')
+           && rigs.includes('character_select.gd') && rigs.includes('table_cutin.gd'),
           '\u26d1\u26d1\u26d1 only the PLAYER wears a live 3D rig \u2014 everybody else is a baked picture  (and the bench press is him, the cards who you can play)',
           rigs.length ? 'builds one: ' + rigs.join(', ') : 'nobody builds one at all');
       }
@@ -7374,7 +7376,7 @@ const server = http.createServer((req, res) => {
           ok(djMissingS.length === 0, '…in the room\'s own words, Japanese and English', djMissingS.join(' | ') || djWordsS.length + ' phrases, both sides');
           ok(/\tdojo\.url = "\/games\/shogi-island\/"\n\tdojo\.lesson = "shogi"/.test(djIslT)
              && /match str\(errand\.get\("lesson", ""\)\):\s*\n\t\t"shogi":\s*\n\t\t\tShogiTable\.open\(self, errand\)\n[\s\S]*?\n\t\t_:\s*\n\t\t\tChessTable\.open\(self, errand\)/.test(fnGd(znT, '_open_errand'))
-             && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"shogi": "Matsu"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
+             && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"shogi": "Matsu"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}(\.merged\(\{ "ring": ring \} if ring\.is_finite\(\) else \{\}\))?\)/.test(fnGd(chT, 'sit_lesson'))
              && /"un": \["shogi-island", 5\]/.test(brdT)
              && /var e: Dictionary = ShogiBook\.MATE\[int\(rng\.next\(\) \* ShogiBook\.MATE\.size\(\)\)\]/.test(fnGd(djSlT, 'pick_mate'))
              && /return genTsume\(1\);/.test(fn(djShogiPage, 'pickProblem') || djShogiPage),
@@ -7442,7 +7444,7 @@ const server = http.createServer((req, res) => {
             '⭐ …and you sit down to Auston\'s welcome, at the table and on the page alike  (his 11-03: "the website version should always match our game"; from 07-15 the page\'s own script wrote it over as it loaded)');
           ok(/"\/academy\/bootcamp\/",\s*\n\t\tVector2\(-330\.0, -H \+ 200\.0\), Color\("2f5d3a"\)\)\.lesson = "bootcamp"/.test(acadT)
              && /\n\t\t"bootcamp":\s*\n\t\t\tDrillTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
-             && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"bootcamp": "Auston"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}\)/.test(fnGd(chT, 'sit_lesson'))
+             && /lesson_wanted\.emit\(\{ "who": \{[^}\n]*"bootcamp": "Auston"[^}\n]*\}\.get\(id, PircBook\.TEACHER\), "lesson": id \}(\.merged\(\{ "ring": ring \} if ring\.is_finite\(\) else \{\}\))?\)/.test(fnGd(chT, 'sit_lesson'))
              && /^class_name DrillTable\nextends TownTable\n/.test(bcDtT) && !/\nsignal closed/.test(bcDtT) && !/func _input\(/.test(bcDtT)
              && /add_to_group\("town_cover"\)/.test(bcF('_ready')) && /if _wait_cover or TownJournal\.is_open\(get_tree\(\)\):\s*\n\t\treturn/.test(bcF('_process')),
             '⭐ …through the Academy\'s own Lesson 1 door (on the website the page still opens), one more kind of table to the town: a cover nobody walks under, the map opening over it, its beat waiting while the map is up');
@@ -7555,7 +7557,7 @@ const server = http.createServer((req, res) => {
             smMissing.join(' | ') || smWords.length + 3 + ' phrases, both sides');
           const ptS = rd('portal.gd');
           ok(/"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/", "table": "sandmine" \}/.test(ptS)
-             && /if _at_table\(\):\s*\n\t\tif dark\(\):[\s\S]*?GameState\.challenge\.sit_lesson\(str\(GAMES\[game\]\["table"\]\)\)/.test(fnGd(ptS, 'interact'))
+             && /if _at_table\(\):\s*\n\t\tif dark\(\):[\s\S]*?GameState\.challenge\.sit_lesson\(str\(GAMES\[game\]\["table"\]\)(, global_position)?\)/.test(fnGd(ptS, 'interact'))
              && fnGd(ptS, '_at_table').includes('return game != "" and str(GAMES[game].get("table", "")) != "" and not OS.has_feature("web")')
              && /\n\t\t"sandmine":\s*\n\t\t\tMineTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
              && fnGd(rd('state_board.gd'), 'town_scores').includes('"sand-mine-depths": TableMine.best_score()')
@@ -7742,13 +7744,13 @@ const server = http.createServer((req, res) => {
             const pushOff = ['chess_table.gd', 'shogi_table.gd', 'drill_table.gd', 'notation_table.gd', 'mine_table.gd'].filter((f) => {
               const t = rd(f);
               const shut = fnGd(t, f === 'chess_table.gd' ? '_shut' : '_leave');
-              return !/add_child\(dim\)\s*\n\tTablePush\.push\(self, dim\)/.test(t)
-                || !/TablePush\.pull\(self, (ChessTable\.)?SHADE\)/.test(shut)
+              return !/add_child\(dim\)\s*\n\tTablePush\.push\(self, dim(, errand\.get\("ring", Vector2\.INF\))?\)/.test(t)
+                || !/TablePush\.pull\(self, (ChessTable\.)?SHADE(, errand\.get\("ring", Vector2\.INF\))?\)/.test(shut)
                 || shut.indexOf('TablePush.pull(') > shut.indexOf('closed.emit()');
             }).concat(offOf({
               'class': /^class_name TablePush\nextends Node/.test(tpT),
               'reads the screen': /uniform sampler2D screen : hint_screen_texture/.test(tpT),
-              'zooms on the focus': /vec2 uv = focus \+ \(SCREEN_UV - focus\) \/ mix\(1\.0, zoom, a\);/.test(tpT),
+              'zooms on the focus': /vec2 uv = focus \+ (\(SCREEN_UV - focus\)|p \/ vec2\(aspect, 1\.0\)) \/ mix\(1\.0, zoom, a\);/.test(tpT),
               'calm push': /if TableFX\.calm\(\):\s*\n\t\treturn/.test(tpF('push')),
               'calm pull': /if TableFX\.calm\(\) or /.test(tpF('pull')),
               'the town is yours': /dim\.mouse_filter = Control\.MOUSE_FILTER_IGNORE/.test(tpF('pull')),
@@ -7801,6 +7803,129 @@ const server = http.createServer((req, res) => {
             ok(seatOff.length === 0,
               '⭐⭐ THE OPPONENT SITS ACROSS FROM YOU  (his 11-05, view idea #1): whoever you play is behind the 3D board\'s far edge, dressed as the town dresses them and breathing, their own men in front of them; drawn under the board\'s picture and placed through its camera, so the pieces cover them and a cut brings them closer; the board moves down for their head and never shrinks; the picture is the town\'s own photograph of nate.glb, facing you, at 384px (people_front.png, baked by the probe\'s frontsheet, never older than the model) (probed: Maxwell seated with his head in the frame and the edge across his waist, through a check\'s cut, gone flat)',
               seatOff.length ? 'off: ' + seatOff.join(' · ') : frW + 'x' + frH);
+            /* ⭐ THE ONE ACROSS ANSWERS YOUR MOVE, AND THE ROOM FOLLOWS WHO IS WINNING (his 11-05, #5 and #4) */
+            const tjT = rd('table_judge.gd');
+            const tjF = (n) => fnGd(tjT, n);
+            const faceOff = offOf({
+              'class': /^class_name TableJudge\nextends RefCounted/.test(tjT),
+              'no search, no thread': !/_nega|best_move|Thread|WorkerThreadPool/.test(tjT),
+              'the swing': /const SWING := 150/.test(tjT),
+              'settled': /var gain := best_capture\(S\.b, str\(S\.turn\)\)\s*\n\treturn m \+ gain if S\.turn == side else m - gain/.test(tjF('settled')),
+              'over is no face': /if theirs\.is_empty\(\):\s*\n\t\treturn ""/.test(tjF('verdict')),
+              'their mate is a smile': /if ChessRules\.in_check\(s2, side\) and ChessRules\.legal_moves\(s2\)\.is_empty\(\):\s*\n\t\t\treturn "smile"/.test(tjF('verdict')),
+              'won or given': /var d := settled\(after, side\) - material\(before\.b, side\)/.test(tjF('verdict')),
+              'a guarded piece': /best = maxi\(best, v - a if held else v\)/.test(tjF('best_capture')),
+              'a king takes the unguarded': /if a == KING_AT and held:\s*\n\t\t\tcontinue/.test(tjF('best_capture')),
+              'placeholders, his': /⭐ PLACEHOLDERS, HIS TO CRAFT/.test(tsT) && /"frown": \[/.test(tsT) && /"smile": \[/.test(tsT),
+              'calm, none': /if not REACT\.has\(kind\) or TableFX\.calm\(\) or not is_visible_in_tree\(\):\s*\n\t\treturn/.test(tsF('react')),
+              'lean while they think': /thinking = true\s*\n\t_seat\.lean\(true\)/.test(ctF('_their_turn'))
+                && /_seat\.lean\(false\)\s*\n\t_apply\(m\)/.test(ctF('_on_moved')) && /_seat\.lean\(false\)/.test(ctF('_end')),
+              'every move judged': /var before := S\s*\n\tS = ChessRules\.make_move\(S, m\)\s*\n\t_judge\(before, mover\)/.test(ctF('_apply')),
+              'only your move': /_face = TableJudge\.verdict\(before, S, side\) if mover == side else ""/.test(ctF('_judge')),
+              'once the camera is back': /if _face != "" and anim\.is_empty\(\) and _cut\.is_empty\(\):\s*\n\t\t_seat\.react\(_face\)/.test(ctF('_process')),
+              'a pawn shows': /var w := sqrt\(minf\(absf\(float\(cp\)\) \/ MOOD_FULL, 1\.0\)\)/.test(ctF('_mood_of')) && /const MOOD_FULL := 500\.0/.test(ctT),
+              'the glow': /const MOOD_GLOW := 0\.45/.test(ctT) && /_glow\.draw_texture_rect\(_glow_t, /.test(ctF('_paint_glow')),
+              'under the board': ctT.indexOf('add_child(_glow)') > 0 && ctT.indexOf('add_child(_glow)') < ctT.indexOf('add_child(_clip)'),
+              'the lamp': /_key\.light_color = Color\.WHITE\.lerp\(MOOD_GOLD if w > 0\.0 else MOOD_COLD, absf\(w\) \* MOOD_LAMP\)/.test(b3F('mood')),
+              'a new game, no light': /_mood_to = 0\.0\s*\n\t_face = ""/.test(ctF('_start')),
+              'resumed, its own light': /_mood_to = _mood_of\(TableJudge\.settled\(S, side\)\)/.test(ctF('_resume')),
+              'case judged': /judgeis:4k3\/8\/8\/4n3\/3P4\/8\/8\/4K3 w - - 0 1:d4e5:frown;/.test(bcCase('tablereact'))
+                && /:a1b1:smile;/.test(bcCase('tablereact')) && /:e3d5:;/.test(bcCase('tablereact')) && /:g2g4:smile;/.test(bcCase('tablereact')),
+              'case at the table': /tablemove:d4e5;wait:12;cutis:capture;seatact:;leanis:1;wait:30;seatact:frown;/.test(bcCase('tablereact'))
+                && /tableuntil:moves:2:900;leanis:0;wait:30;num:ChessTable:_mood:>0\.1;/.test(bcCase('tablereact'))
+                && /tablemove:a1b1;wait:12;seatact:smile;num:ChessTable:_mood_to:<-0\.1;/.test(bcCase('tablereact'))
+                && /gs:motion_on=false;[^"]*tablemove:d4e5;wait:12;seatact:;/.test(bcCase('tablereact')),
+              'suite': new RegExp('^[^#\\n]*\\btablereact\\b', 'm').test(suiteT),
+            });
+            ok(faceOff.length === 0,
+              '⭐⭐ THE ONE ACROSS ANSWERS YOUR MOVE, AND THE ROOM FOLLOWS WHO IS WINNING  (his 11-05, view ideas #5 and #4: "#5 (I\'ll craft them myself but placeholders are good)"): after every move the material is settled by the best capture the side to move has (no search: the web build has no threads); they lean in while they think, frown at a move that wins you something and smile at one that gives something away or lets them mate, once the camera is back on them (placeholders, his to craft, none with Motion: Reduced); the glow behind the board and the 3D lamp go gold as you get ahead and cold blue behind, a pawn already showing and a rook all of it (probed: six positions judged, the frown after a capture\'s cut, the lean and the sit-back, the smile, the light both ways, flat and 3D)',
+              faceOff.length ? 'off: ' + faceOff.join(' · ') : 'judged, answered, lit');
+            /* ⭐ THE REST OF HIS VIEW PICKS (11-05: "Numbers 11-14 are great too"): #13 rings swirl, #12 cut-ins, #11 slow
+               motion on a near miss, #14 photo mode anywhere */
+            const vwFade = rd('fade.gd'), vwPortal = rd('portal.gd'), vwMine = rd('mine_table.gd'), vwNote = rd('notation_table.gd');
+            const vwKit = rd('table_fx.gd'), vwCross = rd('crossing.gd'), vwCut = rd('table_cutin.gd'), vwPhoto = rd('town_photo.gd');
+            const vwChal = rd('state_challenge.gd');
+            const swirlOff = offOf({
+              'one shader, turned': /const SWIRL := 5\.0/.test(tpT) && /uniform float twist = 0\.0;/.test(tpT)
+                && /p = vec2\(p\.x \* cos\(t\) - p\.y \* sin\(t\), p\.x \* sin\(t\) \+ p\.y \* cos\(t\)\);/.test(tpT),
+              'a table from a ring': /static func push\(table: CanvasLayer, dim: ColorRect, ring := Vector2\.INF\)/.test(tpT)
+                && /static func pull\(table: CanvasLayer, shade: Color, ring := Vector2\.INF\)/.test(tpT)
+                && /TablePush\.push\(self, dim, errand\.get\("ring", Vector2\.INF\)\)/.test(vwMine)
+                && /TablePush\.pull\(self, ChessTable\.SHADE, errand\.get\("ring", Vector2\.INF\)\)/.test(vwMine),
+              'the ring hands it on': /GameState\.challenge\.sit_lesson\(str\(GAMES\[game\]\["table"\]\), global_position\)/.test(vwPortal)
+                && /func sit_lesson\(id: String, ring := Vector2\.INF\) -> void:/.test(vwChal) && /\.merged\(\{ "ring": ring \} if ring\.is_finite\(\) else \{\}\)\)/.test(fnGd(vwChal, 'sit_lesson')),
+              'the crossing swirls': /TownFade\.cross\(self, func\(\) -> void: _through\(you\), global_position\)/.test(vwPortal)
+                && /static func cross\(from: Node, then: Callable, ring := Vector2\.INF\) -> void:/.test(vwFade)
+                && /if ring\.is_finite\(\) and not TableFX\.calm\(\):/.test(fnGd(vwFade, 'cross'))
+                && /_rect\.material = TablePush\.material\(Color\.BLACK, TablePush\.SWIRL, _ring, /.test(vwFade)
+                && /t\.tween_method\(_swirl_a, 1\.0, 0\.0, SWIRL_IN\)/.test(fnGd(vwFade, '_lift')),
+              'brisk': /const SWIRL_OUT := 0\.25/.test(vwFade) && /const SWIRL_IN := 0\.35/.test(vwFade),
+              'case': /pushis:in:swirl;/.test(bcCase('ringswirl')) && /pushis:out:swirl;/.test(bcCase('ringswirl'))
+                && /useat:620,-160;fadeis:swirl:200;/.test(bcCase('ringswirl')) && /pick:Back through the ring;fadeis:swirl:300;/.test(bcCase('ringswirl'))
+                && /gs:motion_on=false;useat:620,-160;fadeis:plain:200;/.test(bcCase('ringswirl')),
+              'suite': new RegExp('^[^#\\n]*\\bringswirl\\b', 'm').test(suiteT),
+            });
+            ok(swirlOff.length === 0,
+              '⭐⭐ A RING SWIRLS YOU INTO ITS GAME AND SPINS YOU BACK OUT  (his view idea #13): the push-in\'s own picture of the town, turned about the ring as it closes in: into the Sand Mine\'s table at the camp and back out of it, and through a board world\'s ring on the way in and on the way home; brisk, and a plain fade with Motion: Reduced (probed: both tables\' swirls, both crossings, the calm fade)',
+              swirlOff.length ? 'off: ' + swirlOff.join(' · ') : 'the table and the crossing');
+            const cutOff = offOf({
+              'class': /^class_name TableCutIn\nextends Control/.test(vwCut) && /mouse_filter = Control\.MOUSE_FILTER_IGNORE/.test(fnGd(vwCut, '_init')),
+              'whoever you play': /_body = TownPlayerModel\.make\(PX, TownPlayerModel\.TILT, GameState\.character\)/.test(vwCut)
+                && /_body\.sign\(GameState\.character\)/.test(vwCut) && /_body\.sign_win\(\)/.test(fnGd(vwCut, 'play')),
+              'renders only while it plays': /_body\.render_target_update_mode = SubViewport\.UPDATE_ALWAYS/.test(fnGd(vwCut, 'play'))
+                && /_body\.render_target_update_mode = SubViewport\.UPDATE_DISABLED/.test(fnGd(vwCut, '_process')),
+              'calm, none': /if TableFX\.calm\(\) or _body == null or _t >= 0\.0:\s*\n\t\treturn/.test(fnGd(vwCut, 'play')),
+              'Fever': /fever_on = true\s*\n\t\t\t_milestone = \{ "text": "FEVER — DOUBLE POINTS", "life": 74\.0 \}\s*\n\t\t\t_cutin\.play\(\)/.test(vwNote),
+              'a streak of four': /if combo % 4 == 0:\s*\n\t\t_cutin\.play\(\)/.test(fnGd(vwMine, '_reward')),
+              'the Champ\'s run': /if run and streak >= 2 and _cutin != null:\s*\n\t\t_cutin\.play\(\)/.test(ctF('_puzzle_over'))
+                && /if not puzzle\.is_empty\(\):\s*\n\t\t_cutin = TableCutIn\.new\(true\)/.test(ctT),
+              'behind the cabinet': vwNote.indexOf('add_child(_cutin)') > 0 && vwNote.indexOf('add_child(_cutin)') < vwNote.indexOf('add_child(_art)')
+                && vwMine.indexOf('add_child(_cutin)') > 0 && vwMine.indexOf('add_child(_cutin)') < vwMine.indexOf('add_child(_art)'),
+              'Milo\'s margin left be': /_cutin = TableCutIn\.new\(true\)/.test(vwNote),
+              'case': /nrplay:perfect:9;cutinis:NotationTable:0;nrhit:perfect;nris:fever_on:true;cutinis:NotationTable:1;/.test(bcCase('cutins'))
+                && /gs:motion_on=false;cutinplay:NotationTable;cutinis:NotationTable:0;/.test(bcCase('cutins'))
+                && /puzzlesolve;cutinis:ChessTable:0;tablebtn:next;wait:10;puzzlesolve;cutinis:ChessTable:1;/.test(bcCase('cutins')),
+              'suite': new RegExp('^[^#\\n]*\\bcutins\\b', 'm').test(suiteT),
+            });
+            ok(cutOff.length === 0,
+              '⭐⭐ CHARACTER CUT-INS  (his view idea #12: "on Fever or a big streak, the character\'s portrait slashes across the screen, like the versus screens on the site"): whoever you play cuts across on a band of your color, throwing their own celebration, on Notation Blitz\'s Fever, a Sand Mine capture streak of four and two clean in the Puzzle Champ\'s run; behind the cabinet so the board is never covered, its rig rendering only while it plays, none with Motion: Reduced (probed: Fever reached with real hits, the mine\'s, the Champ\'s on the second solve and not the first)',
+              cutOff.length ? 'off: ' + cutOff.join(' · ') : 'Fever, the mine, the Champ');
+            const slowOff = offOf({
+              'the kit': /const SLOW := 0\.3/.test(vwKit) && /const SLOW_SECS := 0\.45/.test(vwKit) && /const SLOW_EVERY := 3\.0/.test(vwKit)
+                && /if calm\(\) or _since_slow < SLOW_EVERY:\s*\n\t\treturn/.test(fnGd(vwKit, 'slow')),
+              'the mine\'s clock slows with it': /var pace := _fx\.pace\(delta\)\s*\n\t_now \+= delta \* pace\s*\n\tvar dt := minf\(0\.05, delta\) \* pace/.test(fnGd(vwMine, '_process')),
+              'the mine\'s near miss': /if foe\.is_empty\(\) and not threats\.has\(cell\) and _beside_foe\(cell\):\s*\n\t\t_fx\.slow\(\)/.test(fnGd(vwMine, '_resolve_hop')),
+              'a press ends it there': /_fx\.unslow\(\)/.test(fnGd(vwMine, 'press')) && /_fx\.unslow\(\)/.test(fnGd(vwMine, '_take')),
+              'the crossing\'s, the flag with it': /var _fx := TableFX\.new\(\)/.test(vwCross) && /delta \*= _fx\.pace\(delta\)\s*\n\t_hop_step\(delta\)/.test(fnGd(vwCross, '_process'))
+                && /if _prey == null and _beside_foe\(_at\):\s*\n\t\t_fx\.slow\(\)/.test(fnGd(vwCross, '_hop_step')),
+              'a press ends it there too': /if event\.is_pressed\(\) and not event\.is_echo\(\):\s*\n\t\t_fx\.unslow\(\)/.test(fnGd(vwCross, '_input')),
+              'case': /mineput:p=3,2\|s=7,7\|e=P@0,7;minehop:5,3;slowed:0;mineput:p=3,2\|s=7,7\|e=P@6,4;minehop:5,3;slowed:1;/.test(bcCase('nearmiss'))
+                && /crosshop:far;slowed:1;crosshop:near;slowed:2;/.test(bcCase('nearmiss')) && /gs:motion_on=false;knight;crosshop:near;slowed:2;/.test(bcCase('nearmiss')),
+              'suite': new RegExp('^[^#\\n]*\\bnearmiss\\b', 'm').test(suiteT),
+            });
+            ok(slowOff.length === 0,
+              '⭐⭐ SLOW MOTION ON A NEAR MISS  (his view idea #11: "a hop that lands next to a threat slows time for a moment"): Princess landing beside a piece that cannot take her in the Sand Mine, the knight landing beside one in Pawn Crossing; a moment at a third of the pace, the floor\'s and the flag\'s clocks slowed with it so it costs nobody time, any press ends it, no oftener than every three seconds, none with Motion: Reduced (probed: a far hop and a near one in each, the calm one)',
+              slowOff.length ? 'off: ' + slowOff.join(' · ') : 'the mine and the crossing');
+            const photoOff = offOf({
+              'class': /^class_name TownPhoto\nextends CanvasLayer/.test(vwPhoto) && /process_mode = Node\.PROCESS_MODE_ALWAYS/.test(fnGd(vwPhoto, '_ready')),
+              'pauses anything': /get_tree\(\)\.paused = true/.test(fnGd(vwPhoto, 'open')) && /get_tree\(\)\.paused = false/.test(fnGd(vwPhoto, 'close')),
+              'its own camera': /_cam\.process_mode = Node\.PROCESS_MODE_ALWAYS/.test(fnGd(vwPhoto, 'open')) && /if _was != null and not _covered\(\):/.test(fnGd(vwPhoto, 'open')),
+              'only the chrome': /n is TownUI or n is TownJournal or n is Speech or n is TownNotice or n is NpcCard or n is DevReferee/.test(fnGd(vwPhoto, '_hide_chrome')),
+              'not over another': /PhotoMode\.at\(get_tree\(\)\)/.test(fnGd(vwPhoto, '_free')) && /FrontDoor\.at\(get_tree\(\)\)/.test(fnGd(vwPhoto, '_free'))
+                && /TownFade\.busy\(\)/.test(fnGd(vwPhoto, '_free')),
+              'P, never the stick': /kv\.keycode == KEY_P/.test(fnGd(vwPhoto, '_input')) && !/JOY_BUTTON_RIGHT_STICK/.test(vwPhoto),
+              'the shot without the bar': /_bar\.visible = false\s*\n\tawait RenderingServer\.frame_post_draw\s*\n\tawait RenderingServer\.frame_post_draw/.test(fnGd(vwPhoto, 'take'))
+                && /JavaScriptBridge\.download_buffer\(img\.save_png_to_buffer\(\), name, "image\/png"\)/.test(fnGd(vwPhoto, 'take'))
+                && /img\.save_png\("user:\/\/photos\/" \+ name\)/.test(fnGd(vwPhoto, 'take')),
+              'in every room': /add_child\(TownPhoto\.new\(\)\)/.test(fnGd(rd('zone.gd'), '_build_hud')),
+              'the menus left as they are': !/Photo Mode/.test(rd('front_door.gd')),
+              'case': /key:p:4;photois:1;paused:1;photochrome:0;/.test(bcCase('photoany')) && /phototake:1;key:p:4;photois:0;paused:0;photochrome:1;/.test(bcCase('photoany'))
+                && /layer:ChessTable:1;key:p:4;photois:1;paused:1;[^"]*key:escape:4;photois:0;paused:0;layer:ChessTable:1/.test(bcCase('photoany')),
+              'suite': new RegExp('^[^#\\n]*\\bphotoany\\b', 'm').test(suiteT),
+            });
+            ok(photoOff.length === 0,
+              '⭐⭐ PHOTO MODE, ANYWHERE  (his view idea #14: "pause anything, frame a shot and save it for your stream and socials"): P in any room or at any table: the game pauses, the HUD, the box, the Journal, speech, notices and the pad leave the picture (the sky\'s light and any table stay), in the town the camera is yours to move and zoom, and the shot is saved without the bar (photos/, or your downloads on the web) (probed: the town framed and taken, at a table taken, Esc closing it there without standing you up)',
+              photoOff.length ? 'off: ' + photoOff.join(' · ') : 'the town and a table');
           }
         }
 
