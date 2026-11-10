@@ -173,14 +173,20 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
       under + ', played ' + played + ', flew ' + flying + ']');
     /* ── 3. a capture: the taken piece knocked aside, a close-up ── */
     await page.evaluate(() => T3.setFen('4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1'));
+    /* ⚠ THE LENS MUST SEE THE POSITION BEFORE THE MOVE: it reads a move off the difference between two of its own frames,
+       and on a loaded machine a move made before its next frame arrived as a new position, with nothing to knock */
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     await sleep(100);
     const knocks0 = await page.evaluate(() => T3.b3.b.knocks || 0);
     await page.evaluate(() => T3.moveUci('e4d5'));
-    await sleep(60);
-    // ⚠ COUNTED, NOT SAMPLED: on a loaded machine a slow frame knocked the piece and cleared it before a 60 ms look
-    const knock = await page.evaluate((n) => (T3.b3.b.knocks || 0) - n, knocks0);
-    await sleep(200);
-    const cap = await page.evaluate(() => T3.b3.cutKind());
+    // ⚠ COUNTED AND POLLED, NOT SAMPLED: a slow frame knocked the piece and cleared it before a 60 ms look
+    let knock = 0, cap = '';
+    for (let t = 0; t < 40 && !(knock > 0 && cap === 'capture'); t++) {
+      await sleep(30);
+      knock = await page.evaluate((n) => (T3.b3.b.knocks || 0) - n, knocks0);
+      const k = await page.evaluate(() => T3.b3.cutKind());
+      if (k) cap = k;
+    }
     ok(knock > 0 && cap === 'capture', 'a capture knocks the taken piece aside, and the camera cuts to a close-up  [' + knock + ' falling, cut ' + cap + ']');
     await sleep(700);
     /* ── 4. en passant: the pawn taken is knocked where it stood ── */

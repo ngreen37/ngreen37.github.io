@@ -709,6 +709,20 @@ function serve() {
     ok(dog.sniffClass && dog.sniff.atks && dog.sniff.seen && dog.sniff.sniffed && /Argus sniffs out/.test(dog.sniff.say),
        'Argus sniffs out the hidden holding past his border with one tap, and it costs no attack  [' + dog.sniff.say + ']');
     await E(() => { localStorage.removeItem('pjcc.campaign.dog.v1'); localStorage.removeItem('pjcc.campaign.file.v1'); });
+    const ring = await E(() => {
+      const m = __mc, $ = id => document.getElementById(id);
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('go').click();
+      const G = m.G; G.own[3] = 't'; G.own[5] = 'm'; G.ranks[3] = 4; G.ranks[5] = 4;
+      m.beginBattle(3, 5, false);
+      const his = $('screen-roll').classList.contains('swap');
+      m.finishRoll(); G.busy = false; m.show('screen-map');
+      m.beginBattle(5, 3, true);
+      const mine = $('screen-roll').classList.contains('swap');
+      m.finishRoll(); G.busy = false; m.show('screen-map');
+      return { his, mine };
+    });
+    ok(ring.his && !ring.mine, "Maxwell's dice wear red when he attacks, yours green when you do  [" + JSON.stringify(ring) + ']');
 
     /* ══ 11-10: A FIRST CAMPAIGN THAT TEACHES ══ */
     const first = await E(() => {
