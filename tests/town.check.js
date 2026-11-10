@@ -514,8 +514,8 @@ const server = http.createServer((req, res) => {
         const OBJ = new Set(['set', 'get', 'call', 'has_method', 'connect', 'is_connected', 'emit_signal', 'has_signal']);
         const once = held.filter((h) => new RegExp('^var ' + h.name + ': ' + h.cls + ' = ' + h.cls + '\\.new\\(\\)$', 'm').test(hubSrc)
           && /^extends RefCounted\n/.test(parts[h.name].src));
-        ok(held.length === 9 && once.length === 9 && new Set(held.map((h) => h.name)).size === 9,
-          '⭐ GameState is the save, the sync, the tick and the day, holding nine parts (core/state/): each a RefCounted, held once',
+        ok(held.length === 10 && once.length === 10 && new Set(held.map((h) => h.name)).size === 10,
+          '⭐ GameState is the save, the sync, the tick and the day, holding ten parts (core/state/): each a RefCounted, held once',
           held.map((h) => h.name).join(' '));
         const bad = [];
         let named = 0;
@@ -1311,14 +1311,16 @@ const server = http.createServer((req, res) => {
           '…and PRINCESS DUNGEON\'s ring is in a board of its own by the crater where you find her, once you have  (his 11-03: "move whatever mini-game is there now elsewhere - make another board if you have to"); her board at home has no portal, up close or across the room  (probed both)');
         const sdT = rdc('stray_dog.gd');
         const strayRows = [...tw.matchAll(/\{ "at": Vector2\((-?[\d.]+), (-?[\d.]+)\), "coat": \[[^\]]*\], "breed": "", "opening": "" \},/g)];
-        ok(strayRows.length === 6 && /^extends Node2D\n/.test(sdT) && !/Interactable|Area2D|solid|interact|prompt/.test(sdT)
+        const dbStrays = ((/const STRAYS := \[([^\]]*)\]/.exec(rdc('dog_book.gd')) || [])[1] || '').match(/stray_[a-z]+/g) || [];
+        ok(strayRows.length === 6 && /^extends Interactable\n/.test(sdT) && !/StaticBody2D|CharacterBody2D|RigidBody2D/.test(sdT)
            && /TownDog\.paint_sitting\(self, "", Vector2\.ZERO, 1\.0, false, 0\.0, coat\)/.test(sdT)
-           && /for s in STRAYS:\s*\n\t\tvar d := StrayDog\.new\(\)\s*\n\t\td\.coat = s\["coat"\]\s*\n\t\td\.position = s\["at"\]/.test(fnGd(tw, '_furnish_strays'))
+           && /for i in STRAYS\.size\(\):[\s\S]*?\n\t\tvar d := StrayDog\.new\(\)\s*\n\t\td\.id = DogBook\.STRAYS\[i\]\s*\n\t\td\.coat = STRAYS\[i\]\["coat"\]\s*\n\t\td\.position = STRAYS\[i\]\["at"\]/.test(fnGd(tw, '_furnish_strays'))
+           && dbStrays.length === 6 && strayRows.every((m, i) => new RegExp('town:' + (dbStrays[i] || '?').slice(6) + ';nstrays:1;at:' + Math.round(+m[1]) + ',' + Math.round(+m[2] + 70) + ';').test(ctCases))
            && /var c: Array = coat if not coat\.is_empty\(\) else _coat\(who\)/.test(fnGd(rdc('dog.gd'), 'paint_sitting'))
            && ['square', 'west', 'east', 'south', 'woods', 'north'].every((r) => new RegExp('town:' + r + ';nstrays:1;').test(ctCases))
            && /town:crater;nstrays:0;/.test(ctCases)
            && /^[^#\n]*\bstrays\b/m.test(fs.existsSync(path.join(GD, 'tests/suite.sh')) ? fs.readFileSync(path.join(GD, 'tests/suite.sh'), 'utf8') : ''),
-          '⭐ …and SIX DOGS HE IS DRAWING sit placeheld, one in each outdoor window  (his 11-03: "We\'re collecting dogs … Leave dogs around as placeholders"): scenery, not the cast, with no name, words, opening or breed until he gives them  (probed: one in each window)');
+          '⭐ …and SIX DOGS HE IS DRAWING sit placeheld, one in each outdoor window  (his 11-03: "We\'re collecting dogs … Leave dogs around as placeholders"): not the cast yet, with no name, opening or breed until he gives them, and not solid; since his 11-05 (dog idea #5) each waits for a deed and then comes home with you, and the Kennel\'s six are these six, window for window  (probed: one in each window)');
         ok(/url = str\(GAMES\[game\]\["url"\]\) \+ "\?town=1"/.test(fnGd(por, '_ready_extra'))
           && /if game != "":\s*\n\s*super\.interact\(you\)\s*\n\s*if return_at\.is_finite\(\):\s*\n\s*you\.global_position = return_at\s*\n\s*you\.rise\(\)/.test(fnGd(por, '_enter'))
           && fnGd(por, '_enter').indexOf('await you.swallowed') < fnGd(por, '_enter').indexOf('super.interact(you)'),
@@ -3628,8 +3630,9 @@ const server = http.createServer((req, res) => {
           '…and it lights with the lamps');
 
         /* ── #8 · THE MAP ──. */
-        ok(/const TABS := \[[^\]]*"Map"\]/.test(jr9) && /k\.keycode == KEY_M\) or Pad\.hit\(event, Pad\.MINUS\)/.test(jr9) && /_paint_map\(f\)/.test(jr9),
-          'M, or the journal\'s last tab, opens the map');
+        ok(new RegExp('const MAP_TAB := ' + (((/const TABS := \[([^\]]*)\]/.exec(jr9) || [])[1] || '').split(', ').indexOf('"Map"')) + '\\b').test(jr9)
+           && /k\.keycode == KEY_M\) or Pad\.hit\(event, Pad\.MINUS\)/.test(jr9) && /_paint_map\(f\)/.test(jr9),
+          'M, or the journal\'s Map tab, opens the map');
         const cap = fnGd(mapg, 'capture');
         ok(/not n2\.visible/.test(cap) && /not \(n is TownNPC\)/.test(cap),
           '⚠⚠ the map shows only places the town is showing — no people, and nothing hidden');
@@ -5397,7 +5400,7 @@ const server = http.createServer((req, res) => {
             ok(/"a": "Your rating"/.test(jrR), '   and the Journal has it under THE BOARD');
           }
           ok(/"rating": ladder\.rating, "booth_nights": money\.booth_nights[,\s]/.test(fnGd(gsR, 'save_state'))
-             && /"rating": ladder\.rating, "booth_nights": money\.booth_nights,\s*"board": board\.banner\(\), "run": run_began \}\)/.test(gsR)
+             && /"rating": ladder\.rating, "booth_nights": money\.booth_nights, "dogs": dogs\.to_save\(\),\s*"board": board\.banner\(\), "run": run_began \}\)/.test(gsR)
              && /if int\(d\.get\("rating", 0\)\) > ladder\.rating:/.test(fnGd(gsR, 'merge_in'))
              && /if int\(d\.get\("booth_nights", 0\)\) > money\.booth_nights:/.test(fnGd(gsR, 'merge_in'))
              && /local\.rating = Math\.max\(\+local\.rating \|\| 0, \+remote\.rating \|\| 0\)/.test(fn(PROF, 'townMerge'))
@@ -6987,8 +6990,8 @@ const server = http.createServer((req, res) => {
             '…held to the site\'s own next() position for position (tests/systems.sh: its corpus, every pairing and random games), never in check, never at a hanging price',
             'the first wanted square that is legal right now: a system, not a line');
           const sysB = fnGd(brT, 'think');
-          ok(atB('if not _web and not stand_in and not study:') > atB('if _web and not stand_in:')
-             && atB('if not _web and not stand_in and not study:') < atB('if not _web and not stand_in and elo >= ENGINE_FROM and _sf != null:')
+          ok(atB('if not _web and not stand_in and not study and not off:') > atB('if _web and not stand_in:')
+             && atB('if not _web and not stand_in and not study and not off:') < atB('if not _web and not stand_in and elo >= ENGINE_FROM and _sf != null:')
              && /var wait := maxi\(120, roundi\(float\(GameState\.ladder\.seat_ms\(key\)\) \* 0\.35\)\)/.test(sysB)
              && /Math\.max\(120, Math\.round\(\(s\.movetime \|\| 300\) \* 0\.35\)\)/.test(ttT),
             '…first, before Stockfish or the stand-in thinks, as the web brain plays it: fast but not instant (a third of their pace), and never in a study');
@@ -7562,7 +7565,7 @@ const server = http.createServer((req, res) => {
              && /\n\t\t"sandmine":\s*\n\t\t\tMineTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
              && fnGd(rd('state_board.gd'), 'town_scores').includes('"sand-mine-depths": TableMine.best_score()')
              && /const IN_TOWN := \[[^\]]*"sand-mine-depths"\]/.test(rd('state_worlds.gd')) && rd('state_board.gd').includes('"un": ["sand-mine-depths", 300]')
-             && /new_best = TableMine\.bank\(depth, score, gold_run\)[\s\S]*GameState\.board\.check_town_unlocks\(\)/.test(mnF('_game_over'))
+             && /new_best = TableMine\.bank\(depth, score, gold_run, perk\)[\s\S]*GameState\.board\.check_town_unlocks\(\)/.test(mnF('_game_over'))
              && /const PATH := "user:\/\/sandmine\.json"/.test(tmT) && /"\$SAVE\/sandmine\.json"/.test(bcCases) && djCloud.includes('`sandmine.json`')
              && saT.includes('jrows:Score 300 in the Sand Mine.')
              && ['minedoor', 'minerules', 'minetools', 'minesquare', 'minephone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
@@ -7676,9 +7679,9 @@ const server = http.createServer((req, res) => {
             const ctF = (n) => fnGd(ctT, n);
             ok(/"capture": \{ "secs": 0\.40,/.test(ctT) && /"check": \{ "secs": 0\.45,/.test(ctT) && /"mate": \{ "secs": 1\.60,/.test(ctT)
                && /const CARD_AFTER := 0\.5\b/.test(ctT) && /float\(_cut\["t"\]\) < CARD_AFTER/.test(ctF('_card_held')) && /if _card_held\(\):\s*\n\t\tpass/.test(ctT)
-               && /if cut != "" and not TableFX\.calm\(\):\s*\n\t\t_cut = \{ "kind": cut, "at": at, "t": 0\.0 \}/.test(ctF('_landed'))
-               && /and _clock_on\(\) and _cut\.is_empty\(\):/.test(ctF('_process'))
-               && /var sq := _sq_at_screen\(e\.position\)\s*\n\t\tif e\.pressed:\s*\n\t\t\t_end_cut\(\)/.test(ctF('_board_input'))
+               && /if cut != "" and not TableFX\.calm\(\) and _walk\.is_empty\(\):\s*\n\t\t_cut = \{ "kind": cut, "at": at, "t": 0\.0 \}/.test(ctF('_landed'))
+               && /and _clock_on\(\) and _cut\.is_empty\(\) and _walk\.is_empty\(\):/.test(ctF('_process'))
+               && /var sq := _sq_at_screen\(e\.position\)\s*\n\t\tif e\.pressed and not _walk\.is_empty\(\):\s*\n\t\t\t_finish_walk\(\)\s*\n\t\t\treturn\s*\n\t\tif e\.pressed:\s*\n\t\t\t_end_cut\(\)/.test(ctF('_board_input'))
                && /return _stage\.get_transform\(\)\.affine_inverse\(\) \* \(p - _clip\.position\)/.test(ctF('_on_board'))
                && /not event\.is_pressed\(\):\s*\n\t\treturn\n\t_end_cut\(\)/.test(ctF('_take'))
                && /_clip\.clip_contents = true/.test(ctT) && /_stage\.draw\.connect\(_paint_stage\)/.test(ctT)
@@ -7821,7 +7824,7 @@ const server = http.createServer((req, res) => {
               'lean while they think': /thinking = true\s*\n\t_seat\.lean\(true\)/.test(ctF('_their_turn'))
                 && /_seat\.lean\(false\)\s*\n\t_apply\(m\)/.test(ctF('_on_moved')) && /_seat\.lean\(false\)/.test(ctF('_end')),
               'every move judged': /var before := S\s*\n\tS = ChessRules\.make_move\(S, m\)\s*\n\t_judge\(before, mover\)/.test(ctF('_apply')),
-              'only your move': /_face = TableJudge\.verdict\(before, S, side\) if mover == side else ""/.test(ctF('_judge')),
+              'only your move': /_face = TableJudge\.verdict\(before, S, side\) if mover == side and _walk\.is_empty\(\) else ""/.test(ctF('_judge')),
               'once the camera is back': /if _face != "" and anim\.is_empty\(\) and _cut\.is_empty\(\):\s*\n\t\t_seat\.react\(_face\)/.test(ctF('_process')),
               'a pawn shows': /var w := sqrt\(minf\(absf\(float\(cp\)\) \/ MOOD_FULL, 1\.0\)\)/.test(ctF('_mood_of')) && /const MOOD_FULL := 500\.0/.test(ctT),
               'the glow': /const MOOD_GLOW := 0\.45/.test(ctT) && /_glow\.draw_texture_rect\(_glow_t, /.test(ctF('_paint_glow')),
@@ -7926,6 +7929,82 @@ const server = http.createServer((req, res) => {
             ok(photoOff.length === 0,
               '⭐⭐ PHOTO MODE, ANYWHERE  (his view idea #14: "pause anything, frame a shot and save it for your stream and socials"): P in any room or at any table: the game pauses, the HUD, the box, the Journal, speech, notices and the pad leave the picture (the sky\'s light and any table stay), in the town the camera is yours to move and zoom, and the shot is saved without the bar (photos/, or your downloads on the web) (probed: the town framed and taken, at a table taken, Esc closing it there without standing you up)',
               photoOff.length ? 'off: ' + photoOff.join(' · ') : 'the town and a table');
+            /* ⭐ THE DOGS (his 11-05: "let's do number 1: the kennel. Then do number 2 … So, basically do all of them.") */
+            const dbT = rd('dog_book.gd'), dpT = rd('state_dogs.gd'), tbT = rd('table_brain.gd');
+            const ttJ = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-towntable.js'), 'utf8');
+            const pfJ = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+            const gsD = rd('game_state.gd');
+            const dogOff = offOf({
+              'the book': /^class_name DogBook\nextends RefCounted/.test(dbT) && /const NAMED := \["princess", "milo", "argus"\]/.test(dbT)
+                && /"milo": \{ "name": "Milo", "seat": "crockett"/.test(dbT) && /const STRAYS := \[("stray_[a-z]+"(, )?){6}\]/.test(dbT),
+              'their own words': /"traits": "Can learn anything"/.test(dbT) && /"traits": "Always acting before thinking first"/.test(dbT)
+                && /"traits": "Responsible and reliable"/.test(dbT),
+              'the opening is the bench system': /return TableSystems\.of\(seat_of\(id\), side\)/.test(fnGd(dbT, 'opening')),
+              'the bond': /const BOND_AT := \[0, 3, 8, 15, 25, 40\]/.test(dbT) && /const BOND_MOVES := \[2, 3, 4, 5, 6, 7\]/.test(dbT),
+              'the matchups, his': /const KNOW_ANY := 1/.test(dbT) && /const KNOW := \{/.test(dbT) && /const SEAT_DOG := \{\}/.test(dbT)
+                && /const OFF_ELO := 250/.test(dbT) && /const OFF_MOVES := 8/.test(dbT),
+              'love, not training': /r\["points"\] = int\(r\["points"\]\) \+ \(2 if score >= 1\.0 else 1\)/.test(fnGd(dpT, 'game_over')),
+              'Elo per opening': /var expect := 1\.0 \/ \(1\.0 \+ pow\(10\.0, \(float\(opp_elo\) - mine\) \/ 400\.0\)\)/.test(fnGd(dpT, 'game_over')),
+              'saved, pushed, merged, reset': /"dogs": dogs\.to_save\(\), "run": run_began, "v": SAVE_VERSION/.test(gsD)
+                && /"dogs": dogs\.to_save\(\),\s*\n\t\t"board": board\.banner\(\)/.test(gsD) && /dogs\.merge\(d\["dogs"\]\)/.test(gsD)
+                && /for part in \[board, people, story, town, money, ladder, challenge, body, worlds, dogs\]:/.test(gsD),
+              'the site merges them': /local\.dogs = \{ bring: /.test(pfJ) && /\(\+dt\.points \|\| 0\) > \(\+dm\.points \|\| 0\) \? dt : dm/.test(pfJ),
+              'only once you know': /return GameState\.story\.dogs_play and lesson == "" and puzzle\.is_empty\(\) and study\.is_empty\(\) and key != ""/.test(ctF('_dog_table')),
+              'never the one you face': /DogBook\.seat_of\(id\) != key/.test(ctF('_dogs_here')),
+              'played in': /left_mine := DogBook\.moves_at\(GameState\.dogs\.level\(dog\)\)/.test(ctF('_walk_in'))
+                && /if kept >= know:\s*\n\t\t\t\t_off_left = DogBook\.OFF_MOVES/.test(ctF('_walk_in')),
+              'off-script, under themselves': /elo = maxi\(int\(ChessAI\.LADDER_1400\[0\]\[0\]\), elo - DogBook\.OFF_ELO\)/.test(ctF('_their_turn'))
+                && /_brain\.think\(key, fen0, moves, elo, c, not study\.is_empty\(\), false, off, _their_sys\(str\(S\.turn\)\)\)/.test(ctF('_their_turn')),
+              'the brain drops its system': /if not _web and not stand_in and not study and not off:/.test(tbT)
+                && /"off": off, "elo": elo if off else null, "sys": sys if sys != "" else null/.test(tbT),
+              'and so does the site\'s': /if \(!q\.study && !q\.off && SYS\(\)\)/.test(ttJ) && /var id = q\.sys \|\| /.test(ttJ)
+                && /dialFor\(s, S, q\.clock \|\| null, q\.off \? \(\+q\.elo \|\| 0\) : 0\)/.test(ttJ),
+              'nobody\'s time, never a wait': /and _cut\.is_empty\(\) and _walk\.is_empty\(\):/.test(ctT)
+                && /if not _walk\.is_empty\(\):\s*\n\t\t_finish_walk\(\)\s*\n\t\treturn/.test(ctF('_take'))
+                && /if TableFX\.calm\(\):\s*\n\t\t_finish_walk\(\)/.test(ctF('_start')),
+              'a game counts once it walked': /if dog != "" and walked > 0:\s*\n\t\tGameState\.dogs\.game_over\(/.test(ctF('_end')),
+              'the Kennel': /const TABS := \["Story", "Board", "People", "Town", "Map", "Kennel"\]/.test(jnT) && /KENNEL_TAB: return _kennel_rows\(\)/.test(jnT),
+              'the secret stays one': /if not chess:\s*\n\t\t\tout\.append\(\{ "a": DogBook\.name_of\(id\), "b": DogBook\.traits\(id\)[^}]*\}\)\s*\n\t\t\tcontinue/.test(fnGd(jnT, '_kennel_rows')),
+              'six tabs on a phone': /var tgap: float = \(4\.0 if narrow else 6\.0\) \* k/.test(jnT),
+              'case': /dogpoints:milo:8;[^"]*dogline:Maxwell knows 1, then goes off-script\.;/.test(bcCase('dogwalk'))
+                && /tableuntil:moves:4:900;dogis:walked:3;brainasked:off:true;brainasked:elo:350;dogis:off:7;/.test(bcCase('dogwalk'))
+                && /dogrec:milo:l:1;dogrec:milo:points:9;dogrec:milo:rating:<400;/.test(bcCase('dogwalk'))
+                && /key:6;jrn:5;[^"]*jfits;jcut:0;/.test(bcCase('kennelphone')) && ['jrnphone', 'jrndesk', 'jrnhis'].every((c) => /key:6;jrn:5;jfits/.test(bcCase(c))),
+              'suite': ['dogwalk', 'kennelphone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT)),
+            });
+            ok(dogOff.length === 0,
+              '⭐⭐ THE KENNEL, AND A DOG\'S OPENING  (his 11-05, dog ideas #1, #2, #3, #4, #8, #10): a Journal tab with every dog (a stray only a name until it comes home; until you know the dogs play, a dog is its traits); sit down with a dog and the table plays its bench system in for as many of your moves as your bond gives (a game together is a point, a win two), theirs for as many as they know it, and where they run out they are off-script: their system dropped and 250 under themselves for eight moves, on the web through the site\'s own brain; the walk-in is nobody\'s time and any press finishes it; a game it played in counts for the dog: its record, your Elo in its opening, its best win; the strays\' names, breeds and openings, the matchups and the regulars\' dogs are his (probed: Milo at bond 2 against Maxwell, off-script at 350, a loss on his record, the Kennel on every screen)',
+              dogOff.length ? 'off: ' + dogOff.join(' · ') : 'the book, the table, the Kennel');
+            const sdT = rd('stray_dog.gd'), tmT2 = rd('table_mine.gd'), mtT2 = rd('mine_table.gd');
+            const strayOff = offOf({
+              'six deeds, his': ['stray_square', 'stray_west', 'stray_east', 'stray_south', 'stray_woods', 'stray_north']
+                .every((id) => new RegExp('"' + id + '": \\{ "kind": "[a-z]+", "n": \\d+, "say": "[^"]+" \\}').test(dbT)),
+              'the deeds are the game\'s own': /return GameState\.challenge\.beaten\.size\(\) >= n/.test(fnGd(dbT, 'ready'))
+                && /return TableMine\.deepest\(\) >= n/.test(fnGd(dbT, 'ready')) && /d = maxi\(d, best_depth\(str\(k\)\)\)/.test(fnGd(tmT2, 'deepest')) && /return GameState\.challenge\.island_open/.test(fnGd(dbT, 'ready')),
+              'walk up and it says': /^# ══ A STRAY ══/.test(sdT) && /\nextends Interactable\n/.test(sdT)
+                && /prompt_text = _prompt\(\)/.test(fnGd(sdT, 'set_highlight')),
+              'it comes home': /if not DogBook\.ready\(id\) or not GameState\.dogs\.come_home\(id\):\s*\n\t\treturn/.test(fnGd(sdT, 'interact'))
+                && /u\.say\("The stray comes home with you\.", 3\.4\)/.test(fnGd(sdT, 'interact')),
+              'and is not still out there': /if GameState\.dogs\.found\.has\(DogBook\.STRAYS\[i\]\):\s*\n\t\t\tcontinue/.test(fnGd(rd('town.gd'), '_furnish_strays')),
+              'the perks, his': /const PERKS := \{ "terrier": "shovel", "bloodhound": "sniff", "retriever": "fetch" \}/.test(dbT)
+                && /const PERK_OF := \{ "milo": "fetch", "argus": "sniff" \}/.test(dbT)
+                && /if id == "" or id == "princess":\s*\n\t\treturn ""/.test(fnGd(dbT, 'perk')),
+              'a shovel a floor': /if perk == "shovel" and floor_n > 0:\s*\n\t\tshovels \+= 1/.test(fnGd(mtT2, 'new_floor')),
+              'the gold beside her': /if perk == "fetch":/.test(fnGd(mtT2, '_resolve_hop')),
+              'the way down in the dark': /if perk == "sniff":/.test(fnGd(mtT2, '_paint_light')),
+              'its own best': /new_best = TableMine\.bank\(depth, score, gold_run, perk\)/.test(fnGd(mtT2, '_game_over'))
+                && /st\["perk_bests"\]\[perk\] = /.test(fnGd(tmT2, 'bank')),
+              'the Martyr\'s square stays clean': /"sand-mine-depths": TableMine\.best_score\(\)/.test(fnGd(rd('state_board.gd'), 'town_scores')),
+              'case': /strayready:stray_north:0;[^"]*gs:challenge\.island_open=true;strayready:stray_north:1;strayhome:stray_north;dogfound:stray_north:1;straygone:stray_north;/.test(bcCase('strayscome'))
+                && /town:north;wait:40;straygone:stray_north/.test(bcCase('strayscome'))
+                && /strayready:stray_west:0;gs:worlds\.crossing_best=5;strayready:stray_west:1;strayready:stray_east:0;minebank:fetch:50:100;strayready:stray_east:1;/.test(bcCase('strayscome'))
+                && /minepartner:milo;[^"]*mineperk:fetch;[^"]*minehop:4,2;mineis:gold_run:6;/.test(bcCase('mineperks'))
+                && /mineperk:sniff;[^"]*minebank:fetch:30:100;minebest:fetch:30:100;minebest::0:0;/.test(bcCase('mineperks')),
+              'suite': ['strayscome', 'mineperks'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT)),
+            });
+            ok(strayOff.length === 0,
+              '⭐⭐ EACH STRAY COMES HOME ITS OWN WAY, AND A DOG AT YOUR SIDE IN THE SAND MINE  (his 11-05, dog ideas #5 and #6): walk up to a stray and the box says what it waits for (three regulars beaten, a score of 5 at Pawn Crossing, 50 m down with a dog or without, an S in Notation Blitz at Medium or Fast, five of Matsu\'s mates, the Champ\'s run: his to change; each reads what its words say); once that is done it comes home with you and is not out there again; in the Sand Mine the dog beside you brings a perk (a terrier a shovel a floor, a bloodhound the way down in the dark, a retriever the gold beside her; Milo fetches and Argus finds the way, his to change; Princess is the knight), and a run with a perk keeps its own best (probed: the north\'s stray home after the Champ\'s run, the west\'s at a score of 5, the east\'s at 50 m with Milo, Milo\'s fetched gold, Argus\'s ring in the dark, the bests apart)',
+              strayOff.length ? 'off: ' + strayOff.join(' · ') : 'the strays and the mine');
           }
         }
 
