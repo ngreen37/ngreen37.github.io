@@ -627,6 +627,8 @@ const B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
     return { b: b, flip: G.orient === 'b', last: b3last, sel: G.selected ? G.selected.y * 8 + G.selected.x : -1, dots: [],
       woods: { lt: C.light, dk: C.dark, frame: '#3a2812' } };
   },
+  // ⭐ WHOEVER SITS ACROSS (his view idea #1): the one who teaches the line (PJCCPircBook.TEACHER, his to name)
+  seat: function () { return { who: (window.PJCCPircBook && PJCCPircBook.TEACHER) || 'Michael', key: '' }; },
 }) : null;
 if (B3) { const pv = B3.button('float-btn p-view'), slot = document.getElementById('p-view-slot'); slot.parentNode.replaceChild(pv, slot); }
 

@@ -327,6 +327,8 @@ var TRAPS = [], FOES = [];
   var b3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
     board: function () { var w = document.querySelector('.boardwrap'); return S && w && w.offsetParent !== null ? w : null; },
     read: function () { return S ? { b: S.b, flip: true, last: b3last, sel: -1, dots: [], turn: S.turn, quiet: b3quiet } : null; },
+    // ⭐ WHOEVER SITS ACROSS (his view idea #1): the duelist you face, in the color you win from them
+    seat: function () { return duel && duel.foe ? { who: duel.foe.name, key: duel.foe.aura || '' } : null; },
     inert: true,
   }) : null;
   if (b3) $('du-view-row').appendChild(b3.button('du-view'));

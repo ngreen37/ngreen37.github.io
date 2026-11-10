@@ -43,6 +43,209 @@
   var CODES = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
   var KEY = 'pjcc.board.flat';
 
+  // ── WHOEVER SITS ACROSS, THE ROOM'S LIGHT, AND THEIR ANSWER TO YOUR MOVE (his 11-05 view ideas #1, #4, #5; of the
+  //    rooms, 11-10: "yes on the website port"). The game's numbers: ui/table_seat.gd, ui/chess_table.gd, ui/board3d.gd,
+  //    games/chess/table_judge.gd; their looks off people/people_sheet.gd, a dog off people/dog.gd. ──
+  var SEAT_TALL = 2.4;             // squares from the board's top to the top of their head
+  var SEAT_BACK = 0.6;             // squares behind the frame's far edge
+  var SEAT_TOP = 0.109;            // of the picture, above their head
+  var SEAT_WAIST = 0.5;            // of the picture, where the frame's far edge crosses them
+  var SEAT_KEEP = 0.6;             // of the picture drawn, fading out from the waist down to here
+  var SEAT_STRIPS = 5;
+  var LEAN = 0.05, LEAN_SECS = 0.35, BREATH_SECS = 3.0;
+  var BUILD_TALLEST = 1.06;        // the tallest build's head, which the view keeps in (TownPeople.TALL)
+  var DOG_UP = 0.95, SIT_TALL = 36.0;
+  // ⭐ PLACEHOLDERS, HIS TO CRAFT: [seconds, sink, hop, shake, light]
+  var REACT = { frown: [0.8, 0.05, 0.0, 0.02, 0.8], smile: [0.7, 0.0, 0.05, 0.0, 1.0] };
+  var FAR = 4 * SQ + 0.45;         // the frame's far edge
+  var MOOD_FULL = 500, MOOD_RATE = 0.8, MOOD_GLOW = 0.45, MOOD_LAMP = 0.3, MOOD_GOLD = 'f5c518', MOOD_COLD = '3d6fd6';
+  var VAL = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 }, SWING = 150, KING_AT = 10000;
+  var FRONT = 384, IDLES = 4;
+  var PEOPLE = BASE + 'models/people_front.png';     // the game's own picture (npm run gen:people)
+  var AURA = { maxwell: '2ecc71', nate: '6bffb8', dad: '40e0d0', robert: 'b07bff', auston: 'ff6b6b', brother: 'c9ff6b', ceo: 'f5c518' };
+  var OWN = { 'Puzzle Champ': 'f5c518', Kaede: 'e8927f', Matsu: '7fb28a', Murphy: 'c8b98a', 'White Knight': 'eef0f4' };
+  var LOOKS = {};
+  var HAIRS = ['1f1a17', '3f2a1a', '6b4526', '8c4023', 'cfa962', '9e9e99', 'dcdcd6'];
+  var WIDE = [0.95, 0.03], TALLB = [0.94, 0.03];
+  var COATS = { Princess: ['f0b9cf', '6b3a52', 'ff8fd0', false], Milo: ['f2efe8', '24201c', 'd8463a', true],
+    Argus: ['a9824f', '3a2a1a', '3d5a7a', false] };
+
+  function hex3(h) { return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16) / 255; }); }
+  function rgbaOf(c, a) { return 'rgba(' + Math.round(c[0] * 255) + ',' + Math.round(c[1] * 255) + ',' + Math.round(c[2] * 255) + ',' + a.toFixed(3) + ')'; }
+  function moveToward(a, b, d) { return a + Math.max(-d, Math.min(d, b - a)); }
+  function frameIndex(phase, of) { var w = Math.floor(phase * of); return ((w % of) + of) % of; }
+  function sideOf(p) { return p ? (p === p.toUpperCase() ? 'w' : 'b') : ''; }
+
+  // ── the judge: the material, settled by the side to move's best capture (TableJudge, no search) ──
+  var KNJ = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+  var KGJ = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+  var DIAG = [[-1, -1], [-1, 1], [1, -1], [1, 1]], ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+  function onb(r, f) { return r >= 0 && r < 8 && f >= 0 && f < 8; }
+  function material(b, side) {
+    var s = 0;
+    for (var i = 0; i < 64; i++) if (b[i]) s += VAL[b[i].toLowerCase()] * (sideOf(b[i]) === side ? 1 : -1);
+    return s;
+  }
+  // the cheapest of `by`'s pieces attacking `sq`: its value, KING_AT for the king alone, or -1 for none
+  function leastAttacker(b, sq, by) {
+    var r = (sq / 8) | 0, f = sq % 8, pr = r + (by === 'w' ? 1 : -1), pw = by === 'w' ? 'P' : 'p', i, d, nr, nf;
+    for (i = -1; i <= 1; i += 2) if (onb(pr, f + i) && b[pr * 8 + f + i] === pw) return VAL.p;
+    var best = -1, kn = by === 'w' ? 'N' : 'n';
+    for (i = 0; i < KNJ.length; i++) {
+      nr = r + KNJ[i][0]; nf = f + KNJ[i][1];
+      if (onb(nr, nf) && b[nr * 8 + nf] === kn) { best = VAL.n; break; }
+    }
+    for (var k = 0; k < 2; k++) {
+      var slider = k === 0 ? 'b' : 'r', dirs = k === 0 ? DIAG : ORTH;
+      for (i = 0; i < dirs.length; i++) {
+        d = dirs[i]; nr = r + d[0]; nf = f + d[1];
+        while (onb(nr, nf)) {
+          var x = b[nr * 8 + nf];
+          if (x) {
+            var xl = x.toLowerCase();
+            if (sideOf(x) === by && (xl === slider || xl === 'q') && (best < 0 || VAL[xl] < best)) best = VAL[xl];
+            break;
+          }
+          nr += d[0]; nf += d[1];
+        }
+      }
+    }
+    if (best >= 0) return best;
+    var kg = by === 'w' ? 'K' : 'k';
+    for (i = 0; i < KGJ.length; i++) {
+      nr = r + KGJ[i][0]; nf = f + KGJ[i][1];
+      if (onb(nr, nf) && b[nr * 8 + nf] === kg) return KING_AT;
+    }
+    return -1;
+  }
+  // the most `by` wins with one capture, the recapture counted
+  function bestCapture(b, by) {
+    var C = window.PJCCChess, foe = by === 'w' ? 'b' : 'w', best = 0;
+    for (var sq = 0; sq < 64; sq++) {
+      var p = b[sq];
+      if (!p || sideOf(p) !== foe || p.toLowerCase() === 'k') continue;
+      var a = leastAttacker(b, sq, by);
+      if (a < 0) continue;
+      var held = !!(C && C.isAttacked(b, sq, foe));
+      if (a === KING_AT && held) continue;
+      var v = VAL[p.toLowerCase()];
+      best = Math.max(best, held ? v - a : v);
+    }
+    return best;
+  }
+  // yours minus theirs once the side to move has made its best capture: what the light follows
+  function settled(b, turn, side) {
+    var m = material(b, side), g = bestCapture(b, turn);
+    return turn === side ? m + g : m - g;
+  }
+  // your move, as whoever sits across sees it: "frown" it won you something, "smile" it gave something away or lets
+  // them mate. ⚠ The lens knows the squares and the turn: castling rights and en passant are not the room's to read here.
+  function verdict(before, after, turn, side) {
+    var C = window.PJCCChess;
+    if (!C) return '';
+    var S = { b: after, turn: turn, cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 };
+    var theirs = C.legalMoves(S);
+    if (!theirs.length) return '';
+    for (var i = 0; i < theirs.length; i++) {
+      var s2 = C.makeMove(S, theirs[i]);
+      if (C.inCheck(s2, side) && C.legalMoves(s2).length === 0) return 'smile';
+    }
+    var d = settled(after, turn, side) - material(before, side);
+    return d >= SWING ? 'frown' : d <= -SWING ? 'smile' : '';
+  }
+  // the light for a score, -1 to 1: a pawn up already shows, a rook up is all of it
+  function moodOf(cp) { var w = Math.sqrt(Math.min(Math.abs(cp) / MOOD_FULL, 1)); return cp > 0 ? w : -w; }
+  function lampOf(w) {
+    var t = Math.abs(w) * MOOD_LAMP, to = hex3(w > 0 ? MOOD_GOLD : MOOD_COLD);
+    return [1 + (to[0] - 1) * t, 1 + (to[1] - 1) * t, 1 + (to[2] - 1) * t];
+  }
+
+  // ── their looks, worked out from the name as the town works them out (TownPeople.look_of), never rolled ──
+  function salt(s) { var h = 7; Array.from(s).forEach(function (ch) { h = (h * 31 + ch.codePointAt(0)) % 100003; }); return h; }
+  function fromHsv(h, s, v) {
+    var i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+    return [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][((i % 6) + 6) % 6];
+  }
+  function hsvOf(c) {
+    var mx = Math.max(c[0], c[1], c[2]), mn = Math.min(c[0], c[1], c[2]), d = mx - mn, h = 0;
+    if (d > 0) {
+      h = mx === c[0] ? (c[1] - c[2]) / d : mx === c[1] ? 2 + (c[2] - c[0]) / d : 4 + (c[0] - c[1]) / d;
+      h /= 6; if (h < 0) h += 1;
+    }
+    return [h, mx > 0 ? d / mx : 0, mx];
+  }
+  function lookOf(who, key) {
+    var set = LOOKS[who] || {};
+    var shirt = set.shirt ? hex3(set.shirt) : AURA[key] ? hex3(AURA[key]) : OWN[who] ? hex3(OWN[who])
+      : fromHsv((salt(who) % 360) / 360, 0.55, 0.88);
+    var hs = hsvOf(shirt);
+    var cap = set.cap ? hex3(set.cap) : fromHsv(hs[0], Math.min(0.75, Math.max(0.45, hs[1] + 0.15)), 0.40);
+    var hair = hex3(set.hair || HAIRS[salt(who + 'hair') % HAIRS.length]);
+    var bs = salt(who + 'build');
+    return { shirt: shirt, cap: cap, hair: hair,
+      build: [set.wide != null ? +set.wide : WIDE[0] + (bs % 5) * WIDE[1], set.tall != null ? +set.tall : TALLB[0] + (Math.floor(bs / 7) % 5) * TALLB[1]] };
+  }
+  // the dress shader's own hue (TownPeople.DRESS to_hsv)
+  function shaderHsv(r, g, b) {
+    var p = g >= b ? [g, b, 0, -1 / 3] : [b, g, -1, 2 / 3];
+    var q = r >= p[0] ? [r, p[1], p[2], p[0]] : [p[0], p[1], p[3], r];
+    var d = q[0] - Math.min(q[3], q[1]);
+    return [Math.abs(q[2] + (q[3] - q[1]) / (6 * d + 1e-10)), d / (q[0] + 1e-10), q[0]];
+  }
+  // ⭐ DRESSED AS THE TOWN DRESSES THEM: the shirt, the cap and the hair swapped by their baked color, the shading kept
+  function dressSheet(img, look) {
+    var c = document.createElement('canvas');
+    c.width = img.naturalWidth || img.width; c.height = img.naturalHeight || img.height;
+    var g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, 0, 0);
+    var d = g.getImageData(0, 0, c.width, c.height), px = d.data, to = null, m = 0;
+    for (var i = 0; i < px.length; i += 4) {
+      if (!px[i + 3]) continue;
+      var k = shaderHsv(px[i] / 255, px[i + 1] / 255, px[i + 2] / 255);
+      if (k[0] > 0.58 && k[0] < 0.72 && k[1] > 0.18) { to = look.shirt; m = Math.min(1.5, Math.max(0.2, k[2] / 0.42)); }
+      else if (k[0] > 0.13 && k[0] < 0.22 && k[1] > 0.25) { to = look.hair; m = k[2] / 0.52; }
+      else if (k[1] < 0.22 && k[2] < 0.45) { to = look.cap; m = 0.45 + 2 * k[2]; }
+      else continue;
+      px[i] = Math.min(255, Math.round(to[0] * m * 255)); px[i + 1] = Math.min(255, Math.round(to[1] * m * 255));
+      px[i + 2] = Math.min(255, Math.round(to[2] * m * 255));
+    }
+    g.putImageData(d, 0, 0);
+    return c;
+  }
+  var peopleP = null;
+  function people() {
+    if (!peopleP) peopleP = new Promise(function (ok, bad) {
+      var im = new Image();
+      im.onload = function () { ok(im); };
+      im.onerror = function () { peopleP = null; bad(new Error('could not load ' + PEOPLE)); };
+      im.src = PEOPLE;
+    });
+    return peopleP;
+  }
+  // ⭐ A DOG ACROSS THE BOARD IS THE DOG (TownDog.paint_front): facing you, paws on the far edge. ⚠ NO TONGUE, EVER.
+  function paintFront(g, who, at, s, look, up) {
+    var c = COATS[who], body = '#' + c[0], edge = '#' + c[1], b3 = hex3(c[0]);
+    function circle(x, y, r, col) { g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+    function rect(x, y, w, h, col) { g.fillStyle = col; g.fillRect(x, y, w, h); }
+    g.save(); g.translate(at[0], at[1]); g.scale(s, s);
+    circle(0, -23, 12.5, body);
+    if (c[3]) { circle(-6.5, -29.5, 2.6, edge); circle(6, -31, 2.0, edge); }
+    rect(-8.5, -22, 17, 3.2, '#' + c[2]);
+    [-16, 10].forEach(function (x) { rect(x, -23, 6, 23.5, body); rect(x + 1.7, -2.4, 0.7, 2.6, edge); rect(x + 3.6, -2.4, 0.7, 2.6, edge); });
+    [-1, 1].forEach(function (sx) {
+      g.fillStyle = edge; g.beginPath();
+      g.moveTo(sx * 5, -19 - up * 2); g.lineTo(sx * 14, -15 - up * 6); g.lineTo(sx * 11.5, -3 - up * 8); g.closePath(); g.fill();
+    });
+    circle(0, -10.5, 10.2, body);
+    if (c[3]) [-1, 1].forEach(function (sx) { circle(sx * 4.6, -13, 4.4, edge); });
+    circle(0, -4.6, 5.2, rgbaOf(b3.map(function (v) { return v + (1 - v) * 0.22; }), 1));
+    circle(0, -2.4, 2.3, edge);
+    var lx = look[0], ly = look[1], ll = Math.hypot(lx, ly);
+    if (ll > 0.9) { lx *= 0.9 / ll; ly *= 0.9 / ll; }
+    [-1, 1].forEach(function (sx) { circle(sx * 4.6, -13, 2.3, '#fbf7ef'); circle(sx * 4.6 + lx, -13 + ly, 1.4, edge); });
+    g.restore();
+  }
+
   // ── the device's preference, and reduced motion ──
   var reduceMq = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   function calm() {
@@ -104,6 +307,14 @@
     this.pieces = {};              // room square -> { node, code }
     this.falling = []; this.flying = null; this.squash = null; this.cut = null; this.cutAfter = null;
     this.live = 0; this.dist = 30; this.size = [2, 2];
+    // whoever sits across, how they sit, and the room's light (drawn on their own canvas, under the board's picture)
+    this.seatWho = ''; this.seatKey = ''; this.dog = false; this.seatBuild = [1, 1]; this.look = null; this.dressed = null;
+    this.breath = 0; this.lean = 0; this.leanTo = 0; this.act = ''; this.actT = 0; this.face = '';
+    this.mood = 0; this.moodTo = 0; this.cell = -1; this.seatDirty = true; this.seatDrawn = '';
+    this.scv = document.createElement('canvas');
+    this.scv.className = 'pjcc-board3d-seat';
+    this.scv.setAttribute('aria-hidden', 'true');
+    this.scv.style.cssText = 'position:absolute;z-index:2;pointer-events:none;';
     var self = this;
     // ⚠ A PRESS IS READ THROUGH THE CAMERA, THEN THE CUT ENDS: the click lands on the square drawn under the finger
     document.addEventListener('click', function () { if (self.cut) setTimeout(function () { self.endCut(); }, 0); }, true);
@@ -145,6 +356,7 @@
     var fill = new T.DirectionalLight(0xffffff, FILLI);
     fill.position.set(0.526, 0.574, -0.627).multiplyScalar(20);
     sc.add(amb, key, fill);
+    this.keyL = key;
     this.root = new T.Group(); sc.add(this.root);
     this.marks = new T.Group(); sc.add(this.marks);
     this.skins = { w: skin(M, 'w', T), b: skin(M, 'b', T) };
@@ -251,6 +463,8 @@
     if (flip !== this.flip) { this.flip = flip; this.boardKey = ''; this.b = null; }
     if (this.T) this.build(st.woods);
     var b = st.b, prev = this.b;
+    // ⭐ WHOEVER SITS ACROSS (his view idea #1): the room says who (`seat`)
+    this.seatTo(this.o.seat ? this.o.seat() : null);
     if (st.check == null) {
       var jk = b.join('') + '|' + (st.last || []).join(',') + '|' + (st.turn || '');
       if (jk !== this.jk) { this.jk = jk; this.jv = judge(st); }
@@ -263,6 +477,15 @@
     this.key = key;
     var mv = prev ? moved(prev, b, st.last) : null;
     this.b = b.slice();
+    // ⭐ THE ROOM FOLLOWS WHO IS WINNING, AND THE ONE ACROSS ANSWERS YOUR MOVE (his view ideas #4 and #5): the side
+    // you sit on is the near one, the turn is the room's or the one that did not just move
+    var side = flip ? 'b' : 'w', turn = st.turn || (st.last && b[st.last[1]] ? (sideOf(b[st.last[1]]) === 'w' ? 'b' : 'w') : '');
+    if (turn) {
+      this.moodTo = moodOf(settled(b, turn, side));
+      this.leanTo = this.seatWho && turn !== side && !st.mate ? 1 : 0;
+      if (calm()) this.lean = this.leanTo;
+      if (mv && sideOf(b[mv.to]) === side && !st.quiet) this.face = verdict(prev, b, turn, side);
+    }
     if (mv && !st.quiet) {
       var kind = st.mate ? 'mate' : (st.check >= 0 ? 'check' : (mv.taken ? 'capture' : ''));
       var at = kind === 'mate' || kind === 'check' ? st.check : mv.to;
@@ -336,6 +559,7 @@
   // A taken piece knocked over where it stood: it waits (the taker is still on its way), then is knocked away
   // from the taker, falling as it goes, and sinks out of sight.
   P.knock = function (at, c, from, wait) {
+    this.knocks = (this.knocks || 0) + 1;         // a probe hook, as `flights`: a slow frame can knock and clear at once
     var n = this.make(c);
     var w = this.world(at);
     n.position.copy(w);
@@ -393,6 +617,8 @@
       [-e, e].forEach(function (z) { pts.push(new T.Vector3(x, 0, z), new T.Vector3(x, -0.36, z)); });
       pts.push(new T.Vector3(x * 0.8, TALLEST, -3.5 * SQ));
     });
+    // ⚠ WHOEVER SITS ACROSS IS IN THE VIEW: the board moves down for their head, never shrinks for it
+    if (this.seatWho) pts.push(new T.Vector3(0, SEAT_TALL * BUILD_TALLEST, -(FAR + SEAT_BACK)));
     var aim = new T.Vector3(), d = 30, th = Math.tan(FOV * Math.PI / 360), self = this;
     for (var pass = 0; pass < 3; pass++) {
       var lo = 4, hi = 120;
@@ -608,7 +834,7 @@
     var r = this.rect();
     if (!this.T) return;
     // ⚠ A BOARD THE ROOM HAS PUT AWAY (another screen) TAKES THE CANVAS WITH IT, or it stands over the next screen
-    if (!r || r.width < 2) { if (!this.o.into) this.canvas.style.display = 'none'; return; }
+    if (!r || r.width < 2) { if (!this.o.into) { this.canvas.style.display = 'none'; this.scv.style.display = 'none'; } return; }
     var w = Math.round(r.width), h = Math.round(r.height);
     if (w !== this.size[0] || h !== this.size[1]) {
       this.size = [w, h];
@@ -617,6 +843,7 @@
       this.cam.updateProjectionMatrix();
       this.fit();
       this.touch();
+      this.seatDirty = true;
     }
     if (this.o.into) return;
     var el = this.o.board(), cv = this.canvas, on = !this.isFlat();
@@ -627,9 +854,124 @@
     cv.style.display = on ? 'block' : 'none';
     cv.style.left = el.offsetLeft + 'px'; cv.style.top = el.offsetTop + 'px';
     cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    // ⚠ WHOEVER SITS ACROSS IS DRAWN UNDER THE BOARD'S PICTURE, so the board and every piece cover them where they should
+    var scv = this.scv;
+    if (scv.parentNode !== host || scv.nextSibling !== cv) { host.insertBefore(scv, cv); this.seatDirty = true; }
+    scv.style.display = cv.style.display;
+    scv.style.left = cv.style.left; scv.style.top = cv.style.top; scv.style.width = cv.style.width; scv.style.height = cv.style.height;
     // ⚠ HIDDEN BY OPACITY, NOT VISIBILITY: its squares stay focusable, so a keyboard still plays the board. Its own
     // frame goes too, or the 3D board stands in a flat one.
     if (el.classList.contains('pjcc-b3-on') !== on) el.classList.toggle('pjcc-b3-on', on);
+  };
+
+  // ── whoever sits across ──
+  P.seatTo = function (seat) {
+    var who = seat && seat.who ? String(seat.who) : '', key = seat && seat.key ? String(seat.key) : '';
+    if (who === this.seatWho && key === this.seatKey) return;
+    this.seatWho = who; this.seatKey = key; this.dog = !!COATS[who]; this.act = ''; this.face = '';
+    // ⚠ A DOG IS NOT DRESSED: it is the dog (the town's bench draws its dogs as dogs)
+    var look = who && !this.dog ? lookOf(who, key) : null, self = this;
+    this.look = look; this.dressed = null; this.seatBuild = look ? look.build : [1, 1];
+    if (look) people().then(function (im) { if (self.look === look) { self.dressed = dressSheet(im, look); self.seatDirty = true; } }, function () {});
+    if (this.T) { this.fit(); this.touch(); }
+    this.seatDirty = true;
+  };
+  // How they sit now, in pictures: [size, right, down, light]
+  P.posed = function () {
+    var e = this.lean * this.lean * (3 - 2 * this.lean), dx = 0, dy = LEAN * 0.6 * e, light = 1;
+    if (this.act) {
+      var r = REACT[this.act], f = Math.max(0, Math.min(1, this.actT / r[0])), env = Math.sin(f * Math.PI);
+      dy += r[1] * env - r[2] * Math.abs(Math.sin(f * Math.PI * 2));
+      dx = r[3] * Math.sin(f * Math.PI * 6) * env;
+      light = 1 + (r[4] - 1) * env;
+    }
+    return [1 + LEAN * e, dx, dy, light];
+  };
+  // the breath, the lean, an answer playing, and the light easing toward who is winning
+  P.seatStep = function (dt) {
+    var moving = this.lean !== this.leanTo || !!this.act;
+    this.breath = (this.breath + dt / BREATH_SECS) % 1;
+    this.lean = moveToward(this.lean, this.leanTo, dt / LEAN_SECS);
+    if (this.act) { this.actT += dt; if (this.actT >= REACT[this.act][0]) this.act = ''; }
+    // ⚠ THEY ANSWER ONCE THE CAMERA IS BACK ON THEM: a capture's close-up had the face off the frame
+    if (this.face && !this.flying && !this.cut && !this.cutAfter) {
+      if (!calm() && this.seatWho) { this.act = this.face; this.actT = 0; }
+      this.face = ''; moving = true;
+    }
+    if (this.mood !== this.moodTo) {
+      this.mood = moveToward(this.mood, this.moodTo, dt * MOOD_RATE);
+      if (this.keyL) { var c = lampOf(this.mood); this.keyL.color.setRGB(c[0], c[1], c[2], this.T.SRGBColorSpace); this.touch(); }
+      moving = true;
+    }
+    var cell = frameIndex(this.breath, IDLES);
+    if (moving || cell !== this.cell) { this.cell = cell; this.seatDirty = true; }
+  };
+  // ⭐ THEIR CANVAS: the room's light behind it all, then whoever sits across, placed through the board's camera
+  P.drawSeat = function () {
+    this.seatDirty = false;
+    var cv = this.scv, w = this.size[0], h = this.size[1], k = Math.min(2, window.devicePixelRatio || 1);
+    var pw = Math.max(1, Math.round(w * k)), ph = Math.max(1, Math.round(h * k));
+    if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
+    var g = cv.getContext('2d');
+    g.setTransform(k, 0, 0, k, 0, 0);
+    g.clearRect(0, 0, w, h);
+    if (Math.abs(this.mood) >= 0.01) {
+      var gc = hex3(this.mood > 0 ? MOOD_GOLD : MOOD_COLD), ga = Math.abs(this.mood) * MOOD_GLOW;
+      var gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.9);
+      gr.addColorStop(0, rgbaOf(gc, ga)); gr.addColorStop(1, rgbaOf(gc, 0));
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      // ⚠ A SOFT FRAME: this canvas is the board's own square, and the game's light runs on past it into the table's
+      // frame; cut off at the square's edge it read as a lit box. It fades out over the outer fifth each way instead.
+      g.globalCompositeOperation = 'destination-in';
+      [[w, 0], [0, h]].forEach(function (d) {
+        var m = g.createLinearGradient(0, 0, d[0], d[1]);
+        m.addColorStop(0, 'rgba(0,0,0,0)'); m.addColorStop(0.2, '#000'); m.addColorStop(0.8, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = m; g.fillRect(0, 0, w, h);
+      });
+      g.globalCompositeOperation = 'source-over';
+    }
+    this.seatDrawn = '';
+    if (!this.seatWho || !this.T) return;
+    var T = this.T, edge = this.seen(new T.Vector3(0, 0, -FAR));
+    var top = this.seen(new T.Vector3(0, SEAT_TALL * this.seatBuild[1], -(FAR + SEAT_BACK)));
+    if (edge[1] - top[1] < 8) return;
+    var pose = this.posed(), fig = this.fig || (this.fig = document.createElement('canvas'));
+    if (fig.width !== pw || fig.height !== ph) { fig.width = pw; fig.height = ph; }
+    var f = fig.getContext('2d');
+    f.setTransform(k, 0, 0, k, 0, 0);
+    f.clearRect(0, 0, w, h);
+    if (this.dog) {
+      var q = (edge[1] - top[1]) * pose[0], ears = 0;
+      if (this.act) {
+        var env = Math.sin(Math.max(0, Math.min(1, this.actT / REACT[this.act][0])) * Math.PI);
+        ears = this.act === 'smile' ? env : -0.6 * env;
+      }
+      paintFront(f, this.seatWho, [(edge[0] + top[0]) / 2 + pose[1] * q, edge[1] + pose[2] * q], q * DOG_UP / SIT_TALL,
+        this.leanTo > 0 ? [0, 0.9] : [0, 0], ears);
+    } else {
+      var img = this.dressed;
+      if (!img) return;
+      var q2 = (edge[1] - top[1]) / (SEAT_WAIST - SEAT_TOP) * pose[0], ww = q2 * this.seatBuild[0];
+      var x = (edge[0] + top[0]) / 2 - ww / 2 + pose[1] * q2, y0 = edge[1] - SEAT_WAIST * q2 + pose[2] * q2;
+      var f0 = SEAT_WAIST - 0.04, sx = frameIndex(this.breath, IDLES) * FRONT;
+      f.drawImage(img, sx, 0, FRONT, FRONT * f0, x, y0, ww, f0 * q2);
+      for (var i = 0; i < SEAT_STRIPS; i++) {
+        var a = f0 + (SEAT_KEEP - f0) * i / SEAT_STRIPS, bb = f0 + (SEAT_KEEP - f0) * (i + 1) / SEAT_STRIPS;
+        f.globalAlpha = 1 - (i + 0.5) / SEAT_STRIPS;
+        f.drawImage(img, sx, FRONT * a, FRONT, FRONT * (bb - a), x, y0 + a * q2, ww, (bb - a) * q2);
+      }
+      f.globalAlpha = 1;
+    }
+    // the light of an answer: a frown dims them, as the game's modulate does
+    if (pose[3] < 1) {
+      f.globalCompositeOperation = 'source-atop';
+      f.fillStyle = 'rgba(0,0,0,' + (1 - pose[3]).toFixed(3) + ')';
+      f.fillRect(0, 0, w, h);
+      f.globalCompositeOperation = 'source-over';
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.drawImage(fig, 0, 0);
+    this.seatDrawn = this.dog ? 'dog' : 'person';
   };
   var STYLE = '.pjcc-b3-on{border-color:transparent!important;background:none!important;box-shadow:none!important}' +
     '.pjcc-b3-on>*,.pjcc-b3-on::before,.pjcc-b3-on::after{opacity:0!important}';
@@ -688,13 +1030,15 @@
       this.camCut(this.cut.at, en.a, en.mate ? 0.8 * Math.sin(en.f * Math.PI) : 0, en.c.zoom);
     } else this.rest();
     this.flatCam();
+    this.seatStep(dt);
   };
 
   P.frame = function (dt) {
     if (!this.o.into) this.sync();
     this.layout();
     this.step(dt);
-    if (this.T && this.live > 0 && !this.isFlat()) { this.r.render(this.scene, this.cam); this.live--; }
+    if (this.T && this.live > 0 && !this.isFlat()) { this.r.render(this.scene, this.cam); this.live--; this.seatDirty = true; }
+    if (this.T && this.seatDirty && !this.isFlat()) this.drawSeat();
   };
 
   // A canvas room draws the board itself: the 3D board's picture into its own canvas, where its flat board would be.
@@ -702,7 +1046,10 @@
     if (this.isFlat()) return false;
     // ⚠ DRAWN AGAIN ONLY WHEN SOMETHING MOVED: the room paints every frame, and the picture it paints is kept
     this.sync(); this.layout();
-    if (this.live > 0) { this.step(0); this.r.render(this.scene, this.cam); this.live--; }
+    if (this.live > 0) { this.step(0); this.r.render(this.scene, this.cam); this.live--; this.seatDirty = true; }
+    // ⚠ A CANVAS ROOM GETS THEM TOO, under the board's picture, in its own canvas
+    if (this.seatDirty) this.drawSeat();
+    ctx.drawImage(this.scv, x, y, w, h);
     ctx.drawImage(this.canvas, x, y, w, h);
     return true;
   };
@@ -713,6 +1060,7 @@
     var el = this.o.into ? null : this.o.board();
     if (el) { el.style.transform = ''; el.style.clipPath = ''; el.classList.remove('pjcc-b3-on'); }
     if (this.canvas && this.canvas.parentNode) this.canvas.parentNode.removeChild(this.canvas);
+    if (this.scv && this.scv.parentNode) this.scv.parentNode.removeChild(this.scv);
     if (this.r) this.r.dispose();
   };
 
@@ -762,6 +1110,12 @@
   H.fxMap = function () { return this.b ? this.b.fxMap() : [0, 0, 1]; };
   H.flatMatrix = function () { return this.b ? this.b.flatMatrix() : null; };
   H.cutting = function () { return !!(this.b && this.b.cut); };
+  // whoever sits across and the room's light, as the board has them now (the rooms' tests)
+  H.seat = function () {
+    var b = this.b;
+    return b ? { who: b.seatWho, key: b.seatKey, dog: b.dog, drawn: b.seatDrawn, lean: b.lean, leanTo: b.leanTo, act: b.act,
+      face: b.face, mood: b.mood, moodTo: b.moodTo, lamp: b.keyL ? b.keyL.color.getHexString(b.T.SRGBColorSpace) : '' } : null;
+  };
   H.cutKind = function () { return this.b && this.b.cut ? this.b.cut.kind : ''; };
   H.cardHeld = function () { return !!(this.b && this.b.cardHeld()); };
   H.endCut = function () { if (this.b) this.b.endCut(); };
@@ -804,5 +1158,11 @@
     calm: calm, cutting: cutting,
     // the numbers, for the rooms' tests and the gate
     TILT: TILT, FOV: FOV, SIZE: SIZE, SLIDE: SLIDE, TOPPLE: TOPPLE, CARD_AFTER: CARD_AFTER, CUTS: CUTS, TALL: TALL,
+    SEAT: { TALL: SEAT_TALL, BACK: SEAT_BACK, TOP: SEAT_TOP, WAIST: SEAT_WAIST, KEEP: SEAT_KEEP, STRIPS: SEAT_STRIPS,
+      LEAN: LEAN, LEAN_SECS: LEAN_SECS, DOG_UP: DOG_UP, SIT_TALL: SIT_TALL }, REACT: REACT,
+    MOOD: { FULL: MOOD_FULL, RATE: MOOD_RATE, GLOW: MOOD_GLOW, LAMP: MOOD_LAMP, GOLD: MOOD_GOLD, COLD: MOOD_COLD },
+    // the judge and the looks, for the parity corpus and the gate
+    judge: { settled: settled, verdict: verdict, material: material, bestCapture: bestCapture, SWING: SWING, VAL: VAL },
+    lookOf: lookOf, COATS: COATS,
   };
 })();

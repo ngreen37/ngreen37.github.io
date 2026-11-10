@@ -157,6 +157,13 @@ body_class: theme-hall
   var b3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
     board: function () { return app.querySelector('.pt-board'); },
     read: function () { return app.querySelector('.pt-board') ? b3view : null; },
+    // ⭐ WHOEVER SITS ACROSS (his view idea #1, as the game's tables): the seat you sat down with, or the live game's
+    // other player. A dog's seat is the dog.
+    seat: function () {
+      if (botCur && BOTS && BOTS[botCur.bot]) return { who: BOTS[botCur.bot].name, key: botCur.bot };
+      var n = cur ? opponentName(cur) : '';
+      return n && n !== 'The Park Tables' ? { who: n, key: '' } : null;
+    },
     press: function (i) {
       var sq = app.querySelector('.pt-board [data-sq="' + i + '"], .pt-board [data-bsq="' + i + '"]');
       if (sq) sq.click();

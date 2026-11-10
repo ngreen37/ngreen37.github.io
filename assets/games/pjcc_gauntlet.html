@@ -517,6 +517,7 @@ var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
    ⚠ UNDER BLINDFOLD THE RIVAL'S MEN ARE LEFT OFF IT TOO: a 3D board that drew them would be the leak; check and mate are
    read off the whole position. */
 var b3key = '', b3judge = { check: -1, mate: false };
+var b3seatFor = null, b3seat = null;
 var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
   into: true,
   rect: function () { var r = cv.getBoundingClientRect(), k = r.width / W; return { left: r.left + BX * k, top: r.top + BY * k, width: BOARD * k, height: BOARD * k }; },
@@ -531,6 +532,17 @@ var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
     return { b: b, flip: G.pc !== 'w', last: VLAST ? [VLAST.from, VLAST.to] : null, sel: VW ? -1 : G.sel, dots: dots,
       turn: VS.turn, check: b3judge.check, mate: b3judge.mate, quiet: !!VW, hint: (!VW && G.coachSq >= 0) ? [G.coachSq] : [],
       woods: { lt: SET.light, dk: SET.dark, frame: SET.frame } };
+  },
+  // ⭐ WHOEVER SITS ACROSS (his view idea #1): the floor's own (Argus on the first: the dog), the rival as the floor he
+  // gave up; a title stands for a face until he names them. ⚠ ASKED ONCE A FLOOR: the rival is read off the save.
+  seat: function () {
+    if (!G) return null;
+    if (b3seatFor !== G.idx) {
+      b3seatFor = G.idx;
+      var rv = G.idx === RIVAL_IDX ? rivalOf(loadProg()) : null, f = LADDER[rv ? rv.idx : G.idx];
+      b3seat = f ? { who: f.seat || f.name, key: f.key || '' } : null;
+    }
+    return b3seat;
   },
   // ⚠ A CUT STOPS THE PLAYER'S CLOCK (floors 5+), and only a clock the cut stopped starts again after it
   onCut: function (kind) {
@@ -686,7 +698,7 @@ function drawCrowd(idx, roar){
 // Hand-mapped to the real strength config (Stockfish skill 0→20 via skillForRung, plus
 // the persona's blunder rate and think time) — not measured, but honest about the curve.
 var LADDER = [
-  { name:'The Checker Town Open Champion', glyph:'♟', accent:'#8fe3ff', region:'Checker Town', elo:350,
+  { name:'The Checker Town Open Champion', seat:'Argus', glyph:'♟', accent:'#8fe3ff', region:'Checker Town', elo:350,
     blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
     win:'Argus admits defeat. The reigning champion of Checker Town yields the road.',
     persona:{ depth:1, blunder:0.36, mat:1, pst:0.4, aggr:4, timeMs:220 },
@@ -772,7 +784,7 @@ var LADDER = [
   // ── THE SECRET FLOORS (2026-07-14 Nate: "make 3 secret opponents up to 2400.
   //    The CEO should be the first secret opponent"). Hidden from the tower until
   //    Floor 10 is beaten; the elevator keeps going. ──
-  { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'The Corner Office', elo:2000, secret:true,
+  { name:'The CEO', key:'ceo', glyph:'♛', accent:'#ff8fd0', region:'The Corner Office', elo:2000, secret:true,
     blurb:'Top of the tallest building in Chess City. He does not lose. Usually.',
     win:'The CEO stares at the board a long time. Then, quietly: "...How?"',
     // LORE DROP — reward for beating a secret floor (2026-07-15 Nate). DRAFT copy, his to rewrite.
