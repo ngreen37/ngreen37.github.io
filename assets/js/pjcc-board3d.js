@@ -246,6 +246,23 @@
     g.restore();
   }
 
+  // ⭐ A FACE FOR A PAGE (the Campaign's map, his 11-10 "Maxwell commands Red"): head and shoulders off the same picture,
+  // dressed the same way; a dog is the dog. Resolves to what it drew: 'person', 'dog' or ''.
+  var PORTRAIT = [0.22, 0.07, 0.56, 0.6];   // of one frame: left, top, width, height
+  function portrait(cv, who, key) {
+    var g = cv.getContext('2d'), w = cv.width, h = cv.height;
+    g.clearRect(0, 0, w, h);
+    if (!who) return Promise.resolve('');
+    if (COATS[who]) { paintFront(g, who, [w / 2, h * 0.98], h * 0.95 / SIT_TALL, [0, 0], 0); return Promise.resolve('dog'); }
+    return people().then(function (im) {
+      var img = dressSheet(im, lookOf(who, key || ''));
+      var sw = FRONT * PORTRAIT[2], sh = FRONT * PORTRAIT[3], s = Math.min(w / sw, h / sh);
+      g.clearRect(0, 0, w, h);
+      g.drawImage(img, FRONT * PORTRAIT[0], FRONT * PORTRAIT[1], sw, sh, (w - sw * s) / 2, h - sh * s, sw * s, sh * s);
+      return 'person';
+    }, function () { return ''; });
+  }
+
   // ── the device's preference, and reduced motion ──
   var reduceMq = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   function calm() {
@@ -1163,6 +1180,6 @@
     MOOD: { FULL: MOOD_FULL, RATE: MOOD_RATE, GLOW: MOOD_GLOW, LAMP: MOOD_LAMP, GOLD: MOOD_GOLD, COLD: MOOD_COLD },
     // the judge and the looks, for the parity corpus and the gate
     judge: { settled: settled, verdict: verdict, material: material, bestCapture: bestCapture, SWING: SWING, VAL: VAL },
-    lookOf: lookOf, COATS: COATS,
+    lookOf: lookOf, COATS: COATS, portrait: portrait,
   };
 })();

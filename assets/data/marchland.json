@@ -2,7 +2,7 @@
   "_generated": "GENERATED FILE — do not hand-edit. Source of truth is assets/games/pjcc_marchland.html; regenerate with `npm run gen:marchland`.",
   "_purpose": "Shared map + balance data. The browser game keeps these inline; a Godot build reads this file so both play the same tuned game.",
   "name": "ChessWild: Campaign",
-  "version": "0.2",
+  "version": "0.4",
   "holdings": [
     {
       "id": 0,
@@ -187,7 +187,318 @@
       "b": 3,
       "n": 3,
       "p": 1
+    },
+    "survive": "win"
+  },
+  "rival": {
+    "who": "Maxwell",
+    "key": "maxwell",
+    "lines": {
+      "open": [
+        "Ten holdings. Let's see what you do with yours."
+      ],
+      "record": [
+        "{won} won, {lost} lost against me. Go on."
+      ],
+      "habit_open": [
+        "You always open from {from}. Not this time."
+      ],
+      "habit_keep": [
+        "Straight for my keep again? I'll be ready."
+      ],
+      "habit_thin": [
+        "You leave {at} with one troop. I see it."
+      ],
+      "habit_nofort": [
+        "You never move your troops around. I noticed."
+      ],
+      "turn": [
+        "My turn."
+      ],
+      "declare": [
+        "Here I come."
+      ],
+      "took": [
+        "{to} is mine now."
+      ],
+      "lost": [
+        "Keep {to}. For now."
+      ],
+      "held": [
+        "Not today."
+      ],
+      "repelled": [
+        "Fine. You keep it."
+      ],
+      "breach_his": [
+        "My walls! Fine."
+      ],
+      "breach_yours": [
+        "Your walls are down."
+      ],
+      "win": [
+        "The map is mine. Again?"
+      ],
+      "lose": [
+        "All yours. Rematch?"
+      ],
+      "teach_deploy": [
+        "My floor, my map. You get new troops every round: tap one of your holdings to place them."
+      ],
+      "teach_attack": [
+        "Now attack. Tap Chess City, then Checker Town."
+      ],
+      "teach_roll": [
+        "The dice buy each side an army, and your best die counts. Then you fight it out."
+      ],
+      "teach_battle": [
+        "Checkmate takes the ground. Run your clock out and the attack fails."
+      ],
+      "teach_taken": [
+        "Checker Town is yours. Two of your holdings touch it, so it is chained."
+      ],
+      "teach_missed": [
+        "It held. Attack again if you have attacks left."
+      ],
+      "teach_end": [
+        "That's your attacks. End your turn and watch mine."
+      ],
+      "teach_defend": [
+        "I'm coming for Checker Town. A chained holding rolls an extra die when it defends."
+      ],
+      "teach_walls": [
+        "My keep has walls. Win there twice in one turn to take it."
+      ],
+      "teach_fortify": [
+        "Fortify: move troops toward the front, once a round."
+      ],
+      "teach_finish": [
+        "Take the rest and the map is yours."
+      ],
+      "teach_done": [
+        "That's the whole war. Now play a real one."
+      ]
     }
+  },
+  "dogs": [
+    {
+      "id": "princess",
+      "name": "Princess",
+      "perk": "",
+      "says": "marches with you."
+    },
+    {
+      "id": "milo",
+      "name": "Milo",
+      "perk": "fetch",
+      "says": "brings a troop home when an attack from his holding fails."
+    },
+    {
+      "id": "argus",
+      "name": "Argus",
+      "perk": "sniff",
+      "says": "sniffs out one hidden holding past his border each round, free."
+    }
+  ],
+  "cards": {
+    "skies": {
+      "name": "Clear Skies",
+      "text": "No fog this round."
+    },
+    "mud": {
+      "name": "Mud",
+      "text": "Nobody fortifies this round."
+    },
+    "roads": {
+      "name": "Long Roads",
+      "text": "Fortify along any chain of your own holdings."
+    },
+    "reinforce": {
+      "name": "Reinforcements",
+      "text": "Two extra troops to deploy."
+    },
+    "march": {
+      "name": "Forced March",
+      "text": "One extra attack this round."
+    },
+    "supply": {
+      "name": "Short Supply",
+      "text": "One attack fewer this round."
+    },
+    "truce": {
+      "name": "Truce",
+      "text": "Nobody attacks into or out of {h}."
+    },
+    "rally": {
+      "name": "Rally",
+      "text": "Every chained holding gained a troop."
+    },
+    "desert": {
+      "name": "Desertion",
+      "text": "Every stack of six or more lost a troop."
+    }
+  },
+  "deck": [
+    "skies",
+    "mud",
+    "roads",
+    "reinforce",
+    "march",
+    "supply",
+    "truce",
+    "rally",
+    "desert"
+  ],
+  "dailyRounds": 3,
+  "engine": {
+    "ev": {
+      "p": 100,
+      "n": 320,
+      "b": 330,
+      "r": 500,
+      "q": 900,
+      "k": 0
+    },
+    "mateScore": 90000
+  },
+  "placement": {
+    "wBack": [
+      59,
+      61,
+      58,
+      62,
+      57,
+      63,
+      56
+    ],
+    "wPawn": [
+      52,
+      51,
+      53,
+      50,
+      54,
+      49,
+      55,
+      48
+    ],
+    "bBack": [
+      3,
+      5,
+      2,
+      6,
+      1,
+      7,
+      0
+    ],
+    "bPawn": [
+      12,
+      11,
+      13,
+      10,
+      14,
+      9,
+      15,
+      8
+    ]
+  },
+  "battle": {
+    "revealMs": 1500,
+    "mercyMs": 900,
+    "mercyPly": 4,
+    "mercyOdds": 0.5
+  },
+  "first": {
+    "holdings": [
+      {
+        "id": 0,
+        "name": "Sand Mines",
+        "x": 30,
+        "y": 16
+      },
+      {
+        "id": 1,
+        "name": "The Fork",
+        "x": 74,
+        "y": 24
+      },
+      {
+        "id": 2,
+        "name": "Checker Town",
+        "x": 46,
+        "y": 50
+      },
+      {
+        "id": 3,
+        "name": "Chess City",
+        "x": 22,
+        "y": 80
+      },
+      {
+        "id": 4,
+        "name": "Long Park",
+        "x": 76,
+        "y": 78
+      }
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        4
+      ]
+    ],
+    "start": {
+      "owner": [
+        "t",
+        "t",
+        "t",
+        "m",
+        "m"
+      ],
+      "ranks": [
+        2,
+        2,
+        2,
+        7,
+        3
+      ],
+      "walls": [
+        0
+      ]
+    },
+    "lessons": [
+      "deploy",
+      "attack",
+      "roll",
+      "battle",
+      "taken",
+      "missed",
+      "end",
+      "defend",
+      "walls",
+      "fortify",
+      "finish",
+      "done"
+    ]
   },
   "levels": {
     "easy": {
