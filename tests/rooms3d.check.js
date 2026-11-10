@@ -95,6 +95,9 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     await click(52); await sleep(150); await click(36); await sleep(1500);
     const mv = await page.evaluate(() => (JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {}).moves || '');
     ok(/^e2e4 \w{4}/.test(mv.trim()), 'Park Tables: two real clicks on the 3D board play e2-e4, and Maxwell answers  ["' + mv.trim() + '"]');
+    const seatOf = () => page.evaluate(() => { const s = PJCCBoard3D.handles[0] && PJCCBoard3D.handles[0].seat(); return s ? { who: s.who, drawn: s.drawn } : null; });
+    const ptSeat = await seatOf();
+    ok(ptSeat && ptSeat.who === 'Maxwell' && ptSeat.drawn === 'person', 'Park Tables: Maxwell sits across the 3D board, dressed as the town dresses him  ' + JSON.stringify(ptSeat));
     await shot('rooms3d-park-tables');
     // a cut stops the table's clock, and it starts again after
     const clk = () => page.evaluate(() => { const e = document.querySelector('.pt-plate--me [data-clock]'); return e ? e.textContent : null; });
@@ -167,6 +170,8 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
       await page.evaluate(() => PJCCBoard3D.handles[0].endCut()); await sleep(300);
     }
     ok(mk1.pos === mk2.pos && mk1.clk === mk2.clk, 'MARCHLAND: the battle clocks stand still through a cut  [' + mk1.clk + ' then ' + mk2.clk + ']');
+    const mcSeat = await seatOf();
+    ok(mcSeat && mcSeat.who === '' && mcSeat.drawn === '', 'MARCHLAND: nobody sits across a battle yet (Red has no face), the board alone  ' + JSON.stringify(mcSeat));
     await shot('rooms3d-marchland');
     await page.evaluate(() => PJCCBoard3D.handles[0].endCut());
 
@@ -185,6 +190,9 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     ok(du && du.over && du.hidden && du.bad.length === 0 && du.under !== 'pjcc-board3d' && duPieces,
       'the Duel: the 3D board comes up over the board its traps are laid out on, inert (a press goes through), the line played on it  ' +
       JSON.stringify(du && { over: du.over, hidden: du.hidden, bad: du.bad.join(' ') || 'all 64', under: du.under, pieces: duPieces }));
+    const duSeat = await seatOf();
+    const duFoe = await page.evaluate(() => (typeof duel !== 'undefined' && duel && duel.foe) ? duel.foe.name : document.getElementById('d-them').textContent);
+    ok(duSeat && duSeat.who && duSeat.who === duFoe && duSeat.drawn !== '', 'the Duel: the duelist you face sits across the board  ' + JSON.stringify({ seat: duSeat, foe: duFoe }));
     await shot('rooms3d-duel');
 
     /* ── THE PIRC PROTOCOL: a line, the 3D board drawn into the room's own canvas ── */
@@ -203,6 +211,8 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     });
     ok(pr && pr.bad.length === 0 && pr.view, 'the Pirc Protocol: the 3D board is drawn into the room\'s canvas, every square pressed where it is drawn, its Board button up  ' +
       JSON.stringify(pr && { bad: pr.bad.join(' ') || 'all 64', view: pr.view }));
+    const prSeat = await seatOf();
+    ok(prSeat && prSeat.who === 'Michael' && prSeat.drawn === 'person', 'the Pirc Protocol: Michael, who teaches the line, sits across it  ' + JSON.stringify(prSeat));
     // the line's own next move, played by two real clicks where its squares are drawn
     const exp = awaiting && await page.evaluate(() => { const e = G.line.plies[G.idx]; return [e.from.y * 8 + e.from.x, e.to.y * 8 + e.to.x, G.idx]; });
     if (exp) { await click(exp[0]); await sleep(150); await click(exp[1]); await sleep(900); }
@@ -238,6 +248,10 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     if (gt && gt.mv) { await click(gt.mv[0]); await sleep(150); await click(gt.mv[1]); await sleep(500); }
     const gPlayed = gt && gt.mv && await page.evaluate((u) => G.uci.indexOf(u) >= 0, gt.mv[2]);
     ok(gPlayed, 'the Gauntlet: two real clicks on the 3D board play the player\'s move  ' + JSON.stringify(gt && gt.mv));
+    const gSeat = await seatOf();
+    const gFloor = await page.evaluate(() => { const f = LADDER[G.idx]; return f ? (f.seat || f.name) : ''; });
+    ok(gSeat && gFloor && gSeat.who === gFloor && gSeat.drawn === (gFloor === 'Argus' ? 'dog' : 'person'),
+      'the Gauntlet: the floor\'s own champion sits across the board (on the first floor Argus, as the dog)  ' + JSON.stringify({ seat: gSeat, floor: gFloor }));
     await shot('rooms3d-gauntlet');
     // the floor's clock: a cut banks it and stops it, and the clock the cut stopped starts again after
     const gClock = await until(() => page.evaluate(() => G.clockOn && G.S.turn === G.pc && !G.thinking && !!G.clockTick), 15000);

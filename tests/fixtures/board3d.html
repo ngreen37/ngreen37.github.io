@@ -64,6 +64,7 @@
       if (sel >= 0) C.legalMoves(S).forEach(function (m) { if (m.from === sel) dots.push(m.to); });
       return { b: S.b, flip: flip, last: last, sel: sel, dots: dots, turn: S.turn };
     },
+    seat: function () { return window.SEAT || null; },
   });
   document.getElementById('tools').appendChild(b3.button());
   // ⚠ THE CLOCK STANDS STILL THROUGH A CUT, as the game's table's does

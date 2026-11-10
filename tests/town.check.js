@@ -8154,6 +8154,75 @@ const server = http.createServer((req, res) => {
             ok(partnerOff.length === 0,
               '⭐ …and THE SITE\'S SAND MINE HAS THE DOG AT HER SIDE TOO  (his 11-03: "the website version should always match our game"): the same dogs and perks as DogBook.PERK_OF, the same words, Milo\'s fetch one step round her landing, Argus\'s ring round the way down at 0.55 of a tile, a terrier\'s shovel every floor, and a run with a dog keeps its own best and never sends the ranked score (played in Chrome: tests/sandmine.check.js)',
               partnerOff.length ? 'off: ' + partnerOff.join(' · ') : perkOf6.length + ' dogs, three perks');
+            /* ⭐ PHOTO MODE ON A PAD (his 11-10: "add a photo mode for the controller (a lesser button if you can)") */
+            const plT = rd('player.gd'), phT = rd('town_photo.gd');
+            const padOff = offOf({
+              'the left shoulder, in the town': /if Pad\.hit\(event, Pad\.L\) and roams_here\(\) and not _in_talk\(\):\s*\n\t\tvar ph := TownPhoto\.at\(get_tree\(\)\)\s*\n\t\tif ph != null:\s*\n\t\t\tget_viewport\(\)\.set_input_as_handled\(\)\s*\n\t\t\tph\.open\(\)/.test(fnGd(plT, '_unhandled_input')),
+              'never the capture button': !/JOY_BUTTON_MISC1|JOY_BUTTON_GUIDE/.test(plT + phT),
+              'the hint in the pad\'s words': /Pad\.changed\.connect\(_layout\)/.test(phT) && /_hint\.text = _hint_text\(\)/.test(phT)
+                && /if Pad\.using:\s*\n\t\treturn \("Stick to frame  ·  %s %s to zoom  ·  " % \[Pad\.word\(Pad\.L\), Pad\.word\(Pad\.R\)\] if _cam != null else ""\) \+ "A to take  ·  B to close"/.test(fnGd(phT, '_hint_text')),
+              'case': /joy:l;wait:4;photois:1;paused:1;photochrome:0;photohint:A to take;photohint:B to close;/.test(bcCase('photopad'))
+                && /joy:a;wait:8;photocount:1;joy:b;wait:4;photois:0;/.test(bcCase('photopad')) && /scene:res:\/\/rooms\/home\.tscn;wait:40;joy:l;wait:4;photois:1;/.test(bcCase('photopad')),
+              'suite': /^[^#\n]*\bphotopad\b/m.test(suiteT),
+            });
+            ok(padOff.length === 0,
+              '⭐ PHOTO MODE ON A PAD  (his 11-10: "add a photo mode for the controller (a lesser button if you can)"): the left shoulder, the one button the town leaves free (the right takes off gear), opens it in the town and its rooms; A takes the photo, B closes, the stick frames and the shoulders zoom, and its hint says so in the pad\'s own words; never the pad\'s Capture or Share button, which a browser never hands the game (probed: the square and the house)',
+              padOff.length ? 'off: ' + padOff.join(' · ') : 'L, A, B');
+
+            /* ⭐ THE KENNEL IN THE SQUARE (his 11-10: "Have come-home dogs stay in or around the kennel") */
+            const skT = rd('stray_kennel.gd'), twK = rd('town.gd'), hmK = rd('home.gd');
+            const kennelK = hmK.slice(hmK.indexOf('class Kennel extends Node2D:'), hmK.indexOf('class YardMess extends Node2D:'));
+            const kAt = (/const KENNEL_AT := Vector2\((-?[\d.]+), (-?[\d.]+)\)/.exec(twK) || [0, NaN, NaN]).slice(1).map(Number);
+            const kPitch = +((/const PITCH := ([\d.]+)/.exec(kennelK) || [0, NaN])[1]);
+            const kRects = Object.fromEntries([...fnGd(twK, 'region_rect').matchAll(/"(\w+)":\s*\n\s*return Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/g)]
+              .map((m) => [m[1], { x: +m[2], y: +m[3], w: +m[4], h: +m[5] }]));
+            const kSq = /\n\treturn Rect2\((-?[\d.]+), (-?[\d.]+), ([\d.]+), ([\d.]+)\)/.exec(fnGd(twK, 'region_rect'));
+            const kIn = (r, x, y) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+            const kEnds = [-1, 1].map((d) => [kAt[0] + d * (2.5 * kPitch + 34), kAt[1]]).concat([[kAt[0], kAt[1] - 78], [kAt[0], kAt[1] + 30]]);
+            const kennelOff = offOf({
+              'a doghouse each, the yard\'s own': /^# ══ THE KENNEL ══/.test(skT) && /\nclass_name StrayKennel\nextends Interactable\n/.test(skT)
+                && /NateHome\.Kennel\.house\(self, x, coat\)/.test(fnGd(skT, '_draw')) && /TownDog\.paint_sitting\(self, "", Vector2\(x, 8\.0\), 1\.0, false, 0\.0, coat\)/.test(fnGd(skT, '_draw'))
+                && /house\(self, float\(i - 1\) \* PITCH, TownDog\.COATS\[DOORS\[i\]\]\)/.test(kennelK) && /static func house\(ci: CanvasItem, x: float, coat: Array\) -> void:/.test(kennelK),
+              'each keeps the place it came to': /for id in GameState\.dogs\.found:\s*\n\t\tif DogBook\.STRAYS\.has\(id\):\s*\n\t\t\tout\.append\(str\(id\)\)/.test(fnGd(skT, 'homes')),
+              'in at night, its own hours': /return m < TownDog\.OUT_AT \+ TownDog\._slop\(id, "out", doy - 1\)/.test(fnGd(skT, 'asleep'))
+                && /return m >= TownDog\.IN_AT \+ TownDog\._slop\(id, "in", doy\)/.test(fnGd(skT, 'asleep')) && !/TownDog\.indoors/.test(fnGd(skT, 'asleep'))
+                && /if now != _in:\s*\n\t\t_in = now\s*\n\t\tqueue_redraw\(\)/.test(fnGd(skT, '_look')),
+              'it stands once one has come home': /if StrayKennel\.homes\(\)\.is_empty\(\):\s*\n\t\treturn/.test(fnGd(twK, '_furnish_kennel')) && /\t_furnish_show\(\)\n\t_furnish_kennel\(\)\n/.test(twK),
+              'the whole row in the square\'s window': !!kSq && kEnds.every(([x, y]) => kIn({ x: +kSq[1], y: +kSq[2], w: +kSq[3], h: +kSq[4] }, x, y)
+                && !Object.values(kRects).some((r) => kIn(r, x, y))),
+              'walk up, the Kennel page': /j\.show_kennel\(\)/.test(fnGd(skT, 'interact')) && /_tab = KENNEL_TAB/.test(fnGd(rd('journal.gd'), 'show_kennel')),
+              'case': /kennelis:none;gs:dogs\.found=\[\\"stray_square\\", \\"stray_north\\"\];[^"]*kennelis:stray_square,stray_north;kennelin:;/.test(bcCase('kennelhome'))
+                && /useat:460,470;wait:10;jrn:5;/.test(bcCase('kennelhome')) && /min:1410;wait:90;kennelin:stray_square,stray_north;/.test(bcCase('kennelhome')),
+              'suite': /^[^#\n]*\bkennelhome\b/m.test(suiteT),
+            });
+            ok(kennelOff.length === 0,
+              '⭐⭐ THE KENNEL IN THE SQUARE  (his 11-10: "Have come-home dogs stay in or around the kennel"): once a stray has come home a doghouse stands for it east of his checker, the yard\'s own doghouse with its collar over the door; they line up in the order they came and none ever moves; by day each sits in its doorway, at night it is in (the house dogs\' hours, each its own minutes, never the house\'s wait for Princess); walk up and the Journal opens on its Kennel page (probed: two home, out by day, in at night, the page)',
+              kennelOff.length ? 'off: ' + kennelOff.join(' · ') : 'the row, the hours, the page');
+            /* ⭐ WHOEVER SITS ACROSS, THE ROOM'S LIGHT AND THEIR ANSWER, ON THE SITE TOO (his 11-10: "yes on the website port") */
+            const b3J = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-board3d.js'), 'utf8');
+            const jsN = (n) => +((new RegExp('var [^;]*\\b' + n + ' = ([\\d.]+)').exec(b3J) || [])[1]);
+            const gdN = (src, n) => +((new RegExp('const ' + n + ' := ([\\d.]+)').exec(src) || [])[1]);
+            const pfS = path.join(ROOT, 'assets/models/people_front.png'), pfG = path.join(GD, 'art/people_front.png');
+            const portOff = offOf({
+              'a dog across is the dog': /if is_dog\(\):\s*\n\t\tmaterial = null/.test(fnGd(tsT, 'sit')) && /return TownDog\.is_animal\(who\)/.test(fnGd(tsT, 'is_dog'))
+                && /TownDog\.paint_front\(self, who, at, q \* DOG_UP \/ TownDog\.SIT_TALL, [^\n]*\n\t\tears, false\)/.test(fnGd(tsT, '_draw_dog')),
+              'the game\'s numbers': [['SEAT_TALL', tsT, 'TALL'], ['SEAT_BACK', tsT, 'BACK'], ['SEAT_WAIST', tsT, 'WAIST'], ['DOG_UP', tsT, 'DOG_UP'], ['LEAN', tsT, 'LEAN'],
+                ['MOOD_FULL', ctT, 'MOOD_FULL'], ['MOOD_RATE', ctT, 'MOOD_RATE'], ['MOOD_GLOW', ctT, 'MOOD_GLOW'], ['MOOD_LAMP', b3T, 'MOOD_LAMP'], ['SWING', tjT, 'SWING'],
+                ['KING_AT', tjT, 'KING_AT']].every(([j, src, g2]) => Number.isFinite(jsN(j)) && jsN(j) === gdN(src, g2)),
+              'his answers, the same on both': ['frown', 'smile'].every((k) => {
+                const a = (new RegExp(k + ': \\[([^\\]]*)\\]').exec(b3J) || [])[1], b = (new RegExp('"' + k + '": \\[([^\\]]*)\\]').exec(tsT) || [])[1];
+                return !!a && !!b && a.replace(/\s/g, '') === b.replace(/\s/g, '');
+              }),
+              'the game\'s own picture': fs.existsSync(pfS) && fs.existsSync(pfG) && fs.readFileSync(pfS).equals(fs.readFileSync(pfG)),
+              'every room says who': ['games/park-tables/index.html', 'assets/games/pjcc_duel.html', 'assets/games/pjcc_gauntlet.html', 'assets/games/pjcc_pirc.html']
+                .every((f) => /\bseat: function \(\) \{/.test(fs.readFileSync(path.join(ROOT, f), 'utf8'))),
+              'played in Chrome': /Maxwell sits across the board, dressed as the town dresses him/.test(fs.readFileSync(path.join(ROOT, 'tests/board3d.check.js'), 'utf8'))
+                && /the Duel: the duelist you face sits across the board/.test(fs.readFileSync(path.join(ROOT, 'tests/rooms3d.check.js'), 'utf8')),
+              'case': /seatis:Milo;seatdog:1;/.test(bcCase('tabledog')) && /seatis:Maxwell;seatdog:0/.test(bcCase('tabledog')) && /^[^#\n]*\btabledog\b/m.test(suiteT),
+            });
+            ok(portOff.length === 0,
+              '⭐⭐ WHOEVER SITS ACROSS, THE ROOM\'S LIGHT AND THEIR ANSWER ARE ON THE SITE\'S 3D BOARD TOO  (his 11-10: "yes on the website port"): each chess room says who sits across (the bench seat, the duelist, the floor\'s champion, the Pirc\'s teacher) and the lens draws them dressed as the town dresses them, off the game\'s own picture, or the dog itself; the light follows who is winning, and they lean in and answer your move, with the game\'s numbers and his placeholder answers on both; and in the game a dog across the board is the dog now, never a person in its colors (probed: Milo across, then Maxwell; played in Chrome in all five rooms)',
+              portOff.length ? 'off: ' + portOff.join(' · ') : 'the same numbers, picture and answers');
           }
         }
 

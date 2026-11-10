@@ -48,6 +48,51 @@ if (b3gd && ctgd) {
   });
   ok(glbOff.length === 0, 'his eight pieces are the game\'s own, byte for byte (npm run gen:pieces3d)  [' + (glbOff.join(' ') || 'all eight') + ']');
 } else ok(true, 'the game is not checked out here: its numbers are not compared');
+/* ── 1b. whoever sits across, the room's light and the judge are the game's (his view ideas #1, #4, #5) ── */
+if (b3gd) {
+  const seatGd = gd('ui/table_seat.gd'), judgeGd = gd('games/chess/table_judge.gd'), pplGd = gd('people/people_sheet.gd'), dogGd = gd('people/dog.gd');
+  const gn = (src, n) => +((new RegExp('const ' + n + ' := ([\\d.]+)').exec(src) || [])[1]);
+  const jn = (n) => +((new RegExp('var [^;]*\\b' + n + ' = ([\\d.]+)').exec(SRC) || [])[1]);
+  const off2 = [['SEAT_TALL', seatGd, 'TALL'], ['SEAT_BACK', seatGd, 'BACK'], ['SEAT_TOP', seatGd, 'TOP'], ['SEAT_WAIST', seatGd, 'WAIST'],
+    ['SEAT_KEEP', seatGd, 'KEEP'], ['SEAT_STRIPS', seatGd, 'STRIPS'], ['LEAN', seatGd, 'LEAN'], ['LEAN_SECS', seatGd, 'LEAN_SECS'],
+    ['DOG_UP', seatGd, 'DOG_UP'], ['MOOD_FULL', ctgd, 'MOOD_FULL'], ['MOOD_RATE', ctgd, 'MOOD_RATE'], ['MOOD_GLOW', ctgd, 'MOOD_GLOW'],
+    ['MOOD_LAMP', b3gd, 'MOOD_LAMP'], ['SWING', judgeGd, 'SWING'], ['KING_AT', judgeGd, 'KING_AT'], ['SIT_TALL', dogGd, 'SIT_TALL'],
+    ['FRONT', pplGd, 'FRONT'], ['IDLES', pplGd, 'IDLES']].filter(([j, src, n]) => !(Number.isFinite(jn(j)) && jn(j) === gn(src, n))).map((x) => x[0]);
+  const arr = (txt) => (txt || '').split(',').map((x) => x.trim()).filter(Boolean).map(Number);
+  ['frown', 'smile'].forEach((k) => {
+    const a = arr(((new RegExp(k + ': \\[([^\\]]*)\\]')).exec((/var REACT = \{([^}]*)\}/.exec(SRC) || [])[1] || '') || [])[1]);
+    const b = arr(((new RegExp('"' + k + '": \\[([^\\]]*)\\]')).exec(seatGd) || [])[1]);
+    if (a.length !== 5 || a.join() !== b.join()) off2.push('REACT.' + k);
+  });
+  ['GOLD', 'COLD'].forEach((k) => {
+    const a = (new RegExp("MOOD_" + k + " = '([0-9a-f]{6})'").exec(SRC) || [])[1], b = (new RegExp('const MOOD_' + k + ' := Color\\("([0-9a-f]{6})"\\)').exec(b3gd) || [])[1];
+    if (!a || a !== b) off2.push('MOOD_' + k);
+  });
+  const vjs = (/var VAL = \{([^}]*)\}/.exec(SRC) || [])[1] || '', vgd = (/const VAL := \{([^}]*)\}/.exec(judgeGd) || [])[1] || '';
+  if (['p', 'n', 'b', 'r', 'q', 'k'].some((p) => +((new RegExp('\\b' + p + ': (\\d+)').exec(vjs) || [])[1]) !== +((new RegExp('"' + p + '": (\\d+)').exec(vgd) || [])[1]))) off2.push('VAL');
+  ok(off2.length === 0, 'whoever sits across, the room\'s light and the judge are the game\'s numbers: the seat, the lean, the dog\'s size, the answers (his placeholders), the gold and the cold, the swing  [' + (off2.join(' ') || 'all') + ']');
+  // their looks: every color table the town dresses people from, and the dogs' coats
+  const hexes = (txt) => [...(txt || '').matchAll(/['"]?([\w ]+?)['"]?: ['"]#?([0-9a-f]{6})['"]/g)].map((m) => m[1].trim() + '=' + m[2]).sort().join(' ');
+  const lookOff = [];
+  [['AURA', 'AURA'], ['OWN', 'OWN']].forEach(([j, g2]) => {
+    const a = hexes((new RegExp('var ' + j + ' = \\{([^}]*)\\}').exec(SRC) || [])[1]), b = hexes((new RegExp('const ' + g2 + ' := \\{([^}]*)\\}').exec(pplGd) || [])[1]);
+    if (!a || a !== b) lookOff.push(j);
+  });
+  const hj = ((/var HAIRS = \[([^\]]*)\]/.exec(SRC) || [])[1] || '').replace(/['"\s]/g, ''), hg = ((/const HAIRS := \[([^\]]*)\]/.exec(pplGd) || [])[1] || '').replace(/['"\s]/g, '');
+  if (!hj || hj !== hg) lookOff.push('HAIRS');
+  [['WIDE', 'WIDE'], ['TALLB', 'TALL']].forEach(([j, g2]) => {
+    const a = ((new RegExp('\\b' + j + ' = \\[([^\\]]*)\\]').exec(SRC) || [])[1] || '').replace(/\s/g, ''), b = ((new RegExp('const ' + g2 + ' := Vector2\\(([^)]*)\\)').exec(pplGd) || [])[1] || '').replace(/\s/g, '');
+    if (!a || a.split(',').map(Number).join() !== b.split(',').map(Number).join()) lookOff.push(j);
+  });
+  ['Princess', 'Milo', 'Argus'].forEach((d) => {
+    const a = (new RegExp(d + ": \\['([0-9a-f]{6})', '([0-9a-f]{6})', '([0-9a-f]{6})', (true|false)\\]").exec(SRC) || []).slice(1).join();
+    const b = (new RegExp('"' + d + '": +\\[Color\\("([0-9a-f]{6})"\\), Color\\("([0-9a-f]{6})"\\), Color\\("([0-9a-f]{6})"\\), (true|false)\\]').exec(dogGd) || []).slice(1).join();
+    if (!a || a !== b) lookOff.push('COATS.' + d);
+  });
+  ok(lookOff.length === 0, '…dressed from the town\'s own tables (the bench\'s colors, their own, the hairs, the builds) and the dogs in their own coats  [' + (lookOff.join(' ') || 'all') + ']');
+  const pf = path.join(ROOT, 'assets/models/people_front.png'), pg = path.join(GAME, 'art/people_front.png');
+  ok(fs.existsSync(pf) && fs.existsSync(pg) && fs.readFileSync(pf).equals(fs.readFileSync(pg)), '…and drawn from the game\'s own picture, byte for byte (npm run gen:people)');
+}
 const gen = fs.readFileSync(path.join(ROOT, 'tests/gen-three.js'), 'utf8');
 const exported = ((/const EXPORTS = \[([\s\S]*?)\];/.exec(gen) || [])[1] || '').match(/'(\w+)'/g).map((s) => s.slice(1, -1)).concat('GLTFLoader');
 const used = [...new Set([...SRC.matchAll(/\bT\.([A-Z]\w+)/g)].map((m) => m[1]))];
@@ -129,9 +174,11 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     /* ── 3. a capture: the taken piece knocked aside, a close-up ── */
     await page.evaluate(() => T3.setFen('4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1'));
     await sleep(100);
+    const knocks0 = await page.evaluate(() => T3.b3.b.knocks || 0);
     await page.evaluate(() => T3.moveUci('e4d5'));
     await sleep(60);
-    const knock = await page.evaluate(() => T3.b3.b.falling.length);
+    // ⚠ COUNTED, NOT SAMPLED: on a loaded machine a slow frame knocked the piece and cleared it before a 60 ms look
+    const knock = await page.evaluate((n) => (T3.b3.b.knocks || 0) - n, knocks0);
     await sleep(200);
     const cap = await page.evaluate(() => T3.b3.cutKind());
     ok(knock > 0 && cap === 'capture', 'a capture knocks the taken piece aside, and the camera cuts to a close-up  [' + knock + ' falling, cut ' + cap + ']');
@@ -236,6 +283,58 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     // …and a cut a room asks for itself is refused as well
     const asked = await page.evaluate(() => { T3.b3.cut('mate', 4); return T3.b3.cutKind(); });
     ok(calm[0] && calm[1] === '' && asked === '', 'with the device\'s Reduce Motion there is no cut, not even one a room asks for  [' + JSON.stringify(calm) + ' "' + asked + '"]');
+    await page.close();
+    /* ── 12. whoever sits across, the room's light, and their answer to your move (his view ideas #1, #4, #5) ── */
+    const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    page = await open();
+    await page.evaluate((f) => { window.SEAT = { who: 'Maxwell', key: 'maxwell' }; T3.setFen(f); }, START);
+    let sat = null;
+    for (let i = 0; i < 40 && !(sat && sat.drawn === 'person'); i++) {
+      await sleep(100);
+      sat = await page.evaluate(() => {
+        const s = T3.b3.seat(), cv = document.querySelector('canvas.pjcc-board3d-seat');
+        const d = cv.getContext('2d').getImageData(0, 0, cv.width, Math.round(cv.height * 0.3)).data;
+        let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 200) n++;
+        return { who: s.who, drawn: s.drawn, opaque: n, under: !!(cv.nextElementSibling && cv.nextElementSibling.classList.contains('pjcc-board3d')) };
+      });
+    }
+    ok(sat.drawn === 'person' && sat.opaque > 1500 && sat.under, 'Maxwell sits across the board, dressed as the town dresses him, under the board\'s picture  ' + JSON.stringify(sat));
+    await page.evaluate(() => { window.SEAT = { who: 'Milo', key: 'crockett' }; });
+    await sleep(300);
+    const dogAt = await page.evaluate(() => { const s = T3.b3.seat(); return { who: s.who, dog: s.dog, drawn: s.drawn }; });
+    ok(dogAt.dog && dogAt.drawn === 'dog', 'and Milo across the board is the dog, never a person in his colors  ' + JSON.stringify(dogAt));
+    await page.evaluate(() => { window.SEAT = { who: 'Maxwell', key: 'maxwell' }; T3.moveUci('e2e4'); });
+    await sleep(600);
+    const leaning = await page.evaluate(() => { const s = T3.b3.seat(); return [s.leanTo, +s.lean.toFixed(2)]; });
+    ok(leaning[0] === 1 && leaning[1] === 1, 'while it is their move they lean in over the board  [' + leaning + ']');
+    await page.evaluate((f) => T3.setFen(f), START);
+    await sleep(200);
+    await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
+    await sleep(1800);
+    const lit = await page.evaluate(() => {
+      const s = T3.b3.seat(), cv = document.querySelector('canvas.pjcc-board3d-seat');
+      return { mood: +s.mood.toFixed(2), lamp: s.lamp, glow: Array.from(cv.getContext('2d').getImageData(Math.round(cv.width * 0.25), Math.round(cv.height * 0.75), 1, 1).data) };
+    });
+    const lampRgb = [0, 2, 4].map((i) => parseInt(lit.lamp.slice(i, i + 2), 16)), wantLamp = [252, 238, 186];
+    ok(lit.mood === 1 && lampRgb.every((v, i) => Math.abs(v - wantLamp[i]) <= 2) && lit.glow[3] > 12 && lit.glow[0] > lit.glow[2],
+      'a rook up, the room goes gold: the lamp a third of the way there, the glow behind the board  ' + JSON.stringify(lit));
+    await page.evaluate((f) => T3.setFen(f), START);
+    await sleep(200);
+    await page.evaluate(() => T3.setFen('4k3/8/8/3q4/8/8/8/3QK3 w - - 0 1'));
+    await sleep(300);
+    await page.evaluate(() => T3.moveUci('d1d5'));
+    let acted = '';
+    for (let i = 0; i < 50 && !acted; i++) { await sleep(40); acted = await page.evaluate(() => T3.b3.seat().act); }
+    ok(acted === 'frown', 'win their queen and they frown, once the capture\'s close-up is over  [' + acted + ']');
+    await sleep(1200);
+    await page.evaluate((f) => T3.setFen(f), START);
+    await sleep(200);
+    await page.evaluate(() => T3.setFen('4k3/8/8/8/3r4/8/8/3QK3 w - - 0 1'));
+    await sleep(300);
+    await page.evaluate(() => T3.moveUci('d1d3'));
+    acted = '';
+    for (let i = 0; i < 50 && !acted; i++) { await sleep(40); acted = await page.evaluate(() => T3.b3.seat().act); }
+    ok(acted === 'smile', 'hang your queen and they smile  [' + acted + ']');
     await page.close();
     /* ── 11. no 3D: the board is the room's own, flat, and still cut ── */
     page = await open({ block: 'three.pjcc' });
