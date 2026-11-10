@@ -217,6 +217,39 @@ window.__t = {
     await sleep(300);
     const still = await page.evaluate(() => ({ falling: !!fall, floor: S.floor, dead: S.dead }));
     ok(!still.falling && !still.dead, 'with the device\'s Reduce Motion there is no drop  [' + JSON.stringify(still) + ']');
+
+    /* ⭐ A DOG AT HER SIDE (his 11-05, dog idea #6, as the game has it) */
+    const turns = await page.evaluate(() => {
+      const b = document.getElementById('partner-btn'), seen = [b.textContent];
+      for (let i = 0; i < 3; i++) { b.click(); seen.push(b.textContent); }
+      return seen;
+    });
+    ok(turns.join(' | ') === 'Alone | With Milo | With Argus | Alone', 'the dog at her side turns Alone, Milo, Argus and back  [' + turns.join(' | ') + ']');
+    await page.evaluate(() => { partner = 'milo'; newGame(); });
+    await lay([1, 0], [7, 7], [], []);
+    const sc0 = await page.evaluate(() => { S.gold = [{ x: 2, y: 2 }, { x: 3, y: 3 }, { x: 6, y: 6 }]; const sc = S.score; window.__t.hop(2, 2); return sc; });
+    await sleep(480);
+    const fetched = await page.evaluate((sc) => ({ got: S.score - sc, left: S.gold.map((g) => g.x + ',' + g.y).join(' ') }), sc0);
+    ok(fetched.got === 6 && fetched.left === '6,6', 'with Milo at her side, the gold beside where she lands comes too  [' + JSON.stringify(fetched) + ']');
+    const sent = await page.evaluate(() => {
+      const calls = [], had = window.PJCC;
+      window.PJCC = { saveScore: (slug) => calls.push(slug) };
+      gameOver();
+      window.PJCC = had;
+      const kept = JSON.parse(localStorage.getItem('pjcc.sandmine.perkbests.v1') || '{}');
+      return { calls, fetch: kept.fetch || null };
+    });
+    ok(sent.calls.length === 0 && sent.fetch && sent.fetch.score >= 6, 'a run with a dog keeps its own best and sends no ranked score  [' + JSON.stringify(sent) + ']');
+    const ring = await page.evaluate(() => {
+      partner = 'argus'; newGame();
+      const sc = center(S.shaft.x, S.shaft.y), arcs = [], was = ctx.arc;
+      ctx.arc = function (x, y, r) { arcs.push([x, y, r]); return was.apply(this, arguments); };
+      drawTorch(null);
+      ctx.arc = was;
+      partner = ''; savePartner('');
+      return arcs.some((a) => Math.abs(a[0] - sc.x) < 0.5 && Math.abs(a[1] - sc.y) < 0.5 && Math.abs(a[2] - TILE * 0.55) < 0.01);
+    });
+    ok(ring, 'with Argus at her side, the way down is ringed through the dark');
   });
 
   process.exit(report('Sand Mine Depths v3.0', results, errors) ? 0 : 1);

@@ -87,6 +87,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     ok(still.lean === 0 && still.beat === 0, 'with the device\'s Reduce Motion the board settles flat and still  [' + JSON.stringify(still) + ']');
     bad = await tapMap();
     ok(bad.length === 0, '…and every flat square is pressed where it is  [' + (bad.join(' ') || 'all 64') + ']');
+
+    /* ⭐ EVERY DOG'S OPENING, A CHART (his 11-05, dog idea #7): the chart button pressed again turns to the next dog's
+       and round to the first, and the one it shows is the one that plays */
+    const chart = await browser.newPage();
+    chart.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message));
+    await chart.setViewport({ width: 560, height: 820 });
+    await chart.goto('http://localhost:' + port + '/assets/games/notation_run.html', { waitUntil: 'load', timeout: 15000 });
+    await chart.evaluate(() => { const i = document.getElementById('intro-screen'); if (i) i.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); });
+    const turned = [];
+    for (let i = 0; i < 7; i++) {
+      await chart.click('#mode-row [data-charts]');
+      turned.push(await chart.evaluate(() => { const b = document.querySelector('#mode-row [data-charts]'); return b.dataset.mode + '=' + selMode + ':' + b.textContent; }));
+    }
+    const want = ['pirc:PircPrincess', 'catalan:CatalanPrincess', 'larsen:LarsenMilo', 'slav:SlavMilo', 'kia:KIAArgus', 'caro:Caro-KannArgus', 'pirc:PircPrincess']
+      .map((w) => w.split(':')[0] + '=' + w.split(':')[0] + ':' + w.split(':')[1] + "'s opening");
+    ok(turned.join(' | ') === want.join(' | '), 'the chart button, pressed again, turns through every dog\'s opening and round to the first  [' + turned.map((t) => t.split('=')[0]).join(' ') + ']');
+    await chart.click('#mode-row [data-charts]');
+    await chart.click('#start-btn');
+    const first = await chart.evaluate(() => G.mode + ' ' + (G.queue[0] ? G.queue[0].san : 'none') + ' ' + G.total);
+    ok(first === 'catalan d4 16', 'the chart it shows is the one that plays: the Catalan, from d4, sixteen calls  [' + first + ']');
+    await chart.close();
   } catch (e) {
     errors.push('HARNESS THREW: ' + e.message);
   } finally {

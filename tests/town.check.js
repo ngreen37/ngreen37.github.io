@@ -7509,7 +7509,7 @@ const server = http.createServer((req, res) => {
           const nrWords = ['NOTATION BLITZ', 'Checker Town · Coordinate Drill', 'ENDLESS · the tempo ramps up until your lives run out', 'fixed run', 'ramps up',
             'START', 'REPLAY', 'Change mode', 'FULL COMBO', 'Max Combo', 'Avg offset', 'NEW BEST!', 'Timing trend (last ', 'dead-on', 'tend LATE', 'tend EARLY',
             'PERFECT!', 'GREAT · ', 'GOOD · ', 'TAIL SAVE +', 'WRONG → ', 'FEVER — DOUBLE POINTS', 'SHARP EYE — WIDER WINDOW', 'GUARD READY ×', 'Endless · top ',
-            "Princess's opening"];
+            "'s opening"];
           const nrMissing = nrWords.filter((w) => !nrT.includes(w) || !nrPage.includes(w));
           ok(nrMissing.length === 0, '…in the room\'s own words, its emoji left out (no font in the game draws them)', nrMissing.join(' | ') || nrWords.length + ' phrases, both sides');
           ok(/"\/games\/notation-run\/",\s*\n\t\tVector2\(0\.0, -H \+ 200\.0\), Color\("5d5a2f"\)\)\.lesson = "notation"/.test(acadT)
@@ -7518,7 +7518,7 @@ const server = http.createServer((req, res) => {
              && /if maxi\(int\(s\.get\("notation-run", 0\)\), TableNotation\.best_score\(\)\) > 0:\s*\n\t\treturn 2/.test(fnGd(gsAll, 'academy_stage'))
              && /^class_name NotationTable\nextends TownTable\n/.test(nrT) && !/func _input\(/.test(nrT)
              && /if _wait_cover or TownJournal\.is_open\(get_tree\(\)\):\s*\n\t\treturn\n\t_now \+= delta/.test(fnGd(nrT, '_process'))
-             && nrT.includes('["pirc", "Pirc", "Princess\'s opening"]') && nrPage.includes('<button class="pick" data-mode="pirc">Pirc<small>Princess\'s opening</small></button>'),
+             && nrT.includes('_modes.append(_button("", _press_chart))') && nrPage.includes('<button class="pick" data-mode="pirc" data-charts>Pirc<small>Princess\'s opening</small></button>'),
             '⭐ …through the Academy\'s own Lesson 2 door to Milo\'s table, its clock stopped dead under the map; Princess can be shown Lesson 2 at home once it is played here; and PRINCESS\'S PIRC is a chart in the game and on the site alike  (his dog-opening idea; "the website version should always match our game")');
           ok(/const PATH := "user:\/\/notation\.json"/.test(tnT) && !/notation|TableNotation/.test(fnGd(gsAll, 'save_state'))
              && /"\$SAVE\/notation\.json"/.test(bcCases) && djCloud.includes('`notation.json`')
@@ -8005,6 +8005,155 @@ const server = http.createServer((req, res) => {
             ok(strayOff.length === 0,
               '⭐⭐ EACH STRAY COMES HOME ITS OWN WAY, AND A DOG AT YOUR SIDE IN THE SAND MINE  (his 11-05, dog ideas #5 and #6): walk up to a stray and the box says what it waits for (three regulars beaten, a score of 5 at Pawn Crossing, 50 m down with a dog or without, an S in Notation Blitz at Medium or Fast, five of Matsu\'s mates, the Champ\'s run: his to change; each reads what its words say); once that is done it comes home with you and is not out there again; in the Sand Mine the dog beside you brings a perk (a terrier a shovel a floor, a bloodhound the way down in the dark, a retriever the gold beside her; Milo fetches and Argus finds the way, his to change; Princess is the knight), and a run with a perk keeps its own best (probed: the north\'s stray home after the Champ\'s run, the west\'s at a score of 5, the east\'s at 50 m with Milo, Milo\'s fetched gold, Argus\'s ring in the dark, the bests apart)',
               strayOff.length ? 'off: ' + strayOff.join(' · ') : 'the strays and the mine');
+            /* ⭐ EVERY DOG'S OPENING, A CHART AND A SET (his 11-05, dog idea #7: "Number seven is good too") */
+            const C7 = require('../assets/js/pjcc-chess.js'), SY7 = require('../assets/js/pjcc-systems.js');
+            const nrP7 = fs.readFileSync(path.join(ROOT, 'assets/games/notation_run.html'), 'utf8').replace(/\r\n/g, '\n');
+            const nrT7 = rd('notation_table.gd'), stT7 = rd('table_systems.gd');
+            const OP7 = require('vm').runInNewContext('(' + ((/\nconst OPENINGS = (\{[\s\S]*?\n\});/.exec(nrP7) || [])[1] || '{}') + ')');
+            const sys7 = (k) => (k === 'pirc' ? 'pircb' : k);
+            const dogs7 = [...dbT.matchAll(/^\t"(\w+)": \{ "name": "(\w+)", "seat": "(\w+)"/gm)].map((m) => ({ id: m[1], name: m[2], seat: m[3] }));
+            const seat7 = Object.fromEntries([...stT7.matchAll(/"(\w+)": \["(\w+)", "(\w+)"\]/g)].map((m) => [m[1], [m[2], m[3]]]));
+            const wantCharts = dogs7.flatMap((d) => (seat7[d.seat] || []).map((x) => d.name + '|' + x)).sort().join(' ');
+            const haveCharts = Object.keys(OP7).filter((k) => OP7[k].dog).map((k) => OP7[k].dog + '|' + sys7(k)).sort().join(' ');
+            /* every call is the referee's own SAN for the move, and lands where the chart says (a castle: the king) */
+            const badCall = [];
+            const sysOff = [];
+            for (const k of Object.keys(OP7)) {
+              let S = C7.parseFEN(C7.START_FEN); const mv = []; let sysOn = OP7[k].dog && SY7.SYS[sys7(k)] && SY7.SYS[sys7(k)].side === 'w';
+              for (const [san, sq] of OP7[k].line) {
+                const m = C7.legalMoves(S).find((x) => C7.toSAN(S, x).replace(/[+#]$/, '') === san);
+                if (!m || C7.nameFromSq(m.to) !== sq) { badCall.push(k + ' ' + san); break; }
+                /* ⭐ A WHITE DOG'S MOVES ARE ITS BENCH SYSTEM'S, in the order the table plays them, while it has any */
+                if (sysOn && S.turn === 'w') {
+                  const n = SY7.next(sys7(k), S, mv);
+                  if (!n) sysOn = false;
+                  else if (n.from !== m.from || n.to !== m.to) { sysOff.push(k + ' ' + san); sysOn = false; }
+                }
+                mv.push(C7.nameFromSq(m.from) + C7.nameFromSq(m.to)); S = C7.makeMove(S, m);
+              }
+            }
+            const chartOff = offOf({
+              'each dog\'s two openings, no more': wantCharts !== '' && wantCharts === haveCharts,
+              'every call the referee\'s': badCall.length === 0,
+              'a White dog plays its system': sysOff.length === 0 && Object.keys(OP7).filter((k) => OP7[k].dog && SY7.SYS[sys7(k)].side === 'w').length === 3,
+              'the page turns them': nrP7.includes('<button class="pick" data-mode="pirc" data-charts>Pirc<small>Princess\'s opening</small></button>')
+                && nrP7.includes('const CHARTS = Object.keys(OPENINGS).filter(k => OPENINGS[k].dog);')
+                && /if \(b\.hasAttribute\('data-charts'\) && b\.classList\.contains\('sel'\)\) chartTo\(b, CHARTS\[\(CHARTS\.indexOf\(b\.dataset\.mode\) \+ 1\) % CHARTS\.length\]\);/.test(nrP7),
+              'and so does the game': nrT7.includes('_modes.append(_button("", _press_chart))')
+                && /if dog != "" and DogBook\.name_of\(id\) == dog and GameState\.dogs\.have\(id\):/.test(fnGd(nrT7, '_charts'))
+                && /if sel_mode == k:\s*\n\t\tvar cs := _charts\(\)\s*\n\t\tk = str\(cs\[\(cs\.find\(k\) \+ 1\) % cs\.size\(\)\]\)/.test(fnGd(nrT7, '_press_chart'))
+                && /var modes: Array = \["coords", "endless"\] \+ _charts\(\)/.test(nrT7),
+              'the book carries whose': /\(OPENINGS\[k\]\.dog \? ', "short": ' \+ q\(OPENINGS\[k\]\.short\) \+ ', "dog": ' \+ q\(OPENINGS\[k\]\.dog\) : ''\)/.test(fs.readFileSync(path.join(GD, 'tests/gen_notation.js'), 'utf8'))
+                && (rd('notation_book.gd').match(/"dog": "/g) || []).length === 6,
+              'case': /nrpick:pirc:medium;nris:sel_mode:pirc;nrpick:pirc:medium;nris:sel_mode:catalan;nris:total:16;strayready:stray_south:0;/.test(bcCase('nrcharts'))
+                && /nris:next:d4;nrplay:perfect:all;nris:rank:S;nris:best:catalan_medium:3435;nris:mark:clean:true;strayready:stray_south:1;/.test(bcCase('nrcharts'))
+                && /nrpick:caro:medium;nris:sel_mode:pirc;key:up;nris:sel_mode:endless;key:down;nris:sel_mode:pirc;key:down;nris:sel_mode:catalan;/.test(bcCase('nrcharts')),
+              'suite': /^[^#\n]*\bnrcharts\b/m.test(suiteT),
+            });
+            ok(chartOff.length === 0,
+              '⭐⭐ EVERY DOG\'S OPENING IS A NOTATION BLITZ CHART, ON THE SITE AND IN THE GAME  (his 11-05, dog idea #7): Princess\'s Pirc and Catalan, Milo\'s Nimzo-Larsen and Slav, Argus\'s King\'s Indian Attack and Caro-Kann, and no other; the chart button pressed again turns to the next, a pad steps down through them; every call is the referee\'s own SAN landing where it says (the Pirc\'s Nfd7, not Nd7), and where the dog is White its moves are its bench system\'s in the order the table plays them (probed: every chart turned through by tap and by pad, the Catalan to an S, the south\'s stray then ready)',
+              chartOff.length ? 'off: ' + chartOff.join(' · ') + (badCall.length ? ' [' + badCall.join(', ') + ']' : '') + (sysOff.length ? ' [' + sysOff.join(', ') + ']' : '') : Object.keys(OP7).length + ' charts, ' + haveCharts.split(' ').length + ' of them dogs\'');
+
+            const dpzT = rd('dog_puzzles.gd'), tpzT = rd('table_puzzle.gd'), pchT = rd('puzzle_champ.gd'), chlT = rd('state_challenge.gd');
+            const genDP = fs.readFileSync(path.join(GD, 'tests/gen_dog_puzzles.js'), 'utf8');
+            const forkPage = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_fork.html'), 'utf8');
+            const SETS7 = {};
+            for (const m of dpzT.matchAll(/\n\t"(\w+)": \[\n([\s\S]*?)\n\t\],/g))
+              SETS7[m[1]] = [...m[2].matchAll(/^\t\t\[("[^"]*"), ("[^"]*"), (\d+), ("[^"]*"), ("[^"]*"), ("(?:[^"\\]|\\.)*")\],$/gm)]
+                .map((r) => [JSON.parse(r[1]), JSON.parse(r[2]), +r[3], JSON.parse(r[4]), JSON.parse(r[5]), JSON.parse(r[6])]);
+            const wantSets = dogs7.flatMap((d) => seat7[d.seat] || []).sort().join(' ');
+            /* the gate's own look at every puzzle that ships: a real position, a legal line, a mate that mates, the room's rating */
+            const BASE7 = Object.fromEntries([...(/const base = \{([^}]*)\}/.exec(forkPage) || [, ''])[1].matchAll(/(\w+): (\d+)/g)].map((m) => [m[1], +m[2]]));
+            const VAL7 = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
+            const mat7 = (b, side) => b.reduce((t, q) => !q ? t : t + (q === q.toUpperCase() ? 1 : -1) * VAL7[q.toLowerCase()], 0) * (side === 'w' ? 1 : -1);
+            const badPz = [];
+            let nPz = 0;
+            for (const [k, rows] of Object.entries(SETS7)) for (const [fen, line, rating, cat] of rows) {
+              nPz++;
+              const S = C7.parseFEN(fen), me = S.turn, uci = line.split(' ');
+              let T = S, ok7 = C7.kingSq(S.b, 'w') >= 0 && C7.kingSq(S.b, 'b') >= 0 && !C7.inCheck(S, S.turn);
+              for (const u of uci) {
+                const m = ok7 ? C7.legalMoves(T).find((x) => C7.nameFromSq(x.from) + C7.nameFromSq(x.to) + (x.promo ? x.promo.toLowerCase() : '') === u) : null;
+                if (!m) { ok7 = false; break; }
+                T = C7.makeMove(T, m);
+              }
+              const step = cat === 'mate' ? 0 : cat === 'mate2' || cat === 'fork' ? 2 : uci.length - 1;
+              const base = BASE7[cat === 'mate2' ? 'mate' : cat];
+              if (ok7 && (cat === 'mate' || cat === 'mate2')) ok7 = C7.isCheckmate(T) && uci.length === (cat === 'mate' ? 1 : 3);
+              /* a win of material ends 2 points up whatever they answer, by the gate's own count */
+              if (ok7 && (cat === 'material' || cat === 'fork')) ok7 = uci.length % 2 === 1 && !C7.isCheckmate(T)
+                && C7.legalMoves(T).every((r) => mat7(C7.makeMove(T, r).b, me) - mat7(S.b, me) >= 200);
+              if (ok7) ok7 = base > 0 && rating === Math.round((base + step * 72 + Math.max(0, S.b.filter(Boolean).length - 10) * 35) / 10) * 10;
+              if (!ok7) badPz.push(k + ': ' + fen.split(' ')[0]);
+            }
+            const pzOff = offOf({
+              'generated, never by hand': /^class_name DogPuzzles\nextends RefCounted\n\n# ══ THE PUZZLE CHAMP'S SETS, ONE FOR EACH DOG'S OPENING ══ GENERATED, DO NOT EDIT BY HAND: node tests\/gen_dog_puzzles\.js\n/.test(dpzT),
+              'a set for each dog\'s opening, none thin': Object.keys(SETS7).sort().join(' ') === wantSets && Object.values(SETS7).every((r) => r.length >= 8),
+              'each one stands up': nPz > 0 && badPz.length === 0,
+              'proved twice at build time': /require\(path\.join\(SITE, 'assets\/js\/pjcc-chess\.js'\)\)/.test(genDP) && /stockfish/i.test(genDP)
+                && /if \(!certify\(fen, line, cat\)\)/.test(genDP) && /const BASE = \{ mate: 340, mate2: 340, material: 480, fork: 640 \};/.test(genDP)
+                && /\bAHEAD = 200\b/.test(genDP) && /return rs\.every\(\(r\) => mat\(C\.makeMove\(T, r\)\.b, me\) - start >= AHEAD\);/.test(genDP)
+                && BASE7.mate === 340 && BASE7.material === 480 && BASE7.fork === 640,
+              'a dog\'s set is both its openings': /for side in \["w", "b"\]:\s*\n\t\tout \+= DogPuzzles\.SETS\.get\(DogBook\.opening\(dog, side\), \[\]\)/.test(fnGd(tpzT, 'rows'))
+                && /lo = mini\(lo, int\(r\[2\]\)\)/.test(fnGd(tpzT, 'pick')) && /"set": dog/.test(fnGd(tpzT, 'row')),
+              'the Champ sets one, never in his run': /if dog != "" and not GameState\.challenge\.puzzle_running\(\):\s*\n\t\trows\.append\(\{ "id": "dog", "text": "Set me one from %s's openings\." % DogBook\.name_of\(dog\) \}\)/.test(fnGd(pchT, 'menu'))
+                && /if not GameState\.story\.dogs_play or d == "" or not GameState\.dogs\.have\(d\) or TablePuzzle\.size\(d\) == 0:/.test(fnGd(pchT, '_dog'))
+                && /puzzle_wanted\.emit\(\{ "who": PUZZLE_WHO, "puzzle": i, "set": dog \}\)/.test(fnGd(chlT, 'sit_dog_puzzle'))
+                && /_set_puzzle\(TablePuzzle\.row\(GameState\.challenge\.next_puzzle\(\)\)\)/.test(ctF('_next_puzzle'))
+                && /var pset := str\(errand\.get\("set", ""\)\)\s*\n\tif pz >= 0 and pz < TablePuzzle\.size\(pset\):\s*\n\t\tpuzzle = TablePuzzle\.row\(pz, pset\)/.test(ctT),
+              'case': /use:Puzzle Champ;talking:1;hasnt:openings\.;joy:b;talking:0;gs:story\.dogs_play=true;dogbring:milo;use:Puzzle Champ;has:Set me one from Milo's openings\.;/.test(bcCase('champdog'))
+                && /pzset:milo;[^"]*puzzlesolve;tableis:clean:true;deeds:puzzles:1;/.test(bcCase('champdog')) && /pick:Set me three;[^"]*pzset:;tableis:_run:true/.test(bcCase('champdog')),
+              'suite': /^[^#\n]*\bchampdog\b/m.test(suiteT),
+            });
+            ok(pzOff.length === 0,
+              '⭐⭐ THE PUZZLE CHAMP SETS ONE FROM YOUR DOG\'S OPENINGS  (his 11-05, dog idea #7): a set for each of the dogs\' six openings, from games that opened with the dog\'s system against each regular\'s and went on until somebody slipped; Stockfish found one winning move at every step of yours and the site\'s referee proved the line (every move legal, a mate a mate, and 2 points up at its end whatever they answer), rated by the room\'s own formula; he offers one from the dog you last sat down with once you know the dogs play, never inside his run (probed: Milo\'s set solved and counted, his run still his own pool)',
+              pzOff.length ? 'off: ' + pzOff.join(' · ') + (badPz.length ? ' [' + badPz.slice(0, 3).join(', ') + ']' : '') : nPz + ' puzzles in ' + Object.keys(SETS7).length + ' sets');
+            /* ⭐ THE DOG SHOW (his 11-05, dog idea #9) */
+            const dsT = rd('dog_show.gd'), sdpT = rd('state_dogs.gd'), twT9 = rd('town.gd'), znT9 = rd('zone.gd'), chT9 = rd('state_challenge.gd');
+            const showOff = offOf({
+              'a board, once the dogs play': /^# ══ THE DOG SHOW ══/.test(dsT) && /\nclass_name DogShow\nextends Interactable\n/.test(dsT)
+                && /if not GameState\.story\.dogs_play:\s*\n\t\treturn\n\tvar b := DogShow\.new\(\)/.test(fnGd(twT9, '_furnish_show')) && /\t_furnish_strays\(\)\n\t_furnish_show\(\)\n/.test(twT9),
+              'his to name and size': /const SHOW_RIBBON := "[^"]+"/.test(dbT) && /const SHOW_ROUNDS := 3\b/.test(dbT) && /const SHOW_COST := 10\b/.test(dbT),
+              'the draw: the seats nearest you, never the dog\'s own': /if str\(row\["key"\]\) != seat_of\(dog\):/.test(fnGd(dbT, 'show_bracket'))
+                && /var di := absi\(int\(seats\[i\]\["elo"\]\) - rating\)/.test(fnGd(dbT, 'show_bracket')),
+              'the dog you sat down with enters': /GameState\.dogs\.show_enter\(d, DogBook\.show_bracket\(d, GameState\.ladder\.rating\)\)/.test(fnGd(dsT, '_on_chose')),
+              'a show game is the show\'s, never a square': /if bool\(pending\.get\("show", false\)\):\s*\n\t\tpending = \{\}\s*\n\t\tchallenge_changed\.emit\(\)\s*\n\t\tGameState\.dogs\.show_result\(won\)\s*\n\t\treturn -1/.test(fnGd(chT9, 'table_done'))
+                && /"table": true, "show": true \}/.test(fnGd(chT9, 'sit_show')) && /if challenge_open\(\):\s*\n\t\ttable_wanted\.emit\(\)/.test(fnGd(chT9, 'sit_show'))
+                && /if not GameState\.body\.spend\(cost\):/.test(fnGd(chT9, 'sit_show')),
+              'its dog cannot change': /if in_show:\s*\n\t\tdog = str\(GameState\.dogs\.show\.get\("dog", dog\)\)/.test(ctT) && /if phase != SETUP or not _dog_table\(\) or in_show:/.test(ctF('_step_dog')),
+              'three wins, the ribbon; a loss or a draw, out': /if not won:\s*\n\t\tshow = \{\}/.test(fnGd(sdpT, 'show_result')) && /ribbon\(id, DogBook\.SHOW_RIBBON\)/.test(fnGd(sdpT, 'show_result')),
+              'said as a challenge is': /GameState\.dogs\.show_done\.connect\(_report_show\)/.test(znT9) && /"ribbon":/.test(fnGd(znT9, '_report_show')),
+              'kept, never merged': /"dogs": dogs, "show": show \}/.test(fnGd(sdpT, 'to_save')) && !/show/.test(fnGd(sdpT, 'merge')),
+              'case': /showboard:0;gs:story\.dogs_play=true;[^"]*showboard:1;/.test(bcCase('dogshow')) && /showis:opps:maxwell,argus,nate;/.test(bcCase('dogshow'))
+                && /line:Milo wins the Dog Show;showis:none;dogribbon:milo:Best in Show:1;deeds:wins:0;/.test(bcCase('dogshow'))
+                && /tableend:lost;[^"]*line:Milo is out of the show;showis:none;/.test(bcCase('dogshow')),
+              'suite': /^[^#\n]*\bdogshow\b/m.test(suiteT),
+            });
+            ok(showOff.length === 0,
+              '⭐⭐ THE DOG SHOW  (his 11-05, dog idea #9: "a bracket where every game starts in your dog\'s opening; a ribbon on its Kennel card"): a board beside the Park Tables once you know the dogs play; the dog you last sat down with enters against the three seats nearest your rating (never its own), weakest first; each round is a game at the table in its opening, a challenge\'s energy but never a square; three wins and the ribbon (his to name) is on its Kennel card, a loss or a draw ends it and it can be entered again at once (probed: no board before the dogs play, Milo through three rounds to the ribbon, out on a loss, the Kennel wearing it)',
+              showOff.length ? 'off: ' + showOff.join(' · ') : 'the board, the draw, the ribbon');
+            /* ⭐ THE SITE'S SAND MINE HAS THE DOG AT HER SIDE TOO (his 11-03: "the website version should always match our game") */
+            const smP6 = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_sandmine.html'), 'utf8').replace(/\r\n/g, '\n');
+            const smT6 = fs.readFileSync(path.join(ROOT, 'tests/sandmine.check.js'), 'utf8');
+            const perkOf6 = [...(((/const PERK_OF := \{([^}]*)\}/.exec(dbT) || [])[1]) || '').matchAll(/"(\w+)": "(\w+)"/g)];
+            const perkSay6 = [...(((/const PERK_SAY := \{([^}]*)\}/.exec(dbT) || [])[1]) || '').matchAll(/"(\w+)": "([^"]+)"/g)];
+            const partnerOff = offOf({
+              'the same dogs, the same perks': perkOf6.length > 0 && perkOf6.every((m) => smP6.includes("{ id: '" + m[1] + "', name: '" + m[1][0].toUpperCase() + m[1].slice(1) + "', perk: '" + m[2] + "' }"))
+                && (smP6.match(/\{ id: '\w+', name: '\w+', perk: '\w+' \}/g) || []).length === perkOf6.length,
+              'the same words': perkSay6.length === 3 && perkSay6.every((m) => smP6.includes(m[1] + ": '" + m[2] + "'"))
+                && smP6.includes("' is with you: ' + PERK_SAY[pk] + '. This run keeps its own best.'") && /is with you: %s\. This run keeps its own best\./.test(mtT2),
+              'the gold beside her': smP6.includes('Math.max(Math.abs(g.x - cell.x), Math.abs(g.y - cell.y)) === 1') && /maxi\(absi\(g\.x - cell\.x\), absi\(g\.y - cell\.y\)\) == 1/.test(mtT2),
+              'the way down in the dark': smP6.includes('ctx.arc(sc.x, sc.y, TILE * 0.55, 0, Math.PI * 2)') && smP6.includes("ctx.strokeStyle = 'rgba(91,224,192,0.9)'; ctx.lineWidth = 2.5;")
+                && /float\(B\.TILE\) \* 0\.55 \* _s, 0\.0, TAU, 32, Color\(TEAL, 0\.9\), 2\.5 \* _s/.test(mtT2) && /const TEAL := Color\("5be0c0"\)/.test(mtT2),
+              'a shovel every floor': smP6.includes("if (S.partnerPerk === 'shovel') S.shovels++;") && /if perk == "shovel" and floor_n > 0:\s*\n\t\tshovels \+= 1/.test(fnGd(mtT2, 'new_floor')),
+              'its own best, never the ranked score': smP6.includes("if (window.PJCC && !pk) PJCC.saveScore('sand-mine-depths'") && smP6.includes('savePerkBests(pb);')
+                && smP6.includes("best: pk ? ((loadPerkBests()[pk] || {}).depth || 0) : loadBest()"),
+              'played in Chrome': smT6.includes('with Milo at her side, the gold beside where she lands comes too') && smT6.includes('a run with a dog keeps its own best and sends no ranked score')
+                && smT6.includes('with Argus at her side, the way down is ringed through the dark'),
+            });
+            ok(partnerOff.length === 0,
+              '⭐ …and THE SITE\'S SAND MINE HAS THE DOG AT HER SIDE TOO  (his 11-03: "the website version should always match our game"): the same dogs and perks as DogBook.PERK_OF, the same words, Milo\'s fetch one step round her landing, Argus\'s ring round the way down at 0.55 of a tile, a terrier\'s shovel every floor, and a run with a dog keeps its own best and never sends the ranked score (played in Chrome: tests/sandmine.check.js)',
+              partnerOff.length ? 'off: ' + partnerOff.join(' · ') : perkOf6.length + ' dogs, three perks');
           }
         }
 
