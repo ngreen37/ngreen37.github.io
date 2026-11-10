@@ -514,8 +514,8 @@ const server = http.createServer((req, res) => {
         const OBJ = new Set(['set', 'get', 'call', 'has_method', 'connect', 'is_connected', 'emit_signal', 'has_signal']);
         const once = held.filter((h) => new RegExp('^var ' + h.name + ': ' + h.cls + ' = ' + h.cls + '\\.new\\(\\)$', 'm').test(hubSrc)
           && /^extends RefCounted\n/.test(parts[h.name].src));
-        ok(held.length === 10 && once.length === 10 && new Set(held.map((h) => h.name)).size === 10,
-          '⭐ GameState is the save, the sync, the tick and the day, holding ten parts (core/state/): each a RefCounted, held once',
+        ok(held.length === 11 && once.length === 11 && new Set(held.map((h) => h.name)).size === 11,
+          '⭐ GameState is the save, the sync, the tick and the day, holding eleven parts (core/state/): each a RefCounted, held once',
           held.map((h) => h.name).join(' '));
         const bad = [];
         let named = 0;
@@ -1297,8 +1297,8 @@ const server = http.createServer((req, res) => {
         ok(/var ring := TownPortal\.new\(\)\s*\n\tring\.game = "marchland"\s*\n\tring\.position = BOARD_AT\s*\n\tadd_child\(ring\)/.test(fnGd(mxh, '_furnish_room'))
            && /Rect2\(BOARD_AT \+ Vector2\(float\(f\) - 4\.0, float\(r\) - 4\.0\) \* BOARD_CELL/.test(fnGd(mxh, '_decor'))
            && !/"marchland"/.test(tw) && /_draw_board\(CAMP_BOARD,/.test(tw)
-           && /useat:-250,90;bubble:Building\. Not open to visitors\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*useis:1770,370:Sand Mine Depths;/.test(ctCases),
-          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house")  (probed: his ring says Building)');
+           && /useat:-250,90;bubble:The ring stays dark until half the Assembly is lit\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*useis:1770,370:Sand Mine Depths;/.test(ctCases),
+          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house")  (probed: his ring stays dark until half the Assembly is lit, then sits you at his table off the web)');
         ok(/var mine := TownPortal\.new\(\)\s*\n\tmine\.game = "sand-mine-depths"\s*\n\tmine\.position = CAMP_BOARD\s*\n\tadd_child\(mine\)/.test(tw)
            && /"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/"[ ,]/.test(por),
           '…the camp\'s ring opens SAND MINE DEPTHS  (his 11-03: "go ahead and use the camp board too for whatever"): the camp is the sand mine\'s, and the Martyr\'s square is won in it  (probed: the ring there says so)');
@@ -7945,9 +7945,9 @@ const server = http.createServer((req, res) => {
                 && /const OFF_ELO := 250/.test(dbT) && /const OFF_MOVES := 8/.test(dbT),
               'love, not training': /r\["points"\] = int\(r\["points"\]\) \+ \(2 if score >= 1\.0 else 1\)/.test(fnGd(dpT, 'game_over')),
               'Elo per opening': /var expect := 1\.0 \/ \(1\.0 \+ pow\(10\.0, \(float\(opp_elo\) - mine\) \/ 400\.0\)\)/.test(fnGd(dpT, 'game_over')),
-              'saved, pushed, merged, reset': /"dogs": dogs\.to_save\(\), "run": run_began, "v": SAVE_VERSION/.test(gsD)
+              'saved, pushed, merged, reset': /"dogs": dogs\.to_save\(\), (?:"campaign": campaign\.to_save\(\), )?"run": run_began, "v": SAVE_VERSION/.test(gsD)
                 && /"dogs": dogs\.to_save\(\),\s*\n\t\t"board": board\.banner\(\)/.test(gsD) && /dogs\.merge\(d\["dogs"\]\)/.test(gsD)
-                && /for part in \[board, people, story, town, money, ladder, challenge, body, worlds, dogs\]:/.test(gsD),
+                && /for part in \[board, people, story, town, money, ladder, challenge, body, worlds, dogs(?:, campaign)?\]:/.test(gsD),
               'the site merges them': /local\.dogs = \{ bring: /.test(pfJ) && /\(\+dt\.points \|\| 0\) > \(\+dm\.points \|\| 0\) \? dt : dm/.test(pfJ),
               'only once you know': /return GameState\.story\.dogs_play and lesson == "" and puzzle\.is_empty\(\) and study\.is_empty\(\) and key != ""/.test(ctF('_dog_table')),
               'never the one you face': /DogBook\.seat_of\(id\) != key/.test(ctF('_dogs_here')),
@@ -8223,6 +8223,51 @@ const server = http.createServer((req, res) => {
             ok(portOff.length === 0,
               '⭐⭐ WHOEVER SITS ACROSS, THE ROOM\'S LIGHT AND THEIR ANSWER ARE ON THE SITE\'S 3D BOARD TOO  (his 11-10: "yes on the website port"): each chess room says who sits across (the bench seat, the duelist, the floor\'s champion, the Pirc\'s teacher, Maxwell over Red) and the lens draws them dressed as the town dresses them, off the game\'s own picture, or the dog itself; the light follows who is winning, and they lean in and answer your move, with the game\'s numbers and his placeholder answers on both; and in the game a dog across the board is the dog now, never a person in its colors (probed: Milo across, then Maxwell; played in Chrome in all five rooms)',
               portOff.length ? 'off: ' + portOff.join(' · ') : 'the same numbers, picture and answers');
+            /* ⭐⭐ CHESSWILD: CAMPAIGN COMES INTO THE GAME (his 11-10, #1 "Campaign comes into the game") */
+            const cgT = (f) => (fs.existsSync(path.join(GD, f)) ? fs.readFileSync(path.join(GD, f), 'utf8').replace(/\r\n/g, '\n') : '');
+            const crT = rd('campaign_rules.gd'), caiT = rd('campaign_ai.gd'), cbT = rd('battle_table.gd'), ctbT = rd('campaign_table.gd');
+            const cpT = rd('state_campaign.gd'), gsC = rd('game_state.gd'), poC = rd('portal.gd'), znC = rd('zone.gd'), chC = rd('state_challenge.gd');
+            const genC = require(path.join(GD, 'tests/gen_campaign.js'));
+            let bookFresh = false;
+            try { bookFresh = genC.build(fs.readFileSync(path.join(ROOT, 'assets/data/marchland.json'), 'utf8'),
+              fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8')) === rd('campaign_book.gd'); } catch (e) { bookFresh = false; }
+            /* the Daily the probe plays is the one the site's own page deals for that date */
+            let dailyMatch = false;
+            try {
+              const cvm = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+              const dm = /campdate:(\d{4}-\d\d-\d\d);[^"]*campis:ownstr:(\w+);campis:rankstr:([\d,]+)/.exec(bcCase('campdaily'));
+              const ds = dm && cvm.dailyStart(dm[1]);
+              dailyMatch = !!ds && ds.own.join('') === dm[2] && ds.ranks.join(',') === dm[3];
+            } catch (e) { dailyMatch = false; }
+            const campOff = offOf({
+              'the site\'s numbers and words': bookFresh,
+              'held to the page, case for case': /campaign_corpus\.js/.test(cgT('tests/campaign.sh')) && /require\(path\.join\(SITE, 'tests\/campaign-vm\.js'\)\)\.load\(\{ random: pageRandom \}\)/.test(cgT('tests/campaign_corpus.js'))
+                && /CA DONE fails=%d of %d/.test(cgT('tests/campaign_rules_test.gd')) && /^[^#\n]*\bcampaign\b/m.test(suiteT) && /"\$S\/campaign\.sh"/.test(suiteT),
+              'the ring on his floor sits you at it': /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "half": true, "table": "campaign" \}/.test(poC)
+                && /"campaign":\s*\n\t\t\tCampaignTable\.open\(self, errand\)/.test(znC) && /"campaign": "Maxwell"/.test(chC),
+              'the battle is the page\'s': /^class_name BattleTable\nextends ChessTable/m.test(cbT)
+                && /left\[mover\] = minf\(float\(_turn_start\[mover\]\), float\(left\[mover\]\) \+ CB\.MOVE_DELAY \* 1000\.0\)/.test(fnGd(cbT, '_apply'))
+                && /if r in \["checkmate", "stalemate", "material", "fifty"\]:/.test(fnGd(cbT, '_end_by_rules'))
+                && /"draw-flag" if _lone_king\(other\) else \("time-att" if \(turn == "w"\) == att_white else "time-def"\)/.test(fnGd(cbT, '_process'))
+                && /_reveal = CB\.REVEAL_MS \/ 1000\.0/.test(fnGd(cbT, '_start')) && /CampaignAI\.best_move\(at,/.test(fnGd(cbT, '_their_turn'))
+                && /if white == att_white and ChessRules\.game_result\(ChessRules\.make_move\(S, q\)\) == "stalemate":/.test(fnGd(cbT, '_try')),
+              'what is left marches in, as the site rules': /var moved := _share\(a_ranks - 1, float\(k\.a\)\)/.test(crT) && /static func kept_share/.test(crT)
+                && /CampaignRules\.kept_share\(p\.board, board, a_col\)/.test(fnGd(ctbT, '_on_battle_end')),
+              'Maxwell, his file, his words': /"who": "" if two else _rival\(\)/.test(fnGd(ctbT, '_start_battle')) && /file_campaign\(g, won\)/.test(fnGd(ctbT, '_campaign_over'))
+                && /static func observe_file/.test(crT) && /CampaignRules\.line_for\(/.test(ctbT),
+              'saved, one slot a mode': /const CampaignPart := preload\("res:\/\/core\/state\/state_campaign\.gd"\)/.test(gsC) && /"campaign": campaign\.to_save\(\)/.test(gsC)
+                && /campaign\.from_save\(/.test(gsC) && /const MODES := \["solo", "daily", "two", "first"\]/.test(cpT)
+                && /"campaign": \{"saves"/.test(cgT('tests/savefix.py')),
+              'the Daily the site deals': dailyMatch,
+              'played': ['campaign', 'campfirst', 'campdaily', 'camptwo', 'campdefend', 'campring'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /gs:board\.army=\[0,1,2,3,4,5,6,7\];scene:res:\/\/rooms\/maxwell\.tscn;wait:40;useat:-250,90;wait:30;campis:screen:home/.test(bcCase('campring'))
+                && /camptap:3;wait:6;campis:screen:roll;camppress:tobattle;wait:4;camppress:tobattle;wait:30;seatis:Maxwell;campend:won-mate/.test(bcCase('campaign'))
+                && /campis:own:3:m;campis:ranks:3:5/.test(bcCase('campaign')) && /campuntil:screen:result:1800;gseq:campaign\.first_done=true/.test(bcCase('campfirst'))
+                && /campis:mxlen:0/.test(bcCase('camptwo')) && /campend:time-att;wait:6;tablebtn:close;wait:20;campuntil:phase:deploy:1800;campis:own:5:m/.test(bcCase('campdefend')),
+            });
+            ok(campOff.length === 0,
+              '⭐⭐ CHESSWILD: CAMPAIGN COMES INTO THE GAME  (his 11-10, #1 "Campaign comes into the game"): the ring on Maxwell\'s floor sits you at his table off the web (the site\'s page on it), ten holdings and the dice that muster an army; a battle is fought at the town\'s own table, the 3D board and Maxwell across it, on the page\'s clocks (fifteen seconds, a second back a move), the page\'s flag rule and the page\'s own engine; what is left marches in, his file and his words, your dog, the Daily, two players and the first campaign; every rule held to the site\'s page case for case (tests/campaign.sh), every number and word the site\'s (gen_campaign.js), one save slot a mode (probed: a round and a battle, his turn, getting up and back; the first campaign won; the Daily the site deals; two players; a defense held)',
+              campOff.length ? 'off: ' + campOff.join(' · ') : 'the page, rule for rule');
           }
         }
 
