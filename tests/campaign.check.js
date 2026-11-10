@@ -27,6 +27,7 @@ window.__mc = {
   fogged: fogged, dailyStart: dailyStart, startYourTurn: startYourTurn, startBattle: startBattle, goLive: goLive,
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
+  dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
     PEND = { from: 5, to: 3, playerAttacks: playerAttacks, aRanks: 4, dRanks: 3, attWhite: true,
@@ -650,6 +651,92 @@ function serve() {
         label: document.getElementById('two').textContent, solo: !!localStorage.getItem('pjcc.campaign.save.v1') }; });
     ok(/Tap again/.test(quit.armed.label) && quit.armed.save && quit.save === null && quit.home && quit.label === 'Two players' && quit.solo,
       'End this game asks twice, then clears only the two-player game  [' + quit.armed.label + ']');
+
+    /* ══ 11-10: MAXWELL COMMANDS RED, YOUR DOG, AND WHAT A BATTLE LEAVES ══ */
+    const mx = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      localStorage.setItem('pjcc.campaign.file.v1', JSON.stringify({ v: 1, games: 3, won: 1, lost: 2, open: { 5: 3 }, keep: 0, thin: {}, turns: 12, forts: 6 }));
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('go').click();
+      out.open = { shown: !$('mx-speech').hidden, line: $('mx-line').textContent, tally: $('l-theirs').textContent };
+      __mc.theirTurn();
+      out.turn = { shown: !$('mx-speech').hidden, line: $('mx-line').textContent, say: $('map-say').textContent };
+      clearTimeout(__mc.G.beatT); __mc.G.beatFn = null; __mc.G.q = [];
+      return out;
+    });
+    ok(mx.open.shown && /Chess City/.test(mx.open.line) && mx.open.tally === 'Maxwell',
+       'a campaign opens with what Maxwell has noticed about you, and the tally names him  [' + mx.open.line + ' · ' + mx.open.tally + ']');
+    ok(mx.turn.shown && mx.turn.line.length > 0 && /Maxwell’s turn/.test(mx.turn.say),
+       '…and his turn is his: his face, his line, his name on it  [' + mx.turn.line + ' · ' + mx.turn.say + ']');
+    const mxCard = await E(() => {
+      const m = __mc, $ = id => document.getElementById(id);
+      m.setB('4k3/8/8/8/8/8/8/R3K2R w - - 0 1', true);
+      m.PEND.board = m.B.S.b.slice();
+      m.finish('won-mate');
+      return { mx: $('emx').hidden ? '' : $('emx').textContent, line: $('eline').textContent };
+    });
+    ok(/^Maxwell: “.+”$/.test(mxCard.mx), 'a battle against Red ends with his word under the verdict  [' + mxCard.mx + ']');
+    ok(/march into/.test(mxCard.line), 'the verdict says how many of the troops that went march in  [' + mxCard.line + ']');
+    const twoMx = await E(() => {
+      const $ = id => document.getElementById(id);
+      localStorage.removeItem('pjcc.campaign.save.two.v1');
+      $('two').click();
+      return { shown: !$('mx-speech').hidden, tally: $('l-theirs').textContent };
+    });
+    ok(!twoMx.shown && twoMx.tally === 'Red', 'two players face each other: no Maxwell on the map  [' + twoMx.tally + ']');
+    const dog = await E(() => {
+      const $ = id => document.getElementById(id), labels = [], out = {};
+      $('screen-home').classList.add('on');
+      for (let i = 0; i < 4; i++) { $('opt-dog').click(); labels.push($('opt-dog').textContent + '|' + $('dog-note').textContent); }
+      out.labels = labels;
+      while ($('opt-dog').textContent !== 'Dog · Argus') $('opt-dog').click();
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('go').click();
+      const G = __mc.G;
+      out.dog = { id: G.dogId, at: G.dog, start: __mc.dogStart(), tag: !!document.querySelector('.node[data-id="' + G.dog + '"] .dogtag') };
+      G.dog = 5; G.phase = 'deploy'; G.fog = true; __mc.drawMap();
+      const atks = G.atks;
+      out.sniffClass = !!document.querySelector('.node[data-id="1"].sniff');
+      __mc.tapLand(1);
+      out.sniff = { atks: G.atks === atks, seen: G.seen.m.indexOf(1) >= 0, sniffed: G.sniffed, say: $('map-say').textContent };
+      return out;
+    });
+    ok(dog.labels.join(' / ').indexOf('Dog · Princess|') === 0 && /Dog · Argus\|Argus sniffs out one hidden holding/.test(dog.labels[2]) &&
+       /Dog · None\|$/.test(dog.labels[3]),
+       'the dog you bring is one tap away, and the note says his gift  [' + dog.labels.map(l => l.split('|')[0]).join(' → ') + ']');
+    ok(dog.dog.id === 'argus' && dog.dog.at === dog.dog.start && dog.dog.tag,
+       'a campaign with a dog puts him on your biggest stack, and the map shows him there  [at ' + dog.dog.at + ']');
+    ok(dog.sniffClass && dog.sniff.atks && dog.sniff.seen && dog.sniff.sniffed && /Argus sniffs out/.test(dog.sniff.say),
+       'Argus sniffs out the hidden holding past his border with one tap, and it costs no attack  [' + dog.sniff.say + ']');
+    await E(() => { localStorage.removeItem('pjcc.campaign.dog.v1'); localStorage.removeItem('pjcc.campaign.file.v1'); });
+
+    /* ══ 11-10: A FIRST CAMPAIGN THAT TEACHES ══ */
+    const first = await E(() => {
+      const $ = id => document.getElementById(id), out = {}, teach = () => [...document.querySelectorAll('.node.teach')].map(n => +n.dataset.id).sort().join();
+      ['pjcc.campaign.first.done.v1', 'pjcc.campaign.save.first.v1', 'pjcc.campaign.save.v1', 'pjcc.campaign.dog.v1'].forEach(k => localStorage.removeItem(k));
+      __mc.paintHome();
+      out.door = $('first').classList.contains('new');
+      $('first').click();
+      out.nodes = document.querySelectorAll('#mapbox .node').length;
+      out.deploy = { shown: !$('mx-speech').hidden, line: $('mx-line').textContent, teach: teach(), place: __mc.G.toPlace };
+      __mc.tapLand(3);
+      out.attack = { phase: __mc.G.phase, line: $('mx-line').textContent, teach: teach() };
+      __mc.campaignOver(true);
+      out.done = { flag: localStorage.getItem('pjcc.campaign.first.done.v1'), verdict: $('verdict').textContent, mx: $('result-mx').textContent };
+      $('cont').click();
+      out.home = { on: $('screen-home').classList.contains('on'), door: $('first').classList.contains('new') };
+      $('go').click();
+      out.solo = document.querySelectorAll('#mapbox .node').length;
+      return out;
+    });
+    ok(first.door, 'a new player sees the first campaign\'s door lit');
+    ok(first.nodes === 5 && first.deploy.shown && /tap one of your holdings/.test(first.deploy.line) && first.deploy.teach === '3,4' && first.deploy.place === 1,
+       'the first campaign is five holdings, and Maxwell points at where your troop goes  [' + first.deploy.teach + ' · ' + first.deploy.line + ']');
+    ok(first.attack.phase === 'attack' && /Tap Chess City, then Checker Town/.test(first.attack.line) && first.attack.teach === '2,3',
+       '…placed, he points at the first attack  [' + first.attack.teach + ']');
+    ok(first.done.flag === '1' && /FIRST CAMPAIGN IS YOURS/.test(first.done.verdict) && /^Maxwell: “/.test(first.done.mx),
+       'winning it marks it done, and he sends you to a real one  [' + first.done.mx + ']');
+    ok(first.home.on && !first.home.door && first.solo === 10, '…and the ten come back for the real campaign  [' + first.solo + ' holdings]');
   } catch (e) {
     FAIL++; console.log('  ✗ FAIL  harness threw: ' + e.message);
   } finally {

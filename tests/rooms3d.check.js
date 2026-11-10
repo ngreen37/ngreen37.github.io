@@ -171,7 +171,7 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     }
     ok(mk1.pos === mk2.pos && mk1.clk === mk2.clk, 'MARCHLAND: the battle clocks stand still through a cut  [' + mk1.clk + ' then ' + mk2.clk + ']');
     const mcSeat = await seatOf();
-    ok(mcSeat && mcSeat.who === '' && mcSeat.drawn === '', 'MARCHLAND: nobody sits across a battle yet (Red has no face), the board alone  ' + JSON.stringify(mcSeat));
+    ok(mcSeat && mcSeat.who === 'Maxwell' && mcSeat.drawn === 'person', 'MARCHLAND: Maxwell, who commands Red, sits across the battle  ' + JSON.stringify(mcSeat));
     await shot('rooms3d-marchland');
     await page.evaluate(() => PJCCBoard3D.handles[0].endCut());
 

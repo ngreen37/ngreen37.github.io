@@ -37,6 +37,7 @@
     "gen:models": "node tests/gen-models.js",
     "gen:pieces": "node tests/gen-pieces.js",
     "sim:marchland": "node tests/sim-marchland.js",
+    "sim:campaign": "node tests/sim-campaign.js",
     "sim:bots": "node tests/sim-bots.js",
     "sim:skyrun": "node tests/sim-skyrun.js",
     "soak:puzzles": "node tests/puzzle-soak.js",

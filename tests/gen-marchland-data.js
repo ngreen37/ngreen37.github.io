@@ -56,7 +56,22 @@ function build() {
     slice(src, 'var MAT_SCALE',    'function matBudget') +
     slice(src, 'var POS_CASTLE',   'function posSteps') +
     slice(src, 'var VAL = {',      'function capsFor') +
-    slice(src, 'var CLOCK_ATT',    '/* THE REVEAL BEAT');
+    slice(src, 'var CLOCK_ATT',    '/* THE REVEAL BEAT') +
+    /* 11-10: what a result is worth, Maxwell and his words, the dogs, and the first campaign — data a port reads, so
+       his words and the small map are typed once */
+    slice(src, 'var SURVIVE',      '/* the share of its points') +
+    slice(src, 'var RIVAL',        'var FILE_KEY') +
+    slice(src, 'var DOGS',         'var DOG_KEY') +
+    slice(src, 'var FIRST_MAP',    'var FIRST_DONE') +
+    slice(src, 'var LESSON_STEPS', 'function mapFor') +
+    /* the rest a port reads rather than retypes: the cards, the Daily's length, the engine's values, where the muster
+       stands each piece, and the battle's beats */
+    slice(src, 'var CARDS = {',      'function drawCard') +
+    slice(src, 'var DAILY_ROUNDS',   'function variantOf') +
+    slice(src, 'var EV = {',         'function evalPos') +
+    slice(src, 'var MATE_SCORE',     '/* ⚠ RETURNS AN OBJECT') +
+    slice(src, 'var W_BACK',         '/* ⛑⛑ A PAIR OF BISHOPS') +
+    slice(src, 'var REVEAL_MS',      'function startBattle');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -67,7 +82,7 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.2',
+    version: '0.4',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice(), walls: G.START_WALLS.slice() },
@@ -93,8 +108,20 @@ function build() {
       clockAtt: G.CLOCK_ATT,
       clockDef: G.CLOCK_DEF,
       moveDelay: G.MOVE_DELAY,
-      pieceValues: G.VAL
+      pieceValues: G.VAL,
+      survive: G.SURVIVE             // what's left on the board marches in: 'win' = the side that won the ground keeps a share
     },
+    rival: { who: G.RIVAL.who, key: G.RIVAL.key, lines: G.MAXWELL_LINES },
+    dogs: G.DOGS.map((d) => ({ id: d.id, name: d.name, perk: d.perk, says: G.DOG_SAY[d.perk] })),
+    cards: Object.keys(G.CARDS).reduce((o, k) => { o[k] = { name: G.CARDS[k].nm, text: G.CARDS[k].txt }; return o; }, {}),
+    deck: G.DECK.slice(),
+    dailyRounds: G.DAILY_ROUNDS,
+    engine: { ev: G.EV, mateScore: G.MATE_SCORE },
+    placement: { wBack: G.W_BACK.slice(), wPawn: G.W_PAWN.slice(), bBack: G.B_BACK.slice(), bPawn: G.B_PAWN.slice() },
+    battle: { revealMs: G.REVEAL_MS, mercyMs: G.MERCY_MS, mercyPly: G.MERCY_PLY, mercyOdds: G.MERCY_ODDS },
+    first: { holdings: G.FIRST_MAP.land.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
+             edges: G.FIRST_MAP.edges.map((e) => [e[0], e[1]]), start: { owner: G.FIRST_START.own.slice(),
+             ranks: G.FIRST_START.ranks.slice(), walls: G.FIRST_START.walls.slice() }, lessons: G.LESSON_STEPS.slice() },
     levels: Object.keys(G.LEVELS).reduce((o, k) => {
       const L = G.LEVELS[k];
       o[k] = { name: L.nm, depth: L.depth, thinkMs: L.ms, slip: L.slip, slipCp: L.slipCp,

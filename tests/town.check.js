@@ -8214,14 +8214,14 @@ const server = http.createServer((req, res) => {
                 return !!a && !!b && a.replace(/\s/g, '') === b.replace(/\s/g, '');
               }),
               'the game\'s own picture': fs.existsSync(pfS) && fs.existsSync(pfG) && fs.readFileSync(pfS).equals(fs.readFileSync(pfG)),
-              'every room says who': ['games/park-tables/index.html', 'assets/games/pjcc_duel.html', 'assets/games/pjcc_gauntlet.html', 'assets/games/pjcc_pirc.html']
+              'every room says who': ['games/park-tables/index.html', 'assets/games/pjcc_duel.html', 'assets/games/pjcc_gauntlet.html', 'assets/games/pjcc_pirc.html', 'assets/games/pjcc_marchland.html']
                 .every((f) => /\bseat: function \(\) \{/.test(fs.readFileSync(path.join(ROOT, f), 'utf8'))),
               'played in Chrome': /Maxwell sits across the board, dressed as the town dresses him/.test(fs.readFileSync(path.join(ROOT, 'tests/board3d.check.js'), 'utf8'))
                 && /the Duel: the duelist you face sits across the board/.test(fs.readFileSync(path.join(ROOT, 'tests/rooms3d.check.js'), 'utf8')),
               'case': /seatis:Milo;seatdog:1;/.test(bcCase('tabledog')) && /seatis:Maxwell;seatdog:0/.test(bcCase('tabledog')) && /^[^#\n]*\btabledog\b/m.test(suiteT),
             });
             ok(portOff.length === 0,
-              '⭐⭐ WHOEVER SITS ACROSS, THE ROOM\'S LIGHT AND THEIR ANSWER ARE ON THE SITE\'S 3D BOARD TOO  (his 11-10: "yes on the website port"): each chess room says who sits across (the bench seat, the duelist, the floor\'s champion, the Pirc\'s teacher) and the lens draws them dressed as the town dresses them, off the game\'s own picture, or the dog itself; the light follows who is winning, and they lean in and answer your move, with the game\'s numbers and his placeholder answers on both; and in the game a dog across the board is the dog now, never a person in its colors (probed: Milo across, then Maxwell; played in Chrome in all five rooms)',
+              '⭐⭐ WHOEVER SITS ACROSS, THE ROOM\'S LIGHT AND THEIR ANSWER ARE ON THE SITE\'S 3D BOARD TOO  (his 11-10: "yes on the website port"): each chess room says who sits across (the bench seat, the duelist, the floor\'s champion, the Pirc\'s teacher, Maxwell over Red) and the lens draws them dressed as the town dresses them, off the game\'s own picture, or the dog itself; the light follows who is winning, and they lean in and answer your move, with the game\'s numbers and his placeholder answers on both; and in the game a dog across the board is the dog now, never a person in its colors (probed: Milo across, then Maxwell; played in Chrome in all five rooms)',
               portOff.length ? 'off: ' + portOff.join(' · ') : 'the same numbers, picture and answers');
           }
         }

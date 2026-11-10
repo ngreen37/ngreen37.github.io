@@ -510,6 +510,9 @@ check('…and what a chain is',
       /chained/i.test(flat) && /extra die/i.test(flat));
 check('…and that you only get three attacks',
       /three attacks a round/i.test(flat), 'his 2026-08-25 rule, stated on the screen');
+check('…and that what is left on the board marches in',
+      /What's left marches in/.test(flat) && /troops follow your pieces/.test(flat) && /keeps its share/.test(flat),
+      'his 2026-11-10 pick, stated on the screen');
 
 /* ══ 8b. HIS VOCABULARY, 2026-08-25 ═════════════════════════════════════════════════
    "change Levy phase to deployment phase… change March phase to attack phase, and night
@@ -586,7 +589,7 @@ check('the roll screen says the extra die out loud, not in the fine print',
         'tapping the target SPENDS the attack, so the map has to warn first');
   const resolve = slice('function resolveLand', '/* ── THE RIVAL');
   check('⚑ a won battle at the walls breaks them and takes no ground',
-        /if \(sieged\(p\.to\)\) \{ G\.down\.push\(p\.to\); return true; \}/.test(resolve) &&
+        /if \(sieged\(p\.to\)\) \{\s*G\.down\.push\(p\.to\);[\s\S]{0,240}?return true;\s*\}/.test(resolve) &&
         resolve.indexOf('sieged(p.to)') < resolve.indexOf('G.own[p.to] = G.own[p.from]'),
         'the breach returns BEFORE the transfer — order is the rule here');
   check('…and taking it puts the walls back up for whoever holds it now',
@@ -598,14 +601,14 @@ check('the roll screen says the extra die out loud, not in the fine print',
   check('holding one pays a troop a round',
         /wallsFor\(side\)/.test(slice('function deployFor', 'function idsOf')),
         'what makes the other side\'s keep worth two of your three attacks');
-  const rival = slice('function rivalPlan()', 'function theirTurn');
+  const rival = slice('function rivalPlan(', 'function theirTurn');
   check('the machine books a siege as a pair, or not at all',
         /var need = cand\[i\]\.siege \? 2 : 1;/.test(rival) &&
         /if \(attacks\.length \+ need > cap\) continue;/.test(rival),
         'half a siege spends an attack and takes nothing');
-  /* ⚠⚠ THE MUSTER HALF OF beginBattle: the dice, the budgets, the armies and the board.
-     Anything about the walls appearing in HERE is the balance bug this check exists for. */
-  const battleMath = slice('function beginBattle(', 'G.pending = {');
+  /* ⚠⚠ THE MUSTER (musterBattle, the half of beginBattle that rolls): the dice, the budgets, the armies and the
+     board. Anything about the walls appearing in HERE is the balance bug this check exists for. */
+  const battleMath = slice('function musterBattle(', 'function beginBattle(');
   check('⚠⚠ the walls never touch a battle — not a die, not a clock, not the edge',
         !/walled\(|breached\(|sieged\(|G\.down/.test(battleMath),
         'ATT_EDGE was measured against a 40-60% failure rate; this is what keeps it true');
@@ -714,6 +717,188 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
           'ATT_EDGE ' + d.balance.attEdge + ' - clocks ' + d.balance.clockAtt + '/' +
           d.balance.clockDef + ' - delay ' + d.balance.moveDelay + 's');
   }
+}
+
+/* == 11. WHAT'S LEFT ON THE BOARD MARCHES IN (his 11-10, #3) =====================
+   The troops follow the pieces. 'win' is the measured rule (sim:campaign): the side that won the ground keeps the share
+   of its troops its pieces kept of their points. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const run = (rule, attackerWon, kept, aRanks, dRanks, to) => {
+    camp.setSurvive(rule);
+    camp.newCampaign('medium', 'solo', { fog: true, cards: false });
+    const G4 = camp.G; G4.ranks[5] = aRanks; G4.ranks[to == null ? 3 : to] = dRanks;
+    const broke = camp.resolveLand({ from: 5, to: to == null ? 3 : to, playerAttacks: true, aRanks: aRanks, dRanks: dRanks }, attackerWon, kept);
+    return { from: G4.ranks[5], to: G4.ranks[to == null ? 3 : to], own: G4.own[to == null ? 3 : to], broke: broke, t: G4.troops };
+  };
+  const shipped = camp.SURVIVE;
+  check('⭐ the shipped rule is the measured one: the side that won the ground keeps its share', shipped === 'win', shipped);
+  const clean = run('win', true, { a: 1, d: 0, rout: 'def' }, 4, 4);
+  const scrappy = run('win', true, { a: 0.5, d: 0, rout: 'def' }, 4, 4);
+  check('a clean win marches the whole army in; a scrappy one leaves it thin (4 troops, 3 go: 3, then 2)',
+        clean.to === 3 && clean.from === 1 && clean.own === 'm' && scrappy.to === 2 && scrappy.from === 1,
+        'clean ' + clean.to + ' · scrappy ' + scrappy.to);
+  const held = run('win', false, { a: 0.9, d: 0.5, rout: null }, 4, 4);
+  check('a defense that holds keeps its share, and a failed attack still goes home with one',
+        held.to === 2 && held.from === 1 && held.own === 't', 'held ' + held.to + ' of 4 · home ' + held.from);
+  const breach = run('win', true, { a: 0.4, d: 0.5, rout: null }, 5, 4, 0);
+  check('…a breach leaves the attackers where they were and the garrison thinner', breach.broke && breach.from === 5 && breach.to === 2,
+        'stack ' + breach.from + ' · garrison ' + breach.to);
+  const left = run('win', false, undefined, 4, 4);
+  check('a battle left half-way is a withdrawal: the side that left is routed, the other keeps everything',
+        left.from === 1 && left.to === 4, 'home ' + left.from + ' · held ' + left.to);
+  const old = run('off', true, { a: 0.25, d: 0, rout: 'def' }, 4, 4);
+  const oldFail = run('off', false, { a: 0.9, d: 0.25, rout: null }, 4, 4);
+  check('…and the old rule is one word away (off): all but one march, a hold keeps everything',
+        old.to === 3 && old.from === 1 && oldFail.to === 4 && oldFail.from === 1);
+  camp.setSurvive(shipped);
+  const b1 = new Array(64).fill(''), b2 = new Array(64).fill('');
+  b1[60] = 'K'; b1[52] = 'P'; b2[60] = 'K'; b2[4] = 'Q';
+  check('a promotion never makes troops: the share stops at all of them', camp.keptShare(b1, b2, 'w') === 1);
+  check('the share is measured off the board the battle started and ended on',
+        /keptShare\(p\.board, B\.S\.b, aCol\)/.test(slice('function finish(how)', 'function lightMate')) &&
+        /line \+ troopsLine\(p\)/.test(slice('function finish(how)', 'function lightMate')),
+        'and the verdict says how many marched');
+}
+
+/* == 12. MAXWELL COMMANDS RED (his 11-10, #2) ======================================
+   The page's whole script in a vm (tests/campaign-vm.js): what he notices, what he says, and what Hard does with it.
+   ⭐ His words are one table and HIS; this proves the table is shippable and that nothing he can say has no words. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const LINES = camp.MAXWELL_LINES;
+  const TOKENS = { record: ['won', 'lost'], habit_open: ['from'], habit_thin: ['at'], declare: ['from', 'to'],
+    took: ['to'], lost: ['to'], held: ['to'], repelled: ['to'], breach_his: ['to'], breach_yours: ['to'] };
+  const bad = [];
+  Object.keys(LINES).forEach((k) => LINES[k].forEach((s) => {
+    const toks = (s.match(/\{(\w+)\}/g) || []).map((t) => t.slice(1, -1));
+    if (!/[.?!]["”]?$/.test(s) || s.length > 220 || toks.some((t) => (TOKENS[k] || []).indexOf(t) < 0) ||
+        /\b(colour|favour|honour|behaviour|realis|organis|centre|defence|offence|whilst)/i.test(s)) bad.push(k + ': ' + s);
+  }));
+  check('⭐ his lines are shippable: a sentence each, short, American, and only the names the game hands them',
+        bad.length === 0 && Object.keys(LINES).length >= 16, bad.join(' · ') || Object.keys(LINES).length + ' kinds');
+  const said = new Set();
+  for (const m of src.matchAll(/(?:speak|lineFor)\((?:[^()]*\?\s*)?'(\w+)'(?:\s*:\s*'(\w+)')?/g)) {
+    [m[1], m[2]].forEach((k) => { if (k && !/_$/.test(k)) said.add(k); });
+  }
+  /* the first campaign speaks 'teach_' + a step: every step has words too */
+  camp.LESSON_STEPS.forEach((s) => said.add('teach_' + s));
+  for (const m of src.matchAll(/k:'(\w+)'/g)) said.add(m[1]);
+  ['open', 'record', 'habit_open', 'habit_keep', 'habit_thin', 'habit_nofort', 'win', 'lose'].forEach((k) => said.add(k));
+  const mute = [...said].filter((k) => !LINES[k] || !LINES[k].length);
+  check('…and every kind he can say has words', mute.length === 0 && said.size >= 16, mute.join(', ') || said.size + ' kinds');
+  const obs = camp.observeFile({ v: 1, games: 3, won: 1, lost: 2, open: { 5: 3 }, keep: 2, thin: {}, turns: 12, forts: 6 });
+  check('what he has noticed comes first, and his record with you last',
+        obs[0].kind === 'habit_open' && obs[0].data.from === 'Chess City' && obs.some((o) => o.kind === 'habit_keep') &&
+        obs[obs.length - 1].kind === 'record' && camp.observeFile(null).length === 0,
+        obs.map((o) => o.kind).join(' > '));
+  /* ⭐ HARD PLAYS AGAINST YOUR HABITS: you always open from Chess City, so his first troops face it */
+  /* ⚠ ON THE OPENING MAP, ALWAYS: a Daily deals its own, and a dealt start can hand him the holding you open from */
+  const plan = (mode, diff, habits) => {
+    camp.newCampaign(diff, mode, { fog: true, cards: false });
+    const G2 = camp.G; G2.mode = mode; G2.habits = habits;
+    G2.own = camp.START_OWN.slice(); G2.ranks = camp.START_RANKS.slice(); G2.walls = camp.START_WALLS.slice();
+    return camp.seeded('maxwell-check', () => camp.rivalPlan('t'));
+  };
+  /* you always open from Pirc Pass (9): Sea-Board (4) and Long Park (6) face it, and his usual first troop is elsewhere */
+  const hab = { open: 9, keep: false, thin: -1 };
+  const hard = plan('solo', 'hard', hab), usual = plan('solo', 'hard', null);
+  check('⭐ on Hard he meets where you always open: his first troops go to the holdings facing it',
+        hard.deploy.join() === '4,6' && usual.deploy[0] !== 4, 'deploy ' + hard.deploy.join(',') + ' · without his file ' + usual.deploy.join(','));
+  check('⚠ his file never reaches a Daily, or Easy or Medium: the same seed plays the same plan without it',
+        JSON.stringify(plan('daily', 'hard', hab)) === JSON.stringify(plan('daily', 'hard', null)) &&
+        JSON.stringify(plan('solo', 'medium', hab)) === JSON.stringify(plan('solo', 'medium', null)),
+        'a Daily is the same game for everybody');
+  camp.newCampaign('medium', 'solo', { fog: true, cards: false });
+  camp.store['pjcc.campaign.file.v1'] = undefined; delete camp.store['pjcc.campaign.file.v1'];
+  camp.G.log.first = [5, 3]; camp.G.log.keep = true;
+  camp.fileCampaign(true);
+  const filed = JSON.parse(camp.store['pjcc.campaign.file.v1'] || 'null');
+  camp.newCampaign('medium', 'two', { fog: true, cards: false });
+  camp.fileCampaign(false);
+  const filed2 = JSON.parse(camp.store['pjcc.campaign.file.v1'] || 'null');
+  check('a campaign goes into his file when it ends, and a two-player game never does',
+        filed && filed.games === 1 && filed.won === 1 && filed.open['5'] === 1 && filed.keep === 1 && filed2.games === 1,
+        JSON.stringify(filed));
+  check('he sits across every battle against Red, and nobody sits between two players',
+        /seat: function \(\) \{ return B && !B\.two \? \{ who: RIVAL\.who, key: RIVAL\.key \} : null; \}/.test(src));
+}
+
+/* == 13. YOUR DOG MARCHES WITH YOU (his 11-10, #4) =================================
+   His gift is the map's, never a battle's: the same law the walls and the cards live under. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const fresh = (dogId, dog) => {
+    camp.newCampaign('medium', 'solo', { fog: true, cards: false });
+    const G2 = camp.G; G2.dogId = dogId; G2.dog = dog; return G2;
+  };
+  /* Chess City (5, yours, 4) attacks Checker Town (3, theirs, 4) */
+  let G2 = fresh('milo', 5);
+  camp.resolveLand({ from: 5, to: 3, playerAttacks: true, aRanks: 4, dRanks: 4 }, false, { a: 0.5, d: 0.5, rout: 'att' });
+  check('⭐ Milo brings a troop home when an attack from his holding fails',
+        G2.ranks[5] === 2 && G2.troops.fetched === 'Milo' && /Milo brings one more home/.test(camp.troopsLine({ to: 3 })),
+        'Chess City ' + G2.ranks[5] + ' · ' + camp.troopsLine({ to: 3 }).trim());
+  G2 = fresh('milo', 5);
+  camp.resolveLand({ from: 5, to: 3, playerAttacks: true, aRanks: 4, dRanks: 4 }, true, { a: 1, d: 0, rout: 'def' });
+  const marched = G2.dog;
+  G2 = fresh('argus', 5);
+  camp.resolveLand({ from: 3, to: 5, playerAttacks: false, aRanks: 6, dRanks: 4 }, true, { a: 1, d: 0, rout: 'def' });
+  check('your dog marches in with a win from his holding, and falls back to yours beside it when his holding falls',
+        marched === 3 && G2.own[5] === 't' && G2.own[G2.dog] === 'm' && camp.nbrs(5).indexOf(G2.dog) >= 0,
+        'won into ' + marched + ' · fell back to ' + G2.dog);
+  /* the opening's one hidden holding is The Fork (1), behind Checker Town (3); Chess City (5) borders Checker Town */
+  G2 = fresh('argus', 5);
+  G2.phase = 'deploy';
+  const fogged = camp.LAND.map((L) => L.id).filter((id) => camp.fogged(id));
+  const sniffs = camp.LAND.map((L) => L.id).filter((id) => camp.sniffable(id));
+  G2.dog = 7;                                   // Shogi Island: nothing hidden one step past its border
+  const fromShogi = camp.LAND.map((L) => L.id).filter((id) => camp.sniffable(id));
+  check('⭐ Argus sniffs out a hidden holding one step past his border, and nothing further',
+        fogged.indexOf(1) >= 0 && sniffs.join() === '1' && fromShogi.length === 0,
+        'hidden ' + fogged.join(',') + ' · from Chess City ' + sniffs.join(',') + ' · from Shogi Island ' + (fromShogi.join(',') || 'none'));
+  G2.dog = 5; G2.sniffed = true;
+  check('…and only once a round', !camp.LAND.some((L) => camp.sniffable(L.id)));
+  check('⚠⚠ a dog never touches a battle — not the muster, not the dice',
+        !/dog|perk|sniff|fetch/i.test(slice('function musterBattle(', 'function beginBattle(')),
+        'the 40-60% band was measured without one');
+  check('a Daily with a dog keeps its own record', camp.variantOf('medium', true, true, 'argus') === 'medium-argus' &&
+        camp.variantOf('medium', true, true, '') === 'medium', 'honest score slugs');
+  G2 = fresh('milo', 5); G2.mode = 'two';
+  camp.resolveLand({ from: 5, to: 3, playerAttacks: true, aRanks: 4, dRanks: 4 }, false, { a: 0.5, d: 0.5, rout: 'att' });
+  check('two players bring no dogs', G2.ranks[5] === 1 && !G2.troops.fetched);
+}
+
+/* == 14. A FIRST CAMPAIGN THAT TEACHES (his 11-10, #5) =============================
+   Five holdings, Maxwell teaching one rule at a time, on the same rules: the map is swapped, nothing re-implemented. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const F = camp.FIRST_MAP, S0 = camp.FIRST_START;
+  camp.useMap(F);
+  const reach = new Set([0]), stack2 = [0];
+  while (stack2.length) { const n = stack2.pop(); camp.nbrs(n).forEach((j) => { if (!reach.has(j)) { reach.add(j); stack2.push(j); } }); }
+  const own0 = S0.own.slice(), took = S0.own.slice(); took[2] = 'm';
+  check('⭐ the first campaign is five holdings, all joined, his keep walled',
+        F.land.length === 5 && reach.size === 5 && S0.walls.join() === '0' && own0.filter((o) => o === 'm').length === 2,
+        F.land.map((L) => L.nm).join(', '));
+  check('…its first battle has no chain in it, and the holding it takes is chained: the lesson the map is built for',
+        !camp.chained(own0, 2) && camp.chained(took, 2), 'Checker Town ' + camp.nbrs(2).map((j) => F.land[j].nm).join(' · '));
+  camp.newCampaign('easy', 'first', { fog: false, cards: false });
+  const G3 = camp.G;
+  G3.own[2] = 'm'; G3.ranks[2] = 4;
+  const r1 = camp.firstPlan();
+  G3.round = 2;
+  const r2 = camp.firstPlan();
+  check('he attacks once, in its first round, on the chained holding, and after that he holds',
+        r1.attacks.length === 1 && r1.attacks[0].from === 0 && r1.attacks[0].to === 2 && r2.attacks.length === 0 &&
+        r1.deploy.every((id) => id === 0), JSON.stringify(r1));
+  G3.log.first = [3, 2];
+  delete camp.store['pjcc.campaign.file.v1'];
+  camp.fileCampaign(true);
+  check('the first campaign never goes into his file', !camp.store['pjcc.campaign.file.v1']);
+  camp.useMap(camp.MAIN_MAP);
+  check('…and the ten come back after it, borders and all',
+        camp.nbrs(3).slice().sort().join() === '0,1,2,5,6' && camp.mapFor('solo') === camp.MAIN_MAP,
+        'Checker Town ' + camp.nbrs(3).slice().sort().join(','));
 }
 
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */
