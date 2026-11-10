@@ -85,6 +85,7 @@
     </div>
     <div class="row">
       <button class="btn btn-gold" id="start-btn" data-town-start>DESCEND</button>
+      <button class="btn btn-ghost" id="partner-btn">Alone</button>
     </div>
     <div class="row" style="margin-top:10px;">
       <button class="btn btn-ghost" id="camp-btn">⛺ SURFACE CAMP</button>
@@ -302,6 +303,8 @@ function newFloor(){
   }
   // fresh floor — reset the per-floor scoring trackers (hops, shovel use, clock)
   S.floorHops = 0; S.floorShovel = false; S.floorStart = Date.now();
+  // ⭐ A DIGGER AT HER SIDE: a shovel every floor
+  if (S.partnerPerk === 'shovel') S.shovels++;
   rocks = rocksFor(S.floor, S.depth);
   computeThreats();
   updateTrapped();   // fresh floor is open, but keeps S.trapped honest
@@ -312,8 +315,9 @@ function newGame(){
   const camp = loadCamp();
   const perks = camp.perks || {};
   const mh = 3 + (perks.maxhp || 0);
-  S = { rng: Math.random,
-        floor: 1, depth: 10, hp: mh, maxhp: mh, score: 0, goldRun: 0, best: loadBest(), phase: 'await', dead: false,
+  const pk = partner ? partnerOf(partner).perk : '';
+  S = { rng: Math.random, partnerPerk: pk,
+        floor: 1, depth: 10, hp: mh, maxhp: mh, score: 0, goldRun: 0, best: pk ? ((loadPerkBests()[pk] || {}).depth || 0) : loadBest(), phase: 'await', dead: false,
         shownLore: new Set(), enemies: [], gold: [], relics: [], holes: new Set(), threats: new Set(),
         shovels: (perks.shovel || 0), shovelArmed: false, reachFloors: 0, lanternFloors: 0,
         perks, metZero: false, combo: 0, trapped: false,
@@ -323,6 +327,7 @@ function newGame(){
   toast.t = -1;
   updateShovelBtn();
   doToast('DEPTH 10m', C.teal);
+  if (pk) doToast(partnerOf(partner).name + ' is with you: ' + PERK_SAY[pk] + '. This run keeps its own best.', C.teal);
 }
 
 // ---- Enemy AI ----
@@ -473,6 +478,14 @@ function resolveHop(from, cell){
   }
   const gi = S.gold.findIndex(g => g.x === cell.x && g.y === cell.y);
   if (gi >= 0){ S.gold.splice(gi, 1); S.score += 3; S.goldRun += 3; sfx('gold'); burst(center(cell.x, cell.y), C.gold); floater('⛏ +3', center(cell.x, cell.y), C.gold); }
+  // ⭐ A FETCHER AT HER SIDE: the gold beside where she lands comes too
+  if (S.partnerPerk === 'fetch'){
+    S.gold.slice().forEach(g => {
+      if ((g.x !== cell.x || g.y !== cell.y) && Math.max(Math.abs(g.x - cell.x), Math.abs(g.y - cell.y)) === 1){
+        S.gold.splice(S.gold.indexOf(g), 1); S.score += 3; S.goldRun += 3; burst(center(g.x, g.y), C.gold); floater('⛏ +3 fetched', center(g.x, g.y), C.gold);
+      }
+    });
+  }
   const ri = S.relics.findIndex(r => r.x === cell.x && r.y === cell.y);
   if (ri >= 0){ const r = S.relics.splice(ri, 1)[0]; applyRelic(r.type); }
 
@@ -563,12 +576,15 @@ function finishEnemyTurn(){
 }
 function gameOver(){
   S.dead = true; S.phase = 'dead';
-  if (S.depth > S.best){ S.best = S.depth; saveBest(S.best); }
-  const prevBestScore = loadBestScore();
+  // ⚠ A RUN WITH A PERK KEEPS ITS OWN BEST: the plain ones are what the ranked score and the Martyr's square read
+  const pk = S.partnerPerk, pb = loadPerkBests();
+  const prevBestScore = pk ? ((pb[pk] || {}).score || 0) : loadBestScore();
   const newBest = S.score > prevBestScore;
-  if (newBest) saveBestScore(S.score);
+  if (S.depth > S.best) S.best = S.depth;
+  if (pk){ const was = pb[pk] || { depth: 0, score: 0 }; pb[pk] = { depth: Math.max(was.depth, S.depth), score: Math.max(was.score, S.score) }; savePerkBests(pb); }
+  else { saveBest(Math.max(loadBest(), S.depth)); if (newBest) saveBestScore(S.score); }
   const camp = loadCamp(); camp.gold = (camp.gold || 0) + S.goldRun; saveCamp(camp);   // bank the run's gold
-  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.score, { credits: 1, data: { depth: S.depth, gold: S.goldRun, floor: S.floor } });
+  if (window.PJCC && !pk) PJCC.saveScore('sand-mine-depths', S.score, { credits: 1, data: { depth: S.depth, gold: S.goldRun, floor: S.floor } });
   sfx('dead');
   document.getElementById('menu-btn').classList.add('hidden');
   const shb = document.getElementById('shovel-btn'); if (shb) shb.classList.add('hidden');
@@ -1059,6 +1075,12 @@ function drawTorch(L){
   const ga = calm() ? 0.12 : 0.11 + 0.04 * Math.sin(ts * 9);
   gl.addColorStop(0, 'rgba(255,158,66,' + ga.toFixed(3) + ')'); gl.addColorStop(1, 'rgba(255,158,66,0)');
   ctx.fillStyle = gl; ctx.fillRect(x0, y0, w, h);
+  // ⭐ A NOSE AT HER SIDE: the way down shows through the dark
+  if (S.partnerPerk === 'sniff'){
+    const sc = center(S.shaft.x, S.shaft.y);
+    ctx.strokeStyle = 'rgba(91,224,192,0.9)'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(sc.x, sc.y, TILE * 0.55, 0, Math.PI * 2); ctx.stroke();
+  }
   ctx.restore();
 }
 function drawHUD(){
@@ -1173,6 +1195,25 @@ function buyPerk(id){
   showCamp();
 }
 
+// ⭐ A DOG AT HER SIDE (his 11-05, dog idea #6, as the game has it: DogBook.PERK_OF and PERK_SAY): Milo fetches the gold
+// beside her, Argus shows the way down in the dark; a terrier's shovel waits for a breed. Princess is the knight, so
+// never a partner. ⚠ A RUN WITH A PERK KEEPS ITS OWN BEST (pjcc.sandmine.perkbests.v1) and never sends a ranked score.
+const PARTNERS = [{ id: 'milo', name: 'Milo', perk: 'fetch' }, { id: 'argus', name: 'Argus', perk: 'sniff' }];
+const PERK_SAY = { shovel: 'a shovel every floor', sniff: 'the way down, in the dark', fetch: 'the gold beside her' };
+const PARTNER_KEY = 'pjcc.sandmine.partner.v1', PERKBEST_KEY = 'pjcc.sandmine.perkbests.v1';
+function partnerOf(id){ return PARTNERS.find(x => x.id === id) || null; }
+function loadPartner(){ try { const p = localStorage.getItem(PARTNER_KEY) || ''; return partnerOf(p) ? p : ''; } catch(e){ return ''; } }
+function savePartner(p){ try { localStorage.setItem(PARTNER_KEY, p); } catch(e){} }
+function loadPerkBests(){ try { return JSON.parse(localStorage.getItem(PERKBEST_KEY)) || {}; } catch(e){ return {}; } }
+function savePerkBests(o){ try { localStorage.setItem(PERKBEST_KEY, JSON.stringify(o)); } catch(e){} }
+let partner = loadPartner();
+function showPartner(){ document.getElementById('partner-btn').textContent = partner ? 'With ' + partnerOf(partner).name : 'Alone'; }
+document.getElementById('partner-btn').addEventListener('click', () => {
+  const ids = [''].concat(PARTNERS.map(x => x.id));
+  partner = ids[(ids.indexOf(partner) + 1) % ids.length];
+  savePartner(partner); showPartner();
+});
+showPartner();
 document.getElementById('start-btn').addEventListener('click', () => begin());
 document.getElementById('camp-btn').addEventListener('click', showCamp);
 /* ══ BACK TO CHECKER TOWN — 2026-09-23 ══════════════════════════════════════

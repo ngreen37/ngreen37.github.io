@@ -281,9 +281,10 @@
     <div class="btn-row" id="mode-row">
       <button class="pick sel" data-mode="coords">Drill<small>fixed run</small></button>
       <button class="pick" data-mode="endless">Endless<small>ramps up</small></button>
-      <!-- ⭐ PRINCESS'S PIRC, READ SQUARE BY SQUARE (his 11-03 dog-opening idea: "princess gets the Pirc"). The game's
-           table offers it too: "the website version should always match our game". -->
-      <button class="pick" data-mode="pirc">Pirc<small>Princess's opening</small></button>
+      <!-- ⭐ A DOG'S OPENING, READ SQUARE BY SQUARE (his 11-03: "princess gets the Pirc"; 11-05, dog idea #7: every dog's
+           opening gets a chart). Pressed again, it turns to the next dog's. The game's table offers the same charts:
+           "the website version should always match our game". -->
+      <button class="pick" data-mode="pirc" data-charts>Pirc<small>Princess's opening</small></button>
     </div>
 
     <div class="ov-group-label">Tempo</div>
@@ -447,12 +448,40 @@ const BEST_KEY = 'pjcc.notation.best.v1';
 function loadBests() { try { return JSON.parse(localStorage.getItem(BEST_KEY)) || {}; } catch (e) { return {}; } }
 function saveBests(o) { try { localStorage.setItem(BEST_KEY, JSON.stringify(o)); } catch (e) {} }
 
-// Opening lines — each ply is {san, sq}; sq is the destination square clicked.
+// Opening lines — each ply is {san, sq}; sq is the destination square clicked (a castle: the king's).
+// ⭐ A DOG'S OPENING IS A CHART (his 11-05, dog idea #7): `dog` and `short` put it on the chart button. Every call is the
+// referee's own SAN (test:town proves each line). Where the dog is White its moves are its bench system's, in the order
+// the table plays them (assets/js/pjcc-systems.js); its Black openings are their main lines.
 const OPENINGS = {
-  pirc: { label: 'Pirc Defense', line: [
+  pirc: { label: 'Pirc Defense', short: 'Pirc', dog: 'Princess', line: [
     ['e4','e4'],['d6','d6'],['d4','d4'],['Nf6','f6'],['Nc3','c3'],['g6','g6'],
     ['f4','f4'],['Bg7','g7'],['Nf3','f3'],['c6','c6'],['Bd3','d3'],['b5','b5'],
-    ['e5','e5'],['Nd7','d7'],['Ng5','g5'],['Nb6','b6'],
+    ['e5','e5'],['Nfd7','d7'],['Ng5','g5'],['Nb6','b6'],
+  ]},
+  catalan: { label: 'Catalan Opening', short: 'Catalan', dog: 'Princess', line: [
+    ['d4','d4'],['Nf6','f6'],['c4','c4'],['e6','e6'],['Nf3','f3'],['d5','d5'],
+    ['g3','g3'],['Be7','e7'],['Bg2','g2'],['O-O','g8'],['O-O','g1'],['dxc4','c4'],
+    ['Qc2','c2'],['a6','a6'],['Qxc4','c4'],['b5','b5'],
+  ]},
+  larsen: { label: 'Nimzo-Larsen Attack', short: 'Larsen', dog: 'Milo', line: [
+    ['b3','b3'],['d5','d5'],['Bb2','b2'],['Nf6','f6'],['e3','e3'],['e6','e6'],
+    ['Nf3','f3'],['Be7','e7'],['Be2','e2'],['O-O','g8'],['O-O','g1'],['c5','c5'],
+    ['d4','d4'],['Nc6','c6'],
+  ]},
+  slav: { label: 'Slav Defense', short: 'Slav', dog: 'Milo', line: [
+    ['d4','d4'],['d5','d5'],['c4','c4'],['c6','c6'],['Nf3','f3'],['Nf6','f6'],
+    ['Nc3','c3'],['dxc4','c4'],['a4','a4'],['Bf5','f5'],['e3','e3'],['e6','e6'],
+    ['Bxc4','c4'],['Bb4','b4'],
+  ]},
+  kia: { label: 'King\'s Indian Attack', short: 'KIA', dog: 'Argus', line: [
+    ['Nf3','f3'],['d5','d5'],['g3','g3'],['Nf6','f6'],['Bg2','g2'],['e6','e6'],
+    ['O-O','g1'],['Be7','e7'],['d3','d3'],['O-O','g8'],['Nbd2','d2'],['c5','c5'],
+    ['e4','e4'],['Nc6','c6'],
+  ]},
+  caro: { label: 'Caro-Kann Defense', short: 'Caro-Kann', dog: 'Argus', line: [
+    ['e4','e4'],['c6','c6'],['d4','d4'],['d5','d5'],['Nc3','c3'],['dxe4','e4'],
+    ['Nxe4','e4'],['Bf5','f5'],['Ng3','g3'],['Bg6','g6'],['h4','h4'],['h6','h6'],
+    ['Nf3','f3'],['Nd7','d7'],['h5','h5'],['Bh7','h7'],
   ]},
   italian: { label: 'Italian Game', line: [
     ['e4','e4'],['e5','e5'],['Nf3','f3'],['Nc6','c6'],['Bc4','c4'],['Bc5','c5'],
@@ -1493,9 +1522,18 @@ function updateTitleBest() {
   updateTrend();
 }
 
+// the dogs' charts, in the order the chart button turns through them
+const CHARTS = Object.keys(OPENINGS).filter(k => OPENINGS[k].dog);
+function chartTo(b, k) {
+  b.dataset.mode = k;
+  b.textContent = OPENINGS[k].short;
+  const s = document.createElement('small'); s.textContent = OPENINGS[k].dog + "'s opening"; b.appendChild(s);
+}
 var modeRow = document.getElementById('mode-row');
 if (modeRow) modeRow.addEventListener('click', e => {
   const b = e.target.closest('[data-mode]'); if (!b) return;
+  // ⭐ PRESSED AGAIN, THE CHART BUTTON TURNS TO THE NEXT DOG'S OPENING
+  if (b.hasAttribute('data-charts') && b.classList.contains('sel')) chartTo(b, CHARTS[(CHARTS.indexOf(b.dataset.mode) + 1) % CHARTS.length]);
   selMode = b.dataset.mode;
   document.querySelectorAll('#mode-row .pick').forEach(p => p.classList.toggle('sel', p === b));
   setEyebrow(); updateTitleBest();
