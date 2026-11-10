@@ -12,7 +12,9 @@
  *
  *  window.PJCCTownTable — a synchronous door, because the town calls it from an iframe:
  *    begin(key)    -> 'ok' | 'none'   a new game against that seat; Stockfish boots in the background
- *    think(json)   -> ticket | ''     json {key, fen0, moves, clock: {left, inc} | null, study}; their side to move
+ *    think(json)   -> ticket | ''     json {key, fen0, moves, clock: {left, inc} | null, study, off, elo, sys}; their side
+ *                                     to move. ⭐ off: OFF-SCRIPT (a dog's opening they did not know, the town's DogBook):
+ *                                     their system dropped, at `elo`. sys: the system they play instead of their own.
  *    take(ticket)  -> '' until they have moved, then JSON {uci, cp?, sys}
  *    finish(json)  -> 'ok'            json {key, side, result, moves, clean, study}: the site's own records
  */
@@ -64,8 +66,8 @@
     return Math.max(150, Math.floor(Math.min(want, left - 800)));
   }
   /* The Park Tables' botDial: the rating is the only dial, and it resolves to the negamax under 1400. */
-  function dialFor(s, S, clock) {
-    var eng = E(), elo = eloOf(s), ms = thinkFor(s, S, clock);
+  function dialFor(s, S, clock, off) {
+    var eng = E(), elo = off || eloOf(s), ms = thinkFor(s, S, clock);
     var persona = eng.personaForElo ? eng.personaForElo(elo) : null;
     if (persona) { persona.timeMs = ms; return { persona: persona, negamax: true, movetime: ms }; }
     return { skill: eng.skillForElo(elo), blunder: eng.blunderForElo(elo), movetime: ms };
@@ -104,9 +106,9 @@
     if (!g) return '';
     var S = g.S, tok = String(++seq), t0 = Date.now();
     /* ⭐ HIS SYSTEM FIRST, and fast but not instant — a third of his own pace, as at the Park Tables. */
-    if (!q.study && SYS()) {
+    if (!q.study && !q.off && SYS()) {
       try {
-        var id = S.turn === 'w' ? s.sys_w : s.sys_b;
+        var id = q.sys || (S.turn === 'w' ? s.sys_w : s.sys_b);
         var sm = id ? SYS().next(id, S, g.list) : null;
         var mv = sm ? C().findMove(S, sm.from, sm.to, sm.promo || null) : null;
         if (mv) {
@@ -116,7 +118,7 @@
         }
       } catch (e) {}
     }
-    E().move(S, dialFor(s, S, q.clock || null)).then(function (mv) {
+    E().move(S, dialFor(s, S, q.clock || null, q.off ? (+q.elo || 0) : 0)).then(function (mv) {
       if (mv && typeof mv.evalCp === 'number') {
         cps.push(mv.evalCp);
         if (dial && dialKey === q.key) { try { dial.note(mv.evalCp); } catch (e) {} }

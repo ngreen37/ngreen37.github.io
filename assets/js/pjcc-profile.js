@@ -704,6 +704,22 @@
       scout[i] = Math.max(+scout[i] || 0, +rs[i] || 0);
     }
     local.scouted = scout;
+    /* ⭐ THE DOGS (2026-11-05, his dog ideas): who came home and the ribbons are unions, a dog's games are its
+       more-played copy's, its best win the better one: the town's DogsPart.merge, from this side. `bring` and
+       `partner` are the latest push's. [[everything-earned-syncs]] */
+    var ld = local.dogs || {}, rdg = remote.dogs || {}, home = {}, dd = ld.dogs || {}, rdd = rdg.dogs || {};
+    (ld.found || []).concat(rdg.found || []).forEach(function (v) { home[v] = 1; });
+    for (i in rdd) {
+      if (!rdd.hasOwnProperty(i)) continue;
+      var dt = rdd[i] || {}, dm = dd[i] || {}, keep = (+dt.points || 0) > (+dm.points || 0) ? dt : dm, rib = {};
+      (dm.ribbons || []).concat(dt.ribbons || []).forEach(function (v) { rib[v] = 1; });
+      dd[i] = { points: +keep.points || 0, w: +keep.w || 0, l: +keep.l || 0, d: +keep.d || 0, rating: +keep.rating || 400,
+                best: (+((dt.best || {}).elo) || 0) > (+((dm.best || {}).elo) || 0) ? dt.best : (dm.best || {}),
+                ribbons: Object.keys(rib) };
+    }
+    local.dogs = { bring: rdg.bring !== undefined ? rdg.bring : (ld.bring || ''),
+                   partner: rdg.partner !== undefined ? rdg.partner : (ld.partner || ''),
+                   found: Object.keys(home), dogs: dd };
     /* ⚠⚠ EVERY OTHER FIELD THE TOWN SENDS, AND THE LIST HAS TO STAY COMPLETE. This function
        writes the fields it knows and DROPS the rest, so a field added to the town's push and
        not added here is a feature that silently does not sync — which is exactly what
