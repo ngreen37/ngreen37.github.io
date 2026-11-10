@@ -698,7 +698,7 @@ function drawCrowd(idx, roar){
 // Hand-mapped to the real strength config (Stockfish skill 0→20 via skillForRung, plus
 // the persona's blunder rate and think time) — not measured, but honest about the curve.
 var LADDER = [
-  { name:'The Checker Town Open Champion', seat:'Argus', glyph:'♟', accent:'#8fe3ff', region:'Checker Town', elo:350,
+  { name:'The Checker Town Open Champion', glyph:'♟', accent:'#8fe3ff', region:'Checker Town', elo:350, seat:'Argus',
     blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
     win:'Argus admits defeat. The reigning champion of Checker Town yields the road.',
     persona:{ depth:1, blunder:0.36, mat:1, pst:0.4, aggr:4, timeMs:220 },
