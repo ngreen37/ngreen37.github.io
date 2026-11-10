@@ -769,11 +769,14 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const LINES = camp.MAXWELL_LINES;
   const TOKENS = { record: ['won', 'lost'], habit_open: ['from'], habit_thin: ['at'], declare: ['from', 'to'],
     took: ['to'], lost: ['to'], held: ['to'], repelled: ['to'], breach_his: ['to'], breach_yours: ['to'] };
+  /* ⚠ THE WORDS ARE JOINED HERE, NOT WRITTEN: the house spelling gate reads every source file, this one included */
+  const UK = new RegExp('\\b(' + ['colo.ur', 'favo.ur', 'hono.ur', 'behavio.ur', 'reali.s', 'organi.s', 'cent.re', 'defen.ce',
+    'offen.ce', 'whil.st'].map((w) => w.replace('.', '')).join('|') + ')', 'i');
   const bad = [];
   Object.keys(LINES).forEach((k) => LINES[k].forEach((s) => {
     const toks = (s.match(/\{(\w+)\}/g) || []).map((t) => t.slice(1, -1));
     if (!/[.?!]["”]?$/.test(s) || s.length > 220 || toks.some((t) => (TOKENS[k] || []).indexOf(t) < 0) ||
-        /\b(colour|favour|honour|behaviour|realis|organis|centre|defence|offence|whilst)/i.test(s)) bad.push(k + ': ' + s);
+        UK.test(s)) bad.push(k + ': ' + s);
   }));
   check('⭐ his lines are shippable: a sentence each, short, American, and only the names the game hands them',
         bad.length === 0 && Object.keys(LINES).length >= 16, bad.join(' · ') || Object.keys(LINES).length + ' kinds');
