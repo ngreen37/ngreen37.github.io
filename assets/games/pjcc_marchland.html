@@ -2051,7 +2051,9 @@ function beginBattle(from, to, playerAttacks) {
   G.pending = { from:from, to:to, playerAttacks:playerAttacks, aRanks:PEND.aRanks }; saveCampaign();
 
   var two = G.mode === 'two', aName = sideName(G.own[from]), dName = sideName(G.own[to]);
-  $('screen-roll').classList.toggle('swap', two && G.own[from] === 't');
+  /* ⚠ THE RING SAYS WHOSE DIE IT IS, IN EVERY MODE (found porting it, 11-10): it swapped only for two players, so
+     Maxwell's dice wore your green whenever he attacked you */
+  $('screen-roll').classList.toggle('swap', G.own[from] === 't');
   $('roll-title').textContent = two ? aName + ' marches on ' + LAND[to].nm
     : playerAttacks ? 'You march on ' + LAND[to].nm
     : LAND[from].nm + ' marches on ' + LAND[to].nm;
