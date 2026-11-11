@@ -2,7 +2,7 @@
   "_generated": "GENERATED FILE — do not hand-edit. Source of truth is assets/games/pjcc_marchland.html; regenerate with `npm run gen:marchland`.",
   "_purpose": "Shared map + balance data. The browser game keeps these inline; a Godot build reads this file so both play the same tuned game.",
   "name": "ChessWild: Campaign",
-  "version": "0.5",
+  "version": "0.6",
   "holdings": [
     {
       "id": 0,
@@ -1002,6 +1002,128 @@
         ],
         "repelled": [
           "Fine. You keep it."
+        ]
+      }
+    }
+  },
+  "rules": {
+    "byName": {
+      "Endgame Flats": "endgame",
+      "Shogi Island": "drops"
+    },
+    "say": {
+      "endgame": {
+        "tag": "endgame",
+        "chip": "endgame · first queen wins",
+        "say": "An endgame: the first pawn to make a queen wins."
+      },
+      "drops": {
+        "tag": "drops",
+        "chip": "drops · takes come back",
+        "say": "A piece you take is yours to drop."
+      }
+    },
+    "egScale": 0.5,
+    "egCaps": {
+      "q": 0,
+      "r": 1,
+      "b": 1,
+      "n": 1,
+      "p": 6
+    },
+    "egPush": 14,
+    "drEdge": 10,
+    "clash": {
+      "endgame": {
+        "lo": -12,
+        "bin": 3,
+        "p": [
+          0.08,
+          0.08,
+          0.08,
+          0.08,
+          0.11,
+          0.18,
+          0.44,
+          0.67,
+          0.81,
+          1,
+          1,
+          1
+        ],
+        "ka": [
+          0.95,
+          0.95,
+          0.95,
+          0.95,
+          0.99,
+          0.96,
+          0.98,
+          0.99,
+          1,
+          1,
+          1,
+          1
+        ],
+        "kd": [
+          0.62,
+          0.62,
+          0.62,
+          0.62,
+          0.5,
+          0.54,
+          0.61,
+          0.68,
+          0.99,
+          0.99,
+          0.99,
+          0.99
+        ]
+      },
+      "drops": {
+        "lo": -12,
+        "bin": 3,
+        "p": [
+          0.08,
+          0.15,
+          0.16,
+          0.26,
+          0.36,
+          0.38,
+          0.45,
+          0.47,
+          0.6,
+          0.62,
+          0.82,
+          0.82
+        ],
+        "ka": [
+          1,
+          0.99,
+          0.99,
+          1,
+          0.99,
+          0.99,
+          0.98,
+          0.99,
+          0.99,
+          1,
+          1,
+          1
+        ],
+        "kd": [
+          0.9,
+          0.91,
+          0.9,
+          0.92,
+          0.91,
+          0.89,
+          0.89,
+          0.8,
+          0.75,
+          0.52,
+          0.4,
+          0.4
         ]
       }
     }

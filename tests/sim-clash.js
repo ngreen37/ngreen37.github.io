@@ -23,10 +23,14 @@ const N = +env('N', 3000);
 const WORKERS = Math.max(1, +env('WORKERS', 6));
 const ENGINE_MS = +env('ENGINE_MS', 25), SEC_PER_MOVE = +env('SEC_PER_MOVE', 1.7);
 const LO = +env('LO', -12), BIN = +env('BIN', 3), BINS = +env('BINS', 12);
+/* RULE: a place that fights its own chess (endgame | drops) — only battles for its ground; unset, only battles for ground
+   with no rule. EG_SCALE overrides the page's endgame budget scale, for the sweep. */
+const RULE = env('RULE', ''), EG = env('EG_SCALE', ''), DR = env('DR_EDGE', '');
 
 function worker(count, seed) {
   const camp = require(path.join(__dirname, 'campaign-vm.js')).load();
-  const C = camp.C;
+  if (EG !== '') camp.setEgScale(+EG);
+  if (DR !== '') camp.setDrEdge(+DR);
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
   const movesAtt = Math.max(1, Math.round(camp.CLOCK_ATT / EFF));
   const movesDef = Math.max(1, Math.round(camp.CLOCK_DEF / EFF));
@@ -40,17 +44,20 @@ function worker(count, seed) {
     for (let i = 0; i < camp.LAND.length; i++) { G.own[i] = rnd() < 0.5 ? 'm' : 't'; G.ranks[i] = 1 + pick(8); }
     G.walls = []; G.down = [];
     const opts = [];
-    camp.EDGES.forEach((e) => { if (G.own[e[0]] !== G.own[e[1]]) { opts.push([e[0], e[1]]); opts.push([e[1], e[0]]); } });
+    camp.EDGES.forEach((e) => {
+      if (G.own[e[0]] === G.own[e[1]]) return;
+      [[e[0], e[1]], [e[1], e[0]]].forEach((x) => { if (camp.ruleAt(x[1]) === RULE) opts.push(x); });
+    });
     if (!opts.length) { c--; continue; }
     const [from, to] = opts[pick(opts.length)];
     G.ranks[from] = 2 + pick(8);
     const P = camp.musterBattle(from, to, true);
-    let S = { b: P.board.slice(), turn: 'w', cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 };
+    let S = camp.battleState(P);
     let usedW = 0, usedB = 0, how = null;
     while (!how) {
       const mover = S.turn;
       if ((mover === 'w' && usedW >= movesAtt) || (mover === 'b' && usedB >= movesDef)) {
-        how = camp.loneKing(S.b, mover === 'w' ? 'b' : 'w') ? 'draw' : mover === 'w' ? 'flag-att' : 'flag-def';
+        how = camp.loneKing(S.b, mover === 'w' ? 'b' : 'w', S.hand) ? 'draw' : mover === 'w' ? 'flag-att' : 'flag-def';
         break;
       }
       const pk = camp.bestMove(S, ENGINE_MS, 3, 0, 0);
@@ -60,16 +67,18 @@ function worker(count, seed) {
       if (!m.promo && pc && pc.toLowerCase() === 'p' && ((m.to / 8 | 0) === 7 || (m.to / 8 | 0) === 0)) {
         m = { from: m.from, to: m.to, promo: mover === 'w' ? 'Q' : 'q' };
       }
-      S = C.makeMove(S, m);
+      S = camp.bMake(S, m);
       if (mover === 'w') usedW++; else usedB++;
-      const r = C.gameResult(S);
+      const r = camp.bResult(S);
       if (r === 'checkmate') { how = mover === 'w' ? 'mate-att' : 'mate-def'; break; }
+      if (r === 'queen-w' || r === 'queen-b') { how = r === 'queen-w' ? 'queen-att' : 'queen-def'; break; }
       if (r) { how = 'draw'; break; }
     }
-    const won = how === 'mate-att' || how === 'flag-def';
+    const won = how === 'mate-att' || how === 'flag-def' || how === 'queen-att';
     const am = camp.material(P.board, 'w'), dm = camp.material(P.board, 'b');
     process.stdout.write(JSON.stringify({ gap: am - dm, am, dm, won, how, castled: !!P.dInfo.castled, moved: P.aMoved,
-      ka: camp.keptShare(P.board, S.b, 'w'), kd: camp.keptShare(P.board, S.b, 'b'), a: P.aRanks, d: P.dRanks }) + '\n');
+      ka: camp.keptShare(P.board, S.b, 'w', S.hand), kd: camp.keptShare(P.board, S.b, 'b', S.hand), a: P.aRanks, d: P.dRanks,
+      plies: usedW + usedB }) + '\n');
   }
 }
 
@@ -115,7 +124,9 @@ if (process.env.SIM_WORKER) {
   (async () => {
     const t0 = Date.now();
     console.log(`=== CHESSWILD: CAMPAIGN — THE ODDS A MACHINES' BATTLE IS DECIDED AT ===`);
-    console.log(`  ${N} battles · engine ${ENGINE_MS}ms · ${SEC_PER_MOVE}s a move · bins of ${BIN} from ${LO}, ${BINS} of them`);
+    console.log(`  ${N} battles · engine ${ENGINE_MS}ms · ${SEC_PER_MOVE}s a move · bins of ${BIN} from ${LO}, ${BINS} of them` +
+                ` · ${RULE ? 'the ground of rule "' + RULE + '"' : 'ground with no rule'}${EG !== '' ? ' · EG_SCALE ' + EG : ''}` +
+                `${DR !== '' ? ' · DR_EDGE ' + DR : ''}`);
     const rs = await run();
     if (process.env.RAW) require('fs').writeFileSync(process.env.RAW, rs.map((r) => JSON.stringify(r)).join('\n') + '\n');
     const bins = Array.from({ length: BINS }, () => ({ n: 0, won: 0, ka: 0, kn: 0, kd: 0, dn: 0 }));
@@ -150,7 +161,9 @@ if (process.env.SIM_WORKER) {
     const ka = fill(bins.map((b) => (b.kn ? b.ka / b.kn : 0)), bins.map((b) => b.kn));
     const kd = fill(bins.map((b) => (b.dn ? b.kd / b.dn : 0)), bins.map((b) => b.dn));
     console.log('\n  For the page\'s CLASH (assets/games/pjcc_marchland.html), then `npm run gen:marchland`:\n');
-    console.log(`var CLASH = { lo: ${LO}, bin: ${BIN},`);
+    const plies = rs.reduce((s, r) => s + (r.plies || 0), 0) / Math.max(1, rs.length);
+    console.log(`  ${plies.toFixed(1)} plies a battle on average`);
+    console.log(RULE ? `CLASHES.${RULE} = { lo: ${LO}, bin: ${BIN},` : `var CLASH = { lo: ${LO}, bin: ${BIN},`);
     console.log(`  p:  [${p.map((x) => x.toFixed(2)).join(', ')}],`);
     console.log(`  ka: [${ka.map((x) => x.toFixed(2)).join(', ')}],`);
     console.log(`  kd: [${kd.map((x) => x.toFixed(2)).join(', ')}] };`);

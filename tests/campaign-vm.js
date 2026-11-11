@@ -28,7 +28,10 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   'GENERAL_LINES', 'multi', 'overFor',
   /* generals from your Assembly, and the war replayed (11-10) */
   'ORDERS', 'GENERALS', 'GENERAL_SAY', 'musterGenerals', 'orderOf', 'canOrder', 'giveOrder', 'held', 'barred',
-  'warBegin', 'warNote', 'warTurn', 'warEnd', 'betterWar', 'keepBest', 'loadBest', 'warFrames', 'BEST_KEY'];
+  'warBegin', 'warNote', 'warTurn', 'warEnd', 'betterWar', 'keepBest', 'loadBest', 'warFrames', 'BEST_KEY',
+  /* places that fight their own chess (11-11) */
+  'RULES', 'RULE_SAY', 'ruleAt', 'EG_CAPS', 'egBudget', 'CLASHES', 'DROP_ORDER', 'battleState', 'dropsOf', 'bLegal',
+  'bMake', 'bResult', 'handValue', 'evalPos', 'ordered', 'queened', 'EG_PUSH'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -41,6 +44,8 @@ function gameScript() {
     'set PEND(v) { PEND = v; }, setRNG: function (f) { RNG = f; }, get SURVIVE() { return SURVIVE; }, ' +
     'setSurvive: function (v) { SURVIVE = v; }, ' +
     'setWarWin: function (win) { WAR_WIN = win; }, get WAR_WIN() { return WAR_WIN; }, ' +
+    'setEgScale: function (v) { EG_SCALE = v; }, get EG_SCALE() { return EG_SCALE; }, ' +
+    'setDrEdge: function (v) { DR_EDGE = v; }, get DR_EDGE() { return DR_EDGE; }, ' +
     LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +
     EXPOSE.map((k) => k + ': ' + k).join(', ') + ' };\n';
   return src.slice(0, at) + hook + src.slice(at);

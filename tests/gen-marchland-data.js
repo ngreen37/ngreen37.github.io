@@ -76,7 +76,10 @@ function build() {
        is decided at, the line that ends it, the other generals' words), and the orders your Assembly gives */
     slice(src, 'var SIDES',          'function sidesFor') +
     slice(src, 'var GENERAL_LINES',  '/* a general\'s face and line') +
-    slice(src, 'var ORDERS',         'function assemblyNames');
+    slice(src, 'var ORDERS',         'function assemblyNames') +
+    /* 11-11, his #8: places that fight their own chess */
+    slice(src, 'var RULES',          '/* ⭐ THE MUSTER ON ITS OWN') +
+    slice(src, 'var CLASHES',        'function clashBin');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -87,7 +90,7 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.5',
+    version: '0.6',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice(), walls: G.START_WALLS.slice() },
@@ -136,6 +139,14 @@ function build() {
                         walls: G.WAR_START.four.walls.slice() }, win: G.WAR_WIN.four },
       clash: { lo: G.CLASH.lo, bin: G.CLASH.bin, p: G.CLASH.p.slice(), ka: G.CLASH.ka.slice(), kd: G.CLASH.kd.slice() },
       lines: G.GENERAL_LINES
+    },
+    /* places that fight their own chess: the rule by holding NAME, its words, the endgame's numbers, the drops' edge,
+       and each rule's measured odds for two machines' battle */
+    rules: {
+      byName: G.RULES,
+      say: Object.keys(G.RULE_SAY).reduce((o, k) => { const s = G.RULE_SAY[k];
+        o[k] = { tag: s.tag, chip: s.chip.replace(/&middot;/g, '·'), say: s.say }; return o; }, {}),
+      egScale: G.EG_SCALE, egCaps: G.EG_CAPS, egPush: G.EG_PUSH, drEdge: G.DR_EDGE, clash: G.CLASHES
     },
     /* your Assembly's generals: each order (named and worded HIS), who gives which, and what each says giving it */
     generals: {

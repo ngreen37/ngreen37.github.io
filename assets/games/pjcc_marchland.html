@@ -538,6 +538,23 @@
   .pc.b { color: var(--piece-b-fill); -webkit-text-stroke: .085em var(--piece-b-line);
     text-shadow: .035em .06em 0 rgba(0,0,0,.4); }
   .pc.lift { filter: drop-shadow(0 0 9px #6bffb8); }
+  /* a drop battle's hands (Shogi Island): yours a row of 44px buttons, theirs a strip unless a second player holds it */
+  .hand { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 3px 0; min-height: 22px; }
+  .hand.me, .hand.opp.two { min-height: 44px; }
+  .hand .hlab { font-size: 9px; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-3); margin-right: 2px; }
+  .hand .hnone { font-size: 10px; color: var(--ink-3); opacity: .7; }
+  .hand .hp { font: 900 20px/1 "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif; paint-order: stroke fill; }
+  .hand .hp.w { color: var(--piece-w-fill); -webkit-text-stroke: .085em var(--piece-w-line); }
+  .hand .hp.b { color: var(--piece-b-fill); -webkit-text-stroke: .085em var(--piece-b-line); }
+  .hand button.hp { min-width: 44px; min-height: 44px; padding: 0 6px; font-size: 26px; border-radius: 10px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.05); }
+  .hand button.hp:disabled { opacity: .45; cursor: default; }
+  .hand button.hp.on { border-color: var(--mine); box-shadow: 0 0 0 2px rgba(107,255,184,.35); }
+  .hand .hp sub { font: 700 11px/1 'Trebuchet MS', sans-serif; -webkit-text-stroke: 0; color: var(--ink-2); margin-left: 1px; }
+  /* the rule a holding fights under, over its disc */
+  .node .rtag { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+    font: 700 7.5px/1 'Trebuchet MS', sans-serif; letter-spacing: .6px; text-transform: uppercase; color: #ffd76e;
+    background: rgba(18,14,28,.88); border: 1px solid rgba(255,215,110,.45); border-radius: 6px; padding: 2px 4px; }
   /* a captured man is removed from the board, not from the screen — he fades where he fell */
   .pc.gone { opacity: 0; transform: translate(calc(var(--f) * 100%), calc(var(--r) * 100%)) scale(.6);
     transition: opacity .22s ease, transform .22s ease; }
@@ -696,6 +713,9 @@
       measured.<br>
       <b>Generals:</b> everyone whose square you have won in the town's Assembly gives you one order a campaign,
       on the map, one a round.<br>
+      <b>Endgame Flats and Shogi Island</b> fight their own chess. A battle for the Flats is an endgame: no queens,
+      at most one rook, one bishop and one knight a side, and <b>the first pawn to make a queen wins</b>. On Shogi Island
+      a piece you take joins your hand, and on your turn you can drop it on any empty square instead of moving.<br>
       <b>The war, replayed:</b> watch any campaign back when it ends. Your best one is framed below.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -791,10 +811,12 @@
          the army is the color the map, the tallies and the verdict already use for the other side. The bottom rail is
          your aura, same as every other room. -->
     <div class="vs-aura" id="mc-aura-opp" aria-hidden="true" style="--aura:#ff6e8a;--dir:1"><i></i></div>
+    <div class="hand opp" id="hand-opp" hidden></div>
     <div class="board" id="board">
       <div class="sqs" id="sqs"></div>
       <div class="men" id="men"></div>
     </div>
+    <div class="hand me" id="hand-me" hidden></div>
     <div class="vs-aura" id="mc-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
     <p class="ready" id="ready">&nbsp;</p>
     <p class="say" id="say">&nbsp;</p>
@@ -1042,7 +1064,7 @@ var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
   board: function () { return B && $('screen-battle').classList.contains('on') ? $('board') : null; },
   read: function () {
     if (!B) return null;
-    return { b: B.S.b, flip: false, last: B.last ? [B.last.from, B.last.to] : null, sel: B.sel,
+    return { b: B.S.b, flip: false, last: B.last ? [B.last.drop ? B.last.to : B.last.from, B.last.to] : null, sel: B.sel,
       dots: B.moves.map(function (m) { return m.to; }), turn: B.S.turn, hint: B.mate ? B.mate.sealed : [] };
   },
   /* ⭐ MAXWELL SITS ACROSS (his 11-10): every battle against Red; two players face each other, nobody between */
@@ -1682,6 +1704,83 @@ function applyDefenderPos(b, side, die) {
   return out;
 }
 
+/* ── DROPS (Shogi Island) ───────────────────────────────────────────────────────
+   S.hand = { w: {q,r,b,n,p}, b: … } and S.pr = { square: 1 } for a promoted man, who goes to the hand a pawn (shogi's
+   rule). A state with no S.hand is plain chess, and every function here hands it to the referee untouched.
+   ⚠ C.legalMoves knows nothing of hands: bLegal adds the drops, and bResult is the only mate test that sees them —
+   C.gameResult calls a blockable check mate. A drop never uncovers its own king, so only a side in check tests one. */
+var DROP_ORDER = ['q', 'r', 'b', 'n', 'p'];
+var DROP_NM = { q: 'queen', r: 'rook', b: 'bishop', n: 'knight', p: 'pawn' };
+function emptyHand() { return { q: 0, r: 0, b: 0, n: 0, p: 0 }; }
+function handValue(h) {
+  var s = 0;
+  if (h) for (var i = 0; i < DROP_ORDER.length; i++) s += (h[DROP_ORDER[i]] || 0) * VAL[DROP_ORDER[i]];
+  return s;
+}
+function battleState(P) {
+  var S = { b: P.board.slice(), turn: P.attWhite ? 'w' : 'b', cast: { K: false, Q: false, k: false, q: false },
+            ep: -1, half: 0, full: 1 };
+  if (P.rule === 'drops') { S.hand = { w: emptyHand(), b: emptyHand() }; S.pr = {}; }
+  if (P.rule === 'endgame') S.eg = true;
+  return S;
+}
+/* the endgame's win: an army mustered with no queen has one only by promoting, and the game ends on the first */
+function queened(S) {
+  for (var i = 0; i < 64; i++) { if (S.b[i] === 'Q') return 'w'; if (S.b[i] === 'q') return 'b'; }
+  return '';
+}
+function kdist(a, b) { return Math.max(Math.abs((a >> 3) - (b >> 3)), Math.abs((a & 7) - (b & 7))); }
+/* near: the machine's list, squares within two of the enemy king or one of its own — every other drop is a branch a
+   fifteen-second search cannot afford. ⚠ In check it gets every legal drop, or it calls a blockable check mate. */
+function dropsOf(S, near) {
+  var me = S.turn, h = S.hand && S.hand[me], out = [];
+  if (!handValue(h)) return out;
+  var chk = C.inCheck(S, me), ek = -1, mk = -1;
+  if (near && !chk) { ek = C.kingSq(S.b, me === 'w' ? 'b' : 'w'); mk = C.kingSq(S.b, me); }
+  for (var t = 0; t < DROP_ORDER.length; t++) {
+    var k = DROP_ORDER[t];
+    if (!h[k]) continue;
+    for (var i = 0; i < 64; i++) {
+      if (S.b[i]) continue;
+      if (k === 'p' && (i < 8 || i >= 56)) continue;
+      if (ek >= 0 && kdist(i, ek) > 2 && kdist(i, mk) > 1) continue;
+      if (chk) {
+        var b = S.b.slice(); b[i] = me === 'w' ? k.toUpperCase() : k;
+        if (C.inCheck({ b: b, turn: me }, me)) continue;
+      }
+      out.push({ from: -1, to: i, drop: k });
+    }
+  }
+  return out;
+}
+function bLegal(S) { var ms = C.legalMoves(S); return S.hand ? ms.concat(dropsOf(S, false)) : ms; }
+function bMake(S, m) {
+  if (!S.hand) { var n0 = C.makeMove(S, m); if (S.eg) n0.eg = true; return n0; }   // ⚠ the referee drops unknown keys
+  var me = S.turn, hand = { w: Object.assign({}, S.hand.w), b: Object.assign({}, S.hand.b) }, pr = Object.assign({}, S.pr);
+  if (m.drop) {
+    var b = S.b.slice();
+    b[m.to] = me === 'w' ? m.drop.toUpperCase() : m.drop;
+    hand[me][m.drop]--;
+    return { b: b, turn: me === 'w' ? 'b' : 'w', cast: S.cast, ep: -1, half: (S.half || 0) + 1,
+             full: (S.full || 1) + (me === 'b' ? 1 : 0), hand: hand, pr: pr };
+  }
+  var at = m.ep ? m.to + (me === 'w' ? 8 : -8) : m.to, cap = S.b[at];
+  if (cap) hand[me][pr[at] ? 'p' : cap.toLowerCase()]++;
+  delete pr[at];
+  if (pr[m.from] || m.promo) pr[m.to] = 1;
+  delete pr[m.from];
+  var ns = C.makeMove(S, m);
+  ns.hand = hand; ns.pr = pr;
+  return ns;
+}
+function bResult(S) {
+  if (S.eg && queened(S)) return 'queen-' + queened(S);
+  if (!S.hand || !(handValue(S.hand.w) + handValue(S.hand.b))) return C.gameResult(S);
+  if (!bLegal(S).length) return C.inCheck(S, S.turn) ? 'checkmate' : 'stalemate';
+  if ((S.half || 0) >= 100) return 'fifty';
+  return null;
+}
+
 /* ── THE ENGINE ────────────────────────────────────────────────────────────────
    Alpha-beta negamax over the real referee. Small armies, so depth 3 is comfortable;
    iterative deepening with a time budget means a crowded position degrades to a
@@ -1697,12 +1796,20 @@ function evalPos(S, me) {
     var r = (i / 8) | 0, f = i % 8;
     var center = 6 - (Math.abs(3.5 - r) + Math.abs(3.5 - f));
     v += center * 2;
+    if (S.eg && (p === 'P' || p === 'p')) v += (p === 'P' ? 6 - r : r - 1) * EG_PUSH;   // the race the Flats are won by
     s += (mine === me) ? v : -v;
   }
+  if (S.hand) s += handEval(S.hand[me]) - handEval(S.hand[me === 'w' ? 'b' : 'w']);
   return s;
 }
+function handEval(h) { var s = 0; for (var i = 0; i < DROP_ORDER.length; i++) s += (h[DROP_ORDER[i]] || 0) * EV[DROP_ORDER[i]]; return s; }
 function ordered(S) {
   var ms = C.legalMoves(S);
+  if (S.hand) {
+    var d = dropsOf(S, true);
+    if (!ms.length && !d.length) d = dropsOf(S, false);   // ⚠ near-only, a side with a far drop left reads as stalemated
+    ms = ms.concat(d);
+  }
   ms.sort(function (a, b) {
     var ca = S.b[a.to] ? (EV[S.b[a.to].toLowerCase()] || 0) : 0;
     var cb = S.b[b.to] ? (EV[S.b[b.to].toLowerCase()] || 0) : 0;
@@ -1716,6 +1823,7 @@ function ordered(S) {
    it backwards and the engine confidently plays the WORST move it can find. */
 function negamax(S, depth, alpha, beta, deadline) {
   if (Date.now() > deadline) return null;
+  if (S.eg && queened(S)) return -99999 - depth;       // the side that just moved made a queen: it is over, lost here
   var ms = ordered(S);
   // no legal moves: mated (terrible for the side to move) or stalemate (level).
   // `- depth` prefers a mate delivered sooner over the same mate delivered later.
@@ -1723,7 +1831,7 @@ function negamax(S, depth, alpha, beta, deadline) {
   if (depth === 0) return evalPos(S, S.turn);
   var best = -1e9;
   for (var i = 0; i < ms.length; i++) {
-    var v = negamax(C.makeMove(S, ms[i]), depth - 1, -beta, -alpha, deadline);
+    var v = negamax(bMake(S, ms[i]), depth - 1, -beta, -alpha, deadline);
     if (v === null) return null;
     v = -v;
     if (v > best) best = v;
@@ -1746,7 +1854,7 @@ function bestMove(S, budgetMs, maxDepth, slip, slipCp) {
   for (var d = 1; d <= (maxDepth || 3); d++) {
     var scored = [], aborted = false;
     for (var i = 0; i < ms.length; i++) {
-      var v = negamax(C.makeMove(S, ms[i]), d - 1, -1e9, 1e9, deadline);
+      var v = negamax(bMake(S, ms[i]), d - 1, -1e9, 1e9, deadline);
       if (v === null) { aborted = true; break; }
       scored.push({ mv: ms[i], val: -v });
     }
@@ -1769,14 +1877,15 @@ function bestMove(S, budgetMs, maxDepth, slip, slipCp) {
 }
 
 /* ── MATERIAL (the timeout rule) ──────────────────────────────────────────────── */
-function material(b, side) {
+/* hand: a drop battle's S.hand — a piece in hand is still the army's */
+function material(b, side, hand) {
   var s = 0;
   for (var i = 0; i < 64; i++) {
     var p = b[i]; if (!p) continue;
     var c = (p >= 'A' && p <= 'Z') ? 'w' : 'b';
     if (c === side) s += (VAL[p.toLowerCase()] || 0);
   }
-  return s;
+  return s + (hand ? handValue(hand[side]) : 0);
 }
 
 /* ══ WHAT'S LEFT ON THE BOARD MARCHES IN ═══════════════════════════════════════════
@@ -1792,9 +1901,9 @@ function material(b, side) {
    to 9%. */
 var SURVIVE = 'win';
 /* the share of its points a side still has standing, 0..1 (a promotion never makes a troop) */
-function keptShare(start, end, color) {
+function keptShare(start, end, color, hand) {
   var a = start && end ? material(start, color) : 0;
-  return a ? Math.min(1, material(end, color) / a) : 1;
+  return a ? Math.min(1, material(end, color, hand) / a) : 1;
 }
 
 /* ── SCREENS ───────────────────────────────────────────────────────────────────── */
@@ -1928,9 +2037,10 @@ function drawMap() {
     el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(o) : mine ? 'yours' : multi() ? generalOf(o).who + '’s' : 'theirs') + ', ' +
       (fog ? 'troops unknown' : G.ranks[L.id] + ' troop' + (G.ranks[L.id] === 1 ? '' : 's')) +
       (chained(G.own, L.id) || held(L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : '') +
-      (walled(L.id) ? (breached(L.id) ? ', walls down' : ', walled') : ''));
+      (walled(L.id) ? (breached(L.id) ? ', walls down' : ', walled') : '') + (ruleAt(L.id) ? ', ' + RULE_SAY[ruleAt(L.id)].tag : ''));
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
-    el.innerHTML = '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>' +
+    el.innerHTML = (ruleAt(L.id) ? '<span class="rtag">' + RULE_SAY[ruleAt(L.id)].tag + '</span>' : '') +
+      '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>' +
       (G.dogId && G.dog === L.id && G.mode !== 'two' ? dogTag(G.dogId) : '');
     el.addEventListener('click', function () { tapLand(L.id); });
     box.appendChild(el);
@@ -2116,6 +2226,26 @@ var GLY = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
 var rollTimers = [];
 function clearRollTimers() { rollTimers.forEach(clearTimeout); rollTimers = []; }
 
+/* ══ PLACES THAT FIGHT THEIR OWN CHESS ══════════════════════════════════════════════════
+   ⚑ His #8, 11-11 ("Go with option B"): a battle plays the rule of the ground it is fought for.
+   endgame · the dice still decide who brings more: no queens, one rook, bishop and knight at most, and THE FIRST PAWN
+             TO MAKE A QUEEN WINS (mate still does). ⚠ MEASURED WITHOUT IT (sim:clash, 300 a point, 11-11): 3% of attacks
+             took the ground at any budget — nobody mates with a rook inside fifteen seconds, so the Flats never fell.
+   drops   · a piece you take joins your hand; on your turn, drop one on an empty square instead of moving
+   ⚠ KEYED BY NAME: the war maps renumber the holdings, and a rule keyed by id lands on the wrong ground there.
+   ⭐ The third place is his to pick: one more line in RULES. */
+var RULES = { 'Endgame Flats': 'endgame', 'Shogi Island': 'drops' };
+var RULE_SAY = {
+  endgame: { tag: 'endgame', chip: 'endgame &middot; first queen wins', say: 'An endgame: the first pawn to make a queen wins.' },
+  drops:   { tag: 'drops', chip: 'drops &middot; takes come back', say: 'A piece you take is yours to drop.' }
+};
+function ruleAt(id) { return LAND[id] ? RULES[LAND[id].nm] || '' : ''; }
+var EG_SCALE = 0.5;
+var EG_CAPS = { q: 0, r: 1, b: 1, n: 1, p: 6 };
+var EG_PUSH = 14;           // centipawns a rank for a pawn on the Flats, so the machine runs the race it is judged by
+function egBudget(v) { return Math.max(1, Math.round(v * EG_SCALE)); }
+var DR_EDGE = 10;           // points off the attacker's budget in a drop battle: a take comes back, so the edge is worth more
+
 /* ⭐ THE MUSTER ON ITS OWN (2026-11-10): the dice, the budgets, the armies and the board, and nothing on the screen.
    The whole-campaign sim (tests/sim-campaign.js) and the town's port play it as the page does. */
 function musterBattle(from, to, playerAttacks) {
@@ -2139,8 +2269,11 @@ function musterBattle(from, to, playerAttacks) {
 
   var aMat = bestOf(aMatPool), aPos = bestOf(aPosPool);
   var dMat = bestOf(dMatPool), dPos = bestOf(dPosPool);
+  var rule = ruleAt(to);
   var aBud = matBudget(aMat, aRanks, false);
   var dBud = matBudget(dMat, dRanks, true);
+  if (rule === 'endgame') { aBud = egBudget(aBud); dBud = egBudget(dBud); }
+  else if (rule === 'drops') aBud = Math.max(1, aBud - DR_EDGE);
   /* ⛑ THE SECOND QUEEN'S THREE CONDITIONS, ASSEMBLED HERE — 2026-08-25 (see capsFor).
      Each chair is asked about ITS OWN chained ground and ITS OWN material die: an attacker
      who has strung three holdings together and rolled the top face can field two queens, and
@@ -2151,8 +2284,8 @@ function musterBattle(from, to, playerAttacks) {
      follows it, instead of silently becoming unreachable (or free). */
   var aPerfect = aMat === FACES, dPerfect = dMat === FACES;
   var aChained = chainCount(G.own, G.own[from]), dChained = chainCount(G.own, G.own[to]);
-  var aArmy = draw('aa', function () { return muster(aBud, capsFor(aRanks, aChained, aPerfect)); }),
-      dArmy = draw('da', function () { return muster(dBud, capsFor(dRanks, dChained, dPerfect)); });
+  var aArmy = draw('aa', function () { return muster(aBud, rule === 'endgame' ? EG_CAPS : capsFor(aRanks, aChained, aPerfect)); }),
+      dArmy = draw('da', function () { return muster(dBud, rule === 'endgame' ? EG_CAPS : capsFor(dRanks, dChained, dPerfect)); });
 
   /* ⚑ THE BOARD IS BUILT HERE, NOT AT THE START OF THE BATTLE (2026-08-24). It has to be,
      because the roll screen now SHOWS it — and a preview that re-rolled on the way to the
@@ -2171,7 +2304,7 @@ function musterBattle(from, to, playerAttacks) {
            aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos, aMat:aMat, dMat:dMat,
            aBud:aBud, dBud:dBud, board:board, dInfo:dInfo, aMoved:aMoved, attWhite:attWhite,
            aMatPool:aMatPool, aPosPool:aPosPool, dMatPool:dMatPool, dPosPool:dPosPool,
-           dChain:dChain };
+           dChain:dChain, rule:rule };
 }
 function beginBattle(from, to, playerAttacks) {
   G.busy = true;
@@ -2195,6 +2328,7 @@ function beginBattle(from, to, playerAttacks) {
      the game that rewards how you hold the map was invisible at the moment it paid out. */
   $('def-label').innerHTML = (two ? dName + ' defends' : playerAttacks ? foe + ' defends' : 'You defend') + ' · ' + LAND[to].nm +
     (PEND.dChain ? '<em class="chainchip">chained &middot; +1 die</em>' : '') +
+    (PEND.rule ? '<em class="chainchip">' + RULE_SAY[PEND.rule].chip + '</em>' : '') +
     (walled(to) ? '<em class="chainchip wallchip">' + (breached(to) ? 'walls down &middot; a win takes it'
                                                                    : 'walled &middot; a win breaks the walls') + '</em>' : '');
 
@@ -2535,9 +2669,10 @@ function startBattle() {
   // the player is ALWAYS White at the bottom — orientation should never flip under you.
   var attWhite = p.attWhite;
   B = {
-    S: { b: p.board.slice(), turn: attWhite ? 'w' : 'b',
-         cast:{K:false,Q:false,k:false,q:false}, ep:-1, half:0, full:1 },
+    S: battleState(p),
     sel: -1, moves: [], last: null, over: false, timer: null, running: false,
+    dsel: '',                                            // the piece type picked out of the hand to drop
+    rule: p.rule || '',
     attWhite: attWhite,
     clk: { w: attWhite ? CLOCK_ATT : CLOCK_DEF, b: attWhite ? CLOCK_DEF : CLOCK_ATT },
     tLast: Date.now(), turnStart: 0,
@@ -2557,18 +2692,19 @@ function startBattle() {
   seedMen();
   paint();
   updateClock();
-  $('say').innerHTML = B.two
+  $('say').innerHTML = (B.rule ? '<b>' + LAND[p.to].nm + ':</b> ' + RULE_SAY[B.rule].say + ' ' : '') + (B.two
     ? '<b>' + sideName(B.wSide) + '</b> attacks from the bottom. <b>' + sideName(B.bSide) + '</b> defends from the top.'
     : G.mode === 'first' && p.playerAttacks
     ? '<b>' + RIVAL.who + ':</b> ' + lineFor('teach_battle')
     : p.playerAttacks
     ? 'You attack. <b>Force it, or the attack stalls.</b>'
     : 'You defend. <b>Outlast their fifteen seconds.</b>' +
-      (p.dInfo.castled ? ' Your king is castled.' : '');
+      (p.dInfo.castled ? ' Your king is castled.' : ''));
   $('ready').textContent = 'READY…';
   B.revealTimer = setTimeout(goLive, REVEAL_MS);
 }
-function loneKing(b, side) {
+function loneKing(b, side, hand) {
+  if (hand && handValue(hand[side])) return false;     // a piece in hand can still be dropped to mate
   for (var i = 0; i < 64; i++) { var p = b[i]; if (p && ((p >= 'A' && p <= 'Z') ? 'w' : 'b') === side && p.toLowerCase() !== 'k') return false; }
   return true;
 }
@@ -2606,7 +2742,7 @@ function tickClock() {
     B.clk[B.S.turn] = 0;
     updateClock();
     /* a flag only loses to a side that could still mate — a lone king cannot, so it is a draw */
-    if (loneKing(B.S.b, B.S.turn === 'w' ? 'b' : 'w')) { finish('draw-flag'); return; }
+    if (loneKing(B.S.b, B.S.turn === 'w' ? 'b' : 'w', B.S.hand)) { finish('draw-flag'); return; }
     var attFlagged = (B.S.turn === 'w') === B.attWhite;
     finish(attFlagged ? 'time-att' : 'time-def');
     return;
@@ -2633,7 +2769,7 @@ function updateClock() {
     '<span class="' + (live === 'b' && B.running ? 'run' : 'idle') + '">' + fmt(theirs) + '</span>';
   var low = B.clk[live];
   el.className = 'clock' + (!B.running ? '' : low <= 4 ? ' crit' : low <= 8 ? ' warn' : '');
-  var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
+  var mw = material(B.S.b, 'w', B.S.hand), mb = material(B.S.b, 'b', B.S.hand);
   if (B.two) {
     $('mat').innerHTML = sideName(B.wSide) + ' <b style="color:' + sideColor(B.wSide) + '">' + mw + '</b> &middot; ' +
       sideName(B.bSide) + ' <b style="color:' + sideColor(B.bSide) + '">' + mb + '</b>';
@@ -2678,8 +2814,8 @@ function makeMan(sq, arriving) {
    has a piece" gets both right without a branch for either. */
 function syncIds(mv) {
   var next = new Array(64).fill(0), i;
-  next[mv.to] = B.ids[mv.from] || makeManDetached(mv.to);
-  B.ids[mv.from] = 0;
+  if (mv.drop) { next[mv.to] = makeMan(mv.to, true); B.els[next[mv.to]].style.animationDelay = '0ms'; }
+  else { next[mv.to] = B.ids[mv.from] || makeManDetached(mv.to); B.ids[mv.from] = 0; }
   for (i = 0; i < 64; i++) {
     if (i === mv.to) continue;
     if (B.S.b[i] && B.ids[i]) next[i] = B.ids[i];
@@ -2741,7 +2877,42 @@ function paint() {
     var g = GLY[pc.toLowerCase()];
     if (el.textContent !== g) el.textContent = g;      // a promotion, and only then
   }
+  paintHands();
 }
+/* a drop battle's two hands: yours under the board, theirs over it. Theirs is a row of buttons only for a second player. */
+function paintHands() {
+  var on = !!(B && B.S.hand);
+  ['opp', 'me'].forEach(function (row) {
+    var el = $('hand-' + row);
+    el.hidden = !on;
+    if (!on) return;
+    var side = row === 'me' ? 'w' : 'b', h = B.S.hand[side];
+    var live = !B.over && B.S.turn === side && (side === 'w' || B.two), html = '';
+    DROP_ORDER.forEach(function (t) {
+      if (!h[t]) return;
+      var g = GLY[t] + (h[t] > 1 ? '<sub>' + h[t] + '</sub>' : '');
+      html += side === 'b' && !B.two
+        ? '<span class="hp b">' + g + '</span>'
+        : '<button class="hp ' + side + (live && B.dsel === t ? ' on' : '') + '" data-t="' + t + '"' + (live ? '' : ' disabled') +
+          ' aria-label="' + DROP_NM[t] + ' in hand' + (h[t] > 1 ? ', ' + h[t] : '') + '">' + g + '</button>';
+    });
+    el.classList.toggle('two', !!B.two);
+    el.innerHTML = '<span class="hlab">' + (side === 'w' ? (B.two ? sideName(B.wSide) : 'Your hand') : (B.two ? sideName(B.bSide) : 'Their hand')) +
+      '</span>' + (html || '<span class="hnone">empty</span>');
+  });
+}
+['me', 'opp'].forEach(function (row) {
+  $('hand-' + row).addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-t]') : null, side = row === 'me' ? 'w' : 'b';
+    if (!t || !B || B.over || !B.S.hand || B.S.turn !== side || (side === 'b' && !B.two)) return;
+    if (!B.running) { goLive(); return; }
+    var k = t.getAttribute('data-t');
+    B.sel = -1;
+    B.dsel = B.dsel === k ? '' : k;
+    B.moves = B.dsel ? dropsOf(B.S, false).filter(function (m) { return m.drop === k; }) : [];
+    paint();
+  });
+});
 
 function onSquare(e) {
   if (B.over || (B.S.turn !== 'w' && !B.two)) return;
@@ -2752,6 +2923,7 @@ function onSquare(e) {
   var mv = B.moves.filter(function (m) { return m.to === i; })[0];
   if (mv) { applyMove(mv); return; }
   var p = B.S.b[i];
+  B.dsel = '';
   if (p && ((p >= 'A' && p <= 'Z') ? 'w' : 'b') === B.S.turn) {
     if (B.sel === i) { B.sel = -1; B.moves = []; }
     else { B.sel = i; B.moves = C.legalMoves(B.S).filter(function (m) { return m.from === i; }); }
@@ -2768,13 +2940,14 @@ function applyMove(m) {
     if (row === 0 || row === 7) m = autoPromo(B.S, m, p === 'P');
   }
   var mover = B.S.turn;
-  B.S = C.makeMove(B.S, m);
+  B.S = bMake(B.S, m);
   syncIds(m);
-  B.last = m; B.sel = -1; B.moves = [];
+  B.last = m; B.sel = -1; B.moves = []; B.dsel = '';
   creditDelay(mover);
   paint(); updateClock(); moveSound(m);
-  var res = C.gameResult(B.S);
+  var res = bResult(B.S);
   if (res === 'checkmate') { finish(B.S.turn === 'w' ? 'lost-mate' : 'won-mate'); return; }
+  if (res === 'queen-w' || res === 'queen-b') { finish(res === 'queen-w' ? 'won-queen' : 'lost-queen'); return; }
   if (res) { finish('draw'); return; }
   if (B.two) { $('say').innerHTML = C.inCheck(B.S, B.S.turn) ? '<b>Check.</b>' : '&nbsp;'; return; }
   if (B.S.turn === 'b' && !B.over) scheduleAI();
@@ -2785,9 +2958,9 @@ function applyMove(m) {
    ⚠ playerAttacks means "White attacks" (the player is White; in two-player White always attacks). */
 function autoPromo(S, m, white) {
   var q = { from:m.from, to:m.to, promo:white ? 'Q' : 'q' };
-  if (!!(PEND && PEND.playerAttacks) !== white || C.gameResult(C.makeMove(S, q)) !== 'stalemate') return q;
+  if (S.eg || !!(PEND && PEND.playerAttacks) !== white || bResult(bMake(S, q)) !== 'stalemate') return q;
   var r = { from:m.from, to:m.to, promo:white ? 'R' : 'r' };
-  return C.gameResult(C.makeMove(S, r)) === 'stalemate' ? q : r;
+  return bResult(bMake(S, r)) === 'stalemate' ? q : r;
 }
 
 /* ── THE MACHINE ───────────────────────────────────────────────────────────────────
@@ -2830,13 +3003,14 @@ function playAI(m) {
   if (!m.promo && p && p.toLowerCase() === 'p' && ((m.to / 8 | 0) === 7 || (m.to / 8 | 0) === 0)) {
     m = { from:m.from, to:m.to, promo:'q' };
   }
-  B.S = C.makeMove(B.S, m);
+  B.S = bMake(B.S, m);
   syncIds(m);
   B.last = m;
   creditDelay('b');
   paint(); updateClock(); moveSound(m);
-  var res = C.gameResult(B.S);
+  var res = bResult(B.S);
   if (res === 'checkmate') { finish('lost-mate'); return; }
+  if (res === 'queen-b') { finish('lost-queen'); return; }
   if (res) { finish('draw'); return; }
   $('say').innerHTML = C.inCheck(B.S, 'w') ? '<b>Check.</b>' : '&nbsp;';
 }
@@ -2852,6 +3026,9 @@ function finish(how) {
 
   if (how === 'won-mate')      { playerWon = true;  line = 'Checkmate. The field is yours.'; }
   else if (how === 'lost-mate'){ playerWon = false; line = 'Checkmate. Your king is taken.'; }
+  /* the Flats: 'won-queen' is always White's pawn, as 'won-mate' is always Black mated */
+  else if (how === 'won-queen') { playerWon = true;  line = 'Your pawn made a queen. The field is yours.'; }
+  else if (how === 'lost-queen'){ playerWon = false; line = 'Their pawn made a queen first.'; }
   /* two players: the side to move is the one giving up */
   else if (how === 'resign')   { playerWon = !!B.two && B.S.turn === 'b'; line = 'You withdrew from the field.'; }
   else if (how === 'draw')     {
@@ -2884,8 +3061,8 @@ function finish(how) {
      the side to move) */
   var aCol = p.attWhite ? 'w' : 'b';
   var gone = how === 'won-mate' ? 'b' : how === 'lost-mate' ? 'w' : how === 'resign' ? (B.two ? B.S.turn : 'w') : null;
-  var breach = resolveLand(p, attackerWon, { a: keptShare(p.board, B.S.b, aCol),
-    d: keptShare(p.board, B.S.b, aCol === 'w' ? 'b' : 'w'), rout: gone ? (gone === aCol ? 'att' : 'def') : null });
+  var breach = resolveLand(p, attackerWon, { a: keptShare(p.board, B.S.b, aCol, B.S.hand),
+    d: keptShare(p.board, B.S.b, aCol === 'w' ? 'b' : 'w', B.S.hand), rout: gone ? (gone === aCol ? 'att' : 'def') : null });
   warNote(p, G.own[p.from], attackerWon, breach, how === 'won-mate' || how === 'lost-mate' ? B.S.b : null);
 
   /* one word for what happened to the GROUND, from your side of the table.
@@ -2900,6 +3077,8 @@ function finish(how) {
     cls = (attackerWon ? B.wSide : B.bSide) === 'm' ? 'win' : 'lose';
     if (how === 'won-mate') line = 'Checkmate. ' + LAND[p.to].nm + ' changes hands.';
     else if (how === 'lost-mate') line = 'Checkmate. The attack is broken.';
+    else if (how === 'won-queen') line = 'A pawn made a queen. ' + LAND[p.to].nm + ' changes hands.';
+    else if (how === 'lost-queen') line = 'A pawn made a queen. The attack is broken.';
     else if (how === 'resign') line = (playerWon ? def : att) + ' gave up the fight.';
   }
   /* ⚠ A BREACH IS A WON BATTLE THAT TOOK NOTHING, and the card has to say so in the same
@@ -3387,16 +3566,28 @@ function nextSide(side) {
   for (var i = at + 1; i < G.sides.length; i++) if (G.sides[i] !== 'm' && alive(G.sides[i])) return G.sides[i];
   return '';
 }
-function clashBin(gap) { return Math.max(0, Math.min(CLASH.p.length - 1, Math.floor((gap - CLASH.lo) / CLASH.bin))); }
+/* a place that fights its own chess has its own odds, measured the same way (`RULE=endgame npm run sim:clash`).
+   MEASURED 11-11, 3,000 battles a rule: 36.2% of attacks took the Flats (34% by a queen) and 35.7% the Island, against
+   40% on plain ground — the defender's own terrain, by four points. */
+var CLASHES = {
+  endgame: { lo: -12, bin: 3,
+    p:  [0.08, 0.08, 0.08, 0.08, 0.11, 0.18, 0.44, 0.67, 0.81, 1.00, 1.00, 1.00],
+    ka: [0.95, 0.95, 0.95, 0.95, 0.99, 0.96, 0.98, 0.99, 1.00, 1.00, 1.00, 1.00],
+    kd: [0.62, 0.62, 0.62, 0.62, 0.50, 0.54, 0.61, 0.68, 0.99, 0.99, 0.99, 0.99] },
+  drops: { lo: -12, bin: 3,
+    p:  [0.08, 0.15, 0.16, 0.26, 0.36, 0.38, 0.45, 0.47, 0.60, 0.62, 0.82, 0.82],
+    ka: [1.00, 0.99, 0.99, 1.00, 0.99, 0.99, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00],
+    kd: [0.90, 0.91, 0.90, 0.92, 0.91, 0.89, 0.89, 0.80, 0.75, 0.52, 0.40, 0.40] } };
+function clashBin(gap, T) { T = T || CLASH; return Math.max(0, Math.min(T.p.length - 1, Math.floor((gap - T.lo) / T.bin))); }
 /* two machines' battle, at once: the muster a played one would have, then the measured odds. Returns the muster with
    how it went (attackerWon, broke). ⚠ The board's White is the attacker, so the gap is White's points less Black's. */
 function clash(from, to) {
-  var P = musterBattle(from, to, true);
-  var gap = material(P.board, 'w') - material(P.board, 'b'), k = clashBin(gap);
-  var won = rand() < CLASH.p[k];
+  var P = musterBattle(from, to, true), T = CLASHES[P.rule] || CLASH;
+  var gap = material(P.board, 'w') - material(P.board, 'b'), k = clashBin(gap, T);
+  var won = rand() < T.p[k];
   P.playerAttacks = false; P.clash = true; P.gap = gap;
   P.won = won;
-  P.broke = resolveLand(P, won, { a: CLASH.ka[k], d: CLASH.kd[k], rout: null });
+  P.broke = resolveLand(P, won, { a: T.ka[k], d: T.kd[k], rout: null });
   return P;
 }
 
@@ -4354,10 +4545,11 @@ function sfx(k) {
   else if (k === 'lose') [330, 262, 196].forEach(function (f, i) { tone(f, t + i * 0.1, 0.22, 'sine', 0.1); });
 }
 function moveSound(m) {
+  var on = material(B.S.b, 'w') + material(B.S.b, 'b');   // the board's men: a drop adds one, so it is not a capture
   if (C.inCheck(B.S, B.S.turn)) sfx('check');
-  else if (B.lastCapt !== material(B.S.b, 'w') + material(B.S.b, 'b')) sfx('capture');
+  else if (!m.drop && B.lastCapt !== on) sfx('capture');
   else sfx('move');
-  B.lastCapt = material(B.S.b, 'w') + material(B.S.b, 'b');
+  B.lastCapt = on;
 }
 function setSound(on) {
   sndOn = on; if (master) master.gain.value = on ? 0.5 : 0;

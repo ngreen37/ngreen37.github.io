@@ -755,8 +755,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const b1 = new Array(64).fill(''), b2 = new Array(64).fill('');
   b1[60] = 'K'; b1[52] = 'P'; b2[60] = 'K'; b2[4] = 'Q';
   check('a promotion never makes troops: the share stops at all of them', camp.keptShare(b1, b2, 'w') === 1);
-  check('the share is measured off the board the battle started and ended on',
-        /keptShare\(p\.board, B\.S\.b, aCol\)/.test(slice('function finish(how)', 'function lightMate')) &&
+  check('the share is measured off the board the battle started and ended on (and a drop battle\'s hands)',
+        /keptShare\(p\.board, B\.S\.b, aCol, B\.S\.hand\)/.test(slice('function finish(how)', 'function lightMate')) &&
         /line \+ troopsLine\(p\)/.test(slice('function finish(how)', 'function lightMate')),
         'and the verdict says how many marched');
 }
@@ -1088,6 +1088,108 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
         camp.loadBest().turns.length === 2);
 }
 
+/* == 18. PLACES THAT FIGHT THEIR OWN CHESS (his #8, 11-11: "Go with option B") ====================
+   Endgame Flats: an endgame on half the points, no queen mustered, won by the first pawn to make one. Shogi Island: a take
+   joins the taker's hand and drops back on an empty square. Keyed by name, on every map. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const C = camp.C;
+  const at = (s) => (8 - +s[1]) * 8 + (s.charCodeAt(0) - 97);
+  const empty = () => new Array(64).fill('');
+  const rulesOn = (mode) => { camp.useMap(camp.mapFor(mode)); return camp.LAND.map((L, i) => (camp.ruleAt(i) ? L.nm + ':' + camp.ruleAt(i) : '')).filter(Boolean).join(); };
+  const solo = rulesOn('solo'), three = rulesOn('three'), four = rulesOn('four'), first = rulesOn('first');
+  camp.useMap(camp.mapFor('solo'));
+  check('⭐ Shogi Island drops and Endgame Flats fight an endgame, on the map of ten and on both war maps (keyed by name)',
+        solo === 'Shogi Island:drops,Endgame Flats:endgame' && three === solo && four === solo, [solo, three, four].join(' | '));
+  check('…and the first campaign teaches the plain rules: nothing on its map', first === '', first);
+
+  camp.newCampaign('medium', 'solo', { fog: false, cards: false });
+  const G = camp.G;
+  let queens = 0, over = 0, plain = 0, buds = [];
+  for (let i = 0; i < 200; i++) {
+    G.own[5] = 'm'; G.own[8] = 't'; G.ranks[5] = 2 + (i % 8); G.ranks[8] = 1 + (i % 9);
+    const P = camp.musterBattle(5, 8, true);
+    const n = (a, k) => a.filter((x) => x === k).length;
+    queens += n(P.aArmy, 'q') + n(P.dArmy, 'q');
+    [P.aArmy, P.dArmy].forEach((a) => { if (n(a, 'r') > 1 || n(a, 'b') > 1 || n(a, 'n') > 1 || n(a, 'p') > 6) over++; });
+    if (P.rule !== 'endgame') plain++;
+    buds.push(P.aBud);
+  }
+  check('⭐ the Flats muster an endgame: no queen in 200 battles, a rook, a bishop and a knight at most a side, six pawns',
+        queens === 0 && over === 0 && plain === 0 && Math.max(...buds) <= camp.egBudget(15 + 4 + 12), 'queens ' + queens + ', over ' + over + ', top budget ' + Math.max(...buds));
+  check('…on half the points the dice give (a pawn at least)', camp.egBudget(21) === 11 && camp.egBudget(1) === 1);
+
+  /* a take, and the drop it buys */
+  let b = empty(); b[at('e1')] = 'K'; b[at('d1')] = 'R'; b[at('e8')] = 'k'; b[at('d4')] = 'n';
+  let S = camp.battleState({ board: b, attWhite: true, rule: 'drops' });
+  check('…a battle for the Island has a hand each side; one for the Flats has none, and knows it is the Flats',
+        !!S.hand && !S.eg && !camp.battleState({ board: b, attWhite: true, rule: 'endgame' }).hand && camp.battleState({ board: b, attWhite: true, rule: 'endgame' }).eg === true);
+  S = camp.bMake(S, C.legalMoves(S).find((m) => m.from === at('d1') && m.to === at('d4')));
+  check('⭐ on Shogi Island a take joins the taker\'s hand as what it was', S.hand.w.n === 1 && S.b[at('d4')] === 'R' && camp.handValue(S.hand.w) === 3);
+  check('…a side with nothing in hand has nothing to drop', camp.dropsOf(S, false).length === 0);
+  S = camp.bMake(S, C.legalMoves(S).find((m) => m.from === at('e8') && m.to === at('f8')));
+  const dr = camp.dropsOf(S, false);
+  check('…and on its turn the knight goes down on any empty square, and only an empty one',
+        dr.length === 61 && dr.every((m) => !S.b[m.to] && m.drop === 'n' && m.from === -1), dr.length);
+  S.hand.w.p = 1;
+  const pd = camp.dropsOf(S, false).filter((m) => m.drop === 'p');
+  check('…never a pawn on the first rank or the last', pd.length === 47 && pd.every((m) => m.to >= 8 && m.to < 56), pd.length);
+  check('…and a piece in hand is still the army\'s: its points, the troops that march, and no draw on the flag',
+        camp.material(S.b, 'w', S.hand) === 5 + 3 + 1 && camp.keptShare(S.b, S.b, 'w', S.hand) === 1 && !camp.loneKing(empty(), 'w', S.hand));
+
+  /* a promoted man goes home a pawn, as in shogi */
+  b = empty(); b[at('e1')] = 'K'; b[at('a7')] = 'P'; b[at('b8')] = 'r'; b[at('c7')] = 'k';
+  S = camp.battleState({ board: b, attWhite: true, rule: 'drops' });
+  S = camp.bMake(S, C.legalMoves(S).find((m) => m.from === at('a7') && m.to === at('b8') && m.promo === 'Q'));
+  const prom = S.hand.w.r === 1 && !!S.pr[at('b8')];
+  S = camp.bMake(S, C.legalMoves(S).find((m) => m.from === at('c7') && m.to === at('b8')));
+  check('⭐ a promoted man, taken, goes to the hand a pawn', prom && S.hand.b.p === 1 && S.hand.b.q === 0 && !S.pr[at('b8')], JSON.stringify(S.hand.b));
+
+  /* a check a drop can block is not mate; a drop that mates is */
+  b = empty(); b[at('h8')] = 'k'; b[at('g7')] = 'p'; b[at('h7')] = 'p'; b[at('e1')] = 'K'; b[at('a8')] = 'R';
+  S = camp.battleState({ board: b, attWhite: false, rule: 'drops' });
+  S.hand.b.n = 1;
+  const blocks = camp.dropsOf(S, true).map((m) => m.to);
+  check('⭐⭐ a check a drop can block is not mate (the referee alone calls it one), and only a block may be dropped',
+        C.gameResult(S) === 'checkmate' && camp.bResult(S) === null && blocks.join() === '1,2,3,4,5,6', blocks.join());
+  b = empty(); b[at('h8')] = 'k'; b[at('g7')] = 'p'; b[at('h7')] = 'p'; b[at('e1')] = 'K';
+  S = camp.battleState({ board: b, attWhite: true, rule: 'drops' });
+  S.hand.w.r = 1;
+  const mate = camp.bMake(S, { from: -1, to: at('a8'), drop: 'r' });
+  const pick = camp.bestMove(S, 1e9, 2, 0, 0);
+  check('…a drop that mates is mate, and the machine finds it', camp.bResult(mate) === 'checkmate' && pick && pick.mv.drop === 'r' && pick.mv.to <= 5,
+        JSON.stringify(pick && pick.mv));
+
+  /* the Flats' race */
+  b = empty(); b[at('e1')] = 'K'; b[at('a7')] = 'P'; b[at('h5')] = 'k';
+  S = camp.battleState({ board: b, attWhite: true, rule: 'endgame' });
+  const q = camp.bMake(S, C.legalMoves(S).find((m) => m.from === at('a7') && m.to === at('a8') && m.promo === 'Q'));
+  const r = camp.bMake(S, C.legalMoves(S).find((m) => m.from === at('a7') && m.to === at('a8') && m.promo === 'R'));
+  const pk = camp.bestMove(S, 1e9, 2, 0, 0);
+  check('⭐⭐ on the Flats the first pawn to make a queen wins the battle (a rook does not)',
+        camp.bResult(S) === null && q.eg && camp.bResult(q) === 'queen-w' && camp.bResult(r) === null);
+  check('…and the machine runs that race: it queens when it can', pk && pk.mv.from === at('a7') && pk.mv.promo === 'Q', JSON.stringify(pk && pk.mv));
+
+  /* two machines meeting on a rule's ground: that rule's measured odds */
+  const odds = (rule, p) => {
+    const T = camp.CLASHES[rule], keep = T.p.slice();
+    T.p = T.p.map(() => p);
+    camp.newCampaign('medium', 'solo', { fog: false, cards: false });
+    camp.G.own[5] = 'm'; camp.G.own[7] = 't'; camp.G.own[8] = 't'; camp.G.ranks[5] = 6;
+    const won = camp.clash(5, rule === 'drops' ? 7 : 8).won;
+    T.p = keep;
+    return won;
+  };
+  check('⭐ two machines on a rule\'s ground are decided at that rule\'s measured odds',
+        odds('drops', 1) === true && odds('drops', 0) === false && odds('endgame', 1) === true && odds('endgame', 0) === false &&
+        camp.CLASHES.endgame.p.length === 12 && camp.CLASHES.drops.p.length === 12);
+  const how = slice('<section class="screen" id="screen-how">', '</section>');
+  check('…and the page says so: the how-to, the roll screen\'s chip, the map\'s tag and the battle\'s first line',
+        /Endgame Flats and Shogi Island<\/b> fight their own chess/.test(how) && /the first pawn to make a queen wins/.test(how) &&
+        /RULE_SAY\[PEND\.rule\]\.chip/.test(slice('function beginBattle(', 'function sandThrow(')) &&
+        /<span class="rtag">/.test(slice('function drawMap(', 'function tapLand(')) && /RULE_SAY\[B\.rule\]\.say/.test(slice('function startBattle(', 'function loneKing(')));
+}
+
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */
 function report(title) {
   console.log('\n=== ' + title + ' ===\n');
@@ -1301,6 +1403,96 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
       const maxB = Math.max(...clockProbe.map((c) => c[1]));
       check('neither clock ever exceeds its starting value',
             maxW <= 20.01 && maxB <= 20.01, 'peak ' + maxW + ' / ' + maxB);
+    }
+
+    /* ══ 18. A DROP, PLAYED ON THE REAL PAGE (his #8) ══ the page's own save, edited so Red holds Shogi Island, resumed and
+       attacked; moves clicked until a take; the taken piece pressed out of the hand and clicked onto a lit square */
+    {
+      const C2 = require(path.join(ROOT, 'assets/js/pjcc-chess.js'));
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await page.evaluate(() => Object.keys(localStorage).filter((k) => k.indexOf('pjcc.campaign.save') === 0).forEach((k) => localStorage.removeItem(k)));
+      await page.reload({ waitUntil: 'load' });
+      await page.click('#go');
+      await page.waitForFunction(isOn('screen-map'));
+      for (let i = 0; i < 8; i++) {
+        if (!(await phaseIs('deploy'))) break;
+        if (!(await page.evaluate(() => document.querySelectorAll('.node.mine.can').length))) break;
+        await page.click('.node.mine.can');
+        await wait(90);
+      }
+      await page.waitForFunction(() => document.querySelector('.phasebar span[data-p="attack"].on') !== null, { timeout: 9000 });
+      await page.evaluate(() => {
+        const k = Object.keys(localStorage).find((x) => x.indexOf('pjcc.campaign.save') === 0);
+        const o = JSON.parse(localStorage.getItem(k));
+        o.own[7] = 't'; o.ranks[7] = 2; o.ranks[5] = 9;
+        localStorage.setItem(k, JSON.stringify(o));
+      });
+      await page.reload({ waitUntil: 'load' });
+      await page.click('#resume');
+      await page.waitForFunction(isOn('screen-map'));
+      await page.evaluate(() => document.querySelector('.node[data-id="5"]').click());
+      await wait(150);
+      await page.evaluate(() => document.querySelector('.node[data-id="7"]').click());
+      await page.waitForFunction(isOn('screen-roll'), { timeout: 9000 });
+      const chip = await page.$eval('#def-label', (e) => e.textContent);
+      check('⭐ marching on Shogi Island, the roll screen says its rule', /drops · takes come back/.test(chip), chip);
+      await page.click('#screen-roll');
+      await page.waitForFunction(() => !document.getElementById('tobattle').disabled, { timeout: 9000 });
+      await page.click('#tobattle');
+      await page.waitForFunction(isOn('screen-battle'), { timeout: 9000 });
+      const rows = await page.evaluate(() => [!document.getElementById('hand-me').hidden, !document.getElementById('hand-opp').hidden,
+        document.getElementById('hand-me').textContent, document.getElementById('say').textContent]);
+      check('⭐ a battle for the Island has your hand under the board and theirs over it, and its first line says the rule',
+            rows[0] && rows[1] && /Your hand/.test(rows[2]) && /Shogi Island: A piece you take is yours to drop/.test(rows[3]), JSON.stringify(rows));
+      const board = () => page.evaluate(() => {
+        const T = { '♚': 'k', '♛': 'q', '♜': 'r', '♝': 'b', '♞': 'n', '♟': 'p' }, b = new Array(64).fill('');
+        document.querySelectorAll('#men .pc').forEach((el) => {
+          if (el.classList.contains('gone')) return;
+          const t = T[el.textContent.trim()];
+          if (t) b[+el.style.getPropertyValue('--r') * 8 + +el.style.getPropertyValue('--f')] = el.classList.contains('w') ? t.toUpperCase() : t;
+        });
+        return b;
+      });
+      const press = (i) => page.evaluate((n) => document.querySelector('#sqs [data-i="' + n + '"]').click(), i);
+      const mine = () => page.evaluate(() => { const s = document.querySelector('#clock span'); return !!s && s.className === 'run'; });
+      await press(0);                                             // a tap skips the reveal
+      let took = '', over = false;
+      for (let k = 0; k < 14 && !took && !over; k++) {
+        for (let w = 0; w < 120 && !(await mine()); w++) {
+          if (await page.evaluate(ENDED)) { over = true; break; }
+          await wait(100);
+        }
+        if (over) break;
+        const b = await board();
+        const ms = C2.legalMoves({ b, turn: 'w', cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 })
+          .filter((m) => !m.promo && !m.ep);
+        const m = ms.find((x) => b[x.to]) || ms[(k * 7) % Math.max(1, ms.length)];
+        if (!m) break;
+        await press(m.from); await press(m.to);
+        if (b[m.to]) took = b[m.to].toLowerCase();
+        await wait(200);
+      }
+      for (let w = 0; w < 120 && took && !(await mine()); w++) {
+        if (await page.evaluate(ENDED)) { over = true; break; }
+        await wait(100);
+      }
+      const drop = took && !over ? await page.evaluate((t) => {
+        const hb = document.querySelector('#hand-me button[data-t="' + t + '"]');
+        if (!hb) return { why: 'no ' + t + ' in the hand row' };
+        hb.click();
+        const lit = [].slice.call(document.querySelectorAll('#sqs .sq.hint')).map((c) => +c.getAttribute('data-i'));
+        const on = !!document.querySelector('#hand-me button.on');
+        if (!lit.length) return { why: 'nothing lit', on };
+        document.querySelector('#sqs [data-i="' + lit[0] + '"]').click();
+        return { on, lit, at: lit[0] };
+      }, took) : { why: over ? 'the battle ended before a take' : 'no take in fourteen moves' };
+      await wait(300);
+      const after = await board();
+      check('⭐⭐ ON THE REAL PAGE: a piece you took goes into your hand, pressed it lights the empty squares, and a click drops it there',
+            !!drop.on && drop.lit && drop.lit.every((i) => !after[i] || i === drop.at) && after[drop.at] === took.toUpperCase() &&
+            (took !== 'p' || drop.lit.every((i) => i >= 8 && i < 56)), JSON.stringify(drop) + ' took ' + took);
+      try { fs.mkdirSync(path.join(ROOT, 'tests/__shots'), { recursive: true }); } catch (e) {}
+      await page.screenshot({ path: path.join(ROOT, 'tests/__shots/marchland-drops.png') }).catch(() => {});
     }
 
     check('no page errors during a full round', errs.length === 0, errs.slice(0, 2).join(' | '));
