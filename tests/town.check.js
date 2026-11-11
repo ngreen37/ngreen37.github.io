@@ -7196,7 +7196,8 @@ const server = http.createServer((req, res) => {
              && /if int\(d\.get\("puzzles_clean", 0\)\) > challenge\.puzzles_clean:/.test(fnGd(gsAll, 'merge_in'))
              && /local\.puzzles_clean = Math\.max\(\+local\.puzzles_clean \|\| 0, \+remote\.puzzles_clean \|\| 0\);/.test(PROF),
             '…and the count is earned, so it saves, syncs and merges by the max on both sides');
-          ok(/if not puzzle\.is_empty\(\):\s*\n\t\t_puzzle_moved\(\)\s*\n\t\treturn\s*\n\tif lesson != "":\s*\n\t\t_lesson_moved\(\)\s*\n\t\treturn\s*\n\tvar r := ChessRules\.game_result/.test(fnGd(tabT, '_apply'))
+          ok(/if not puzzle\.is_empty\(\):\s*\n\t\t_puzzle_moved\(\)\s*\n\t\treturn\s*\n\tif lesson != "":\s*\n\t\t_lesson_moved\(\)\s*\n\t\treturn\s*\n\tvar r := _result\(S, int\(reps\[k\]\)\)/.test(fnGd(tabT, '_apply'))
+             && /func _result\(s0: Dictionary, rep: int\) -> String:\s*\n\treturn ChessRules\.game_result\(s0, rep\)/.test(tabT)
              && !/pending/.test(fnGd(chT, 'sit_puzzle')) && /GameState\.challenge\.puzzle_wanted\.connect\(_open_errand\)/.test(znT),
             '⚠ …a puzzle is not an errand: never saved, and one left clean counts nothing');
           ok(/var t := _table_up\(\)\s*\n\tif t != null:\s*\n\t\t_hold_say\(t, "puzzle", \[streak, done, won\]\)/.test(fnGd(znT, '_report_puzzle'))
@@ -7832,7 +7833,8 @@ const server = http.createServer((req, res) => {
               'calm, none': /if not REACT\.has\(kind\) or TableFX\.calm\(\) or not is_visible_in_tree\(\):\s*\n\t\treturn/.test(tsF('react')),
               'lean while they think': /thinking = true\s*\n\t_seat\.lean\(true\)/.test(ctF('_their_turn'))
                 && /_seat\.lean\(false\)\s*\n\t_apply\(m\)/.test(ctF('_on_moved')) && /_seat\.lean\(false\)/.test(ctF('_end')),
-              'every move judged': /var before := S\s*\n\tS = ChessRules\.make_move\(S, m\)\s*\n\t_judge\(before, mover\)/.test(ctF('_apply')),
+              'every move judged': /var before := S\s*\n\tS = _make\(S, m\)\s*\n\t_judge\(before, mover\)/.test(ctF('_apply'))
+                && /func _make\(s0: Dictionary, m: Dictionary\) -> Dictionary:\s*\n\treturn ChessRules\.make_move\(s0, m\)/.test(ctF('_make')),
               'only your move': /_face = TableJudge\.verdict\(before, S, side\) if mover == side and _walk\.is_empty\(\) else ""/.test(ctF('_judge')),
               'once the camera is back': /if _face != "" and anim\.is_empty\(\) and _cut\.is_empty\(\):\s*\n\t\t_seat\.react\(_face\)/.test(ctF('_process')),
               'a pawn shows': /var w := sqrt\(minf\(absf\(float\(cp\)\) \/ MOOD_FULL, 1\.0\)\)/.test(ctF('_mood_of')) && /const MOOD_FULL := 500\.0/.test(ctT),
@@ -8262,9 +8264,9 @@ const server = http.createServer((req, res) => {
                 && /if r in \["checkmate", "stalemate", "material", "fifty"\]:/.test(fnGd(cbT, '_end_by_rules'))
                 && /"draw-flag" if _lone_king\(other\) else \("time-att" if \(turn == "w"\) == att_white else "time-def"\)/.test(fnGd(cbT, '_process'))
                 && /_reveal = CB\.REVEAL_MS \/ 1000\.0/.test(fnGd(cbT, '_start')) && /CampaignAI\.best_move\(at,/.test(fnGd(cbT, '_their_turn'))
-                && /if white == att_white and ChessRules\.game_result\(ChessRules\.make_move\(S, q\)\) == "stalemate":/.test(fnGd(cbT, '_try')),
+                && /if not S\.has\("eg"\) and white == att_white and _result\(_make\(S, q\), 0\) == "stalemate":/.test(fnGd(cbT, '_try')),
               'what is left marches in, as the site rules': /var moved := _share\(a_ranks - 1, float\(k\.a\)\)/.test(crT) && /static func kept_share/.test(crT)
-                && /CampaignRules\.kept_share\(p\.board, board, a_col\)/.test(fnGd(ctbT, '_on_battle_end')),
+                && /CampaignRules\.kept_share\(p\.board, board, a_col, hand\)/.test(fnGd(ctbT, '_on_battle_end')),
               'Maxwell, his file, his words': /var foe := CampaignRules\.general_of\(dfd if p\.player_attacks else att\)/.test(fnGd(ctbT, '_start_battle'))
                 && /"who": "" if two else str\(foe\["who"\]\)/.test(fnGd(ctbT, '_start_battle')) && /file_campaign\(g, won\)/.test(fnGd(ctbT, '_campaign_over'))
                 && /static func observe_file/.test(crT) && /CampaignRules\.line_for\(/.test(ctbT),
@@ -8320,6 +8322,29 @@ const server = http.createServer((req, res) => {
             ok(warOff.length === 0,
               '⭐⭐ HIS PICKS 6, 7, 9, 10 IN THE GAME  (his 11-10: "Let\'s do 6, 7, 9, 10"): a war of three or four round the table, two machines\' battle decided at once at the measured odds, hold ten and it is yours; everyone whose square you have won gives an order a campaign, one a round; every war plays back, your best framed in your house and pressed there; and the map on sand, his pawns as troops and the dice thrown on it, on the site\'s own numbers (probed: a war of four round the table, a war of three dealt, Matsu\'s order, a war won and watched and its frame pressed at home, the sand table and its throw)',
               warOff.length ? 'off: ' + warOff.join(' · ') + (sandOff.length ? '  [sand: ' + sandOff.join(' ') + ']' : '') : 'the page, rule for rule, and the table on its numbers');
+            /* ⭐⭐ HIS #8 (11-11, "Go with option B"): places that fight their own chess. Their numbers ride the book (bookFresh). */
+            const drT = rd('campaign_drops.gd'), ctabT = rd('chess_table.gd');
+            const ruleOff = offOf({
+              'the rules, held to the page': /static func drops_of\(S: Dictionary, near: bool\) -> Array:/.test(drT)
+                && /static func result\(S: Dictionary, rep := 0\) -> String:\s*\n\tif S\.has\("eg"\) and queened\(S\) != "":/.test(drT)
+                && /var rule := rule_at\(to\)/.test(fnGd(crT, 'muster_battle')) && /B\.EG_CAPS if rule == "endgame" else caps_for/.test(fnGd(crT, 'muster_battle'))
+                && /a_bud = maxi\(1, a_bud - int\(B\.DR_EDGE\)\)/.test(fnGd(crT, 'muster_battle'))
+                && /var T: Dictionary = B\.CLASHES\.get\(str\(P\.rule\), B\.CLASH\)/.test(fnGd(crT, 'clash'))
+                && /CampaignDrops\.make\(S, m\)/.test(fnGd(caiT, 'negamax')) && /CampaignDrops\.drops_of\(S, true\)/.test(fnGd(caiT, 'ordered'))
+                && ['rules', 'rplay', 'rengine'].every((r) => coRows.indexOf('rows.' + r + '.push') >= 0),
+              'the table plays them': /return CampaignDrops\.make\(s0, m\)/.test(fnGd(cbT, '_make')) && /return CampaignDrops\.result\(s0, rep\)/.test(fnGd(cbT, '_result'))
+                && /if _no_moves\(S\):/.test(fnGd(ctabT, '_landed')) && /if mv\.has\("drop"\):\s*\n\t+_drop_moved\(mv\)/.test(fnGd(cbT, '_process'))
+                && /\(k != null and k\.keycode == KEY_H\) or Pad\.hit\(event, Pad\.TOP\)/.test(fnGd(cbT, '_take'))
+                && /_battle_over\("won-queen" if r == "queen-w" else "lost-queen"\)/.test(fnGd(cbT, '_end_by_rules'))
+                && /"rule": rule,/.test(fnGd(ctbT, '_start_battle')) && /"won-queen":/.test(fnGd(ctbT, '_on_battle_end'))
+                && /var rl := R\.rule_at\(id\)/.test(fnGd(ctbT, '_paint_map')),
+              'played': ['campdrops', 'campflats'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /battlehand:w:n:1;battlehand:w:p:2;handpress:n;battleis:dsel:n;key:h:6;battleis:dsel:p;[^"]*tablepress:d5;battleis:sq:d5:N/.test(bcCase('campdrops'))
+                && /battleis:rule:endgame;battleis:eg:true;battleis:queens:0;[^"]*tablemove:a7a8;wait:20;tableis:result:won-queen/.test(bcCase('campflats')),
+            });
+            ok(ruleOff.length === 0,
+              '⭐⭐ HIS #8 IN THE GAME  (his 11-11: "Go with option B"): Endgame Flats and Shogi Island fight their own chess as the site rules them — an endgame on half the points with no queen mustered, won by the first pawn to make one; a take into the hand and dropped back on an empty square, by a tap, H or a pad\'s top button; each with its own measured odds when two machines meet (probed: a knight dropped, the hand cycled and let go; a pawn queened on the Flats and the ground taken)',
+              ruleOff.length ? 'off: ' + ruleOff.join(' · ') : 'the page, rule for rule, at the table');
           }
         }
 
