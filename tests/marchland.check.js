@@ -1096,12 +1096,25 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const C = camp.C;
   const at = (s) => (8 - +s[1]) * 8 + (s.charCodeAt(0) - 97);
   const empty = () => new Array(64).fill('');
-  const rulesOn = (mode) => { camp.useMap(camp.mapFor(mode)); return camp.LAND.map((L, i) => (camp.ruleAt(i) ? L.nm + ':' + camp.ruleAt(i) : '')).filter(Boolean).sort().join(); };
+  const rulesOn = (mode) => { camp.newCampaign('medium', mode, { fog: false, cards: false });
+    return camp.LAND.map((L, i) => (camp.ruleAt(i) ? L.nm + ':' + camp.ruleAt(i) : '')).filter(Boolean).sort().join(); };
   const solo = rulesOn('solo'), three = rulesOn('three'), four = rulesOn('four'), first = rulesOn('first');
   camp.useMap(camp.mapFor('solo'));
-  check('⭐ Shogi Island drops, Endgame Flats fight an endgame and Sea-Board at sea, on the map of ten and on both war maps (keyed by name)',
-        solo === 'Endgame Flats:endgame,Sea-Board:pieces,Shogi Island:drops' && three === solo && four === solo, [solo, three, four].join(' | '));
-  check('…and the first campaign teaches the plain rules: nothing on its map', first === '', first);
+  check('⭐ Shogi Island drops, Endgame Flats fight an endgame, Sea-Board at sea and the Sand Mines in the dark, on the map of ten and on both war maps (keyed by name)',
+        solo === 'Endgame Flats:endgame,Sand Mines:dark,Sea-Board:pieces,Shogi Island:drops' && three === solo && four === solo, [solo, three, four].join(' | '));
+  check('…and the first campaign teaches the plain rules: nothing on its map, though the Sand Mines are on it', first === '' &&
+        camp.FIRST_MAP.land.some((L) => L.nm === 'Sand Mines'), first);
+  const keepCaps = { q: 1, r: 2, b: 2, n: 2, p: 8 };
+  check('⭐ the Sand Mines\' dark is the picture\'s alone (his: "more decorative than functional"): the plain muster and the plain odds',
+        camp.capsOn('dark', Object.assign({}, keepCaps)).p === 8 && camp.capsOn('dark', Object.assign({}, keepCaps)).q === 1 &&
+        camp.CLASHES.dark === undefined && !/rule === 'dark'/.test(slice('function musterBattle(', 'function beginBattle(')));
+  const dk = slice('var DARK = {', 'function goLive(');
+  const DK = JSON.parse(dk.slice(dk.indexOf('{'), dk.indexOf('}') + 1).replace(/(\w+):/g, '"$1":'));
+  check('…subtle and slow, never a flicker: a fade in of 300 ms or more, out of 600 or more, held a second at most, seven seconds apart at least, never past 60% dark',
+        DK.rise >= 300 && DK.fall >= 600 && DK.hold <= 1000 && DK.every[0] >= 7000 && DK.first[0] >= 3000 && DK.lamp <= 0.6 && DK.dust <= 0.6, JSON.stringify(DK));
+  check('…and off with reduced motion, in the code and in the stylesheet',
+        /prefers-reduced-motion: reduce/.test(slice('function darkOn(', 'function murkEl(')) &&
+        /@media \(prefers-reduced-motion: reduce\) \{ \.murk \{ display: none; \} \}/.test(slice('<style>', '</style>')));
 
   camp.newCampaign('medium', 'solo', { fog: false, cards: false });
   const G = camp.G;
@@ -1507,6 +1520,53 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
             (took !== 'p' || drop.lit.every((i) => i >= 8 && i < 56)), JSON.stringify(drop) + ' took ' + took);
       try { fs.mkdirSync(path.join(ROOT, 'tests/__shots'), { recursive: true }); } catch (e) {}
       await page.screenshot({ path: path.join(ROOT, 'tests/__shots/marchland-drops.png') }).catch(() => {});
+    }
+
+    /* ══ 18b. THE SAND MINES GO DARK, ON THE REAL PAGE ══ a fresh campaign's own opening: Gauntlet Keep marches on the
+       Sand Mines next door; tapped live, the murk falls within its first window, over the board and under no finger */
+    {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      await page.evaluate(() => Object.keys(localStorage).filter((k) => k.indexOf('pjcc.campaign.save') === 0).forEach((k) => localStorage.removeItem(k)));
+      await page.reload({ waitUntil: 'load' });
+      await page.click('#go');
+      await page.waitForFunction(isOn('screen-map'));
+      for (let i = 0; i < 8; i++) {
+        if (!(await phaseIs('deploy'))) break;
+        if (!(await page.evaluate(() => document.querySelectorAll('.node.mine.can').length))) break;
+        await page.click('.node.mine.can');
+        await wait(90);
+      }
+      await page.waitForFunction(() => document.querySelector('.phasebar span[data-p="attack"].on') !== null, { timeout: 9000 });
+      const tag = await page.evaluate(() => { const n = document.querySelector('.node[data-id="0"] .rtag'); return n ? n.textContent : ''; });
+      await page.evaluate(() => document.querySelector('.node[data-id="2"]').click());
+      await wait(150);
+      await page.evaluate(() => document.querySelector('.node[data-id="0"]').click());
+      await page.waitForFunction(isOn('screen-roll'), { timeout: 9000 });
+      await page.click('#screen-roll');
+      await page.waitForFunction(() => !document.getElementById('tobattle').disabled, { timeout: 9000 });
+      await page.click('#tobattle');
+      await page.waitForFunction(isOn('screen-battle'), { timeout: 9000 });
+      const say = await page.$eval('#say', (e) => e.textContent);
+      await page.evaluate(() => document.querySelector('#sqs [data-i="0"]').click());     // a tap skips the reveal
+      let seen = null;
+      for (let i = 0; i < 90 && !seen; i++) {
+        seen = await page.evaluate(() => {
+          const m = document.getElementById('murk');
+          if (!m || !m.classList.contains('on')) return null;
+          const cs = getComputedStyle(m), b = document.getElementById('board').getBoundingClientRect(), r = m.getBoundingClientRect();
+          return { pe: cs.pointerEvents, z: +cs.zIndex, over: Math.abs(r.left - b.left) < 2 && Math.abs(r.width - b.width) < 2 };
+        });
+        if (!seen) await wait(100);
+      }
+      check('⭐ the Sand Mines on the map say DARK, and a battle there says the light comes and goes',
+            /dark/i.test(tag) && /Sand Mines: Down the mines, the light comes and goes/.test(say), tag + ' · ' + say);
+      check('⭐⭐ ON THE REAL PAGE the light fails within the first window: the murk over the board, above its 3D canvas, under no finger',
+            !!seen && seen.pe === 'none' && seen.z > 2 && seen.over, JSON.stringify(seen));
+      await page.screenshot({ path: path.join(ROOT, 'tests/__shots/marchland-dark.png') }).catch(() => {});
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+      const calm = await page.evaluate(() => getComputedStyle(document.getElementById('murk')).display);
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      check('…and with reduced motion there is none to see', calm === 'none', calm);
     }
 
     check('no page errors during a full round', errs.length === 0, errs.slice(0, 2).join(' | '));

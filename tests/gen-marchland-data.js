@@ -79,7 +79,8 @@ function build() {
     slice(src, 'var ORDERS',         'function assemblyNames') +
     /* 11-11, his #8: places that fight their own chess */
     slice(src, 'var RULES',          '/* ⭐ THE MUSTER ON ITS OWN') +
-    slice(src, 'var CLASHES',        'function clashBin');
+    slice(src, 'var CLASHES',        'function clashBin') +
+    slice(src, 'var DARK = {',       'function darkOn(');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -146,7 +147,9 @@ function build() {
       byName: G.RULES,
       say: Object.keys(G.RULE_SAY).reduce((o, k) => { const s = G.RULE_SAY[k];
         o[k] = { tag: s.tag, chip: s.chip.replace(/&middot;/g, '·'), say: s.say }; return o; }, {}),
-      egScale: G.EG_SCALE, egCaps: G.EG_CAPS, egPush: G.EG_PUSH, drEdge: G.DR_EDGE, pcEdge: G.PC_EDGE, clash: G.CLASHES
+      egScale: G.EG_SCALE, egCaps: G.EG_CAPS, egPush: G.EG_PUSH, drEdge: G.DR_EDGE, pcEdge: G.PC_EDGE, clash: G.CLASHES,
+      /* the Sand Mines' dark: the windows between, the fades and how dark (ms, and a share of black) */
+      dark: G.DARK
     },
     /* your Assembly's generals: each order (named and worded HIS), who gives which, and what each says giving it */
     generals: {

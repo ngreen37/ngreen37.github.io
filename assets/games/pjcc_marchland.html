@@ -551,6 +551,10 @@
   .hand button.hp:disabled { opacity: .45; cursor: default; }
   .hand button.hp.on { border-color: var(--mine); box-shadow: 0 0 0 2px rgba(107,255,184,.35); }
   .hand .hp sub { font: 700 11px/1 'Trebuchet MS', sans-serif; -webkit-text-stroke: 0; color: var(--ink-2); margin-left: 1px; }
+  /* the Sand Mines' murk (darkFall): over the board and its 3D canvas (z-index 2), never under a finger */
+  .murk { position: absolute; z-index: 3; pointer-events: none; opacity: 0; border-radius: 4px; }
+  .murk.on { opacity: var(--peak, .55); }
+  @media (prefers-reduced-motion: reduce) { .murk { display: none; } }
   /* the rule a holding fights under, over its disc */
   .node .rtag { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
     font: 700 7.5px/1 'Trebuchet MS', sans-serif; letter-spacing: .6px; text-transform: uppercase; color: #ffd76e;
@@ -716,7 +720,8 @@
       <b>Endgame Flats, Shogi Island and Sea-Board</b> fight their own chess. A battle for the Flats is an endgame: no
       queens, at most one rook, one bishop and one knight a side, and <b>the first pawn to make a queen wins</b>. On Shogi
       Island a piece you take joins your hand, and on your turn you can drop it on any empty square instead of moving.
-      Sea-Board is fought at sea: <b>no pawns, only pieces</b>.<br>
+      Sea-Board is fought at sea: <b>no pawns, only pieces</b>. Down the Sand Mines the light comes and goes; the chess
+      is the same.<br>
       <b>The war, replayed:</b> watch any campaign back when it ends. Your best one is framed below.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -2234,14 +2239,18 @@ function clearRollTimers() { rollTimers.forEach(clearTimeout); rollTimers = []; 
              took the ground at any budget — nobody mates with a rook inside fifteen seconds, so the Flats never fell.
    drops   · a piece you take joins your hand; on your turn, drop one on an empty square instead of moving
    pieces  · Sea-Board, his pick of five (11-11: "the sea board pieces only"): a battle at sea, the dice buy no pawns
-   ⚠ KEYED BY NAME: the war maps renumber the holdings, and a rule keyed by id lands on the wrong ground there. */
-var RULES = { 'Endgame Flats': 'endgame', 'Shogi Island': 'drops', 'Sea-Board': 'pieces' };
+   dark    · the Sand Mines (11-11: "keep it real subtle … more decorative than functional"): now and then the light
+             fails for a moment. The battle is plain chess; only the picture dims (THE SAND MINES ARE DARK, below).
+   ⚠ KEYED BY NAME: the war maps renumber the holdings, and a rule keyed by id lands on the wrong ground there.
+   ⚠ NOT IN THE FIRST CAMPAIGN: its map has the Sand Mines, and it teaches the plain rules one at a time. */
+var RULES = { 'Endgame Flats': 'endgame', 'Shogi Island': 'drops', 'Sea-Board': 'pieces', 'Sand Mines': 'dark' };
 var RULE_SAY = {
   endgame: { tag: 'endgame', chip: 'endgame &middot; first queen wins', say: 'An endgame: the first pawn to make a queen wins.' },
   drops:   { tag: 'drops', chip: 'drops &middot; takes come back', say: 'A piece you take is yours to drop.' },
-  pieces:  { tag: 'no pawns', chip: 'at sea &middot; no pawns', say: 'A battle at sea: no pawns, only pieces.' }
+  pieces:  { tag: 'no pawns', chip: 'at sea &middot; no pawns', say: 'A battle at sea: no pawns, only pieces.' },
+  dark:    { tag: 'dark', chip: 'down the mines &middot; low light', say: 'Down the mines, the light comes and goes.' }
 };
-function ruleAt(id) { return LAND[id] ? RULES[LAND[id].nm] || '' : ''; }
+function ruleAt(id) { return LAND[id] && !(G && G.mode === 'first') ? RULES[LAND[id].nm] || '' : ''; }
 var EG_SCALE = 0.5;
 var EG_CAPS = { q: 0, r: 1, b: 1, n: 1, p: 6 };
 var EG_PUSH = 14;           // centipawns a rank for a pawn on the Flats, so the machine runs the race it is judged by
@@ -2729,6 +2738,51 @@ document.addEventListener('visibilitychange', function () {
     if (B.running) { B.running = false; B.away = true; clearInterval(B.timer); }
   } else if (B.away) { B.away = false; goLive(); }
 });
+/* ══ THE SAND MINES ARE DARK ═══════════════════════════════════════════════════════════
+   His (11-11): "keep it real subtle, so it's more decorative than functional. Slight, brief occurrences of vision loss".
+   Every seven to thirteen seconds the lamp dims at the edges, or dust drifts over a patch of the board, and clears.
+   ⚠ NEVER A FLICKER: a slow fade in, a hold, a slower fade out. ⚠ OFF WITH REDUCED MOTION. ⚠ BESIDE THE BOARD, NOT IN
+   IT: the 3D lens hides every child of #board, so the murk sits in the board's host over both pictures, as its canvas
+   does, one layer higher. It never takes a press. */
+var DARK = { first: [3000, 6000], every: [7000, 13000], rise: 450, hold: 700, fall: 900, lamp: 0.55, dust: 0.6 };
+function darkOn() {
+  return !!B && B.rule === 'dark' && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function murkEl() {
+  var m = $('murk'), el = $('board'), host = el.offsetParent || el.parentNode;
+  if (!m) { m = document.createElement('div'); m.id = 'murk'; m.className = 'murk'; m.setAttribute('aria-hidden', 'true'); }
+  if (m.parentNode !== host) host.appendChild(m);
+  m.style.left = el.offsetLeft + 'px'; m.style.top = el.offsetTop + 'px';
+  m.style.width = el.offsetWidth + 'px'; m.style.height = el.offsetHeight + 'px';
+  return m;
+}
+function darkNext(battle, first) {
+  var w = first ? DARK.first : DARK.every;
+  battle.darkT = setTimeout(function () {
+    if (B !== battle || B.over) return;
+    if (B.running && darkOn()) darkFall(battle); else darkNext(battle, false);
+  }, w[0] + Math.random() * (w[1] - w[0]));
+}
+function darkFall(battle) {
+  var m = murkEl(), lamp = Math.random() < 0.5;
+  var x = Math.round(15 + Math.random() * 70), y = Math.round(15 + Math.random() * 70);
+  m.style.background = lamp ? 'radial-gradient(circle at 50% 50%, transparent 38%, rgba(6,4,2,.92) 100%)'
+    : 'radial-gradient(circle at ' + x + '% ' + y + '%, rgba(14,10,4,.95) 0%, rgba(14,10,4,.6) 14%, transparent 30%)';
+  m.style.setProperty('--peak', lamp ? DARK.lamp : DARK.dust);
+  m.style.transition = 'opacity ' + DARK.rise + 'ms ease-in';
+  m.classList.add('on');
+  battle.darks = (battle.darks || 0) + 1;
+  battle.darkT = setTimeout(function () {
+    m.style.transition = 'opacity ' + DARK.fall + 'ms ease-out';
+    m.classList.remove('on');
+    if (B === battle && !B.over) darkNext(battle, false);
+  }, DARK.rise + DARK.hold);
+}
+function darkStop() {
+  if (B) clearTimeout(B.darkT);
+  var m = $('murk');
+  if (m) m.classList.remove('on');
+}
 function goLive() {
   if (!B || B.over || B.running) return;
   clearTimeout(B.revealTimer);
@@ -2740,6 +2794,7 @@ function goLive() {
   B.timer = setInterval(tickClock, 100);
   updateClock();
   if (B.S.turn === 'b' && !B.two) scheduleAI();
+  if (darkOn() && !B.darkT) darkNext(B, true);
 }
 
 /* ⚠ WALL CLOCK, NOT A TICK COUNTER. setInterval is not a timer, it is a request — a
@@ -3035,6 +3090,7 @@ function finish(how) {
   B.over = true;
   clearInterval(B.timer);
   clearTimeout(B.revealTimer);
+  darkStop();
   var p = PEND;
   var playerWon, line;
 

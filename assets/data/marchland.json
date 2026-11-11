@@ -1010,7 +1010,8 @@
     "byName": {
       "Endgame Flats": "endgame",
       "Shogi Island": "drops",
-      "Sea-Board": "pieces"
+      "Sea-Board": "pieces",
+      "Sand Mines": "dark"
     },
     "say": {
       "endgame": {
@@ -1027,6 +1028,11 @@
         "tag": "no pawns",
         "chip": "at sea · no pawns",
         "say": "A battle at sea: no pawns, only pieces."
+      },
+      "dark": {
+        "tag": "dark",
+        "chip": "down the mines · low light",
+        "say": "Down the mines, the light comes and goes."
       }
     },
     "egScale": 0.5,
@@ -1179,6 +1185,21 @@
           0.5
         ]
       }
+    },
+    "dark": {
+      "first": [
+        3000,
+        6000
+      ],
+      "every": [
+        7000,
+        13000
+      ],
+      "rise": 450,
+      "hold": 700,
+      "fall": 900,
+      "lamp": 0.55,
+      "dust": 0.6
     }
   },
   "generals": {
