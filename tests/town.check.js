@@ -8327,8 +8327,10 @@ const server = http.createServer((req, res) => {
             const ruleOff = offOf({
               'the rules, held to the page': /static func drops_of\(S: Dictionary, near: bool\) -> Array:/.test(drT)
                 && /static func result\(S: Dictionary, rep := 0\) -> String:\s*\n\tif S\.has\("eg"\) and queened\(S\) != "":/.test(drT)
-                && /var rule := rule_at\(to\)/.test(fnGd(crT, 'muster_battle')) && /B\.EG_CAPS if rule == "endgame" else caps_for/.test(fnGd(crT, 'muster_battle'))
-                && /a_bud = maxi\(1, a_bud - int\(B\.DR_EDGE\)\)/.test(fnGd(crT, 'muster_battle'))
+                && /var rule := rule_at\(to\)/.test(fnGd(crT, 'muster_battle')) && /var a_caps := caps_on\(rule, caps_for\(/.test(fnGd(crT, 'muster_battle'))
+                && /if rule == "pieces":\s*\n\t\tcaps\["p"\] = 0/.test(fnGd(crT, 'caps_on'))
+                && /a_bud = maxi\(1, a_bud - int\(B\.DR_EDGE\)\)/.test(fnGd(crT, 'muster_battle')) && /a_bud = maxi\(1, a_bud - int\(B\.PC_EDGE\)\)/.test(fnGd(crT, 'muster_battle'))
+                && /"AT SEA  ·  no pawns to push: pieces against pieces"/.test(fnGd(ctbT, '_pos_verdict'))
                 && /var T: Dictionary = B\.CLASHES\.get\(str\(P\.rule\), B\.CLASH\)/.test(fnGd(crT, 'clash'))
                 && /CampaignDrops\.make\(S, m\)/.test(fnGd(caiT, 'negamax')) && /CampaignDrops\.drops_of\(S, true\)/.test(fnGd(caiT, 'ordered'))
                 && ['rules', 'rplay', 'rengine'].every((r) => coRows.indexOf('rows.' + r + '.push') >= 0),
@@ -8338,12 +8340,13 @@ const server = http.createServer((req, res) => {
                 && /_battle_over\("won-queen" if r == "queen-w" else "lost-queen"\)/.test(fnGd(cbT, '_end_by_rules'))
                 && /"rule": rule,/.test(fnGd(ctbT, '_start_battle')) && /"won-queen":/.test(fnGd(ctbT, '_on_battle_end'))
                 && /var rl := R\.rule_at\(id\)/.test(fnGd(ctbT, '_paint_map')),
-              'played': ['campdrops', 'campflats'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+              'played': ['campdrops', 'campflats', 'campsea'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /camphas:pos:AT SEA;[^"]*battleis:rule:pieces;battleis:pawns:0/.test(bcCase('campsea'))
                 && /battlehand:w:n:1;battlehand:w:p:2;handpress:n;battleis:dsel:n;key:h:6;battleis:dsel:p;[^"]*tablepress:d5;battleis:sq:d5:N/.test(bcCase('campdrops'))
                 && /battleis:rule:endgame;battleis:eg:true;battleis:queens:0;[^"]*tablemove:a7a8;wait:20;tableis:result:won-queen/.test(bcCase('campflats')),
             });
             ok(ruleOff.length === 0,
-              '⭐⭐ HIS #8 IN THE GAME  (his 11-11: "Go with option B"): Endgame Flats and Shogi Island fight their own chess as the site rules them — an endgame on half the points with no queen mustered, won by the first pawn to make one; a take into the hand and dropped back on an empty square, by a tap, H or a pad\'s top button; each with its own measured odds when two machines meet (probed: a knight dropped, the hand cycled and let go; a pawn queened on the Flats and the ground taken)',
+              '⭐⭐ HIS #8 IN THE GAME  (his 11-11: "Go with option B", then "the sea board pieces only"): Endgame Flats, Shogi Island and Sea-Board fight their own chess as the site rules them — an endgame on half the points with no queen mustered, won by the first pawn to make one; a take into the hand and dropped back on an empty square, by a tap, H or a pad\'s top button; a battle at sea with no pawn mustered, the roll screen saying so; each with its own measured odds when two machines meet (probed: a knight dropped, the hand cycled and let go; a pawn queened on the Flats and the ground taken; Sea-Board fought with no pawns)',
               ruleOff.length ? 'off: ' + ruleOff.join(' · ') : 'the page, rule for rule, at the table');
           }
         }
