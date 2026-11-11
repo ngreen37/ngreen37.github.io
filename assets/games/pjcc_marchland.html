@@ -649,8 +649,8 @@
     </div>
     <!-- ⭐ A WAR OF THREE OR FOUR (11-10): you against two or three generals, each resuming its own -->
     <div class="modes">
-      <button class="btn ghost slim" id="three">Three-way</button>
-      <button class="btn ghost slim" id="four">Four-way</button>
+      <button class="btn ghost slim" id="three">Three players</button>
+      <button class="btn ghost slim" id="four">Four players</button>
     </div>
     <button class="btn ghost slim" id="first">First campaign</button>
     <button class="btn ghost" id="how">How it works</button>
@@ -712,7 +712,7 @@
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
       rounds; hold as much as you can. Scores compare at the same settings.<br>
       <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.<br>
-      <b>Three-way and four-way:</b> you against two or three generals on a bigger map. <b>Hold ten holdings</b>
+      <b>Three players and four players:</b> you against two or three generals on a bigger map. <b>Hold ten holdings</b>
       and the war is yours. When two generals fight each other, it is decided at once, at the odds real battles
       measured.<br>
       <b>Generals:</b> everyone whose square you have won in the town's Assembly gives you one order a campaign,
@@ -3942,7 +3942,7 @@ function paintFrame() {
   drawWar($('framebox'), w.end || w.turns[w.turns.length - 1] || w.start, mine, true);
   useMap({ land: keep, edges: keepE });
   $('frame-say').textContent = 'Your best war · ' + (LEVELS[w.diff] ? LEVELS[w.diff].nm : '') +
-    ((w.sides || []).length > 2 ? ' · ' + (w.sides.length === 3 ? 'three-way' : 'four-way') : '') + ' · won in round ' + w.rounds;
+    ((w.sides || []).length > 2 ? ' · ' + (w.sides.length === 3 ? 'three players' : 'four players') : '') + ' · won in round ' + w.rounds;
 }
 
 /* ══ YOUR DOG MARCHES WITH YOU ════════════════════════════════════════════════════════
@@ -4584,7 +4584,7 @@ function paintHome() {
   $('two').textContent = t ? 'Two players · round ' + t.round : 'Two players';
   ['three', 'four'].forEach(function (k) {
     var w = loadSave(k);
-    $(k).textContent = (k === 'three' ? 'Three-way' : 'Four-way') + (w ? ' · round ' + w.round : '');
+    $(k).textContent = (k === 'three' ? 'Three players' : 'Four players') + (w ? ' · round ' + w.round : '');
   });
   var f = loadSave('first');
   $('first').textContent = f ? 'First campaign · round ' + f.round : 'First campaign';

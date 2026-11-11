@@ -776,7 +776,7 @@ function serve() {
         noted: G.warEv.length ? G.warEv[0].s + ':' + G.warEv[0].r : '' };
       return out;
     });
-    ok(war.doors[0] === 'Three-way' && war.doors[1] === 'Four-way', 'a war of three and of four each have a door on the home screen');
+    ok(war.doors[0] === 'Three players' && war.doors[1] === 'Four players', 'a war of three and of four each have a door on the home screen');
     ok(war.n === 16 && war.tally[0] === 'Vince 4' && war.tally[1] === 'Wes 4' && war.mine === '4/10' && war.colors.join() === '4,4',
        'a war of four is sixteen holdings, four a seat, every general counted, and yours counted toward ten  [' + war.tally.join(' · ') + ' · ' + war.mine + ']');
     ok(/16 holdings and 3 of us/.test(war.speech), 'Maxwell opens a war with its size  [' + war.speech + ']');
@@ -788,7 +788,7 @@ function serve() {
       __mc.paintHome();
       return { label: $('four').textContent, slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
     });
-    ok(/^Four-way · round \d+$/.test(back.label) && back.slot, 'a war of four keeps its own save and resumes from its own door  [' + back.label + ']');
+    ok(/^Four players · round \d+$/.test(back.label) && back.slot, 'a war of four keeps its own save and resumes from its own door  [' + back.label + ']');
 
     /* ══ 11-10: GENERALS FROM YOUR ASSEMBLY (his #9) ══ */
     const gens = await E(() => {
