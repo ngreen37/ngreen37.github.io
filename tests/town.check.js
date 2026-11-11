@@ -1297,8 +1297,8 @@ const server = http.createServer((req, res) => {
         ok(/var ring := TownPortal\.new\(\)\s*\n\tring\.game = "marchland"\s*\n\tring\.position = BOARD_AT\s*\n\tadd_child\(ring\)/.test(fnGd(mxh, '_furnish_room'))
            && /Rect2\(BOARD_AT \+ Vector2\(float\(f\) - 4\.0, float\(r\) - 4\.0\) \* BOARD_CELL/.test(fnGd(mxh, '_decor'))
            && !/"marchland"/.test(tw) && /_draw_board\(CAMP_BOARD,/.test(tw)
-           && /useat:-250,90;bubble:The ring stays dark until half the Assembly is lit\.;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*useis:1770,370:Sand Mine Depths;/.test(ctCases),
-          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house")  (probed: his ring stays dark until half the Assembly is lit, then sits you at his table off the web)');
+           && /scene:res:\/\/rooms\/maxwell\.tscn;wait:40;useat:-250,90;wait:30;campis:screen:home;[^"]*sceneis:res:\/\/rooms\/maxwell\.tscn;[^"]*useis:1770,370:Sand Mine Depths;/.test(ctCases),
+          '…the CAMPAIGN\'s ring is on Maxwell\'s floor, inside his black checker, off the number its board is drawn at  (his 11-03: "Put the campaign risk game as the checker portal game inside the friends black checker house")  (probed: with no Assembly at all his ring sits you at his table, his 11-11, and getting up puts you back on his floor)');
         ok(/var mine := TownPortal\.new\(\)\s*\n\tmine\.game = "sand-mine-depths"\s*\n\tmine\.position = CAMP_BOARD\s*\n\tadd_child\(mine\)/.test(tw)
            && /"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/"[ ,]/.test(por),
           '…the camp\'s ring opens SAND MINE DEPTHS  (his 11-03: "go ahead and use the camp board too for whatever"): the camp is the sand mine\'s, and the Martyr\'s square is won in it  (probed: the ring there says so)');
@@ -2318,9 +2318,11 @@ const server = http.createServer((req, res) => {
         const ringCode = bareGd(rings);
         ok(/return _half\(\) and not GameState\.board\.assembly_half\(\)/.test(fnGd(ringCode, 'dark')) && !/army_count\(\) \* 2/.test(ringCode),
           '…and the ring asks it rather than doing the arithmetic again');
-        ok(/^\t"marchland": \{[^\n]*"half": true/m.test(ringCode) && (ringCode.match(/"half": true/g) || []).length === 1
-          && /bool\(GAMES\[game\]\.get\("half", false\)\)/.test(fnGd(ringCode, '_half')),
-          '…on exactly one ring, off a field  (⚠ not an `if game ==`)');
+        /* ⭐ HIS LOCK CAME OFF (11-11: "make the campaign available on the game in Maxwell's house"): no ring carries it now,
+           and putting one back is the field, not code */
+        ok(/^\t"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "table": "campaign", "desktop": true \},/m.test(ringCode)
+          && (ringCode.match(/"half": true/g) || []).length === 0 && /bool\(GAMES\[game\]\.get\("half", false\)\)/.test(fnGd(ringCode, '_half')),
+          '…and it is off: the Campaign\'s ring is open with no Assembly at all, and a lock is still a field  (⚠ not an `if game ==`)');
         ok(/dark until half the Assembly is lit  \(%d of %d\)/.test(fnGd(ringCode, '_line'))
           && /if dark\(\):\s*\n\s*say\(/.test(fnGd(ringCode, 'interact')),
           '…and a shut ring says its own price AND how far you have got, and a press only says so',
@@ -7561,7 +7563,10 @@ const server = http.createServer((req, res) => {
           const ptS = rd('portal.gd');
           ok(/"sand-mine-depths": \{ "name": "Sand Mine Depths", "url": "\/games\/sand-mine-depths\/", "table": "sandmine" \}/.test(ptS)
              && /if _at_table\(\):\s*\n\t\tif dark\(\):[\s\S]*?GameState\.challenge\.sit_lesson\(str\(GAMES\[game\]\["table"\]\)(, global_position)?\)/.test(fnGd(ptS, 'interact'))
-             && fnGd(ptS, '_at_table').includes('return game != "" and str(GAMES[game].get("table", "")) != "" and not OS.has_feature("web")')
+             /* the mine's ring carries no `desktop`: off the web it is a table, on the web (the desktop program too) the page */
+             && fnGd(ptS, '_at_table').includes('if game == "" or str(GAMES[game].get("table", "")) == "":')
+             && fnGd(ptS, '_at_table').includes('return not OS.has_feature("web") or (bool(GAMES[game].get("desktop", false)) and GameState.worlds.desktop())')
+             && !/"sand-mine-depths": \{[^\n]*"desktop"/.test(ptS)
              && /\n\t\t"sandmine":\s*\n\t\t\tMineTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
              && fnGd(rd('state_board.gd'), 'town_scores').includes('"sand-mine-depths": TableMine.best_score()')
              && /const IN_TOWN := \[[^\]]*"sand-mine-depths"\]/.test(rd('state_worlds.gd')) && rd('state_board.gd').includes('"un": ["sand-mine-depths", 300]')
@@ -7708,7 +7713,11 @@ const server = http.createServer((req, res) => {
                && /const TILT := 54\.0/.test(b3T) && /const FOV := 24\.0/.test(b3T)
                && /func rest_camera\(\) -> void:\s*\n\t_fit\(\)\s*\n\t_pose\(_aim, 0\.0, _dist\)/.test(b3T)
                && /<= EDGE:/.test(b3F('_fit')) && /pts\.append\(Vector3\(x \* 0\.8, TALLEST, -3\.5 \* SQ\)\)/.test(b3F('_fit'))
-               && /_pose\(aim, orbit \* a, _dist \/ lerpf\(1\.0, zoom \* 1\.25, a\)\)/.test(b3F('cam_cut'))
+               && /_pose\(aim, orbit \* a, _dist \/ lerpf\(1\.0, push, a\)\)/.test(b3F('cam_cut'))
+               /* ⚠ a capture's close-up halved (his 11-11, "too intense"): the flat board's and the 3D camera's */
+               && /"capture": \{ "secs": 0\.40, "zoom": 1\.15, "push": 1\.3125,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
+               /* …and a dog's walk-in 25% slower (his 11-11): a ply's slide and its pause, 0.48 → 0.60 */
+               && /const WALK_SECS := 0\.44\n/.test(ctT) && /const SLIDE := 0\.16 /.test(ctT)
                && /minf\(_ray_post\(o, d, world\(v\), 0\.33 \* SIZE, h \* 0\.55\), _ray_post\(o, d, world\(v\), 0\.2 \* SIZE, h\)\)/.test(b3F('square_at'))
                && /if square_at\(p\) == v:\s*\n\t\t\treturn p/.test(b3F('press_point'))
                && /for pair in \[\[code, true\], \[code\.substr\(1, 1\), false\]\]:/.test(b3F('_model')) && /"res:\/\/pieces3d\/%s\.glb"/.test(b3F('_model'))
@@ -8243,7 +8252,10 @@ const server = http.createServer((req, res) => {
               'the site\'s numbers and words': bookFresh,
               'held to the page, case for case': /campaign_corpus\.js/.test(cgT('tests/campaign.sh')) && /require\(path\.join\(SITE, 'tests\/campaign-vm\.js'\)\)\.load\(\{ random: pageRandom \}\)/.test(cgT('tests/campaign_corpus.js'))
                 && /CA DONE fails=%d of %d/.test(cgT('tests/campaign_rules_test.gd')) && /^[^#\n]*\bcampaign\b/m.test(suiteT) && /"\$S\/campaign\.sh"/.test(suiteT),
-              'the ring on his floor sits you at it': /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "half": true, "table": "campaign" \}/.test(poC)
+              /* ⭐ open with no Assembly, and in the desktop program too (his 11-11): its web build knows itself by Electron */
+              'the ring on his floor sits you at it': /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "table": "campaign", "desktop": true \}/.test(poC)
+                && /return not OS\.has_feature\("web"\) or \(bool\(GAMES\[game\]\.get\("desktop", false\)\) and GameState\.worlds\.desktop\(\)\)/.test(fnGd(poC, '_at_table'))
+                && /Electron\\\\\/\/\.test\(navigator\.userAgent\)/.test(rd('state_worlds.gd'))
                 && /"campaign":\s*\n\t\t\tCampaignTable\.open\(self, errand\)/.test(znC) && /"campaign": "Maxwell"/.test(chC),
               'the battle is the page\'s': /^class_name BattleTable\nextends ChessTable/m.test(cbT)
                 && /left\[mover\] = minf\(float\(_turn_start\[mover\]\), float\(left\[mover\]\) \+ CB\.MOVE_DELAY \* 1000\.0\)/.test(fnGd(cbT, '_apply'))
@@ -8253,14 +8265,15 @@ const server = http.createServer((req, res) => {
                 && /if white == att_white and ChessRules\.game_result\(ChessRules\.make_move\(S, q\)\) == "stalemate":/.test(fnGd(cbT, '_try')),
               'what is left marches in, as the site rules': /var moved := _share\(a_ranks - 1, float\(k\.a\)\)/.test(crT) && /static func kept_share/.test(crT)
                 && /CampaignRules\.kept_share\(p\.board, board, a_col\)/.test(fnGd(ctbT, '_on_battle_end')),
-              'Maxwell, his file, his words': /"who": "" if two else _rival\(\)/.test(fnGd(ctbT, '_start_battle')) && /file_campaign\(g, won\)/.test(fnGd(ctbT, '_campaign_over'))
+              'Maxwell, his file, his words': /var foe := CampaignRules\.general_of\(dfd if p\.player_attacks else att\)/.test(fnGd(ctbT, '_start_battle'))
+                && /"who": "" if two else str\(foe\["who"\]\)/.test(fnGd(ctbT, '_start_battle')) && /file_campaign\(g, won\)/.test(fnGd(ctbT, '_campaign_over'))
                 && /static func observe_file/.test(crT) && /CampaignRules\.line_for\(/.test(ctbT),
               'saved, one slot a mode': /const CampaignPart := preload\("res:\/\/core\/state\/state_campaign\.gd"\)/.test(gsC) && /"campaign": campaign\.to_save\(\)/.test(gsC)
-                && /campaign\.from_save\(/.test(gsC) && /const MODES := \["solo", "daily", "two", "first"\]/.test(cpT)
+                && /campaign\.from_save\(/.test(gsC) && /const MODES := \["solo", "daily", "two", "first", "three", "four"\]/.test(cpT)
                 && /"campaign": \{"saves"/.test(cgT('tests/savefix.py')),
               'the Daily the site deals': dailyMatch,
               'played': ['campaign', 'campfirst', 'campdaily', 'camptwo', 'campdefend', 'campring'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
-                && /gs:board\.army=\[0,1,2,3,4,5,6,7\];scene:res:\/\/rooms\/maxwell\.tscn;wait:40;useat:-250,90;wait:30;campis:screen:home/.test(bcCase('campring'))
+                && /SEQ="told;min:600;day:100;scene:res:\/\/rooms\/maxwell\.tscn;wait:40;useat:-250,90;wait:30;campis:screen:home/.test(bcCase('campring'))
                 && /camptap:3;wait:6;campis:screen:roll;camppress:tobattle;wait:4;camppress:tobattle;wait:30;seatis:Maxwell;campend:won-mate/.test(bcCase('campaign'))
                 && /campis:own:3:m;campis:ranks:3:5/.test(bcCase('campaign')) && /campuntil:screen:result:1800;gseq:campaign\.first_done=true/.test(bcCase('campfirst'))
                 && /campis:mxlen:0/.test(bcCase('camptwo')) && /campend:time-att;wait:6;tablebtn:close;wait:20;campuntil:phase:deploy:1800;campis:own:5:m/.test(bcCase('campdefend')),
@@ -8268,6 +8281,45 @@ const server = http.createServer((req, res) => {
             ok(campOff.length === 0,
               '⭐⭐ CHESSWILD: CAMPAIGN COMES INTO THE GAME  (his 11-10, #1 "Campaign comes into the game"): the ring on Maxwell\'s floor sits you at his table off the web (the site\'s page on it), ten holdings and the dice that muster an army; a battle is fought at the town\'s own table, the 3D board and Maxwell across it, on the page\'s clocks (fifteen seconds, a second back a move), the page\'s flag rule and the page\'s own engine; what is left marches in, his file and his words, your dog, the Daily, two players and the first campaign; every rule held to the site\'s page case for case (tests/campaign.sh), every number and word the site\'s (gen_campaign.js), one save slot a mode (probed: a round and a battle, his turn, getting up and back; the first campaign won; the Daily the site deals; two players; a defense held)',
               campOff.length ? 'off: ' + campOff.join(' · ') : 'the page, rule for rule');
+
+            /* ⭐⭐ HIS PICKS 6, 7, 9, 10 (11-10: "Let's do 6, 7, 9, 10"), IN THE GAME: a war of three or four, your Assembly's
+               generals, the war replayed and framed in your house, and the map on sand with the dice thrown on it */
+            const sdGd = rd('sand_table.gd'), sdJs = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-sandtable.js'), 'utf8');
+            const hmWar = rd('home.gd'), coRows = cgT('tests/campaign_corpus.js');
+            /* the sand table's numbers, the site's and the game's, one by one */
+            const SAND_NUMS = ['U', 'TILT', 'FOV', 'EDGE', 'MESA', 'MESA_BIG', 'MESA_H', 'PAWN', 'SHOW', 'BADGE', 'NAME_W', 'NAME_H', 'ROOK', 'DIE', 'THROW', 'SEE', 'LINGER'];
+            const sandOff = SAND_NUMS.filter((k) => {
+              /* ⚠ the site declares some in a comma list (var MESA = 0.95, MESA_BIG = 0.78) */
+              const a = new RegExp('(?:var |, )' + k + ' = (-?[\\d.]+)').exec(sdJs), b = new RegExp('const ' + k + ' := (-?[\\d.]+)').exec(sdGd);
+              return !a || !b || +a[1] !== +b[1];
+            });
+            const facesJ = (/var FACES = (\[\[[^;]*\]\]);/.exec(sdJs) || [])[1], facesG = (/const FACES := (\[\[[^\n]*\]\])/.exec(sdGd) || [])[1];
+            const bandJ = ((/var BAND = \[([^\]]*)\]/.exec(sdJs) || [])[1] || '').match(/[0-9a-f]{6}/g), bandG = ((/const BAND := \[([^\n]*)\]/.exec(sdGd) || [])[1] || '').match(/[0-9a-f]{6}/g);
+            const warOff = offOf({
+              'a war of three or four, held to the page': /func clash\(from: int, to: int\) -> Dictionary:/.test(crT) && /static func war_of\(mode: String\)/.test(crT)
+                && /"k": rand\(\) if war else 0\.0/.test(fnGd(crT, 'rival_plan')) && /var need := int\(war_of\(str\(g\.mode\)\)\["win"\]\)/.test(fnGd(crT, 'campaign_over'))
+                && /func _their_turn\(side := ""\) -> void:/.test(ctbT) && /var nx := R\.next_side\(was\) if R\.multi\(\) else ""/.test(fnGd(ctbT, '_after_turn'))
+                && /var P := R\.clash\(int\(s\.from\), int\(s\.to\)\)/.test(fnGd(ctbT, '_pump')) && ['war_start', 'war_plan', 'clash', 'over'].every((r) => coRows.indexOf('rows.' + r + '.push') >= 0),
+              'your Assembly\'s generals, held to the page': /func give_order\(name: String, at := -1\) -> bool:/.test(crT) && /func muster_generals\(names: Array\) -> Array:/.test(crT)
+                && /out\.append\(GameState\.board\.holder_at\(int\(slot\)\)\)/.test(fnGd(ctbT, '_assembly_names')) && /R\.orders_expire\(\)/.test(fnGd(ctbT, '_reset_turn'))
+                && ['orders', 'hold'].every((r) => coRows.indexOf('rows.' + r + '.push') >= 0),
+              'the war replayed, and framed in your house': /func war_end\(won: Variant\) -> Dictionary:/.test(crT) && /static func better_war\(/.test(crT)
+                && /func keep_best\(w: Dictionary\) -> bool:/.test(cpT) && /"best": best/.test(cpT) && /CampaignRules\.better_war\(w, best\)/.test(fnGd(cpT, 'merge'))
+                && /_play_war\(GameState\.campaign\.best, HOUSE\)/.test(ctbT) && /class WarFrame extends Interactable:/.test(hmWar)
+                && /GameState\.challenge\.lesson_wanted\.emit\(\{ "who": "Maxwell", "lesson": "campaign", "war": true \}\)/.test(hmWar)
+                && coRows.indexOf('rows.better.push') >= 0,
+              'the sand table, the site\'s numbers': sandOff.length === 0 && !!facesJ && facesJ === facesG && !!bandJ && !!bandG && bandJ.join() === bandG.join()
+                && /static func able\(\) -> bool:/.test(sdGd) && /if screen == MAP and _sand_on\(\) and _sand\.visible and _sand\.throw_dice\(/.test(fnGd(ctbT, '_begin_battle')),
+              'played': ['campfour', 'campthree', 'campgens', 'campwar', 'campsand'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /campuntil:phase:deploy:3600;campis:round:2;campis:turns:4;campis:held:4/.test(bcCase('campfour'))
+                && /campgen:Matsu;campis:screen:map;camptap:5;campis:ranks:5:6;campis:used:Matsu/.test(bcCase('campgens'))
+                && /campover:true;campis:screen:result;camphas:best:won in;camppress:watch;campis:screen:war/.test(bcCase('campwar'))
+                && /scene:res:\/\/rooms\/home\.tscn;wait:40;shot:house_war;useat:-140,-226;wait:30;campis:screen:war/.test(bcCase('campwar'))
+                && /camptap:3;campis:throwing:true;campis:screen:map;[^"]*campuntil:screen:roll:600;campis:roll:5/.test(bcCase('campsand')),
+            });
+            ok(warOff.length === 0,
+              '⭐⭐ HIS PICKS 6, 7, 9, 10 IN THE GAME  (his 11-10: "Let\'s do 6, 7, 9, 10"): a war of three or four round the table, two machines\' battle decided at once at the measured odds, hold ten and it is yours; everyone whose square you have won gives an order a campaign, one a round; every war plays back, your best framed in your house and pressed there; and the map on sand, his pawns as troops and the dice thrown on it, on the site\'s own numbers (probed: a war of four round the table, a war of three dealt, Matsu\'s order, a war won and watched and its frame pressed at home, the sand table and its throw)',
+              warOff.length ? 'off: ' + warOff.join(' · ') + (sandOff.length ? '  [sand: ' + sandOff.join(' ') + ']' : '') : 'the page, rule for rule, and the table on its numbers');
           }
         }
 
