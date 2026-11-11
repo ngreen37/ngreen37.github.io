@@ -14,6 +14,8 @@
      [[accuracy-above-all]] — a game that lies about chess is worse than no game. -->
 <script src="/assets/js/pjcc-chess.js"></script>
 <script src="/assets/js/pjcc-board3d.js"></script>
+<!-- ⭐ THE SAND TABLE (his #6, 11-10): the map as a tilted 3D table, a lens over the flat one -->
+<script src="/assets/js/pjcc-sandtable.js"></script>
 <!-- THE VS RAILS (2026-08-13). ⚠ ORDER: config → profile → vs; PJCCVs.color() reads
      PJCC.auraColor() and keeps no palette of its own. -->
 <script src="/assets/js/pjcc-config.js"></script>
@@ -218,6 +220,53 @@
      chain the position die builds, one scale up. */
   .link.chain-m { stroke: rgba(107,255,184,.55); stroke-width: 0.8; }
   .link.chain-t { stroke: rgba(255,110,138,.5);  stroke-width: 0.8; }
+  /* ⭐ A WAR OF THREE OR FOUR (11-10): the other generals' colors (SIDES), and a smaller holding so sixteen fit at 320px */
+  .link.hot.hot-u { stroke: #79bfff; } .link.hot.hot-v { stroke: #c99bff; }
+  .link.chain-u { stroke: rgba(121,191,255,.5); stroke-width: 0.8; }
+  .link.chain-v { stroke: rgba(201,155,255,.5); stroke-width: 0.8; }
+  .node.side-u .disc { background: #132a42; border-color: #79bfff; color: #79bfff; }
+  .node.side-v .disc { background: #2c1a44; border-color: #c99bff; color: #c99bff; }
+  .tally b.u { color: #79bfff; } .tally b.v { color: #c99bff; }
+  .tally span.out { text-decoration: line-through; opacity: .55; }
+  /* ⭐ YOUR ASSEMBLY'S GENERALS (11-10): the map's door, lit while an order is yours to give, and their screen */
+  #orders.ready { border-color: rgba(107,255,184,.6); color: var(--mine); }
+  #screen-orders { gap: 6px; }
+  .gens { display: flex; flex-direction: column; gap: 6px; max-height: 62vh; overflow-y: auto; }
+  .gen { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 4px; text-align: left;
+    background: rgba(107,255,184,.05); border: 1px solid rgba(107,255,184,.32); border-radius: 12px; color: var(--ink);
+    font: 12px 'Trebuchet MS', sans-serif; line-height: 1.35; cursor: pointer; min-height: 44px; }
+  .gen canvas { width: 40px; height: 45px; flex: none; }
+  .gen b { color: var(--mine); }
+  .gen small { display: block; font-size: 11px; color: var(--ink-2); }
+  .gen:disabled { cursor: default; opacity: .5; }
+  .gen.used { border-style: dashed; }
+  /* ⭐ THE WAR, REPLAYED (11-10): the marches drawn on the map, a mate's board under it, and the frame on the home screen */
+  .march { stroke-width: 1.1; stroke-linecap: round; }
+  .march.held { stroke-dasharray: 2 1.6; }
+  #screen-war { gap: 4px; }
+  #screen-war .verdict { font-size: 20px; }
+  #war-say { min-height: 34px; }
+  .board.warmate { width: min(46%, 200px); margin: 2px auto 0; }
+  .frame { display: flex; align-items: center; gap: 10px; margin: 6px auto 0; padding: 6px 12px 6px 6px; cursor: pointer;
+    background: linear-gradient(180deg, #3a2a14, #24190c); border: 3px solid #8a6a2c; border-radius: 6px;
+    box-shadow: inset 0 0 0 1px #c9a24a, 0 2px 8px rgba(0,0,0,.5); color: #f3e2b6; font: 700 11px 'Trebuchet MS', sans-serif;
+    text-align: left; max-width: 100%; min-height: 44px; }
+  .frame .mapbox.mini { display: block; width: 58px; flex: none; margin: 0; border-radius: 3px; border-color: #5b4520; }
+  .mapbox.mini .node { width: 8px; cursor: default; }
+  .mapbox.mini .node .disc { width: 7px; height: 7px; border-width: 1px; font-size: 0; }
+  .mapbox.mini .link { stroke-width: 0.9; }
+  .mapbox.mini .march { stroke-width: 2.2; }
+  /* ⭐ THE SAND TABLE (11-10): the flat map stays under it for the keyboard and the tests, unseen; its button rides
+     the corner */
+  .mapbox.sand-on > svg, .mapbox.sand-on > .node { opacity: 0; pointer-events: none; }
+  /* ⚠ THE TABLE IS SEEN AT A TILT, SO IT IS WIDER THAN TALL ON SCREEN: the box takes its shape, not the flat map's */
+  .mapbox.sand-on { background: #2a1a0c; border-color: #5b4520; aspect-ratio: 1.06 / 1; }
+  /* the generals' door and the map's view, one row under the map */
+  .maprow { display: flex; gap: 7px; margin: 0 0 6px; }
+  .maprow .btn { flex: 1; min-width: 0; margin: 0; }
+  .mapbox.big .node { width: 54px; }
+  .mapbox.big .node .disc { width: 32px; height: 32px; font-size: 13px; }
+  .mapbox.big .node .nm { font-size: 8.5px; margin-top: 2px; }
 
   .status { text-align: center; font-size: 13px; color: var(--ink-2); min-height: 34px;
     line-height: 1.45; padding: 0 4px; }
@@ -577,8 +626,15 @@
       <button class="btn ghost slim" id="daily">Daily</button>
       <button class="btn ghost slim" id="two">Two players</button>
     </div>
+    <!-- ⭐ A WAR OF THREE OR FOUR (11-10): you against two or three generals, each resuming its own -->
+    <div class="modes">
+      <button class="btn ghost slim" id="three">Three-way</button>
+      <button class="btn ghost slim" id="four">Four-way</button>
+    </div>
     <button class="btn ghost slim" id="first">First campaign</button>
     <button class="btn ghost" id="how">How it works</button>
+    <!-- ⭐ your best war, framed (11-10): its last map with every march you won on it; tap to watch it again -->
+    <button class="frame" id="frame" hidden><span class="mapbox mini" id="framebox"><svg viewBox="0 0 100 112" preserveAspectRatio="none"></svg></span><span id="frame-say"></span></button>
     <p class="foot"><button class="snd" id="snd" aria-pressed="false">🔊 Sound on</button></p>
   </section>
 
@@ -634,7 +690,13 @@
       <b>Coach:</b> on Easy, the roll screen suggests a plan.<br>
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
       rounds; hold as much as you can. Scores compare at the same settings.<br>
-      <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.
+      <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.<br>
+      <b>Three-way and four-way:</b> you against two or three generals on a bigger map. <b>Hold ten holdings</b>
+      and the war is yours. When two generals fight each other, it is decided at once, at the odds real battles
+      measured.<br>
+      <b>Generals:</b> everyone whose square you have won in the town's Assembly gives you one order a campaign,
+      on the map, one a round.<br>
+      <b>The war, replayed:</b> watch any campaign back when it ends. Your best one is framed below.
     </p>
     <button class="btn ghost" id="back">Back</button>
   </section>
@@ -658,7 +720,10 @@
     </div>
     <div class="tally">
       <span><span id="l-mine">Yours</span> <b class="m" id="t-mine">0</b></span>
-      <span><span id="l-theirs">Theirs</span> <b class="t" id="t-theirs">0</b></span>
+      <span id="tw-t"><span id="l-theirs">Theirs</span> <b class="t" id="t-theirs">0</b></span>
+      <!-- a war of three or four: the other generals' holdings -->
+      <span id="tw-u" hidden><span id="l-u">Blue</span> <b class="u" id="t-u">0</b></span>
+      <span id="tw-v" hidden><span id="l-v">Violet</span> <b class="v" id="t-v">0</b></span>
       <!-- ⚑ THE CHAIN, COUNTED. His: "The chain is great - let's do it and promote it
            in-game." It is promoted in four places and this is the quietest of them: a
            number you watch go up as you play, which is what turns a rule into a goal. -->
@@ -667,12 +732,22 @@
       <span>Round <b id="t-round">1</b></span>
     </div>
     <p class="cardbar" id="cardbar" hidden><i>Round card</i><b id="card-nm"></b><span id="card-txt"></span></p>
-    <div class="speech" id="mx-speech" hidden><canvas id="mx-face" width="72" height="80" aria-hidden="true"></canvas><p><b>Maxwell</b><span id="mx-line"></span></p></div>
+    <div class="speech" id="mx-speech" hidden><canvas id="mx-face" width="72" height="80" aria-hidden="true"></canvas><p><b id="mx-name">Maxwell</b><span id="mx-line"></span></p></div>
     <div class="mapbox" id="mapbox">
       <svg id="links" viewBox="0 0 100 112" preserveAspectRatio="none"></svg>
     </div>
     <p class="status" id="map-say">Choose a holding to attack from.</p>
+    <!-- ⭐ your Assembly's generals (11-10): hidden with nobody standing with you; the sand table's switch beside it -->
+    <div class="maprow" id="maprow"><button class="btn ghost slim" id="orders" hidden>Generals</button></div>
     <button class="btn" id="endturn">End your attacks</button>
+  </section>
+
+  <!-- ══ ORDERS (your Assembly's generals) ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-orders">
+    <h2>Your Generals</h2>
+    <p class="sub" id="orders-say">One order a round. Each general gives one a campaign.</p>
+    <div class="gens" id="gens"></div>
+    <button class="btn ghost" id="orders-back">Back to the map</button>
   </section>
 
   <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
@@ -739,8 +814,24 @@
     <p class="verdict" id="verdict"></p>
     <p class="sub" id="result-say" style="margin-top:12px"></p>
     <p class="sub mx" id="result-mx" hidden></p>
+    <!-- ⭐ the war, replayed (11-10): this one, and a note when it is your best and goes in the frame -->
+    <p class="sub framed" id="framed" hidden>Framed on the home screen: your best war yet.</p>
+    <button class="btn ghost" id="watch" hidden>Watch the war</button>
     <button class="btn ghost" id="share" hidden>Copy result</button>
     <button class="btn" id="cont">Continue</button>
+  </section>
+
+  <!-- ══ THE WAR, REPLAYED ══════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-war">
+    <p class="verdict" id="war-title">THE WAR</p>
+    <p class="sub" id="war-say">&nbsp;</p>
+    <div class="mapbox" id="warbox"><svg viewBox="0 0 100 112" preserveAspectRatio="none"></svg></div>
+    <div class="board warmate" id="warmate" hidden>
+      <div class="sqs" id="wsqs"></div>
+      <div class="men" id="wmen"></div>
+    </div>
+    <p class="foot" id="war-step"></p>
+    <button class="btn" id="war-back">Skip</button>
   </section>
 
   <!-- ══ PASS (two players) ═════════════════════════════════════════════════════ -->
@@ -955,33 +1046,41 @@ var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
       dots: B.moves.map(function (m) { return m.to; }), turn: B.S.turn, hint: B.mate ? B.mate.sealed : [] };
   },
   /* ⭐ MAXWELL SITS ACROSS (his 11-10): every battle against Red; two players face each other, nobody between */
-  seat: function () { return B && !B.two ? { who: RIVAL.who, key: RIVAL.key } : null; },
+  seat: function () { var g = B && !B.two ? generalOf(B.foeSide) : null; return g ? { who: g.who, key: g.key } : null; },
 }) : null;
 if (B3) $('mc-view-row').appendChild(B3.button('mc-view'));
+/* ⭐ THE SAND TABLE (his #6, 11-10): the map drawn on sand in 3D, his pawns standing as troops, and the dice thrown on it
+   (assets/js/pjcc-sandtable.js). A lens: drawMap hands it what it drew, and a press on a holding is tapLand's. */
+var SAND = window.PJCCSand ? PJCCSand.mount({ host: $('mapbox'), press: function (id) { tapLand(id); } }) : null;
+if (SAND) $('maprow').appendChild(SAND.button('btn ghost slim mapview'));
 
 /* mode: 'solo' | 'daily' | 'two'. G.side is whose turn it is at the device — always 'm' outside two-player.
    ⚠ 'm'/'t' stay the COLORS (green/red); player-action code asks G.side, never 'm'. */
 /* opts: { fog, cards } — fog defaults on, cards off, so a bare newCampaign() is the plain rules */
 function newCampaign(diff, mode, opts) {
   mode = mode || 'solo'; opts = opts || {};
-  var day = mode === 'daily' ? dayKey() : null;
+  var day = mode === 'daily' ? dayKey() : null, war = WAR_START[mode];
   var start = mode === 'first' ? { own: FIRST_START.own.slice(), ranks: FIRST_START.ranks.slice(), walls: FIRST_START.walls.slice() }
+    : war ? { own: war.own.slice(), ranks: war.ranks.slice(), walls: war.walls.slice() }
     : day ? dailyStart(day) : { own: START_OWN.slice(), ranks: START_RANKS.slice() };
+  var sides = sidesFor(mode), seen = {};
+  sides.forEach(function (s) { seen[s] = []; });
   G = { own: start.own, ranks: start.ranks, round: 1, sel: -1, busy: false,
-        diff: diff || 'medium', mode: mode, day: day, side: 'm',
+        diff: diff || 'medium', mode: mode, day: day, side: 'm', sides: sides, acting: '', fallen: [],
         fog: opts.fog !== false, cards: !!opts.cards, card: null, truce: -1, lastCard: null,
         walls: start.walls || START_WALLS.slice(), down: [],
-        seen: { m: [], t: [] }, scoutArm: -1,
+        seen: seen, scoutArm: -1,
         phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
         fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
         flash: -1, hot: null, q: [], log: freshLog(), habits: null, dogId: '', dog: -1, sniffed: false,
-        lesson: '', teachAt: [], taught: {} };
+        lesson: '', teachAt: [], taught: {},
+        gens: [], used: [], ordered: false, orderArm: '', hold: null, bar: null, sight: false, roads: false };
   drawCard();
   G.atks = ATTACK_CAP + cardAtks();
   G.toPlace = deployFor(G.side);
 }
-function sideName(s) { return s === 'm' ? 'Green' : 'Red'; }
-function sideColor(s) { return s === 'm' ? '#6bffb8' : '#ff6e8a'; }
+function sideName(s) { return (SIDES[s] || SIDES.t).nm; }
+function sideColor(s) { return (SIDES[s] || SIDES.t).col; }
 
 /* ── THE WALLS ────────────────────────────────────────────────────────────────────
    A walled holding cannot be taken by one won battle. The first win brings the WALLS DOWN
@@ -995,7 +1094,8 @@ function sideColor(s) { return s === 'm' ? '#6bffb8' : '#ff6e8a'; }
    change only what a WIN is worth.
    ⚠ `G.down` is cleared at every turn change, so a breach is never inherited by the side
    that did not make it. */
-function walled(id) { return G.walls.indexOf(id) >= 0; }
+/* ⚠ a Barricade (a general's order) walls a holding until its side's next turn: the walls' rule, never their troop */
+function walled(id) { return G.walls.indexOf(id) >= 0 || barred(id); }
 function breached(id) { return G.down.indexOf(id) >= 0; }
 /* true when a win on this holding would only break the walls */
 function sieged(id) { return walled(id) && !breached(id); }
@@ -1008,7 +1108,7 @@ function wallsFor(side) {
 /* ── FOG ── an enemy holding is hidden unless it borders one of yours or you scouted it this turn */
 function fogged(id) {
   var s = G.side;
-  if (!G.fog || G.card === 'skies' || G.own[id] === s || G.seen[s].indexOf(id) >= 0) return false;
+  if (!G.fog || G.card === 'skies' || G.sight || G.own[id] === s || G.seen[s].indexOf(id) >= 0) return false;
   return !nbrs(id).some(function (j) { return G.own[j] === s; });
 }
 
@@ -1064,7 +1164,7 @@ function siegeHint(from) {
 /* fortify reach: a neighbor, or under Long Roads anything joined to it through your own holdings */
 function fortReach(from, to) {
   if (from === to || G.own[to] !== G.side) return false;
-  if (G.card !== 'roads') return adj(from, to);
+  if (G.card !== 'roads' && !G.roads) return adj(from, to);
   var seen = {}, q = [from];
   seen[from] = 1;
   while (q.length) {
@@ -1699,7 +1799,7 @@ function keptShare(start, end, color) {
 
 /* ── SCREENS ───────────────────────────────────────────────────────────────────── */
 function show(id) {
-  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass']
+  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass','screen-orders','screen-war']
     .forEach(function (s) { $(s).classList.toggle('on', s === id); });
 }
 function say(t) { $('map-say').innerHTML = t; }
@@ -1771,29 +1871,31 @@ function drawMap() {
   var box = $('mapbox'), svg = $('links');
   var ae = document.activeElement, focusId = (ae && ae.classList && ae.classList.contains('node')) ? ae.getAttribute('data-id') : null;
   Array.prototype.slice.call(box.querySelectorAll('.node')).forEach(function (n) { n.remove(); });
-  var lines = '';
+  var lines = '', sandLinks = [], sandNodes = [];
   EDGES.forEach(function (e) {
     var a = LAND[e[0]], b = LAND[e[1]], cls = 'link';
     if (G.own[e[0]] === G.own[e[1]] && chained(G.own, e[0]) && chained(G.own, e[1])) {
-      cls += G.own[e[0]] === 'm' ? ' chain-m' : ' chain-t';
+      cls += ' chain-' + G.own[e[0]];
     }
     if (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] !== G.side && e[1] !== G.truce) ||
                        (e[1] === G.sel && G.own[e[0]] !== G.side && e[0] !== G.truce))) {
       cls += ' hot';
     }
     if (G.hot && ((e[0] === G.hot.from && e[1] === G.hot.to) || (e[1] === G.hot.from && e[0] === G.hot.to))) {
-      cls += ' hot';
+      cls += ' hot hot-' + G.own[G.hot.from];       // ⚠ in the marcher's color: a war of four has four
     }
     lines += '<line class="' + cls + '" x1="' + a.x + '" y1="' + (a.y * 1.12) +
              '" x2="' + b.x + '" y2="' + (b.y * 1.12) + '"/>';
+    sandLinks.push(cls);
   });
   svg.innerHTML = lines;
 
   var two = G.mode === 'two';
+  box.classList.toggle('big', LAND.length > 10);
   LAND.forEach(function (L) {
-    var mine = G.own[L.id] === G.side, fog = fogged(L.id);
+    var mine = G.own[L.id] === G.side, fog = fogged(L.id), o = G.own[L.id];
     var isSel = G.sel === L.id;
-    var cls = 'node ' + (G.own[L.id] === 'm' ? 'mine' : 'theirs');
+    var cls = 'node ' + (o === 'm' ? 'mine' : o === 't' ? 'theirs' : 'side-' + o);
     if (isSel) cls += ' sel';
     if (G.flash === L.id) cls += ' flash';
     if (G.hot && G.hot.to === L.id) cls += ' doom';
@@ -1803,7 +1905,7 @@ function drawMap() {
     if (G.truce === L.id) cls += ' truce';
     if (walled(L.id)) cls += ' walls' + (breached(L.id) ? ' breached' : '');
 
-    if (chained(G.own, L.id)) cls += ' chained';
+    if (chained(G.own, L.id) || held(L.id)) cls += ' chained';
 
     if (G.phase === 'deploy' && mine && G.toPlace > 0) cls += ' can';
     if (G.phase === 'attack' && G.atks > 0) {
@@ -1823,9 +1925,9 @@ function drawMap() {
     el.type = 'button';
     el.className = cls;
     el.setAttribute('data-id', L.id);
-    el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(G.own[L.id]) : mine ? 'yours' : 'theirs') + ', ' +
+    el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(o) : mine ? 'yours' : multi() ? generalOf(o).who + '’s' : 'theirs') + ', ' +
       (fog ? 'troops unknown' : G.ranks[L.id] + ' troop' + (G.ranks[L.id] === 1 ? '' : 's')) +
-      (chained(G.own, L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : '') +
+      (chained(G.own, L.id) || held(L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : '') +
       (walled(L.id) ? (breached(L.id) ? ', walls down' : ', walled') : ''));
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
     el.innerHTML = '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>' +
@@ -1833,18 +1935,36 @@ function drawMap() {
     el.addEventListener('click', function () { tapLand(L.id); });
     box.appendChild(el);
     if (focusId === String(L.id)) el.focus();
+    sandNodes.push({ own: o, ranks: G.ranks[L.id], fog: fog, cls: cls, col: sideColor(o) });
   });
+  /* the sand table draws what was just drawn: the same classes, the same troops, the same fog */
+  if (SAND) SAND.set({ land: LAND, edges: EDGES, nodes: sandNodes, links: sandLinks,
+    colors: { m: SIDES.m.col, t: SIDES.t.col, u: SIDES.u.col, v: SIDES.v.col },
+    dog: G.dogId && G.dog >= 0 && G.mode !== 'two' && dogFace[G.dogId] && dogFace[G.dogId] !== 'pending' ? dogFace[G.dogId] : '',
+    dogAt: G.dogId && G.mode !== 'two' ? G.dog : -1 });
   saveCampaign();
 
   var m = 0, t = 0;
-  for (var i = 0; i < LAND.length; i++) { if (G.own[i] === 'm') m++; else t++; }
-  $('t-mine').textContent = m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
+  for (var i = 0; i < LAND.length; i++) { if (G.own[i] === 'm') m++; else if (G.own[i] === 't' || !multi()) t++; }
+  /* a war of three or four counts toward its line: "4/10" */
+  $('t-mine').textContent = multi() ? m + '/' + WAR_WIN[G.mode] : m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
+  /* a war of three or four counts every general's holdings, a fallen one struck through */
+  ['u', 'v'].forEach(function (s) {
+    var on = multi() && G.sides.indexOf(s) >= 0;
+    $('tw-' + s).hidden = !on;
+    if (!on) return;
+    $('l-' + s).textContent = generalOf(s).who;
+    $('t-' + s).textContent = idsOf(s).length;
+    $('tw-' + s).classList.toggle('out', !alive(s));
+  });
+  $('tw-t').classList.toggle('out', multi() && !alive('t'));
   $('l-mine').textContent = two ? 'Green' : 'Yours'; $('l-theirs').textContent = two ? 'Red' : RIVAL.who;
   $('screen-map').classList.toggle('red-turn', two && G.side === 't');
   $('t-chain').textContent = chainCount(G.own, G.side);
   $('t-chain').className = $('t-atk').className = G.side;
   $('t-atk').textContent = G.atks;
   $('t-atk').parentNode.className = G.atks ? '' : 'spent';
+  paintOrdersDoor();
   var bar = $('cardbar');
   bar.hidden = !G.card;
   if (G.card) {
@@ -1856,6 +1976,13 @@ function drawMap() {
 
 function tapLand(id) {
   if (G.busy) return;
+  /* ⭐ a general's order waiting for its holding (Reinforce, Hold Fast, Barricade) lands on this tap, or is put away */
+  if (G.orderArm) {
+    var gn = G.orderArm;
+    if (G.own[id] === G.side && giveOrder(gn, id)) { orderSaid(gn, id); return; }
+    G.orderArm = '';
+    say('Put away. ' + phaseLine()); drawMap(); return;
+  }
   var armed = G.scoutArm; G.scoutArm = -1;
   if ((G.phase === 'deploy' || G.phase === 'attack') && fogged(id)) { scout(id, armed === id); return; }
 
@@ -1896,7 +2023,7 @@ function tapLand(id) {
       if (G.own[id] !== G.side) { say('Move troops between your own holdings.'); return; }
       if (G.ranks[id] < 2) { say(LAND[id].nm + ' has one troop — it cannot spare it.'); return; }
       G.fortFrom = id;
-      say('From ' + LAND[id].nm + ' — tap ' + (G.card === 'roads' ? 'any holding of yours it connects to' : 'a neighbor of yours') + ', once per troop.');
+      say('From ' + LAND[id].nm + ' — tap ' + (G.card === 'roads' || G.roads ? 'any holding of yours it connects to' : 'a neighbor of yours') + ', once per troop.');
       drawMap(); return;
     }
     if (id === G.fortFrom) {
@@ -1906,7 +2033,7 @@ function tapLand(id) {
       G.fortFrom = -1; G.fortTo = -1;
       say('Pick a holding to move troops from.'); drawMap(); return; }
     if (!fortReach(G.fortFrom, id)) {
-      say(LAND[id].nm + (G.card === 'roads' ? ' is not joined to it through your holdings.' : ' is not a neighbor you hold.')); return;
+      say(LAND[id].nm + (G.card === 'roads' || G.roads ? ' is not joined to it through your holdings.' : ' is not a neighbor you hold.')); return;
     }
     if (G.fortTo >= 0 && G.fortTo !== id) {
       say('One move a round. ' + LAND[G.fortTo].nm + ' is where these are going.'); return;
@@ -1972,7 +2099,7 @@ function deployLine() {
 function phaseLine() {
   return G.phase === 'deploy' ? deployLine() : G.phase === 'attack' ? atksLine()
     : G.card === 'mud' ? '<b>Mud</b> — nobody fortifies this round. End your turn.'
-    : G.card === 'roads' ? 'Fortify — move troops along any chain of your own holdings.'
+    : G.card === 'roads' || G.roads ? 'Fortify — move troops along any chain of your own holdings.'
     : 'Fortify — one free move of troops between two holdings you hold.';
 }
 
@@ -2004,7 +2131,8 @@ function musterBattle(from, to, playerAttacks) {
   var draw = function (tag, fn) { return seed ? seeded(seed + tag, fn) : fn(); };
   var aMatPool = draw('am', function () { return rollPool(poolFor(aRanks, false)); });
   var aPosPool = draw('ap', function () { return rollPool(poolFor(aRanks, false)); });
-  var dChain = chained(G.own, to);
+  /* ⚠ Hold Fast (a general's order) is the chain's die on one holding, and nothing else of the chain's */
+  var dChain = chained(G.own, to) || held(to);
   var dDice = Math.min(DICE_CAP + 1, poolFor(dRanks, true) + (dChain ? 1 : 0));
   var dMatPool = draw('dm', function () { return rollPool(dDice); });
   var dPosPool = draw('dp', function () { return rollPool(dDice); });
@@ -2051,17 +2179,21 @@ function beginBattle(from, to, playerAttacks) {
   G.pending = { from:from, to:to, playerAttacks:playerAttacks, aRanks:PEND.aRanks }; saveCampaign();
 
   var two = G.mode === 'two', aName = sideName(G.own[from]), dName = sideName(G.own[to]);
+  /* the general in the other chair: whoever holds the ground you march on, or whoever marches on yours */
+  var foe = generalOf(playerAttacks ? G.own[to] : G.own[from]).who;
   /* ⚠ THE RING SAYS WHOSE DIE IT IS, IN EVERY MODE (found porting it, 11-10): it swapped only for two players, so
-     Maxwell's dice wore your green whenever he attacked you */
+     Maxwell's dice wore your green whenever he attacked you. A war of four has four colors: each chair wears its own. */
   $('screen-roll').classList.toggle('swap', G.own[from] === 't');
+  $('screen-roll').style.setProperty('--mine', sideColor(G.own[from]));
+  $('screen-roll').style.setProperty('--theirs', sideColor(G.own[to]));
   $('roll-title').textContent = two ? aName + ' marches on ' + LAND[to].nm
     : playerAttacks ? 'You march on ' + LAND[to].nm
     : LAND[from].nm + ' marches on ' + LAND[to].nm;
-  $('att-label').textContent = (two ? aName + ' attacks' : playerAttacks ? 'You attack' : RIVAL.who + ' attacks') + ' · ' + LAND[from].nm;
+  $('att-label').textContent = (two ? aName + ' attacks' : playerAttacks ? 'You attack' : foe + ' attacks') + ' · ' + LAND[from].nm;
   /* ⚑ THE CHAIN GETS ITS OWN CHIP, ABOVE THE DICE IT IS ABOUT. It used to appear only as
      ", +1 chained" inside the fine print behind a tap — which is to say the one bonus in
      the game that rewards how you hold the map was invisible at the moment it paid out. */
-  $('def-label').innerHTML = (two ? dName + ' defends' : playerAttacks ? RIVAL.who + ' defends' : 'You defend') + ' · ' + LAND[to].nm +
+  $('def-label').innerHTML = (two ? dName + ' defends' : playerAttacks ? foe + ' defends' : 'You defend') + ' · ' + LAND[to].nm +
     (PEND.dChain ? '<em class="chainchip">chained &middot; +1 die</em>' : '') +
     (walled(to) ? '<em class="chainchip wallchip">' + (breached(to) ? 'walls down &middot; a win takes it'
                                                                    : 'walled &middot; a win breaks the walls') + '</em>' : '');
@@ -2071,8 +2203,23 @@ function beginBattle(from, to, playerAttacks) {
   $('v-pos').innerHTML = '&nbsp;'; $('v-pos').className = 'vline';
   $('preview').hidden = true;
   $('tobattle').disabled = true;
+  /* ⭐ ON THE SAND TABLE THE DICE ARE THROWN ON IT FIRST, and the roll screen opens on them rolled (his #6) */
+  if (SAND && SAND.on() && $('screen-map').classList.contains('on') &&
+      SAND.throwDice(sandThrow(PEND, sideColor(G.own[from]), sideColor(G.own[to])), function () {
+        if (!PEND || PEND.from !== from || PEND.to !== to) return;
+        show('screen-roll'); finishRoll();
+      })) return;
   show('screen-roll');
   runRoll();
+}
+/* a battle's dice for the sand table: each pool a row, its best die ringed in its side's color */
+function sandThrow(p, ac, dc) {
+  var dice = [];
+  [[p.aMatPool, 'att', ac, 0], [p.aPosPool, 'att', ac, 1], [p.dMatPool, 'def', dc, 0], [p.dPosPool, 'def', dc, 1]].forEach(function (x) {
+    var k = keptIndex(x[0]);
+    x[0].forEach(function (v, i) { dice.push({ v: v, side: x[1], kept: i === k, col: x[2], row: x[3] }); });
+  });
+  return { from: p.from, to: p.to, dice: dice };
 }
 
 /* ── THE ROLL, AS FOUR BEATS ───────────────────────────────────────────────────────
@@ -2399,12 +2546,14 @@ function startBattle() {
        resets on its own and never needs clearing anywhere. */
     mercied: false,
     /* two players: White is always the attacker, so wSide/bSide name the two humans */
-    two: G.mode === 'two', wSide: G.own[p.from], bSide: G.own[p.to]
+    two: G.mode === 'two', wSide: G.own[p.from], bSide: G.own[p.to],
+    /* the general across the board (Maxwell for Red; a war of three or four, whoever holds the other end) */
+    foeSide: p.playerAttacks ? G.own[p.to] : G.own[p.from]
   };
   B.turnStart = B.clk[B.S.turn];
   show('screen-battle');
   PJCCVs.paint('mc-aura-me', B.two ? sideColor(B.wSide) : PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
-  PJCCVs.paint('mc-aura-opp', B.two ? sideColor(B.bSide) : '#ff6e8a');
+  PJCCVs.paint('mc-aura-opp', B.two ? sideColor(B.bSide) : sideColor(B.foeSide));
   seedMen();
   paint();
   updateClock();
@@ -2737,6 +2886,7 @@ function finish(how) {
   var gone = how === 'won-mate' ? 'b' : how === 'lost-mate' ? 'w' : how === 'resign' ? (B.two ? B.S.turn : 'w') : null;
   var breach = resolveLand(p, attackerWon, { a: keptShare(p.board, B.S.b, aCol),
     d: keptShare(p.board, B.S.b, aCol === 'w' ? 'b' : 'w'), rout: gone ? (gone === aCol ? 'att' : 'def') : null });
+  warNote(p, G.own[p.from], attackerWon, breach, how === 'won-mate' || how === 'lost-mate' ? B.S.b : null);
 
   /* one word for what happened to the GROUND, from your side of the table.
      ⛑ "REPULSED" → "DEFENDED", 2026-08-25, his word. */
@@ -2770,12 +2920,14 @@ function finish(how) {
   if (how === 'won-mate') lightMate('b');
   else if (how === 'lost-mate') lightMate('w');
   sfx(how === 'won-mate' || how === 'lost-mate' ? (playerWon ? 'mate' : 'mated') : (playerWon ? 'win' : 'lose'));
-  var tn = { to: LAND[p.to].nm };
-  var mx = B.two ? '' : breach ? lineFor(p.playerAttacks ? 'breach_his' : 'breach_yours', tn)
-    : attackerWon ? lineFor(p.playerAttacks ? 'lost' : 'took', tn) : lineFor(p.playerAttacks ? 'held' : 'repelled', tn);
-  $('emx').textContent = mx ? RIVAL.who + ': \u201c' + mx + '\u201d' : '';
+  var tn = { to: LAND[p.to].nm }, gw = generalOf(B.foeSide).who;
+  var mx = B.two ? '' : breach ? lineFor(p.playerAttacks ? 'breach_his' : 'breach_yours', tn, gw)
+    : attackerWon ? lineFor(p.playerAttacks ? 'lost' : 'took', tn, gw) : lineFor(p.playerAttacks ? 'held' : 'repelled', tn, gw);
+  /* a war of three or four: the general whose last holding this was is out */
+  var outTxt = multi() ? fallen().map(function (x) { return ' ' + generalOf(x).who + ' is out of the war.'; }).join('') : '';
+  $('emx').textContent = mx ? gw + ': \u201c' + mx + '\u201d' : '';
   $('emx').hidden = !mx;
-  showEndcard(word, cls, line + troopsLine(p));
+  showEndcard(word, cls, line + troopsLine(p) + outTxt);
   saveCampaign();
 }
 
@@ -2998,6 +3150,7 @@ var MAXWELL_LINES = {
   repelled:     ['Fine. You keep it.'],
   breach_his:   ['My walls! Fine.'],
   breach_yours: ['Your walls are down.'],
+  war:          ['{holdings} holdings and {generals} of us. Watch your back.'],
   win:          ['The map is mine. Again?'],
   lose:         ['All yours. Rematch?'],
   /* the first campaign, one rule at a time (LESSON_STEPS) */
@@ -3025,16 +3178,15 @@ function noteAttack(from, to) {
 }
 function noteTurn() {
   if (!G.log || G.mode === 'two') return;
-  var foe = G.side === 'm' ? 't' : 'm';
   G.log.turns++;
   if (G.fortMoved > 0) G.log.forts++;
   idsOf(G.side).forEach(function (id) {
-    if (G.ranks[id] === 1 && nbrs(id).some(function (j) { return G.own[j] === foe; })) G.log.thin[id] = (G.log.thin[id] || 0) + 1;
+    if (G.ranks[id] === 1 && nbrs(id).some(function (j) { return G.own[j] !== G.side; })) G.log.thin[id] = (G.log.thin[id] || 0) + 1;
   });
 }
 /* ⚠ A CAMPAIGN GOES INTO HIS FILE ONCE, WHEN IT ENDS */
 function fileCampaign(won) {
-  if (!G || G.mode === 'two' || G.mode === 'first' || !G.log) return;
+  if (!G || G.mode === 'two' || G.mode === 'first' || multi() || !G.log) return;
   var f = loadFile() || { v: 1, games: 0, won: 0, lost: 0, open: {}, keep: 0, thin: {}, turns: 0, forts: 0 };
   f.games++;
   if (won === true) f.won++; else if (won === false) f.lost++;
@@ -3069,22 +3221,35 @@ function habitsOf(obs) {
   });
   return h;
 }
-function lineFor(kind, data) {
-  var set = MAXWELL_LINES[kind];
+/* who: the general speaking (Maxwell when not said) */
+function lineFor(kind, data, who) {
+  var book = !who || who === RIVAL.who ? MAXWELL_LINES : (GENERAL_LINES[who] || {});
+  var set = book[kind];
   if (!set || !set.length) return '';
   var s = set[Math.floor(Math.random() * set.length)];
   return s.replace(/\{(\w+)\}/g, function (m, k) { return data && data[k] != null ? String(data[k]) : m; });
 }
-/* his face and his line on the map. ⚠ Never in two players: there is no Maxwell there */
-function speak(kind, data) {
-  var el = $('mx-speech');
-  var s = G && G.mode !== 'two' ? lineFor(kind, data) : '';
+/* ⭐ THE OTHER GENERALS' WORDS, a war of three or four: HIS, placeholders. A kind with no line is silence. */
+var GENERAL_LINES = {
+  Vince: { open: ['Three of us, one map.'], turn: ['My turn.'], declare: ['Here I come.'], took: ['{to} is mine now.'],
+           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'] },
+  Wes:   { open: ['Everybody wants the middle.'], turn: ['My turn.'], declare: ['Here I come.'], took: ['{to} is mine now.'],
+           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'] }
+};
+/* a general's face and line on the map: side is whose (Red, Maxwell, when not said). ⚠ Never in two players */
+function speak(kind, data, side) {
+  var el = $('mx-speech'), gen = generalOf(side || 't');
+  var s = G && G.mode !== 'two' ? lineFor(kind, data, gen.who) : '';
   el.hidden = !s;
   if (!s) return '';
   $('mx-line').textContent = s;
-  if (!speak.faced && window.PJCCBoard3D && PJCCBoard3D.portrait) {
-    speak.faced = true;
-    PJCCBoard3D.portrait($('mx-face'), RIVAL.who, RIVAL.key);
+  $('mx-name').textContent = gen.who;
+  $('mx-name').style.color = gen.col;
+  el.style.borderColor = gen.col + '55';
+  el.style.background = gen.col + '10';
+  if (speak.faced !== gen.who && window.PJCCBoard3D && PJCCBoard3D.portrait) {
+    speak.faced = gen.who;
+    PJCCBoard3D.portrait($('mx-face'), gen.who, gen.key);
   }
   return s;
 }
@@ -3112,7 +3277,7 @@ var FIRST_MAP = { land: [
 var FIRST_START = { own: ['t','t','t','m','m'], ranks: [2, 2, 2, 7, 3], walls: [0] };
 var FIRST_DONE = 'pjcc.campaign.first.done.v1';
 var LESSON_STEPS = ['deploy', 'attack', 'roll', 'battle', 'taken', 'missed', 'end', 'defend', 'walls', 'fortify', 'finish', 'done'];
-function mapFor(mode) { return mode === 'first' ? FIRST_MAP : MAIN_MAP; }
+function mapFor(mode) { return mode === 'first' ? FIRST_MAP : mode === 'three' ? WAR3_MAP : mode === 'four' ? WAR4_MAP : MAIN_MAP; }
 function useMap(m) {
   if (LAND === m.land) return;
   LAND = m.land; EDGES = m.edges;
@@ -3148,6 +3313,370 @@ function firstPlan() {
   for (i = 0; i < add; i++) deploy.push(keep);
   var attacks = G.round === 1 && keep === 0 && G.own[2] === G.side && G.ranks[0] + add >= 2 ? [{ from: 0, to: 2 }] : [];
   return { deploy: deploy, attacks: attacks, move: null };
+}
+
+/* ══ THREE AND FOUR GENERALS ═══════════════════════════════════════════════════════════
+   ⚑ His pick, 2026-11-10 (#10 of the Campaign ideas, parked 08-25): you against two or three of the town's regulars, on
+   a bigger map. A war of three is fifteen holdings, a war of four sixteen, each dealt in sectors that are the same shape
+   turned (a keep on the rim, two rim holdings that meet the neighbors' rims, the middle that meets theirs), so no seat
+   starts on better ground. Hotseat stays two players.
+   ⭐ WHEN TWO MACHINES FIGHT, THE BATTLE IS DECIDED AT ONCE, AT THE ODDS THE SIM MEASURED (clash()): the dice are rolled
+   and the armies mustered exactly as for a battle you play (musterBattle, the same draws), then one draw against what
+   engine-against-engine battles from that material gap did (CLASH, `npm run sim:clash`). The survivors march in at the
+   shares those battles kept.
+   ⚠ THE COLORS ARE THE SIDES', THE NAMES THE GENERALS': Maxwell commands Red in every mode. Blue and Violet are the
+   town's regulars, and WHO is HIS call (placeholders). The six new holdings' names are HIS too (town places, for now). */
+var SIDES = {
+  m: { nm: 'Green',  col: '#6bffb8', bg: '#123a2c', who: '',        key: '' },
+  t: { nm: 'Red',    col: '#ff6e8a', bg: '#3a1420', who: 'Maxwell', key: 'maxwell' },
+  u: { nm: 'Blue',   col: '#79bfff', bg: '#132a42', who: 'Vince',   key: 'brother' },
+  v: { nm: 'Violet', col: '#c99bff', bg: '#2c1a44', who: 'Wes',     key: '' }
+};
+/* a sector each, turned: keep, the rim toward the next seat, the rim toward the last, and the middle */
+var WAR3_MAP = { land: [
+    { id:0,  nm:'Gauntlet Keep', x:50, y:86 }, { id:1,  nm:'The Academy',   x:24, y:77 }, { id:2,  nm:'Shogi Island',  x:76, y:77 },
+    { id:3,  nm:'Chess City',    x:39, y:64 }, { id:4,  nm:'Long Park',     x:61, y:64 },
+    { id:5,  nm:'Sand Mines',    x:15, y:32 }, { id:6,  nm:'The Fork',      x:36, y:15 }, { id:7,  nm:'The Kennel',    x:11, y:55 },
+    { id:8,  nm:'Checker Town',  x:40, y:34 }, { id:9,  nm:'Reading Room',  x:29, y:50 },
+    { id:10, nm:'Sea-Board',     x:85, y:32 }, { id:11, nm:'Endgame Flats', x:89, y:55 }, { id:12, nm:'Pirc Pass',     x:64, y:15 },
+    { id:13, nm:'The Square',    x:71, y:50 }, { id:14, nm:'The Assembly',  x:60, y:34 } ],
+  edges: [[0,1],[0,2],[1,3],[2,4],[3,4], [5,6],[5,7],[6,8],[7,9],[8,9], [10,11],[10,12],[11,13],[12,14],[13,14],
+          [1,7],[6,12],[11,2], [3,9],[8,14],[13,4]] };
+var WAR4_MAP = { land: [
+    { id:0,  nm:'Gauntlet Keep', x:12, y:87 }, { id:1,  nm:'The Academy',   x:13, y:62 }, { id:2,  nm:'Shogi Island',  x:37, y:88 },
+    { id:3,  nm:'Chess City',    x:35, y:65 },
+    { id:4,  nm:'Sand Mines',    x:12, y:10 }, { id:5,  nm:'The Fork',      x:38, y:12 }, { id:6,  nm:'The Depths',    x:11, y:36 },
+    { id:7,  nm:'Checker Town',  x:34, y:35 },
+    { id:8,  nm:'Sea-Board',     x:88, y:10 }, { id:9,  nm:'Pirc Pass',     x:87, y:36 }, { id:10, nm:'Reading Room',  x:62, y:12 },
+    { id:11, nm:'The Assembly',  x:66, y:35 },
+    { id:12, nm:'Endgame Flats', x:88, y:87 }, { id:13, nm:'Long Park',     x:63, y:88 }, { id:14, nm:'The Kennel',    x:89, y:62 },
+    { id:15, nm:'The Square',    x:65, y:65 } ],
+  edges: [[0,1],[0,2],[1,3],[2,3], [4,5],[4,6],[5,7],[6,7], [8,9],[8,10],[9,11],[10,11], [12,13],[12,14],[13,15],[14,15],
+          [1,6],[5,10],[9,14],[13,2], [3,7],[7,11],[11,15],[15,3]] };
+/* the same troops a seat, the keep walled: a war of three deals the campaign's fifteen, a war of four thirteen */
+var WAR_START = {
+  three: { sides: ['m', 't', 'u'], own: ['m','m','m','m','m','t','t','t','t','t','u','u','u','u','u'],
+           ranks: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], walls: [0, 5, 10] },
+  four:  { sides: ['m', 't', 'u', 'v'], own: ['m','m','m','m','t','t','t','t','u','u','u','u','v','v','v','v'],
+           ranks: [3, 3, 3, 4, 3, 3, 3, 4, 3, 3, 3, 4, 3, 3, 3, 4], walls: [0, 4, 8, 12] }
+};
+/* ⭐ THE ODDS A MACHINE'S BATTLE IS DECIDED AT: by the material gap on the mustered board (the attacker's points less the
+   defender's), in bins of CLASH.bin from CLASH.lo, the ends open. p = how often the attack took the ground; ka = the share
+   of its points an attack that won still had standing, kd = a defense that held. MEASURED (`npm run sim:clash`, 5,800
+   battles, 11-10): the attacker's ATT_EDGE puts most gaps between +3 and +20, and 40% of attacks took the ground — the
+   whole-campaign sim's "about one in three", from the other side. */
+var CLASH = { lo: -3, bin: 3,
+  p:  [0.06, 0.11, 0.21, 0.27, 0.36, 0.45, 0.49, 0.60, 0.63, 0.76],
+  ka: [0.82, 0.76, 0.78, 0.80, 0.80, 0.80, 0.80, 0.86, 0.87, 0.92],
+  kd: [0.35, 0.27, 0.22, 0.19, 0.18, 0.14, 0.15, 0.15, 0.14, 0.15] };
+/* ⭐ HOLD TEN AND THE WAR IS YOURS (or be the last one standing). MEASURED (`npm run sim:war`, 2,000 wars a size, every
+   seat the machine's, 11-10): taking every holding ran a war of three to a median of 28 rounds and a war of four to 40;
+   ten ends them at 12 and 19 (a campaign of two runs 15). Seats in a war of three win a fair share (31/33/36%); in a war
+   of four the two who move after Maxwell win a little more (30% each, yours 21%) — machines' play, not yours.
+   ⚠ A WAR'S EVEN CHOICE IS A COIN TOSS (rivalPlan): to the lowest holding number, every general hit the seat before his.
+   Leaning on whoever leads was tried and dropped: it made wars longer and evened nothing. */
+var WAR_WIN = { three: 10, four: 10 };
+function sidesFor(mode) { return WAR_START[mode] ? WAR_START[mode].sides.slice() : ['m', 't']; }
+function multi() { return !!G && (G.mode === 'three' || G.mode === 'four'); }
+/* the general across from you on that side: Maxwell for Red, the regulars for the rest */
+function generalOf(side) { return SIDES[side] && SIDES[side].who ? SIDES[side] : SIDES.t; }
+function alive(side) { for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) return true; return false; }
+/* the next machine to move after `side`, round the table; '' when it comes back to you */
+function nextSide(side) {
+  var at = G.sides.indexOf(side);
+  for (var i = at + 1; i < G.sides.length; i++) if (G.sides[i] !== 'm' && alive(G.sides[i])) return G.sides[i];
+  return '';
+}
+function clashBin(gap) { return Math.max(0, Math.min(CLASH.p.length - 1, Math.floor((gap - CLASH.lo) / CLASH.bin))); }
+/* two machines' battle, at once: the muster a played one would have, then the measured odds. Returns the muster with
+   how it went (attackerWon, broke). ⚠ The board's White is the attacker, so the gap is White's points less Black's. */
+function clash(from, to) {
+  var P = musterBattle(from, to, true);
+  var gap = material(P.board, 'w') - material(P.board, 'b'), k = clashBin(gap);
+  var won = rand() < CLASH.p[k];
+  P.playerAttacks = false; P.clash = true; P.gap = gap;
+  P.won = won;
+  P.broke = resolveLand(P, won, { a: CLASH.ka[k], d: CLASH.kd[k], rout: null });
+  return P;
+}
+
+/* ══ GENERALS FROM YOUR ASSEMBLY ════════════════════════════════════════════════════════
+   ⚑ His pick, 2026-11-10 (#9 of the Campaign ideas): everyone whose square you have won in the town's Assembly gives you
+   ONE ORDER a campaign, used on the map on your turn — and never in a battle (the law the walls, the cards and the dog
+   live under: the 40-60% band was measured on the board, and nothing here touches one).
+   ⚠ ONE ORDER A ROUND, so a full Assembly is a general a round, not sixteen in the first. A campaign or a war of three
+   or four only: a Daily is everybody's same game, two players have no Assembly between them, and the first campaign
+   teaches the plain rules. A general commanding a side against you gives you nothing (Maxwell never does).
+   ⭐ WHO GIVES WHICH, WHAT EACH IS CALLED AND WHAT THEY SAY ARE HIS (placeholders): GENERALS, ORDERS' names, GENERAL_SAY.
+   The names are the ones on their squares, which the town sends the site (PJCC.townState(n).board) and the game reads
+   off its own Assembly. */
+var ORDERS = {
+  drop:  { nm: 'Reinforce',    txt: 'Two troops onto a holding of yours.', at: true },
+  rally: { nm: 'Rally',        txt: 'Every chained holding of yours gains a troop.' },
+  shore: { nm: 'Shore Up',     txt: 'Every holding of yours with one troop gains one.' },
+  march: { nm: 'Forced March', txt: 'One more attack this round.' },
+  sight: { nm: 'Lookout',      txt: 'No fog for you this round.' },
+  roads: { nm: 'Long Roads',   txt: 'Fortify along any chain of your holdings this round.' },
+  hold:  { nm: 'Hold Fast',    txt: 'A holding of yours counts as chained until your next turn.', at: true },
+  bar:   { nm: 'Barricade',    txt: 'A holding of yours is walled until your next turn.', at: true },
+  sap:   { nm: 'Sabotage',     txt: 'Every enemy stack of six or more loses a troop.' }
+};
+var GENERALS = { Vince: 'march', Auston: 'sight', Princess: 'shore', Michael: 'hold', Robert: 'bar', 'Seaboard Rep': 'roads',
+  'Puzzle Champ': 'sap', Wes: 'march', Argus: 'sight', Jay: 'shore', Matsu: 'drop', Kedar: 'rally', Murphy: 'sap',
+  'The Martyr': 'drop', Milo: 'roads' };
+var GENERAL_SAY = { Vince: 'Go. Now.', Auston: 'I looked. Here is all of it.', Princess: 'Princess curls up with the thin ones.',
+  Michael: 'Dig in. Hold it.', Robert: 'Nobody gets through here.', 'Seaboard Rep': 'The roads are open.',
+  'Puzzle Champ': 'Their big stacks have a flaw.', Wes: 'One more. Make it count.', Argus: 'Argus has been round the back.',
+  Jay: 'Nobody stands alone.', Matsu: 'Two more. Use them.', Kedar: 'Hold together.', Murphy: 'Something went wrong over there.',
+  'The Martyr': 'Take them. I will not need them.', Milo: 'Milo found a way through.' };
+/* the names on your Assembly's squares: off the town save that has won the most (a site with no town: nobody) */
+function assemblyNames() {
+  var best = [];
+  try {
+    if (window.PJCC && PJCC.townState) for (var n = 1; n <= 3; n++) {
+      var t = PJCC.townState(n), b = t && Array.isArray(t.board) ? t.board : [];
+      if (b.length > best.length) best = b;
+    }
+  } catch (e) {}
+  return best.map(function (x) { return x && x.who ? String(x.who) : ''; }).filter(Boolean);
+}
+/* who stands with you this campaign: the Assembly, less anyone across the table and anyone with no order */
+function musterGenerals(names) {
+  if (!G || (G.mode !== 'solo' && !multi())) return [];
+  var across = G.sides.map(function (s) { return SIDES[s].who; });
+  return names.filter(function (n, i) { return GENERALS[n] && across.indexOf(n) < 0 && names.indexOf(n) === i; });
+}
+function orderOf(name) { return ORDERS[GENERALS[name]] || null; }
+/* can `name` give his order now: your turn, not one this round, his not spent (and Lookout only in the fog) */
+function canOrder(name) {
+  var o = orderOf(name);
+  return !!o && G.gens.indexOf(name) >= 0 && G.used.indexOf(name) < 0 && !G.ordered && !G.busy &&
+    G.phase !== 'theirs' && (GENERALS[name] !== 'sight' || G.fog);
+}
+function held(id) { return !!G.hold && G.hold.id === id && G.own[id] === G.hold.side; }
+function barred(id) { return !!G.bar && G.bar.id === id && G.own[id] === G.bar.side; }
+/* the order itself. at: the holding a targeted one lands on. Returns false (and says why) when it cannot. */
+function giveOrder(name, at) {
+  if (!canOrder(name)) return false;
+  var k = GENERALS[name], s = G.side, i;
+  if (ORDERS[k].at && (at == null || at < 0 || G.own[at] !== s)) return false;
+  if (k === 'drop') G.ranks[at] += 2;
+  else if (k === 'rally') { for (i = 0; i < LAND.length; i++) if (G.own[i] === s && chained(G.own, i)) G.ranks[i]++; }
+  else if (k === 'shore') { for (i = 0; i < LAND.length; i++) if (G.own[i] === s && G.ranks[i] === 1) G.ranks[i]++; }
+  else if (k === 'march') G.atks++;
+  else if (k === 'sight') G.sight = true;
+  else if (k === 'roads') G.roads = true;
+  else if (k === 'hold') G.hold = { id: at, side: s };
+  else if (k === 'bar') G.bar = { id: at, side: s };
+  else if (k === 'sap') { for (i = 0; i < LAND.length; i++) if (G.own[i] !== s && G.ranks[i] >= 6) G.ranks[i]--; }
+  G.used.push(name); G.ordered = true; G.orderArm = '';
+  return true;
+}
+/* a general on the map: their face and their line in the speech row, in your color */
+function sayGeneral(name) {
+  var el = $('mx-speech'), line = GENERAL_SAY[name] || '';
+  el.hidden = !line;
+  if (!line) return;
+  $('mx-line').textContent = line;
+  $('mx-name').textContent = name;
+  $('mx-name').style.color = SIDES.m.col;
+  el.style.borderColor = SIDES.m.col + '55';
+  el.style.background = SIDES.m.col + '10';
+  if (speak.faced !== name && window.PJCCBoard3D && PJCCBoard3D.portrait) { speak.faced = name; PJCCBoard3D.portrait($('mx-face'), name, ''); }
+}
+/* the order given: back on the map, what it did said in a line */
+function orderSaid(name, at) {
+  var o = orderOf(name);
+  sayGeneral(name);
+  say('<b>' + name + '</b> · ' + o.nm + (at != null && at >= 0 ? ' at <b>' + LAND[at].nm + '</b>.' : '. ' + o.txt));
+  if (at != null && at >= 0) G.flash = at;
+  setPhase(G.phase); drawMap(); show('screen-map');
+  if (at != null && at >= 0) setTimeout(function () { G.flash = -1; if (G) drawMap(); }, 420);
+}
+/* the screen of your generals: who is with you, what each gives, and whether they can now */
+function paintOrders() {
+  var host = $('gens');
+  host.innerHTML = '';
+  G.gens.forEach(function (name) {
+    var o = orderOf(name), used = G.used.indexOf(name) >= 0, can = canOrder(name);
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'gen' + (used ? ' used' : ''); b.disabled = !can;
+    b.setAttribute('data-who', name);
+    var cv = document.createElement('canvas'); cv.width = 48; cv.height = 54; cv.setAttribute('aria-hidden', 'true');
+    var t = document.createElement('span');
+    t.innerHTML = '<b>' + name + '</b> · ' + o.nm + '<small>' + (used ? 'Given this campaign.' : o.txt) + '</small>';
+    b.appendChild(cv); b.appendChild(t);
+    b.addEventListener('click', function () { pickGeneral(name); });
+    host.appendChild(b);
+    if (window.PJCCBoard3D && PJCCBoard3D.portrait) PJCCBoard3D.portrait(cv, name, '');
+  });
+  $('orders-say').textContent = G.ordered ? 'An order is given this round. The rest wait for the next.'
+    : G.phase === 'theirs' ? 'Orders wait for your turn.' : 'One order a round. Each general gives one a campaign.';
+}
+function pickGeneral(name) {
+  if (!canOrder(name)) return;
+  var o = orderOf(name);
+  if (o.at) {
+    G.orderArm = name;
+    say('<b>' + name + '</b> · ' + o.nm + ': tap a holding of yours. Tap anywhere else to put it away.');
+    drawMap(); show('screen-map');
+    return;
+  }
+  giveOrder(name);
+  orderSaid(name);
+}
+/* the map's door to them: how many orders are left, hidden with nobody standing with you */
+function paintOrdersDoor() {
+  var b = $('orders'), left = G && G.gens ? G.gens.filter(function (n) { return G.used.indexOf(n) < 0; }).length : 0;
+  b.hidden = !G || !G.gens || !G.gens.length;
+  if (b.hidden) return;
+  b.textContent = 'Generals · ' + left + (left === 1 ? ' order' : ' orders') + (G.ordered ? ' · next round' : '');
+  b.classList.toggle('ready', !G.ordered && left > 0 && G.phase !== 'theirs');
+}
+
+/* ══ THE WAR, REPLAYED ══════════════════════════════════════════════════════════════════
+   ⚑ His pick, 2026-11-10 (#7 of the Campaign ideas): when a campaign ends, the map plays back turn by turn with every
+   battle's march drawn on it, and each battle that ended in checkmate stops on its mate. Your best campaign — a won one:
+   the harder level, then the more generals, then the fewer rounds — is kept, framed on the home screen (in the town,
+   on the wall of your house), and plays back from there.
+   ⚠ A TURN IS KEPT AS THE MAP IT LEFT (owners and troops) and the battles fought in it, so the playback never re-plays a
+   rule: it shows what happened. A mate keeps its final board, 64 letters. */
+var BEST_KEY = 'pjcc.campaign.best.v1';
+var LEVEL_RANK = { easy: 1, medium: 2, hard: 3 };
+function warSnap() { return { own: G.own.slice(), ranks: G.ranks.slice() }; }
+function warBegin() { G.war = { mode: G.mode, diff: G.diff, start: warSnap(), turns: [] }; G.warEv = []; }
+/* one battle: who marched from where to where, what it did to the ground, and its mate if it ended in one */
+function warNote(p, side, attackerWon, broke, mate) {
+  if (!G.war) return;
+  if (!G.warEv) G.warEv = [];
+  G.warEv.push({ from: p.from, to: p.to, s: side, r: broke ? 'breach' : attackerWon ? 'took' : 'held',
+                 mate: mate ? mate.map(function (x) { return x || '.'; }).join('') : '' });
+}
+/* a side's turn is over: the map it left and the battles in it */
+function warTurn(side) {
+  if (!G.war) return;
+  var t = warSnap();
+  t.r = G.round; t.s = side; t.ev = G.warEv || []; t.card = G.card || '';
+  G.war.turns.push(t); G.warEv = [];
+}
+/* the campaign is over: the last turn's battles, and how it ended */
+function warEnd(won) {
+  if (!G.war) return null;
+  if (G.warEv && G.warEv.length) warTurn(G.acting || G.side);
+  G.war.end = warSnap(); G.war.won = won; G.war.rounds = G.round; G.war.day = dayKey();
+  G.war.sides = G.sides.slice();
+  return G.war;
+}
+/* is `w` a better war to frame than `best`: won, then the harder level, the more generals, the fewer rounds */
+function betterWar(w, best) {
+  if (!w || w.won !== true) return false;
+  if (!best) return true;
+  var a = [LEVEL_RANK[w.diff] || 0, (w.sides || []).length, -w.rounds], b = [LEVEL_RANK[best.diff] || 0, (best.sides || []).length, -best.rounds];
+  for (var i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
+  return false;
+}
+function loadBest() { try { var w = JSON.parse(localStorage.getItem(BEST_KEY)); return w && w.start && w.turns ? w : null; } catch (e) { return null; } }
+function keepBest(w) {
+  if (!w || (w.mode !== 'solo' && w.mode !== 'three' && w.mode !== 'four') || !betterWar(w, loadBest())) return false;
+  try { localStorage.setItem(BEST_KEY, JSON.stringify(w)); } catch (e) { return false; }
+  return true;
+}
+/* the map as one turn left it, into a box: nodes with their troops, the roads, and that turn's marches drawn on it.
+   events: [{from, to, s, r}]; small: the frame's thumbnail (no troops, no names) */
+function drawWar(box, snap, events, small) {
+  Array.prototype.slice.call(box.querySelectorAll('.node')).forEach(function (n) { n.remove(); });
+  var svg = box.querySelector('svg'), lines = '';
+  EDGES.forEach(function (e) {
+    var a = LAND[e[0]], b = LAND[e[1]];
+    lines += '<line class="link" x1="' + a.x + '" y1="' + (a.y * 1.12) + '" x2="' + b.x + '" y2="' + (b.y * 1.12) + '"/>';
+  });
+  (events || []).forEach(function (ev) {
+    var a = LAND[ev.from], b = LAND[ev.to], col = ev.r === 'held' ? '#8479a3' : ev.r === 'breach' ? '#ffd66a' : sideColor(ev.s);
+    var dx = b.x - a.x, dy = (b.y - a.y) * 1.12, L = Math.sqrt(dx * dx + dy * dy) || 1, cut = small ? 3.5 : 6;
+    var x2 = b.x - dx / L * cut, y2 = b.y * 1.12 - dy / L * cut;
+    lines += '<line class="march' + (ev.r === 'held' ? ' held' : '') + '" stroke="' + col + '" x1="' + a.x + '" y1="' + (a.y * 1.12) +
+      '" x2="' + x2.toFixed(2) + '" y2="' + y2.toFixed(2) + '"/>' +
+      '<circle class="march-head" fill="' + col + '" cx="' + x2.toFixed(2) + '" cy="' + y2.toFixed(2) + '" r="' + (small ? 1.1 : 1.6) + '"/>';
+  });
+  svg.innerHTML = lines;
+  box.classList.toggle('big', LAND.length > 10 && !small);
+  LAND.forEach(function (L) {
+    var o = snap.own[L.id], el = document.createElement('div');
+    el.className = 'node ' + (o === 'm' ? 'mine' : o === 't' ? 'theirs' : 'side-' + o);
+    el.style.left = L.x + '%'; el.style.top = L.y + '%';
+    el.innerHTML = '<span class="disc">' + (small ? '' : snap.ranks[L.id]) + '</span>' + (small ? '' : '<span class="nm">' + L.nm + '</span>');
+    box.appendChild(el);
+  });
+}
+/* ── the playback: a beat a turn, and a longer one on each mate ── */
+var WAR_BEAT = 1100, WAR_MATE = 2400;
+var replay = null;
+function warFrames(w) {
+  var f = [{ snap: w.start, ev: [], say: 'The opening.' }];
+  w.turns.forEach(function (t) {
+    var who = t.s === 'm' && w.mode !== 'two' ? 'You' : w.mode === 'two' ? sideName(t.s) : generalOf(t.s).who;
+    var took = t.ev.filter(function (e) { return e.r === 'took'; }).map(function (e) { return LAND[e.to].nm; });
+    var held = t.ev.filter(function (e) { return e.r === 'held'; }).length, broke = t.ev.filter(function (e) { return e.r === 'breach'; }).length;
+    var parts = [];
+    if (took.length) parts.push('took ' + took.join(' and '));
+    if (broke) parts.push('broke ' + (broke > 1 ? broke + ' walls' : 'a wall'));
+    if (held) parts.push((took.length || broke ? '' : 'took nothing; ') + held + (held > 1 ? ' attacks failed' : ' attack failed'));
+    var said = t.ev.length ? parts.join('; ') + '.' : 'fought no battles.';
+    f.push({ snap: t, ev: t.ev, say: 'Round ' + t.r + ' · ' + who + ' ' + said });
+    t.ev.forEach(function (e) { if (e.mate) f.push({ snap: t, ev: [e], mate: e.mate, say: 'Checkmate at ' + LAND[e.to].nm + ', round ' + t.r + '.' }); });
+  });
+  /* ⚠ IT ENDS ON THE MAP AS THE WAR LEFT IT: a war won mid-turn left its last change after the last turn kept */
+  var last = f[f.length - 1].snap, end = w.end;
+  if (end && (end.own.join() !== last.own.join() || end.ranks.join() !== last.ranks.join())) {
+    f.push({ snap: end, ev: [], say: 'Round ' + w.rounds + ' · how it ended.' });
+  }
+  return f;
+}
+function warShow(i) {
+  var r = replay, fr = r.frames[i];
+  clearTimeout(r.t);
+  r.at = i;
+  drawWar($('warbox'), fr.snap, fr.ev, false);
+  $('war-say').textContent = fr.say;
+  $('war-step').textContent = (i + 1) + ' of ' + r.frames.length;
+  var mb = $('warmate');
+  mb.hidden = !fr.mate;
+  if (fr.mate) {
+    boardCells($('wsqs'));
+    var mh = '';
+    for (var k = 0; k < 64; k++) {
+      var pc = fr.mate.charAt(k); if (pc === '.') continue;
+      mh += '<b class="pc ' + (pc >= 'A' && pc <= 'Z' ? 'w' : 'b') + '" style="--f:' + (k % 8) + ';--r:' + ((k / 8) | 0) + '">' + GLY[pc.toLowerCase()] + '</b>';
+    }
+    $('wmen').innerHTML = mh;
+  }
+  if (i + 1 < r.frames.length) r.t = setTimeout(function () { warShow(i + 1); }, fr.mate ? WAR_MATE : WAR_BEAT);
+  else $('war-back').textContent = 'Done';
+}
+/* w: the war to play back; then: where Done goes ('result' or 'home') */
+function playWar(w, then) {
+  if (!w) return;
+  if (replay) clearTimeout(replay.t);
+  useMap(mapFor(w.mode));
+  replay = { w: w, frames: warFrames(w), at: 0, then: then, t: 0 };
+  $('war-title').textContent = w.won === true ? 'THE WAR YOU WON' : 'THE WAR';
+  $('war-back').textContent = 'Skip';
+  show('screen-war');
+  warShow(0);
+}
+/* the frame on the home screen: your best war's last map, with every march you won drawn on it */
+function paintFrame() {
+  var w = loadBest(), fr = $('frame');
+  fr.hidden = !w;
+  if (!w) return;
+  var keep = LAND, keepE = EDGES;
+  useMap(mapFor(w.mode));
+  var mine = [];
+  w.turns.forEach(function (t) { t.ev.forEach(function (e) { if (e.s === 'm' && e.r === 'took') mine.push(e); }); });
+  drawWar($('framebox'), w.end || w.turns[w.turns.length - 1] || w.start, mine, true);
+  useMap({ land: keep, edges: keepE });
+  $('frame-say').textContent = 'Your best war · ' + (LEVELS[w.diff] ? LEVELS[w.diff].nm : '') +
+    ((w.sides || []).length > 2 ? ' · ' + (w.sides.length === 3 ? 'three-way' : 'four-way') : '') + ' · won in round ' + w.rounds;
 }
 
 /* ══ YOUR DOG MARCHES WITH YOU ════════════════════════════════════════════════════════
@@ -3213,10 +3742,11 @@ function dogTag(id) {
    ⚠ AN ATTACK STEP SUSPENDS THE QUEUE. beginBattle changes screens, so `pump` returns and
    the Continue button resumes it. Every attack is re-validated when it comes up, because
    an earlier battle in the same turn may have moved the ground under it. */
-function srcScore(id, rk, foe) {
+/* ⚠ "THE FOE" IS EVERYONE ELSE (a war of three or four): every check asks `!== side`, never one color */
+function srcScore(id, rk, side) {
   var ns = nbrs(id), best = -99;
   for (var i = 0; i < ns.length; i++) {
-    if (G.own[ns[i]] !== foe) continue;
+    if (G.own[ns[i]] === side) continue;
     var s = rk[id] - rk[ns[i]];
     if (LEVELS[G.diff].chainAware && chained(G.own, ns[i])) s += 2;   // break their chain
     if (s > best) best = s;
@@ -3226,7 +3756,6 @@ function srcScore(id, rk, foe) {
 /* side: the color the machine plays, Red unless the sim hands Green to it */
 function rivalPlan(side) {
   side = side || 't';
-  var foe = side === 't' ? 'm' : 't';
   var L = LEVELS[G.diff] || LEVELS.medium;
   var theirs = idsOf(side);
   if (!theirs.length) return { deploy: [], attacks: [], move: null };
@@ -3235,7 +3764,7 @@ function rivalPlan(side) {
   var add = deployFor(side);
   var rk = G.ranks.slice();
   var front = theirs.filter(function (id) {
-    return nbrs(id).some(function (j) { return G.own[j] === foe; });
+    return nbrs(id).some(function (j) { return G.own[j] !== side; });
   });
 
   /* ── the deployment ──
@@ -3245,10 +3774,10 @@ function rivalPlan(side) {
   /* the first two rounds: his keep first if you rush it, then the holdings that face where you always open */
   if (H && G.round <= 2) {
     if (H.keep) G.walls.forEach(function (w) { if (G.own[w] === side) pre.push(w); });
-    if (H.open >= 0 && G.own[H.open] === foe) nbrs(H.open).forEach(function (j) { if (G.own[j] === side && pre.indexOf(j) < 0) pre.push(j); });
+    if (H.open >= 0 && G.own[H.open] !== side) nbrs(H.open).forEach(function (j) { if (G.own[j] === side && pre.indexOf(j) < 0) pre.push(j); });
   }
   if (L.smart && front.length) {
-    var order = front.slice().sort(function (a, b) { return srcScore(b, rk, foe) - srcScore(a, rk, foe); });
+    var order = front.slice().sort(function (a, b) { return srcScore(b, rk, side) - srcScore(a, rk, side); });
     for (i = 0; i < add; i++) {
       var pickId = i < pre.length ? pre[i] : (i === 0 || rand() < 0.7) ? order[0] : order[Math.min(order.length - 1, 1 + ((rand() * 2) | 0))];
       deploy.push(pickId); rk[pickId]++;
@@ -3261,11 +3790,11 @@ function rivalPlan(side) {
   }
 
   /* ── the attacks, planned against the POST-deployment ranks ── */
-  var cand = [];
+  var cand = [], war = multi();
   theirs.forEach(function (from) {
     if (rk[from] < 2) return;
     nbrs(from).forEach(function (to) {
-      if (G.own[to] !== foe || from === G.truce || to === G.truce) return;
+      if (G.own[to] === side || from === G.truce || to === G.truce) return;
       var s = rk[from] - rk[to];
       if (L.chainAware && chained(G.own, to)) s += 2;
       if (H && H.thin === to && rk[to] <= 2) s += 2;                 // the holding you always leave thin
@@ -3275,10 +3804,11 @@ function rivalPlan(side) {
       var siege = sieged(to) && L.smart;
       if (siege) s -= 1;
       if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing ranks at it
-      cand.push({ from:from, to:to, s:s, siege:siege });
+      /* ⚠ a war's even choice is a coin toss (k); a war of two keeps its order (k 0, and the sort is stable) */
+      cand.push({ from:from, to:to, s:s, siege:siege, k: war ? rand() : 0 });
     });
   });
-  cand.sort(function (a, b) { return b.s - a.s; });
+  cand.sort(function (a, b) { return b.s - a.s || a.k - b.k; });
   /* ⚠ THE MACHINE IS HELD TO THE SAME CEILING AS THE PLAYER. Hard's maxAtk is already 3,
      so this clamp changes nothing today — it is here so raising one number cannot quietly
      give the machine a round the player can never have. */
@@ -3308,23 +3838,49 @@ function rivalPlan(side) {
   return { deploy: deploy, attacks: attacks, move: move };
 }
 
-function theirTurn() {
+/* side: the machine to move \u2014 Red when your turn ends, then (a war of three or four) each general round the table.
+   \u26a0 YOUR TURN ENDS ONCE: noteTurn and the walls going back up happen when you hand over, not between their turns \u2014
+   but a breach is one turn's, so it falls between every turn. */
+function theirTurn(side) {
+  if (!side) { noteTurn(); warTurn(G.side); side = 't'; }
+  if (!alive(side)) { afterTurn(side, true); return; }
   setPhase('theirs');
-  noteTurn();
+  G.acting = side;
   G.sel = -1; G.busy = true;
-  G.down = [];                                   // walls go back up when your turn ends
+  G.down = [];                                   // walls go back up when a turn ends
   var plan = G.mode === 'first' ? firstPlan()
-    : G.mode === 'daily' ? seeded('campaign|' + G.day + '|' + G.round + '|rival', rivalPlan) : rivalPlan();
-  G.q = [{ t:'speak', k:'turn', s: RIVAL.who + '\u2019s turn.' }];
-  plan.deploy.forEach(function (id) { G.q.push({ t:'deploy', id:id }); });
+    : G.mode === 'daily' ? seeded('campaign|' + G.day + '|' + G.round + '|rival', rivalPlan) : rivalPlan(side);
+  G.q = [{ t:'speak', k:'turn', s: generalOf(side).who + '\u2019s turn.', side: side }];
+  plan.deploy.forEach(function (id) { G.q.push({ t:'deploy', id:id, side: side }); });
   plan.attacks.forEach(function (a) {
-    G.q.push({ t:'declare', from:a.from, to:a.to });
-    G.q.push({ t:'attack', from:a.from, to:a.to });
+    G.q.push({ t:'declare', from:a.from, to:a.to, side: side });
+    G.q.push({ t:'attack', from:a.from, to:a.to, side: side });
   });
-  if (plan.move) G.q.push({ t:'move', from:plan.move.from, to:plan.move.to, n:plan.move.n });
-  G.q.push({ t:'end' });
+  if (plan.move) G.q.push({ t:'move', from:plan.move.from, to:plan.move.to, n:plan.move.n, side: side });
+  G.q.push({ t:'end', side: side });
   show('screen-map');
   pump();
+}
+/* a machine's turn is done (skipped: it had no ground to take one): the next general round the table, or you */
+function afterTurn(side, skipped) {
+  if (!skipped) warTurn(side || G.acting || 't');
+  var nx = multi() ? nextSide(side || G.acting || 't') : '';
+  if (nx && alive('m')) theirTurn(nx); else { G.acting = ''; startYourTurn(); }
+}
+/* the one line a battle between two machines leaves on the map */
+function clashLine(P, a, d) {
+  var to = '<b>' + LAND[P.to].nm + '</b>';
+  return P.broke ? generalOf(a).who + ' breaks the walls of ' + to + '.'
+    : P.won ? generalOf(a).who + ' takes ' + to + ' from ' + generalOf(d).who + '.'
+    : to + ' holds against ' + generalOf(a).who + '.';
+}
+/* a general with no ground left is out of the war, said once */
+function fallen() {
+  var out = [];
+  G.sides.forEach(function (s) {
+    if (s !== 'm' && !alive(s) && G.fallen.indexOf(s) < 0) { G.fallen.push(s); out.push(s); }
+  });
+  return out;
 }
 /* one waiting beat at a time, so a tap can end the current wait instead of queueing another */
 function beat(ms, fn) {
@@ -3337,10 +3893,10 @@ function hurry() {
   if (G.beatFn) { clearTimeout(G.beatT); var f = G.beatFn; G.beatFn = null; f(); }
 }
 function pump() {
-  if (!G.q.length) { startYourTurn(); return; }
-  var s = G.q.shift();
+  if (!G.q.length) { afterTurn(); return; }
+  var s = G.q.shift(), who = s.side || 't';
   if (s.t === 'say') { say(s.s); drawMap(); beat(650, pump); return; }
-  if (s.t === 'speak') { speak(s.k, s.d); say(s.s); drawMap(); beat(650, pump); return; }
+  if (s.t === 'speak') { speak(s.k, s.d, who); say(s.s); drawMap(); beat(650, pump); return; }
   if (s.t === 'deploy') {
     G.ranks[s.id]++;
     /* ⚠ no flash in the fog: the pulse alone would say where they are stacking */
@@ -3352,23 +3908,35 @@ function pump() {
     return;
   }
   if (s.t === 'declare') {
-    if (G.own[s.from] !== 't' || G.ranks[s.from] < 2 || G.own[s.to] !== 'm') { pump(); return; }
+    if (G.own[s.from] !== who || G.ranks[s.from] < 2 || G.own[s.to] === who) { pump(); return; }
     G.hot = { from:s.from, to:s.to };
-    say('<b>' + LAND[s.from].nm + '</b> marches on <b>' + LAND[s.to].nm + '</b>.');
-    speak(G.mode === 'first' ? 'teach_defend' : 'declare', { from: LAND[s.from].nm, to: LAND[s.to].nm });
+    say('<b>' + LAND[s.from].nm + '</b> marches on <b>' + LAND[s.to].nm + '</b>' +
+      (multi() && G.own[s.to] !== 'm' ? ', ' + generalOf(G.own[s.to]).who + '’s.' : '.'));
+    /* ⚠ a general speaks when he comes for YOU; a war between two of them is narrated, not announced */
+    if (G.own[s.to] === 'm') speak(G.mode === 'first' ? 'teach_defend' : 'declare', { from: LAND[s.from].nm, to: LAND[s.to].nm }, who);
     drawMap();
-    beat(1200, pump);
+    beat(G.own[s.to] === 'm' ? 1200 : 700, pump);
     return;
   }
   if (s.t === 'attack') {
     G.hot = null;
-    if (G.own[s.from] !== 't' || G.ranks[s.from] < 2 || G.own[s.to] !== 'm') { drawMap(); pump(); return; }
-    beginBattle(s.from, s.to, false);            // resumes from the Continue button
+    if (G.own[s.from] !== who || G.ranks[s.from] < 2 || G.own[s.to] === who) { drawMap(); pump(); return; }
+    if (G.own[s.to] === 'm') { beginBattle(s.from, s.to, false); return; }   // resumes from the Continue button
+    /* ⭐ TWO MACHINES: decided at once, at the measured odds */
+    var d = G.own[s.to], P = clash(s.from, s.to), out = fallen();
+    warNote(P, who, P.won, P.broke, null);
+    if (SAND && SAND.on()) SAND.throwDice(sandThrow(P, sideColor(who), sideColor(d)), null);
+    if (campaignCheck()) return;                 // two thirds of the map to one general, at once
+    G.flash = s.to;
+    say(clashLine(P, who, d) + out.map(function (x) { return ' <b>' + generalOf(x).who + ' is out.</b>'; }).join(''));
+    sfx(P.won ? 'capture' : 'move');
+    drawMap();
+    beat(out.length ? 1500 : 900, function () { G.flash = -1; drawMap(); pump(); });
     return;
   }
   if (s.t === 'move') {
     var n = Math.min(s.n, Math.max(0, G.ranks[s.from] - 1));
-    if (G.own[s.from] !== 't' || G.own[s.to] !== 't' || n < 1) { pump(); return; }
+    if (G.own[s.from] !== who || G.own[s.to] !== who || n < 1) { pump(); return; }
     G.ranks[s.from] -= n; G.ranks[s.to] += n;
     var toHid = fogged(s.to);
     G.flash = toHid ? -1 : s.to;
@@ -3378,7 +3946,7 @@ function pump() {
     beat(900, function () { G.flash = -1; drawMap(); pump(); });
     return;
   }
-  startYourTurn();
+  afterTurn(who);
 }
 
 function startYourTurn() {
@@ -3397,6 +3965,10 @@ function resetTurn() {
   G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0; G.fortDone = false;
   G.down = [];                                   // a breach lasts one turn and no longer
   G.sniffed = false;
+  /* a general's order lasts until your next turn, which is now */
+  G.ordered = false; G.orderArm = ''; G.sight = false; G.roads = false;
+  if (G.hold && G.hold.side === G.side) G.hold = null;
+  if (G.bar && G.bar.side === G.side) G.bar = null;
   G.atks = ATTACK_CAP;
   G.atks += cardAtks();
   G.seen[G.side] = [];
@@ -3405,6 +3977,7 @@ function resetTurn() {
 }
 /* two players: hand the device over. ⚠ the curtain goes up BEFORE the map redraws for the next side */
 function passTurn() {
+  warTurn(G.side);
   G.side = G.side === 'm' ? 't' : 'm';
   if (G.side === 'm') { G.round++; drawCard(); }
   if (G.card) G.deal = true;
@@ -3419,10 +3992,22 @@ function showPass() {
   $('pass-go').textContent = 'I’m ' + n + ' — show the map';
   show('screen-pass');
 }
+/* ⚠ YOU ARE OUT WHEN YOU HOLD NOTHING, whoever is left: a war of four does not play on without you */
+/* who it is over for: 'm' you have won, 't' you have lost, '' it goes on. A war of three or four is over when one general
+   holds its line (WAR_WIN) */
+function overFor() {
+  if (!alive('m')) return 't';
+  if (!G.sides.some(function (s) { return s !== 'm' && alive(s); })) return 'm';
+  if (multi()) {
+    var need = WAR_WIN[G.mode];
+    if (idsOf('m').length >= need) return 'm';
+    if (G.sides.some(function (s) { return s !== 'm' && idsOf(s).length >= need; })) return 't';
+  }
+  return '';
+}
 function campaignCheck() {
-  var m = idsOf('m').length, t = idsOf('t').length;
-  if (!m) { campaignOver(false); return true; }
-  if (!t) { campaignOver(true); return true; }
+  var o = overFor();
+  if (o) { campaignOver(o === 'm'); return true; }
   return false;
 }
 
@@ -3430,6 +4015,10 @@ function campaignCheck() {
 function campaignOver(won) {
   var v = $('verdict'), rs = $('result-say'), held = idsOf('m').length;
   fileCampaign(won);
+  /* ⭐ the war just fought, to play back; framed if it is your best */
+  var war = warEnd(won), framed = keepBest(war);
+  $('watch').hidden = !war;
+  $('framed').hidden = !framed;
   var last = G.mode === 'solo' && won != null ? lineFor(won ? 'lose' : 'win') : '';
   $('result-mx').textContent = last ? RIVAL.who + ': \u201c' + last + '\u201d' : '';
   $('result-mx').hidden = !last;
@@ -3460,6 +4049,13 @@ function campaignOver(won) {
     v.textContent = (won ? 'GREEN' : 'RED') + ' TAKES THE MAP';
     v.className = 'verdict ' + (won ? 'win' : 'lose');
     rs.textContent = 'All ten holdings, round ' + G.round + '.';
+  } else if (multi()) {
+    var lead = G.sides.filter(function (s) { return s !== 'm'; })
+      .sort(function (a, b) { return idsOf(b).length - idsOf(a).length; })[0];
+    v.textContent = won ? 'THE WAR IS YOURS' : 'THE WAR IS LOST';
+    v.className = 'verdict ' + (won ? 'win' : 'lose');
+    rs.textContent = won ? 'You hold ' + held + ' of ' + LAND.length + ' against ' + (G.sides.length - 1) + ' generals, round ' + G.round + '.'
+      : 'You held out to round ' + G.round + '. ' + generalOf(lead).who + ' holds ' + idsOf(lead).length + ' of ' + LAND.length + '.';
   } else {
     v.textContent = won ? 'THE CAMPAIGN IS YOURS' : 'THE CAMPAIGN IS LOST';
     v.className = 'verdict ' + (won ? 'win' : 'lose');
@@ -3507,7 +4103,7 @@ function startMode(b, mode) {
   initAudio();
   var o = loadSave(mode);
   /* today's Daily and a two-player game pick up where they were; yesterday's Daily is simply replaced */
-  if (o && (mode === 'two' || mode === 'first' || (mode === 'daily' && o.day === dayKey()))) { resumeCampaign(o); return; }
+  if (o && (mode === 'two' || mode === 'first' || WAR_START[mode] || (mode === 'daily' && o.day === dayKey()))) { resumeCampaign(o); return; }
   /* a campaign in progress is not thrown away by one tap on Begin */
   if (mode === 'solo' && o && !b.dataset.armed) {
     b.dataset.armed = '1'; b.textContent = 'Tap again to start over';
@@ -3522,15 +4118,39 @@ function startMode(b, mode) {
   G.started = true;
   G.habits = mode === 'solo' ? habitsOf(observeFile(loadFile())) : null;
   if (mode !== 'two' && !first && optDog) { G.dogId = optDog; G.dog = dogStart(); }
+  G.gens = musterGenerals(assemblyNames());
+  warBegin();
   setPhase('deploy');
   say(deployLine());
-  if (!first) openingWords();
+  if (multi()) speak('war', { holdings: LAND.length, generals: G.sides.length - 1 });
+  else if (!first) openingWords();
   drawMap(); show('screen-map');
 }
 $('go').addEventListener('click', function () { startMode(this, 'solo'); });
 $('daily').addEventListener('click', function () { startMode(this, 'daily'); });
 $('two').addEventListener('click', function () { startMode(this, 'two'); });
 $('first').addEventListener('click', function () { startMode(this, 'first'); });
+$('three').addEventListener('click', function () { startMode(this, 'three'); });
+$('four').addEventListener('click', function () { startMode(this, 'four'); });
+$('orders').addEventListener('click', function () { if (!G || G.busy) return; G.orderArm = ''; paintOrders(); show('screen-orders'); });
+/* the war, replayed: from the result screen (this war) and from the frame (your best) */
+$('watch').addEventListener('click', function () { if (G && G.war) playWar(G.war, 'result'); });
+$('frame').addEventListener('click', function () { initAudio(); playWar(loadBest(), 'home'); });
+/* a tap on the playback moves it on a beat; Skip goes to its last map, and Done goes back */
+$('screen-war').addEventListener('click', function (e) {
+  if (!replay || e.target.id === 'war-back') return;
+  if (replay.at + 1 < replay.frames.length) warShow(replay.at + 1);
+});
+$('war-back').addEventListener('click', function () {
+  if (!replay) return;
+  if (replay.at + 1 < replay.frames.length) { warShow(replay.frames.length - 1); return; }
+  clearTimeout(replay.t);
+  var then = replay.then;
+  replay = null;
+  if (then === 'result') { show('screen-result'); return; }
+  useMap(MAIN_MAP); paintHome(); show('screen-home');
+});
+$('orders-back').addEventListener('click', function () { say(phaseLine()); drawMap(); show('screen-map'); });
 $('pass-go').addEventListener('click', function () { say(phaseLine()); drawMap(); show('screen-map'); });
 $('pass-quit').addEventListener('click', function () {
   var b = this;
@@ -3559,6 +4179,7 @@ $('back').addEventListener('click', function () { show('screen-home'); });
 $('endturn').addEventListener('click', function () {
   if (G.phase === 'theirs') { hurry(); return; }
   if (G.busy) return;
+  G.orderArm = '';
   if (G.phase === 'deploy') {
     if (G.toPlace > 0) return;
     setPhase('attack'); G.sel = -1;
@@ -3624,17 +4245,20 @@ var SAVE_KEY = 'pjcc.campaign.save.v1', LEVEL_KEY = 'pjcc.campaign.level', SND_K
 /* ⚠ one slot per mode: a Daily or a two-player game must never overwrite a campaign in progress */
 function saveKey(mode) {
   return mode === 'daily' ? 'pjcc.campaign.save.daily.v1' : mode === 'two' ? 'pjcc.campaign.save.two.v1'
-    : mode === 'first' ? 'pjcc.campaign.save.first.v1' : SAVE_KEY;
+    : mode === 'first' ? 'pjcc.campaign.save.first.v1' : WAR_START[mode] ? 'pjcc.campaign.save.' + mode + '.v1' : SAVE_KEY;
 }
 function saveCampaign() {
   if (!G || !G.started) return;
   try {
     localStorage.setItem(saveKey(G.mode), JSON.stringify({ v:1, mode:G.mode, day:G.day, side:G.side, seen:G.seen,
+      sides:G.sides, acting:G.acting || '', fallen:G.fallen || [],
       fog:G.fog, cards:G.cards, card:G.card, truce:G.truce, lastCard:G.lastCard, walls:G.walls, down:G.down,
       own:G.own, ranks:G.ranks, round:G.round, diff:G.diff,
       phase:G.phase, toPlace:G.toPlace, atks:G.atks, fortFrom:G.fortFrom, fortTo:G.fortTo, fortMoved:G.fortMoved,
       fortDone:G.fortDone, q:G.q, pending:G.pending || null, log:G.log || null,
-      dogId:G.dogId || '', dog:G.dog == null ? -1 : G.dog, sniffed:!!G.sniffed }));
+      dogId:G.dogId || '', dog:G.dog == null ? -1 : G.dog, sniffed:!!G.sniffed,
+      gens:G.gens || [], used:G.used || [], ordered:!!G.ordered, hold:G.hold || null, bar:G.bar || null,
+      sight:!!G.sight, roads:!!G.roads, war:G.war || null, warEv:G.warEv || [] }));
   } catch (e) {}
 }
 function loadSave(mode) {
@@ -3644,17 +4268,23 @@ function loadSave(mode) {
 function clearSave() { try { localStorage.removeItem(saveKey(G && G.mode)); } catch (e) {} if (G) G.started = false; paintHome(); }
 function resumeCampaign(o) {
   useMap(mapFor(o.mode || 'solo'));
+  var sides = Array.isArray(o.sides) ? o.sides : sidesFor(o.mode || 'solo'), seen = o.seen || {};
+  sides.forEach(function (s) { if (!Array.isArray(seen[s])) seen[s] = []; });
   G = { own:o.own, ranks:o.ranks, round:o.round, sel:-1, busy:false, diff:o.diff || 'medium', phase:o.phase,
-        mode:o.mode || 'solo', day:o.day || null, side:o.side || 'm', seen:o.seen || { m: [], t: [] }, scoutArm:-1,
+        mode:o.mode || 'solo', day:o.day || null, side:o.side || 'm', seen:seen, scoutArm:-1,
+        sides:sides, acting:o.acting || '', fallen:Array.isArray(o.fallen) ? o.fallen : [],
         fog:o.fog !== false, cards:!!o.cards, card:o.card || null, truce:o.truce == null ? -1 : o.truce, lastCard:o.lastCard || null,
         walls:o.walls || START_WALLS.slice(), down:o.down || [],
         toPlace:o.toPlace, atks:o.atks, fortFrom:o.fortFrom, fortTo:o.fortTo, fortMoved:o.fortMoved,
         fortDone:o.fortDone, flash:-1, hot:null, q:o.q || [], pending:null, started:true,
         log:o.log || freshLog(), habits:(o.mode || 'solo') === 'solo' ? habitsOf(observeFile(loadFile())) : null,
         dogId:dogOf(o.dogId) ? o.dogId : '', dog:o.dog == null ? -1 : o.dog, sniffed:!!o.sniffed,
-        lesson:'', teachAt:[], taught:{ taken: o.mode === 'first' && o.own[2] === 'm' } };
+        lesson:'', teachAt:[], taught:{ taken: o.mode === 'first' && o.own[2] === 'm' },
+        gens:Array.isArray(o.gens) ? o.gens : [], used:Array.isArray(o.used) ? o.used : [], ordered:!!o.ordered,
+        orderArm:'', hold:o.hold || null, bar:o.bar || null, sight:!!o.sight, roads:!!o.roads,
+        war:o.war && o.war.start ? o.war : null, warEv:Array.isArray(o.warEv) ? o.warEv : [] };
   var pend = o.pending, broke = false;
-  if (pend) broke = resolveLand(pend, !pend.playerAttacks);
+  if (pend) { broke = resolveLand(pend, !pend.playerAttacks); warNote(pend, G.own[pend.from], !pend.playerAttacks, broke, null); }
   if (campaignCheck()) return;
   show('screen-map');
   if (G.phase === 'theirs') {
@@ -3686,9 +4316,14 @@ function paintHome() {
   $('daily').textContent = d && d.day === today ? 'Daily · round ' + d.round
     : best ? 'Daily · best ' + best.best.held + '/' + LAND.length : 'Daily ' + dayLabel(today);
   $('two').textContent = t ? 'Two players · round ' + t.round : 'Two players';
+  ['three', 'four'].forEach(function (k) {
+    var w = loadSave(k);
+    $(k).textContent = (k === 'three' ? 'Three-way' : 'Four-way') + (w ? ' · round ' + w.round : '');
+  });
   var f = loadSave('first');
   $('first').textContent = f ? 'First campaign · round ' + f.round : 'First campaign';
   $('first').classList.toggle('new', !firstDone());
+  paintFrame();
 }
 $('resume').addEventListener('click', function () { initAudio(); var o = loadSave('solo'); if (o) resumeCampaign(o); });
 

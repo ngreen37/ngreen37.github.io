@@ -28,6 +28,7 @@ window.__mc = {
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
   dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
+  get replay() { return replay; }, idsOf: idsOf, loadBest: loadBest, SAND: SAND, hurry: hurry,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
     PEND = { from: 5, to: 3, playerAttacks: playerAttacks, aRanks: 4, dRanks: 3, attWhite: true,
@@ -751,6 +752,104 @@ function serve() {
     ok(first.done.flag === '1' && /FIRST CAMPAIGN IS YOURS/.test(first.done.verdict) && /^Maxwell: “/.test(first.done.mx),
        'winning it marks it done, and he sends you to a real one  [' + first.done.mx + ']');
     ok(first.home.on && !first.home.door && first.solo === 10, '…and the ten come back for the real campaign  [' + first.solo + ' holdings]');
+
+    /* ══ 11-10: A WAR OF THREE OR FOUR (his #10) ══ on the flat map: the sand table has its own check */
+    const war = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      ['pjcc.campaign.save.four.v1', 'pjcc.campaign.save.three.v1', 'pjcc.town.v1', 'pjcc.campaign.best.v1', 'pjcc.campaign.save.v1'].forEach(k => localStorage.removeItem(k));
+      localStorage.setItem('pjcc.campaign.map.flat', '1');
+      __mc.paintHome();
+      out.doors = [$('three').textContent, $('four').textContent];
+      $('four').click();
+      out.n = document.querySelectorAll('#mapbox .node').length;
+      out.tally = ['tw-u', 'tw-v'].map(id => $(id).hidden ? '' : $(id).textContent.replace(/\s+/g, ' ').trim());
+      out.mine = $('t-mine').textContent;
+      out.speech = $('mx-line').textContent;
+      out.colors = ['side-u', 'side-v'].map(c => document.querySelectorAll('#mapbox .node.' + c).length);
+      /* two machines' battle: Vince's middle on Wes's, from a queue, as their turn plays it */
+      const G = __mc.G;
+      G.ranks[11] = 9; G.ranks[15] = 1;
+      G.phase = 'theirs'; G.busy = true; G.acting = 'u';
+      G.q = [{ t: 'attack', from: 11, to: 15, side: 'u' }];
+      __mc.pump();
+      out.clash = { roll: $('screen-roll').classList.contains('on'), map: $('screen-map').classList.contains('on'), say: $('map-say').textContent,
+        noted: G.warEv.length ? G.warEv[0].s + ':' + G.warEv[0].r : '' };
+      return out;
+    });
+    ok(war.doors[0] === 'Three-way' && war.doors[1] === 'Four-way', 'a war of three and of four each have a door on the home screen');
+    ok(war.n === 16 && war.tally[0] === 'Vince 4' && war.tally[1] === 'Wes 4' && war.mine === '4/10' && war.colors.join() === '4,4',
+       'a war of four is sixteen holdings, four a seat, every general counted, and yours counted toward ten  [' + war.tally.join(' · ') + ' · ' + war.mine + ']');
+    ok(/16 holdings and 3 of us/.test(war.speech), 'Maxwell opens a war with its size  [' + war.speech + ']');
+    ok(!war.clash.roll && war.clash.map && /(takes The Square from Wes|The Square holds against Vince|breaks the walls of The Square)/.test(war.clash.say) &&
+       /^u:(took|held|breach)$/.test(war.clash.noted),
+       'two machines\' battle is decided at once on the map, said in a line and kept for the replay  [' + war.clash.say + ']');
+    const back = await E(() => {
+      const $ = id => document.getElementById(id);
+      __mc.paintHome();
+      return { label: $('four').textContent, slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
+    });
+    ok(/^Four-way · round \d+$/.test(back.label) && back.slot, 'a war of four keeps its own save and resumes from its own door  [' + back.label + ']');
+
+    /* ══ 11-10: GENERALS FROM YOUR ASSEMBLY (his #9) ══ */
+    const gens = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('go').click();
+      out.none = $('orders').hidden;
+      __mc.campaignOver(false); $('cont').click();
+      localStorage.setItem('pjcc.town.v1', JSON.stringify({ run: 1, army: [3, 8, 11], board: [{ p: 'q', who: 'Michael', f: 3, r: 7 },
+        { p: 'p', who: 'Maxwell', f: 0, r: 6 }, { p: 'p', who: 'Matsu', f: 3, r: 6 }] }));
+      $('go').click();
+      out.door = $('orders').textContent;
+      $('orders').click();
+      out.screen = $('screen-orders').classList.contains('on');
+      out.rows = [...document.querySelectorAll('.gen')].map(b => b.dataset.who + (b.disabled ? '-' : '+'));
+      const G = __mc.G, mine = __mc.idsOf('m')[0], was = G.ranks[mine];
+      document.querySelector('.gen[data-who="Matsu"]').click();
+      out.armed = $('screen-map').classList.contains('on') && G.orderArm === 'Matsu';
+      __mc.tapLand(mine);
+      out.drop = G.ranks[mine] - was;
+      out.line = $('mx-name').textContent + ': ' + $('mx-line').textContent;
+      out.after = $('orders').textContent;
+      $('orders').click();
+      out.rows2 = [...document.querySelectorAll('.gen')].map(b => b.dataset.who + (b.disabled ? '-' : '+'));
+      $('orders-back').click();
+      return out;
+    });
+    ok(gens.none, 'with no town save nobody stands with you, and the door is not there');
+    ok(gens.door === 'Generals · 2 orders' && gens.screen && gens.rows.join() === 'Michael+,Matsu+',
+       'your Assembly stands with you, Maxwell across the table and not among them  [' + gens.rows.join(' ') + ']');
+    ok(gens.armed && gens.drop === 2 && gens.line === 'Matsu: Two more. Use them.' && gens.after === 'Generals · 1 order · next round' &&
+       gens.rows2.join() === 'Michael-,Matsu-',
+       'Matsu\'s order lands two troops on the holding you tap, in his words, and it is one order a round  [' + gens.line + ']');
+
+    /* ══ 11-10: THE WAR, REPLAYED (his #7) ══ */
+    const rep = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      __mc.campaignOver(true);
+      out.result = { watch: !$('watch').hidden, framed: !$('framed').hidden };
+      $('watch').click();
+      out.on = $('screen-war').classList.contains('on');
+      out.frames = __mc.replay.frames.length;
+      out.first = $('war-say').textContent;
+      $('war-back').click();
+      out.last = { step: $('war-step').textContent, btn: $('war-back').textContent };
+      $('war-back').click();
+      out.backTo = $('screen-result').classList.contains('on');
+      $('cont').click();
+      out.frame = { shown: !$('frame').hidden, say: $('frame-say').textContent };
+      $('frame').click();
+      out.again = $('screen-war').classList.contains('on') && __mc.replay.then === 'home';
+      $('war-back').click(); $('war-back').click();
+      out.home = $('screen-home').classList.contains('on') && document.querySelectorAll('#mapbox .node').length === 10;
+      return out;
+    });
+    ok(rep.result.watch && rep.result.framed, 'a won campaign offers its war back, and goes in the frame');
+    ok(rep.on && rep.frames >= 2 && rep.first === 'The opening.' && rep.last.step === rep.frames + ' of ' + rep.frames && rep.last.btn === 'Done' && rep.backTo,
+       'the war plays back from the opening; Skip goes to its last map and Done to the result  [' + rep.frames + ' frames]');
+    ok(rep.frame.shown && /^Your best war · Medium · won in round \d+$/.test(rep.frame.say) && rep.again && rep.home,
+       'the home screen frames your best war, and it plays back from there  [' + rep.frame.say + ']');
+    await E(() => { ['pjcc.town.v1', 'pjcc.campaign.best.v1', 'pjcc.campaign.map.flat'].forEach(k => localStorage.removeItem(k)); });
   } catch (e) {
     FAIL++; console.log('  ✗ FAIL  harness threw: ' + e.message);
   } finally {

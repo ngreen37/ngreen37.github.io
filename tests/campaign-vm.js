@@ -11,7 +11,10 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const PAGE = path.join(ROOT, 'assets/games/pjcc_marchland.html');
 
-const EXPOSE = ['LAND', 'EDGES', 'ADJ', 'LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP', 'FACES',
+/* ⚠ THE MAP IS READ LIVE (getters, in the hook): useMap() points LAND, EDGES and ADJ at another map, and a value copied
+   once stayed the ten — a war's corpus rows read ten holdings off a sixteen-holding war (11-10) */
+const LIVE = ['LAND', 'EDGES', 'ADJ'];
+const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP', 'FACES',
   'CLOCK_ATT', 'CLOCK_DEF', 'MOVE_DELAY', 'MATE_SCORE', 'VAL', 'CARDS', 'DECK', 'DAILY_ROUNDS',
   'newCampaign', 'musterBattle', 'resolveLand', 'rivalPlan', 'deployFor', 'idsOf', 'chained', 'chainCount', 'nbrs',
   'adj', 'drawCard', 'playCard', 'cardAtks', 'bestMove', 'material', 'loneKing', 'sieged', 'walled', 'breached',
@@ -19,7 +22,13 @@ const EXPOSE = ['LAND', 'EDGES', 'ADJ', 'LEVELS', 'START_OWN', 'START_RANKS', 'S
   'matBudget', 'capsFor', 'muster', 'buildBoard', 'applyAttackerPos', 'applyDefenderPos', 'campaignCheck',
   'keptShare', 'troopsLine', 'RIVAL', 'MAXWELL_LINES', 'observeFile', 'habitsOf', 'lineFor', 'freshLog', 'noteAttack',
   'noteTurn', 'fileCampaign', 'loadFile', 'DOGS', 'dogOf', 'perkOf', 'dogStart', 'dogAfter', 'sniffable', 'variantOf', 'fogged', 'LESSON_STEPS', 'FIRST_MAP', 'MAIN_MAP', 'FIRST_START', 'useMap', 'mapFor',
-  'firstPlan', 'teachNow'];
+  'firstPlan', 'teachNow',
+  /* a war of three or four (11-10) */
+  'SIDES', 'WAR3_MAP', 'WAR4_MAP', 'WAR_START', 'CLASH', 'clash', 'clashBin', 'sidesFor', 'nextSide', 'alive', 'generalOf',
+  'GENERAL_LINES', 'multi', 'overFor',
+  /* generals from your Assembly, and the war replayed (11-10) */
+  'ORDERS', 'GENERALS', 'GENERAL_SAY', 'musterGenerals', 'orderOf', 'canOrder', 'giveOrder', 'held', 'barred',
+  'warBegin', 'warNote', 'warTurn', 'warEnd', 'betterWar', 'keepBest', 'loadBest', 'warFrames', 'BEST_KEY'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -31,6 +40,8 @@ function gameScript() {
   const hook = '\nwindow.__CAMP = { get G() { return G; }, set G(v) { G = v; }, get PEND() { return PEND; }, ' +
     'set PEND(v) { PEND = v; }, setRNG: function (f) { RNG = f; }, get SURVIVE() { return SURVIVE; }, ' +
     'setSurvive: function (v) { SURVIVE = v; }, ' +
+    'setWarWin: function (win) { WAR_WIN = win; }, get WAR_WIN() { return WAR_WIN; }, ' +
+    LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +
     EXPOSE.map((k) => k + ': ' + k).join(', ') + ' };\n';
   return src.slice(0, at) + hook + src.slice(at);
 }

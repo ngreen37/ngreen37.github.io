@@ -71,7 +71,12 @@ function build() {
     slice(src, 'var EV = {',         'function evalPos') +
     slice(src, 'var MATE_SCORE',     '/* ⚠ RETURNS AN OBJECT') +
     slice(src, 'var W_BACK',         '/* ⛑⛑ A PAIR OF BISHOPS') +
-    slice(src, 'var REVEAL_MS',      'function startBattle');
+    slice(src, 'var REVEAL_MS',      'function startBattle') +
+    /* 11-10, his picks 6, 7, 9, 10: a war of three or four (the maps, the seats, the measured odds two machines' battle
+       is decided at, the line that ends it, the other generals' words), and the orders your Assembly gives */
+    slice(src, 'var SIDES',          'function sidesFor') +
+    slice(src, 'var GENERAL_LINES',  '/* a general\'s face and line') +
+    slice(src, 'var ORDERS',         'function assemblyNames');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -82,7 +87,7 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.4',
+    version: '0.5',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice(), walls: G.START_WALLS.slice() },
@@ -119,6 +124,24 @@ function build() {
     engine: { ev: G.EV, mateScore: G.MATE_SCORE },
     placement: { wBack: G.W_BACK.slice(), wPawn: G.W_PAWN.slice(), bBack: G.B_BACK.slice(), bPawn: G.B_PAWN.slice() },
     battle: { revealMs: G.REVEAL_MS, mercyMs: G.MERCY_MS, mercyPly: G.MERCY_PLY, mercyOdds: G.MERCY_ODDS },
+    /* a war of three or four: the seats (whose color, which general), each map and its dealt start, the line that ends
+       it, the measured odds two machines' battle is decided at, and the other generals' words (HIS) */
+    war: {
+      sides: Object.keys(G.SIDES).reduce((o, k) => { const s = G.SIDES[k]; o[k] = { name: s.nm, color: s.col, bg: s.bg, who: s.who, key: s.key }; return o; }, {}),
+      three: { holdings: G.WAR3_MAP.land.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })), edges: G.WAR3_MAP.edges.map((e) => [e[0], e[1]]),
+               start: { sides: G.WAR_START.three.sides.slice(), owner: G.WAR_START.three.own.slice(), ranks: G.WAR_START.three.ranks.slice(),
+                        walls: G.WAR_START.three.walls.slice() }, win: G.WAR_WIN.three },
+      four:  { holdings: G.WAR4_MAP.land.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })), edges: G.WAR4_MAP.edges.map((e) => [e[0], e[1]]),
+               start: { sides: G.WAR_START.four.sides.slice(), owner: G.WAR_START.four.own.slice(), ranks: G.WAR_START.four.ranks.slice(),
+                        walls: G.WAR_START.four.walls.slice() }, win: G.WAR_WIN.four },
+      clash: { lo: G.CLASH.lo, bin: G.CLASH.bin, p: G.CLASH.p.slice(), ka: G.CLASH.ka.slice(), kd: G.CLASH.kd.slice() },
+      lines: G.GENERAL_LINES
+    },
+    /* your Assembly's generals: each order (named and worded HIS), who gives which, and what each says giving it */
+    generals: {
+      orders: Object.keys(G.ORDERS).reduce((o, k) => { o[k] = { name: G.ORDERS[k].nm, text: G.ORDERS[k].txt, at: !!G.ORDERS[k].at }; return o; }, {}),
+      who: G.GENERALS, says: G.GENERAL_SAY
+    },
     first: { holdings: G.FIRST_MAP.land.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
              edges: G.FIRST_MAP.edges.map((e) => [e[0], e[1]]), start: { owner: G.FIRST_START.own.slice(),
              ranks: G.FIRST_START.ranks.slice(), walls: G.FIRST_START.walls.slice() }, lessons: G.LESSON_STEPS.slice() },

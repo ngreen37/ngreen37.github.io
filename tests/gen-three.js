@@ -18,6 +18,8 @@ const EXPORTS = [
   // the chess rooms' tilted board (pjcc-board3d.js)
   'Mesh', 'PlaneGeometry', 'BoxGeometry', 'CylinderGeometry', 'MeshStandardMaterial', 'MeshBasicMaterial',
   'CanvasTexture', 'AmbientLight', 'Quaternion', 'NoToneMapping', 'PCFShadowMap',
+  // the Campaign's sand table and its eight-sided dice, built face by face (pjcc-sandtable.js)
+  'BufferGeometry', 'Float32BufferAttribute',
 ];
 
 const entry = `export { ${EXPORTS.join(', ')} } from 'three';

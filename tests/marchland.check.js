@@ -552,7 +552,7 @@ check('the map header counts your chained holdings',
       /id="t-chain"/.test(slice('<div class="tally">', '</div>')) &&
       /\$\('t-chain'\)\.textContent = chainCount\(G\.own, G\.side\)/.test(src));
 check('a chained holding is marked on the map itself',
-      /if \(chained\(G\.own, L\.id\)\) cls \+= ' chained';/.test(slice('function drawMap()', 'function tapLand')) &&
+      /if \(chained\(G\.own, L\.id\) \|\| held\(L\.id\)\) cls \+= ' chained';/.test(slice('function drawMap()', 'function tapLand')) &&
       /\.node\.chained \.disc \{/.test(slice('<style>', '</style>')),
       'a double ring, because .sel/.can/.tgt already own the disc box-shadow');
 check('the roll screen says the extra die out loud, not in the fine print',
@@ -596,7 +596,7 @@ check('the roll screen says the extra die out loud, not in the fine print',
         /G\.down\.indexOf\(p\.to\)[\s\S]{0,120}splice/.test(resolve));
   check('a breach lasts one turn — both turn changes clear it',
         /G\.down = \[\];/.test(slice('function resetTurn()', 'function passTurn')) &&
-        /G\.down = \[\];/.test(slice('function theirTurn()', 'function beat(')),
+        /G\.down = \[\];/.test(slice('function theirTurn(', 'function afterTurn(')),
         'yours ends at theirTurn, theirs ends at resetTurn — one of the two is not enough');
   check('holding one pays a troop a round',
         /wallsFor\(side\)/.test(slice('function deployFor', 'function idsOf')),
@@ -768,7 +768,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
   const LINES = camp.MAXWELL_LINES;
   const TOKENS = { record: ['won', 'lost'], habit_open: ['from'], habit_thin: ['at'], declare: ['from', 'to'],
-    took: ['to'], lost: ['to'], held: ['to'], repelled: ['to'], breach_his: ['to'], breach_yours: ['to'] };
+    took: ['to'], lost: ['to'], held: ['to'], repelled: ['to'], breach_his: ['to'], breach_yours: ['to'],
+    war: ['holdings', 'generals'] };
   /* ⚠ THE WORDS ARE JOINED HERE, NOT WRITTEN: the house spelling gate reads every source file, this one included */
   const UK = new RegExp('\\b(' + ['colo.ur', 'favo.ur', 'hono.ur', 'behavio.ur', 'reali.s', 'organi.s', 'cent.re', 'defen.ce',
     'offen.ce', 'whil.st'].map((w) => w.replace('.', '')).join('|') + ')', 'i');
@@ -823,8 +824,10 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   check('a campaign goes into his file when it ends, and a two-player game never does',
         filed && filed.games === 1 && filed.won === 1 && filed.open['5'] === 1 && filed.keep === 1 && filed2.games === 1,
         JSON.stringify(filed));
+  /* a war of three or four (11-10): whoever holds the other end sits there; Red's is Maxwell */
   check('he sits across every battle against Red, and nobody sits between two players',
-        /seat: function \(\) \{ return B && !B\.two \? \{ who: RIVAL\.who, key: RIVAL\.key \} : null; \}/.test(src));
+        /seat: function \(\) \{ var g = B && !B\.two \? generalOf\(B\.foeSide\) : null; return g \? \{ who: g\.who, key: g\.key \} : null; \}/.test(src) &&
+        camp.generalOf('t').who === 'Maxwell' && camp.generalOf('t').key === camp.RIVAL.key);
 }
 
 /* == 13. YOUR DOG MARCHES WITH YOU (his 11-10, #4) =================================
@@ -904,6 +907,187 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
         'Checker Town ' + camp.nbrs(3).slice().sort().join(','));
 }
 
+/* == 15. A WAR OF THREE OR FOUR (his 11-10, #10) ===================================
+   Fifteen holdings for three, sixteen for four, each seat the same sector turned; two machines' battle decided at once at
+   odds sim:clash measured; hold ten and it is yours. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  [['three', camp.WAR3_MAP, 5], ['four', camp.WAR4_MAP, 4]].forEach(([mode, M, k]) => {
+    const S0 = camp.WAR_START[mode], n = M.land.length, sides = S0.sides.length;
+    const has = new Set(M.edges.map((e) => Math.min(e[0], e[1]) + '-' + Math.max(e[0], e[1])));
+    /* ⭐ THE SAME SECTOR TURNED: every border, moved a seat round the table, is a border; every seat the same troops */
+    const turned = M.edges.every((e) => { const a = (e[0] + k) % n, b = (e[1] + k) % n; return has.has(Math.min(a, b) + '-' + Math.max(a, b)); });
+    const fair = S0.sides.every((s, i) => S0.own.slice(i * k, i * k + k).every((o) => o === s) &&
+      S0.ranks.slice(i * k, i * k + k).join() === S0.ranks.slice(0, k).join() && S0.walls[i] === i * k);
+    camp.useMap(M);
+    const reach = new Set([0]), st = [0];
+    while (st.length) { const x = st.pop(); camp.nbrs(x).forEach((j) => { if (!reach.has(j)) { reach.add(j); st.push(j); } }); }
+    check('⭐ a war of ' + mode + ': ' + n + ' holdings, all joined, every seat the same sector turned, the same troops and a walled keep each',
+          n === sides * k && reach.size === n && turned && fair && M.land.every((L) => L.nm.length >= 8 && L.nm.length <= 13),
+          M.land.map((L) => L.nm).join(', '));
+    camp.newCampaign('medium', mode, { fog: true, cards: false });
+    const G = camp.G;
+    check('…it deals ' + sides + ' seats, you first, and a machine passes to the next round the table',
+          G.sides.join('') === S0.sides.join('') && camp.nextSide('t') === S0.sides[2] &&
+          camp.nextSide(S0.sides[sides - 1]) === '' && Object.keys(G.seen).length === sides);
+    camp.useMap(camp.MAIN_MAP);
+  });
+  /* the odds: never falling as the gap grows, a share in every bin, the ends open */
+  const C = camp.CLASH;
+  check('⭐ two machines\' battle is decided at odds that never fall as the material gap grows',
+        C.p.every((p, i) => i === 0 || p >= C.p[i - 1]) && C.p.length === C.ka.length && C.p.length === C.kd.length &&
+        C.p.concat(C.ka, C.kd).every((v) => v > 0 && v < 1) && camp.clashBin(-99) === 0 && camp.clashBin(99) === C.p.length - 1 &&
+        camp.clashBin(C.lo) === 0 && camp.clashBin(C.lo + C.bin) === 1, C.p.join(' '));
+  /* a clash is a muster (the page's dice, the same draws a played battle takes) and one draw more */
+  camp.useMap(camp.WAR4_MAP);
+  camp.newCampaign('medium', 'four', { fog: false, cards: false });
+  let draws = 0, rows = [];
+  camp.setRNG(() => { draws++; return 0.4; });
+  const G = camp.G;
+  G.ranks[7] = 6;
+  const P = camp.clash(7, 11);
+  const one = draws;
+  draws = 0;
+  camp.newCampaign('medium', 'four', { fog: false, cards: false });
+  camp.G.ranks[7] = 6;
+  camp.musterBattle(7, 11, true);
+  check('…a clash is the muster a played battle would have, then one draw against the table',
+        one === draws + 1 && P.clash === true && P.playerAttacks === false && typeof P.gap === 'number', one + ' draws vs ' + draws);
+  camp.setRNG(null);
+  /* the ground answers as a played battle's would: a won clash marches in at the measured share */
+  let won = null;
+  for (let i = 0; i < 40 && !won; i++) {
+    camp.newCampaign('medium', 'four', { fog: false, cards: false });
+    camp.G.ranks[7] = 8; camp.G.ranks[11] = 1;
+    const Q = camp.clash(7, 11);
+    if (Q.won) won = { Q, own: camp.G.own[11], ranks: camp.G.ranks[11], home: camp.G.ranks[7] };
+    rows.push(Q.won);
+  }
+  check('…and a won clash takes the ground, its troops marching in at the share those battles kept',
+        won && won.own === 't' && won.home === 1 && won.ranks >= 1 && won.ranks <= 7, JSON.stringify(won && { own: won.own, ranks: won.ranks }));
+  /* hold ten */
+  camp.newCampaign('medium', 'four', { fog: false, cards: false });
+  /* hold ten: played on a war of four, ten yours, ten his, nine each */
+  const deal = (mine, his) => { camp.newCampaign('medium', 'four', {}); const G4 = camp.G;
+    G4.own = G4.own.map((o, i) => (i < mine ? 'm' : i < mine + his ? 'u' : 'v')); return camp.overFor(); };
+  check('⭐ hold ten and the war is yours, and a general who does takes it (three or four)',
+        camp.WAR_WIN.three === 10 && camp.WAR_WIN.four === 10 && deal(10, 3) === 'm' && deal(3, 10) === 't' && deal(9, 4) === '' &&
+        deal(16, 0) === 'm' && deal(0, 9) === 't' && /var o = overFor\(\);/.test(slice('function campaignCheck()', 'function campaignOver')),
+        [deal(10, 3), deal(3, 10), deal(9, 4)].join(','));
+  /* the machine: everyone else is the foe, and a war's even choice is a coin toss (a war of two keeps its order) */
+  const rv = slice('function rivalPlan(', 'function theirTurn');
+  check('a machine\'s foe is everyone else, never one color', !/foe/.test(rv) && /G\.own\[to\] === side/.test(rv));
+  check('…a war\'s even choice is a coin toss, and a war of two never draws for one',
+        /k: war \? rand\(\) : 0/.test(rv) && /return b\.s - a\.s \|\| a\.k - b\.k;/.test(rv) && /var cand = \[\], war = multi\(\);/.test(rv));
+  /* every general's word is shippable, as Maxwell's are */
+  const bad = [];
+  Object.keys(camp.GENERAL_LINES).forEach((w) => Object.keys(camp.GENERAL_LINES[w]).forEach((k) => camp.GENERAL_LINES[w][k].forEach((s) => {
+    if (!/[.?!]["”]?$/.test(s) || s.length > 220 || (s.match(/\{(\w+)\}/g) || []).some((t) => t !== '{to}' && t !== '{from}')) bad.push(w + '.' + k + ': ' + s);
+  })));
+  check('the other generals\' words are shippable and they are the seats\' generals',
+        bad.length === 0 && Object.keys(camp.GENERAL_LINES).every((w) => ['u', 'v'].some((s) => camp.SIDES[s].who === w)),
+        bad.join(' · ') || Object.keys(camp.GENERAL_LINES).join(', '));
+  camp.useMap(camp.MAIN_MAP);
+}
+
+/* == 16. GENERALS FROM YOUR ASSEMBLY (his 11-10, #9) ================================
+   One order a campaign from each square you have won, on the map, one a round; never a Daily, two players or the first. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const names = ['Matsu', 'Michael', 'Maxwell', 'Vince', 'Robert', 'Murphy', 'Kedar', 'Matsu', 'Nobody'];
+  camp.newCampaign('medium', 'solo', { fog: true, cards: false });
+  const solo = camp.musterGenerals(names);
+  camp.useMap(camp.WAR4_MAP); camp.newCampaign('medium', 'four', { fog: true, cards: false });
+  const four = camp.musterGenerals(names);
+  camp.useMap(camp.MAIN_MAP);
+  const none = ['daily', 'two', 'first'].map((m) => { if (m === 'first') camp.useMap(camp.FIRST_MAP); camp.newCampaign('easy', m, {}); const n = camp.musterGenerals(names).length; camp.useMap(camp.MAIN_MAP); return n; });
+  check('⭐ your generals: the Assembly, less anyone across the table, anyone with no order, and nobody twice',
+        solo.join() === 'Matsu,Michael,Vince,Robert,Murphy,Kedar' && four.join() === 'Matsu,Michael,Robert,Murphy,Kedar' &&
+        none.every((n) => n === 0), solo.join() + ' / ' + four.join());
+  check('every general has an order that exists and words to give it with',
+        Object.keys(camp.GENERALS).every((n) => camp.ORDERS[camp.GENERALS[n]] && camp.GENERAL_SAY[n]) && !camp.GENERALS.Maxwell &&
+        Object.keys(camp.GENERAL_SAY).every((n) => /[.?!]$/.test(camp.GENERAL_SAY[n])), Object.keys(camp.GENERALS).length + ' generals');
+  /* each order does what it says, on the map */
+  const fresh = (gens) => { camp.newCampaign('medium', 'solo', { fog: true, cards: false }); camp.G.gens = gens; camp.G.phase = 'attack'; return camp.G; };
+  let G = fresh(['Matsu', 'Kedar']);
+  const before = G.ranks[5];
+  const okDrop = camp.giveOrder('Matsu', 5) && G.ranks[5] === before + 2;
+  const twice = camp.giveOrder('Kedar');
+  check('⭐ Reinforce puts two troops on your holding, and it is one order a round', okDrop && !twice && G.ordered);
+  G = fresh(['Matsu']);
+  check('…a targeted order needs a holding of yours', !camp.giveOrder('Matsu', 0) && !camp.giveOrder('Matsu') && camp.giveOrder('Matsu', 9));
+  G = fresh(['Vince']); const a0 = G.atks;
+  check('Forced March: one more attack this round', camp.giveOrder('Vince') && G.atks === a0 + 1);
+  G = fresh(['Auston']);
+  const hid = camp.LAND.filter((L) => camp.fogged(L.id)).length;
+  camp.giveOrder('Auston');
+  check('Lookout: no fog for you this round', hid > 0 && camp.LAND.every((L) => !camp.fogged(L.id)), hid + ' hidden before');
+  G = fresh(['Seaboard Rep']);
+  const far = camp.fortReach(5, 9);
+  camp.giveOrder('Seaboard Rep');
+  check('Long Roads: fortify along any chain of yours this round', !far && camp.fortReach(5, 9));
+  G = fresh(['Michael']); G.own = ['m', 't', 't', 't', 't', 'm', 't', 't', 't', 't']; G.ranks = [3, 3, 3, 3, 3, 4, 3, 3, 3, 3];
+  const dice0 = camp.musterBattle(3, 5, false).dChain;
+  camp.giveOrder('Michael', 5);
+  const dice1 = camp.musterBattle(3, 5, false);
+  check('Hold Fast: your holding defends with the chain\'s die, and nothing else of the chain\'s', !dice0 && dice1.dChain === true &&
+        !camp.chained(G.own, 5) && camp.chainCount(G.own, 'm') === 0);
+  G = fresh(['Robert']); G.walls = [];
+  camp.giveOrder('Robert', 7);
+  check('Barricade: your holding is walled till your next turn, and pays no troop', camp.walled(7) && camp.sieged(7) && camp.wallsFor('m') === 0);
+  G = fresh(['Murphy']); G.ranks[3] = 7; G.ranks[5] = 7;
+  camp.giveOrder('Murphy');
+  check('Sabotage: every enemy stack of six or more loses one, never yours', G.ranks[3] === 6 && G.ranks[5] === 7);
+  G = fresh(['Princess']); G.ranks[7] = 1; G.ranks[8] = 1; G.ranks[3] = 1;
+  camp.giveOrder('Princess');
+  check('Shore Up: every holding of yours with one troop gains one', G.ranks[7] === 2 && G.ranks[8] === 2 && G.ranks[3] === 1);
+  /* the turn they last: your next one */
+  G = fresh(['Michael', 'Robert']); G.walls = [];
+  camp.giveOrder('Michael', 5);
+  const src = slice('function resetTurn()', 'function passTurn');
+  check('⭐ an order lasts until your next turn, and a general gives his once a campaign',
+        /G\.ordered = false; G\.orderArm = ''; G\.sight = false; G\.roads = false;/.test(src) &&
+        /if \(G\.hold && G\.hold\.side === G\.side\) G\.hold = null;/.test(src) && /if \(G\.bar && G\.bar\.side === G\.side\) G\.bar = null;/.test(src) &&
+        (G.ordered = false, !camp.canOrder('Michael')) && camp.canOrder('Robert'));
+  G = fresh(['Matsu']); G.busy = true;
+  const busy = camp.canOrder('Matsu');
+  G.busy = false; G.phase = 'theirs';
+  check('…and never in a battle or in their turn', !busy && !camp.canOrder('Matsu'));
+}
+
+/* == 17. THE WAR, REPLAYED (his 11-10, #7) ==========================================
+   A turn keeps the map it left and the battles in it; a mate keeps its board; your best won war is the one framed. */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  camp.newCampaign('hard', 'solo', { fog: false, cards: false });
+  const G = camp.G;
+  G.started = true;
+  camp.warBegin();
+  const b = new Array(64).fill(''); b[4] = 'k'; b[12] = 'Q'; b[20] = 'K';
+  camp.warNote({ from: 5, to: 3 }, 'm', true, false, b);
+  camp.warNote({ from: 9, to: 4 }, 'm', false, false, null);
+  camp.warTurn('m');
+  camp.warTurn('t');
+  G.round = 7;
+  const w = camp.warEnd(true);
+  const frames = camp.warFrames(w);
+  check('⭐ a war keeps every turn\'s map and battles, and a mate its board, 64 letters',
+        w.turns.length === 2 && w.turns[0].ev.length === 2 && w.turns[0].ev[0].mate.length === 64 && w.turns[0].ev[0].mate.charAt(4) === 'k' &&
+        w.turns[0].ev[1].mate === '' && w.won === true && w.rounds === 7, JSON.stringify(w.turns[0].ev.map((e) => e.r)));
+  check('…and plays back as the opening, a beat a turn, and a beat on each mate',
+        frames.length === 4 && !!frames[2].mate && /took Checker Town; 1 attack failed\./.test(frames[1].say) && /fought no battles/.test(frames[3].say),
+        frames.map((f) => f.say).join(' | '));
+  const won = (diff, sides, rounds) => ({ won: true, diff, sides: new Array(sides).fill('x'), rounds, mode: 'solo', start: {}, turns: [] });
+  check('⭐ the framed war is your best WON one: the harder level, then the more generals, then the fewer rounds',
+        camp.betterWar(won('hard', 2, 20), won('medium', 4, 5)) && camp.betterWar(won('medium', 4, 20), won('medium', 2, 5)) &&
+        camp.betterWar(won('medium', 2, 9), won('medium', 2, 10)) && !camp.betterWar(won('medium', 2, 10), won('medium', 2, 10)) &&
+        !camp.betterWar(Object.assign(won('hard', 4, 3), { won: false }), null) && camp.betterWar(won('easy', 2, 30), null));
+  delete camp.store[camp.BEST_KEY];
+  const kept = camp.keepBest(w), daily = camp.keepBest(Object.assign({}, w, { mode: 'daily', diff: 'hard', rounds: 1 }));
+  check('…kept from a campaign or a war, never a Daily, and read back whole', kept && !daily && camp.loadBest().rounds === 7 &&
+        camp.loadBest().turns.length === 2);
+}
+
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */
 function report(title) {
   console.log('\n=== ' + title + ' ===\n');
@@ -961,7 +1145,8 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
     page.on('pageerror', (e) => errs.push(e.message));
     await page.goto(`http://127.0.0.1:${port}/assets/games/pjcc_marchland.html`, { waitUntil: 'load' });
     // these are the plain rules: no event card may change the attack count or block a target
-    await page.evaluate(() => localStorage.setItem('pjcc.campaign.cards', '0'));
+    // ⚠ AND THE FLAT MAP: these clicks land where the flat map draws a holding; the sand table (a lens) has its own checks
+    await page.evaluate(() => { localStorage.setItem('pjcc.campaign.cards', '0'); localStorage.setItem('pjcc.campaign.map.flat', '1'); });
     await page.reload({ waitUntil: 'load' });
 
     /* place everything, spend all three attacks, then let them come — the run doubles as
