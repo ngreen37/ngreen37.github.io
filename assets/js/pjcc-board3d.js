@@ -34,10 +34,12 @@
   var TOPPLE = 0.32;               // seconds a taken piece takes to fall
   var SLIDE = 0.16;                // seconds a move takes to cross the board
   var CARD_AFTER = 0.5;            // a mate's cut holds the game's card this long, and no longer
+  // zoom: the flat board's; push: the 3D camera's. ⚠ A CAPTURE'S CLOSE-UP IS HALF WHAT IT WAS (his 11-11: "scaled down by
+  // 50% across all platforms and games. It is too intense."): 1.30 → 1.15 flat, 1.625 → 1.3125 in 3D
   var CUTS = {
-    capture: { secs: 0.40, zoom: 1.30, turn: 0.0, circle: 0.0 },
-    check: { secs: 0.45, zoom: 1.22, turn: 0.0, circle: 0.0 },
-    mate: { secs: 1.60, zoom: 1.40, turn: 0.06, circle: 0.35 },
+    capture: { secs: 0.40, zoom: 1.15, push: 1.3125, turn: 0.0, circle: 0.0 },
+    check: { secs: 0.45, zoom: 1.22, push: 1.525, turn: 0.0, circle: 0.0 },
+    mate: { secs: 1.60, zoom: 1.40, push: 1.75, turn: 0.06, circle: 0.35 },
   };
   var TALL = { K: 1.43, Q: 1.30, B: 1.34, N: 1.278, R: 0.86, P: 0.97 };
   var CODES = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
@@ -679,10 +681,11 @@
   P.rest = function () { this.pose(this.aimV, 0, this.dist); };
   // ⭐ A CUT, IN 3D: the camera comes in on the square (a of the way, 0 at rest), circling round it by `orbit`.
   // It looks a little in front of the square, so the piece stands in the top third and the board fills the rest.
-  P.camCut = function (i, a, orbit, zoom) {
+  // push: how much bigger the square stands at the cut's height (CUTS' push)
+  P.camCut = function (i, a, orbit, push) {
     var bk = back(orbit * a), lead = new this.T.Vector3(bk.x, 0, bk.z).normalize().multiplyScalar(0.8 * SQ);
     var target = this.world(i).add(new this.T.Vector3(0, 0.35, 0)).add(lead);
-    this.pose(this.aimV.clone().lerp(target, a), orbit * a, this.dist / (1 + (zoom * 1.25 - 1) * a));
+    this.pose(this.aimV.clone().lerp(target, a), orbit * a, this.dist / (1 + (push - 1) * a));
   };
 
   // ── picking: a press on a piece is its square; the ray meets a standing piece before the board behind it ──
@@ -1044,7 +1047,7 @@
     }
     if (this.cut && !this.isFlat()) {
       var en = this.envelope();
-      this.camCut(this.cut.at, en.a, en.mate ? 0.8 * Math.sin(en.f * Math.PI) : 0, en.c.zoom);
+      this.camCut(this.cut.at, en.a, en.mate ? 0.8 * Math.sin(en.f * Math.PI) : 0, en.c.push);
     } else this.rest();
     this.flatCam();
     this.seatStep(dt);

@@ -32,9 +32,18 @@ if (b3gd && ctgd) {
   const off = ['TILT', 'FOV', 'EDGE', 'TALLEST', 'SIZE', 'ARC', 'TOPPLE'].filter((n) => !(js(n) > 0 && js(n) === g(b3gd, n)))
     .concat(['SLIDE', 'CARD_AFTER'].filter((n) => !(js(n) > 0 && js(n) === g(ctgd, n))));
   for (const k of ['capture', 'check', 'mate']) {
-    const a = (new RegExp(k + ': \\{ secs: ([\\d.]+), zoom: ([\\d.]+), turn: ([\\d.]+), circle: ([\\d.]+) \\}').exec(SRC) || []).slice(1).map(Number);
-    const b = (new RegExp('"' + k + '": \\{ "secs": ([\\d.]+), "zoom": ([\\d.]+), "turn": ([\\d.]+), "circle": ([\\d.]+) \\}').exec(ctgd) || []).slice(1).map(Number);
-    if (a.length !== 4 || a.join() !== b.join()) off.push('CUTS.' + k);
+    const a = (new RegExp(k + ': \\{ secs: ([\\d.]+), zoom: ([\\d.]+), push: ([\\d.]+), turn: ([\\d.]+), circle: ([\\d.]+) \\}').exec(SRC) || []).slice(1).map(Number);
+    const b = (new RegExp('"' + k + '": \\{ "secs": ([\\d.]+), "zoom": ([\\d.]+), "push": ([\\d.]+), "turn": ([\\d.]+), "circle": ([\\d.]+) \\}').exec(ctgd) || []).slice(1).map(Number);
+    if (a.length !== 5 || a.join() !== b.join()) off.push('CUTS.' + k);
+  }
+  /* ⚠ A CAPTURE'S CLOSE-UP IS HALF WHAT IT WAS (his 11-11: "scaled down by 50% across all platforms and games"): the flat
+     board's 0.30 to 0.15, the 3D camera's 0.625 to 0.3125; a check's and a mate's as they were (push = zoom × 1.25) */
+  {
+    const cut = (k) => (new RegExp(k + ': \\{ secs: [\\d.]+, zoom: ([\\d.]+), push: ([\\d.]+),').exec(SRC) || []).slice(1).map(Number);
+    const cap = cut('capture'), chk = cut('check'), mt = cut('mate');
+    ok(cap[0] === 1.15 && cap[1] === 1.3125 && chk[1] === chk[0] * 1.25 && mt[1] === mt[0] * 1.25 &&
+       /this\.dist \/ \(1 \+ \(push - 1\) \* a\)/.test(SRC) && /en\.c\.push\)/.test(SRC),
+       'a capture\'s close-up is half what it was, flat and in 3D; a check\'s and a mate\'s unchanged  [' + cap.join(' / ') + ']');
   }
   for (const L of ['K', 'Q', 'B', 'N', 'R', 'P']) {
     const a = +((new RegExp('\\b' + L + ': ([\\d.]+)').exec((/var TALL = \{([^}]*)\}/.exec(SRC) || [])[1] || '') || [])[1]);
