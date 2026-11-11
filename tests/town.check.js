@@ -2320,7 +2320,7 @@ const server = http.createServer((req, res) => {
           '…and the ring asks it rather than doing the arithmetic again');
         /* ⭐ HIS LOCK CAME OFF (11-11: "make the campaign available on the game in Maxwell's house"): no ring carries it now,
            and putting one back is the field, not code */
-        ok(/^\t"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "table": "campaign", "desktop": true \},/m.test(ringCode)
+        ok(/^\t"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "table": "campaign", "web": true \},/m.test(ringCode)
           && (ringCode.match(/"half": true/g) || []).length === 0 && /bool\(GAMES\[game\]\.get\("half", false\)\)/.test(fnGd(ringCode, '_half')),
           '…and it is off: the Campaign\'s ring is open with no Assembly at all, and a lock is still a field  (⚠ not an `if game ==`)');
         ok(/dark until half the Assembly is lit  \(%d of %d\)/.test(fnGd(ringCode, '_line'))
@@ -7566,8 +7566,8 @@ const server = http.createServer((req, res) => {
              && /if _at_table\(\):\s*\n\t\tif dark\(\):[\s\S]*?GameState\.challenge\.sit_lesson\(str\(GAMES\[game\]\["table"\]\)(, global_position)?\)/.test(fnGd(ptS, 'interact'))
              /* the mine's ring carries no `desktop`: off the web it is a table, on the web (the desktop program too) the page */
              && fnGd(ptS, '_at_table').includes('if game == "" or str(GAMES[game].get("table", "")) == "":')
-             && fnGd(ptS, '_at_table').includes('return not OS.has_feature("web") or (bool(GAMES[game].get("desktop", false)) and GameState.worlds.desktop())')
-             && !/"sand-mine-depths": \{[^\n]*"desktop"/.test(ptS)
+             && fnGd(ptS, '_at_table').includes('return not OS.has_feature("web") or bool(GAMES[game].get("web", false))')
+             && !/"sand-mine-depths": \{[^\n]*"web"/.test(ptS)
              && /\n\t\t"sandmine":\s*\n\t\t\tMineTable\.open\(self, errand\)\n/.test(fnGd(znT, '_open_errand'))
              && fnGd(rd('state_board.gd'), 'town_scores').includes('"sand-mine-depths": TableMine.best_score()')
              && /const IN_TOWN := \[[^\]]*"sand-mine-depths"\]/.test(rd('state_worlds.gd')) && rd('state_board.gd').includes('"un": ["sand-mine-depths", 300]')
@@ -8254,10 +8254,15 @@ const server = http.createServer((req, res) => {
               'the site\'s numbers and words': bookFresh,
               'held to the page, case for case': /campaign_corpus\.js/.test(cgT('tests/campaign.sh')) && /require\(path\.join\(SITE, 'tests\/campaign-vm\.js'\)\)\.load\(\{ random: pageRandom \}\)/.test(cgT('tests/campaign_corpus.js'))
                 && /CA DONE fails=%d of %d/.test(cgT('tests/campaign_rules_test.gd')) && /^[^#\n]*\bcampaign\b/m.test(suiteT) && /"\$S\/campaign\.sh"/.test(suiteT),
-              /* ⭐ open with no Assembly, and in the desktop program too (his 11-11): its web build knows itself by Electron */
-              'the ring on his floor sits you at it': /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "table": "campaign", "desktop": true \}/.test(poC)
-                && /return not OS\.has_feature\("web"\) or \(bool\(GAMES\[game\]\.get\("desktop", false\)\) and GameState\.worlds\.desktop\(\)\)/.test(fnGd(poC, '_at_table'))
-                && /Electron\\\\\/\/\.test\(navigator\.userAgent\)/.test(rd('state_worlds.gd'))
+              /* ⭐ open with no Assembly (his 11-11), and AT THE TABLE EVERYWHERE (his 11-11: "make it so I can play campaign in
+                 checker town? website and PC version"): the website's town and the desktop program run the web build,
+                 which has no threads, so its engine thinks on the frame there */
+              'the ring on his floor sits you at it, on the website and the PC alike': /"marchland": \{ "name": "ChessWild: Campaign", "url": "\/games\/campaign\/", "table": "campaign", "web": true \}/.test(poC)
+                && /return not OS\.has_feature\("web"\) or bool\(GAMES\[game\]\.get\("web", false\)\)/.test(fnGd(poC, '_at_table'))
+                && !/static func desktop\(\)/.test(rd('state_worlds.gd'))
+                && /var on_frame := OS\.has_feature\("web"\)/.test(cbT)
+                && /if on_frame:\s*\n\t\t_answered\(CampaignAI\.best_move\(at, int\(L\.get\("thinkMs", 180\)\)/.test(fnGd(cbT, '_their_turn'))
+                && /battleset:on_frame:true;tableuntil:moves:1:900/.test(bcCase('campweb')) && /^[^#\n]*\bcampweb\b/m.test(suiteT)
                 && /"campaign":\s*\n\t\t\tCampaignTable\.open\(self, errand\)/.test(znC) && /"campaign": "Maxwell"/.test(chC),
               'the battle is the page\'s': /^class_name BattleTable\nextends ChessTable/m.test(cbT)
                 && /left\[mover\] = minf\(float\(_turn_start\[mover\]\), float\(left\[mover\]\) \+ CB\.MOVE_DELAY \* 1000\.0\)/.test(fnGd(cbT, '_apply'))
