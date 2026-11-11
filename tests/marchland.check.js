@@ -1096,11 +1096,11 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const C = camp.C;
   const at = (s) => (8 - +s[1]) * 8 + (s.charCodeAt(0) - 97);
   const empty = () => new Array(64).fill('');
-  const rulesOn = (mode) => { camp.useMap(camp.mapFor(mode)); return camp.LAND.map((L, i) => (camp.ruleAt(i) ? L.nm + ':' + camp.ruleAt(i) : '')).filter(Boolean).join(); };
+  const rulesOn = (mode) => { camp.useMap(camp.mapFor(mode)); return camp.LAND.map((L, i) => (camp.ruleAt(i) ? L.nm + ':' + camp.ruleAt(i) : '')).filter(Boolean).sort().join(); };
   const solo = rulesOn('solo'), three = rulesOn('three'), four = rulesOn('four'), first = rulesOn('first');
   camp.useMap(camp.mapFor('solo'));
-  check('⭐ Shogi Island drops and Endgame Flats fight an endgame, on the map of ten and on both war maps (keyed by name)',
-        solo === 'Shogi Island:drops,Endgame Flats:endgame' && three === solo && four === solo, [solo, three, four].join(' | '));
+  check('⭐ Shogi Island drops, Endgame Flats fight an endgame and Sea-Board at sea, on the map of ten and on both war maps (keyed by name)',
+        solo === 'Endgame Flats:endgame,Sea-Board:pieces,Shogi Island:drops' && three === solo && four === solo, [solo, three, four].join(' | '));
   check('…and the first campaign teaches the plain rules: nothing on its map', first === '', first);
 
   camp.newCampaign('medium', 'solo', { fog: false, cards: false });
@@ -1118,6 +1118,19 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   check('⭐ the Flats muster an endgame: no queen in 200 battles, a rook, a bishop and a knight at most a side, six pawns',
         queens === 0 && over === 0 && plain === 0 && Math.max(...buds) <= camp.egBudget(15 + 4 + 12), 'queens ' + queens + ', over ' + over + ', top budget ' + Math.max(...buds));
   check('…on half the points the dice give (a pawn at least)', camp.egBudget(21) === 11 && camp.egBudget(1) === 1);
+  let seaPawns = 0, seaPlain = 0, seaPieces = 0;
+  for (let i = 0; i < 200; i++) {
+    G.own[9] = 'm'; G.own[4] = 't'; G.ranks[9] = 2 + (i % 8); G.ranks[4] = 1 + (i % 9);
+    const P = camp.musterBattle(9, 4, true);
+    seaPawns += P.aArmy.concat(P.dArmy).filter((x) => x === 'p').length + P.board.filter((x) => x === 'P' || x === 'p').length;
+    seaPieces += P.aArmy.length;
+    if (P.rule !== 'pieces') seaPlain++;
+  }
+  check('⭐ Sea-Board is fought at sea: not one pawn in 200 armies or on their boards, the dice buying only pieces (his pick, 11-11)',
+        seaPawns === 0 && seaPlain === 0 && seaPieces > 200, 'pawns ' + seaPawns + ', attacking pieces ' + seaPieces);
+  check('…and the roll screen says so, in both chairs, instead of mourning pawns that were never mustered',
+        (slice('function posVerdict(', 'function boardCells(').match(/AT SEA/g) || []).length === 2 &&
+        /sea \? 'king and rook' : 'king, rook and three pawns'/.test(slice('function posVerdict(', 'function boardCells(')));
 
   /* a take, and the drop it buys */
   let b = empty(); b[at('e1')] = 'K'; b[at('d1')] = 'R'; b[at('e8')] = 'k'; b[at('d4')] = 'n';
@@ -1175,17 +1188,18 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     const T = camp.CLASHES[rule], keep = T.p.slice();
     T.p = T.p.map(() => p);
     camp.newCampaign('medium', 'solo', { fog: false, cards: false });
-    camp.G.own[5] = 'm'; camp.G.own[7] = 't'; camp.G.own[8] = 't'; camp.G.ranks[5] = 6;
-    const won = camp.clash(5, rule === 'drops' ? 7 : 8).won;
+    camp.G.own[5] = 'm'; camp.G.own[9] = 'm'; camp.G.own[7] = 't'; camp.G.own[8] = 't'; camp.G.own[4] = 't';
+    camp.G.ranks[5] = 6; camp.G.ranks[9] = 6;
+    const won = rule === 'pieces' ? camp.clash(9, 4).won : camp.clash(5, rule === 'drops' ? 7 : 8).won;
     T.p = keep;
     return won;
   };
   check('⭐ two machines on a rule\'s ground are decided at that rule\'s measured odds',
-        odds('drops', 1) === true && odds('drops', 0) === false && odds('endgame', 1) === true && odds('endgame', 0) === false &&
-        camp.CLASHES.endgame.p.length === 12 && camp.CLASHES.drops.p.length === 12);
+        ['drops', 'endgame', 'pieces'].every((r) => odds(r, 1) === true && odds(r, 0) === false && camp.CLASHES[r].p.length === 12));
   const how = slice('<section class="screen" id="screen-how">', '</section>');
   check('…and the page says so: the how-to, the roll screen\'s chip, the map\'s tag and the battle\'s first line',
-        /Endgame Flats and Shogi Island<\/b> fight their own chess/.test(how) && /the first pawn to make a queen wins/.test(how) &&
+        /Endgame Flats, Shogi Island and Sea-Board<\/b> fight their own chess/.test(how) && /the first pawn to make a queen wins/.test(how) &&
+        /no pawns, only pieces/.test(how) &&
         /RULE_SAY\[PEND\.rule\]\.chip/.test(slice('function beginBattle(', 'function sandThrow(')) &&
         /<span class="rtag">/.test(slice('function drawMap(', 'function tapLand(')) && /RULE_SAY\[B\.rule\]\.say/.test(slice('function startBattle(', 'function loneKing(')));
 }

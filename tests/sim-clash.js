@@ -25,12 +25,13 @@ const ENGINE_MS = +env('ENGINE_MS', 25), SEC_PER_MOVE = +env('SEC_PER_MOVE', 1.7
 const LO = +env('LO', -12), BIN = +env('BIN', 3), BINS = +env('BINS', 12);
 /* RULE: a place that fights its own chess (endgame | drops) — only battles for its ground; unset, only battles for ground
    with no rule. EG_SCALE overrides the page's endgame budget scale, for the sweep. */
-const RULE = env('RULE', ''), EG = env('EG_SCALE', ''), DR = env('DR_EDGE', '');
+const RULE = env('RULE', ''), EG = env('EG_SCALE', ''), DR = env('DR_EDGE', ''), PC = env('PC_EDGE', '');
 
 function worker(count, seed) {
   const camp = require(path.join(__dirname, 'campaign-vm.js')).load();
   if (EG !== '') camp.setEgScale(+EG);
   if (DR !== '') camp.setDrEdge(+DR);
+  if (PC !== '') camp.setPcEdge(+PC);
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
   const movesAtt = Math.max(1, Math.round(camp.CLOCK_ATT / EFF));
   const movesDef = Math.max(1, Math.round(camp.CLOCK_DEF / EFF));
@@ -126,7 +127,7 @@ if (process.env.SIM_WORKER) {
     console.log(`=== CHESSWILD: CAMPAIGN — THE ODDS A MACHINES' BATTLE IS DECIDED AT ===`);
     console.log(`  ${N} battles · engine ${ENGINE_MS}ms · ${SEC_PER_MOVE}s a move · bins of ${BIN} from ${LO}, ${BINS} of them` +
                 ` · ${RULE ? 'the ground of rule "' + RULE + '"' : 'ground with no rule'}${EG !== '' ? ' · EG_SCALE ' + EG : ''}` +
-                `${DR !== '' ? ' · DR_EDGE ' + DR : ''}`);
+                `${DR !== '' ? ' · DR_EDGE ' + DR : ''}${PC !== '' ? ' · PC_EDGE ' + PC : ''}`);
     const rs = await run();
     if (process.env.RAW) require('fs').writeFileSync(process.env.RAW, rs.map((r) => JSON.stringify(r)).join('\n') + '\n');
     const bins = Array.from({ length: BINS }, () => ({ n: 0, won: 0, ka: 0, kn: 0, kd: 0, dn: 0 }));

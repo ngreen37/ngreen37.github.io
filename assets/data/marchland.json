@@ -1009,7 +1009,8 @@
   "rules": {
     "byName": {
       "Endgame Flats": "endgame",
-      "Shogi Island": "drops"
+      "Shogi Island": "drops",
+      "Sea-Board": "pieces"
     },
     "say": {
       "endgame": {
@@ -1021,6 +1022,11 @@
         "tag": "drops",
         "chip": "drops · takes come back",
         "say": "A piece you take is yours to drop."
+      },
+      "pieces": {
+        "tag": "no pawns",
+        "chip": "at sea · no pawns",
+        "say": "A battle at sea: no pawns, only pieces."
       }
     },
     "egScale": 0.5,
@@ -1033,6 +1039,7 @@
     },
     "egPush": 14,
     "drEdge": 10,
+    "pcEdge": 6,
     "clash": {
       "endgame": {
         "lo": -12,
@@ -1124,6 +1131,52 @@
           0.52,
           0.4,
           0.4
+        ]
+      },
+      "pieces": {
+        "lo": -12,
+        "bin": 3,
+        "p": [
+          0,
+          0,
+          0.01,
+          0.01,
+          0.19,
+          0.32,
+          0.39,
+          0.49,
+          0.61,
+          0.69,
+          0.72,
+          0.95
+        ],
+        "ka": [
+          0.75,
+          0.75,
+          0.75,
+          1,
+          0.73,
+          0.76,
+          0.76,
+          0.77,
+          0.82,
+          0.9,
+          0.96,
+          0.96
+        ],
+        "kd": [
+          0.53,
+          0.49,
+          0.44,
+          0.37,
+          0.29,
+          0.28,
+          0.27,
+          0.3,
+          0.25,
+          0.27,
+          0.28,
+          0.5
         ]
       }
     }

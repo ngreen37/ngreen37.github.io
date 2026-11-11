@@ -713,9 +713,10 @@
       measured.<br>
       <b>Generals:</b> everyone whose square you have won in the town's Assembly gives you one order a campaign,
       on the map, one a round.<br>
-      <b>Endgame Flats and Shogi Island</b> fight their own chess. A battle for the Flats is an endgame: no queens,
-      at most one rook, one bishop and one knight a side, and <b>the first pawn to make a queen wins</b>. On Shogi Island
-      a piece you take joins your hand, and on your turn you can drop it on any empty square instead of moving.<br>
+      <b>Endgame Flats, Shogi Island and Sea-Board</b> fight their own chess. A battle for the Flats is an endgame: no
+      queens, at most one rook, one bishop and one knight a side, and <b>the first pawn to make a queen wins</b>. On Shogi
+      Island a piece you take joins your hand, and on your turn you can drop it on any empty square instead of moving.
+      Sea-Board is fought at sea: <b>no pawns, only pieces</b>.<br>
       <b>The war, replayed:</b> watch any campaign back when it ends. Your best one is framed below.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -2232,12 +2233,13 @@ function clearRollTimers() { rollTimers.forEach(clearTimeout); rollTimers = []; 
              TO MAKE A QUEEN WINS (mate still does). ⚠ MEASURED WITHOUT IT (sim:clash, 300 a point, 11-11): 3% of attacks
              took the ground at any budget — nobody mates with a rook inside fifteen seconds, so the Flats never fell.
    drops   · a piece you take joins your hand; on your turn, drop one on an empty square instead of moving
-   ⚠ KEYED BY NAME: the war maps renumber the holdings, and a rule keyed by id lands on the wrong ground there.
-   ⭐ The third place is his to pick: one more line in RULES. */
-var RULES = { 'Endgame Flats': 'endgame', 'Shogi Island': 'drops' };
+   pieces  · Sea-Board, his pick of five (11-11: "the sea board pieces only"): a battle at sea, the dice buy no pawns
+   ⚠ KEYED BY NAME: the war maps renumber the holdings, and a rule keyed by id lands on the wrong ground there. */
+var RULES = { 'Endgame Flats': 'endgame', 'Shogi Island': 'drops', 'Sea-Board': 'pieces' };
 var RULE_SAY = {
   endgame: { tag: 'endgame', chip: 'endgame &middot; first queen wins', say: 'An endgame: the first pawn to make a queen wins.' },
-  drops:   { tag: 'drops', chip: 'drops &middot; takes come back', say: 'A piece you take is yours to drop.' }
+  drops:   { tag: 'drops', chip: 'drops &middot; takes come back', say: 'A piece you take is yours to drop.' },
+  pieces:  { tag: 'no pawns', chip: 'at sea &middot; no pawns', say: 'A battle at sea: no pawns, only pieces.' }
 };
 function ruleAt(id) { return LAND[id] ? RULES[LAND[id].nm] || '' : ''; }
 var EG_SCALE = 0.5;
@@ -2245,6 +2247,13 @@ var EG_CAPS = { q: 0, r: 1, b: 1, n: 1, p: 6 };
 var EG_PUSH = 14;           // centipawns a rank for a pawn on the Flats, so the machine runs the race it is judged by
 function egBudget(v) { return Math.max(1, Math.round(v * EG_SCALE)); }
 var DR_EDGE = 10;           // points off the attacker's budget in a drop battle: a take comes back, so the edge is worth more
+var PC_EDGE = 6;            // points off the attacker's budget at sea: an open board mates faster (47.9% took it without)
+/* the caps a rule's ground puts on a muster: the Flats' endgame, the sea's no pawns (capsFor hands back a fresh object) */
+function capsOn(rule, caps) {
+  if (rule === 'endgame') return EG_CAPS;
+  if (rule === 'pieces') caps.p = 0;
+  return caps;
+}
 
 /* ⭐ THE MUSTER ON ITS OWN (2026-11-10): the dice, the budgets, the armies and the board, and nothing on the screen.
    The whole-campaign sim (tests/sim-campaign.js) and the town's port play it as the page does. */
@@ -2274,6 +2283,7 @@ function musterBattle(from, to, playerAttacks) {
   var dBud = matBudget(dMat, dRanks, true);
   if (rule === 'endgame') { aBud = egBudget(aBud); dBud = egBudget(dBud); }
   else if (rule === 'drops') aBud = Math.max(1, aBud - DR_EDGE);
+  else if (rule === 'pieces') aBud = Math.max(1, aBud - PC_EDGE);
   /* ⛑ THE SECOND QUEEN'S THREE CONDITIONS, ASSEMBLED HERE — 2026-08-25 (see capsFor).
      Each chair is asked about ITS OWN chained ground and ITS OWN material die: an attacker
      who has strung three holdings together and rolled the top face can field two queens, and
@@ -2284,8 +2294,8 @@ function musterBattle(from, to, playerAttacks) {
      follows it, instead of silently becoming unreachable (or free). */
   var aPerfect = aMat === FACES, dPerfect = dMat === FACES;
   var aChained = chainCount(G.own, G.own[from]), dChained = chainCount(G.own, G.own[to]);
-  var aArmy = draw('aa', function () { return muster(aBud, rule === 'endgame' ? EG_CAPS : capsFor(aRanks, aChained, aPerfect)); }),
-      dArmy = draw('da', function () { return muster(dBud, rule === 'endgame' ? EG_CAPS : capsFor(dRanks, dChained, dPerfect)); });
+  var aArmy = draw('aa', function () { return muster(aBud, capsOn(rule, capsFor(aRanks, aChained, aPerfect))); }),
+      dArmy = draw('da', function () { return muster(dBud, capsOn(rule, capsFor(dRanks, dChained, dPerfect))); });
 
   /* ⚑ THE BOARD IS BUILT HERE, NOT AT THE START OF THE BATTLE (2026-08-24). It has to be,
      because the roll screen now SHOWS it — and a preview that re-rolled on the way to the
@@ -2454,6 +2464,7 @@ function matVerdict() {
 function posVerdict() {
   var p = PEND, word, clause, cls;
   var dHasRook = p.dArmy.indexOf('r') >= 0;
+  var sea = p.rule === 'pieces';         // ⚠ no pawn mustered: nothing to push, dig in or shield, and the screen must not say otherwise
   if (p.playerAttacks) {
     /* your position die is the attacker's; theirs is the castle.
        ⚠ `st` IS WHAT MOVED, NOT WHAT THE DIE PROMISED — a 20 buys nothing when the muster
@@ -2463,6 +2474,7 @@ function posVerdict() {
     if (posTop(p.aPos) && st) { word = 'PAWNS UP ' + st; clause = 'space, and one is nearly through'; cls = 'hot'; }
     else if (st >= 2)     { word = 'PAWNS UP ' + st; clause = 'you have room to work'; cls = 'good'; }
     else if (st === 1)    { word = 'ONE PAWN UP'; clause = 'not much, but it is something'; cls = 'flat'; }
+    else if (sea)         { word = 'AT SEA'; clause = 'no pawns to push: pieces against pieces'; cls = 'flat'; }
     else if (promised)    { word = 'NO PAWNS TO PUSH'; clause = 'the muster spent it all on pieces — the die is wasted'; cls = 'bad'; }
     else                  { word = 'NOTHING GAINED'; clause = 'your pawns are still at home'; cls = 'bad'; }
     /* ⚠ THEIR CASTLE IS THE BIGGER NEWS AND TAKES THE HEADLINE — but it must not SWALLOW your
@@ -2470,16 +2482,18 @@ function posVerdict() {
        and a screen that answers a great roll with a sentence about the enemy has thrown the
        information away. The word is theirs; the clause carries both halves. */
     var yours = st ? 'your pawns are up ' + st
-                   : promised ? 'you have no pawns to push' : 'your pawns are still home';
-    if (posCastleFull(p.dPos) && dHasRook) { word = 'THEY CASTLE FULLY'; clause = 'king, rook and three pawns · ' + yours; cls = 'bad'; }
+                   : sea ? 'no pawns at sea' : promised ? 'you have no pawns to push' : 'your pawns are still home';
+    if (posCastleFull(p.dPos) && dHasRook) { word = 'THEY CASTLE FULLY'; clause = (sea ? 'king and rook' : 'king, rook and three pawns') + ' · ' + yours; cls = 'bad'; }
     else if (posCastles(p.dPos))           { word = 'THEIR KING TUCKS IN'; clause = 'no rook, no shield · ' + yours; cls = 'flat'; }
   } else {
     /* you are the defender: the castle is yours, and the attacker's pawns are the threat */
     if (posCastleFull(p.dPos)) {
       word = 'FULL CASTLE';
-      clause = dHasRook ? 'king, rook and three pawns' : 'king and a pawn shield — no rook to bring';
+      clause = dHasRook ? (sea ? 'king and rook' : 'king, rook and three pawns')
+                        : (sea ? 'the king alone — no rook to bring' : 'king and a pawn shield — no rook to bring');
       cls = 'hot';
     } else if (posCastles(p.dPos)) { word = 'KING IN THE CORNER'; clause = 'no rook, no shield'; cls = 'good'; }
+    else if (sea)                  { word = 'AT SEA'; clause = 'no pawns to dig in: pieces against pieces'; cls = 'flat'; }
     /* ⚠ SAME RULE ON THIS CHAIR: `dInfo.chain` is how many pawns really dug in. Reading
        posSteps() again would announce a chain the muster never had pawns to build. */
     else if (p.dInfo.chain)        { word = 'A CHAIN HOLDS'; clause = p.dInfo.chain + ' pawns dug in and guarded'; cls = 'flat'; }
@@ -3567,8 +3581,9 @@ function nextSide(side) {
   return '';
 }
 /* a place that fights its own chess has its own odds, measured the same way (`RULE=endgame npm run sim:clash`).
-   MEASURED 11-11, 3,000 battles a rule: 36.2% of attacks took the Flats (34% by a queen) and 35.7% the Island, against
-   40% on plain ground — the defender's own terrain, by four points. */
+   MEASURED 11-11, 3,000 battles a rule: 36.2% of attacks took the Flats (34% by a queen), 35.7% the Island and 36.5%
+   the sea (47.9% before PC_EDGE took six points off the attacker), against 40% on plain ground — the defender's own
+   terrain, by four points. */
 var CLASHES = {
   endgame: { lo: -12, bin: 3,
     p:  [0.08, 0.08, 0.08, 0.08, 0.11, 0.18, 0.44, 0.67, 0.81, 1.00, 1.00, 1.00],
@@ -3577,7 +3592,11 @@ var CLASHES = {
   drops: { lo: -12, bin: 3,
     p:  [0.08, 0.15, 0.16, 0.26, 0.36, 0.38, 0.45, 0.47, 0.60, 0.62, 0.82, 0.82],
     ka: [1.00, 0.99, 0.99, 1.00, 0.99, 0.99, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00],
-    kd: [0.90, 0.91, 0.90, 0.92, 0.91, 0.89, 0.89, 0.80, 0.75, 0.52, 0.40, 0.40] } };
+    kd: [0.90, 0.91, 0.90, 0.92, 0.91, 0.89, 0.89, 0.80, 0.75, 0.52, 0.40, 0.40] },
+  pieces: { lo: -12, bin: 3,
+    p:  [0.00, 0.00, 0.01, 0.01, 0.19, 0.32, 0.39, 0.49, 0.61, 0.69, 0.72, 0.95],
+    ka: [0.75, 0.75, 0.75, 1.00, 0.73, 0.76, 0.76, 0.77, 0.82, 0.90, 0.96, 0.96],
+    kd: [0.53, 0.49, 0.44, 0.37, 0.29, 0.28, 0.27, 0.30, 0.25, 0.27, 0.28, 0.50] } };
 function clashBin(gap, T) { T = T || CLASH; return Math.max(0, Math.min(T.p.length - 1, Math.floor((gap - T.lo) / T.bin))); }
 /* two machines' battle, at once: the muster a played one would have, then the measured odds. Returns the muster with
    how it went (attackerWon, broke). ⚠ The board's White is the attacker, so the gap is White's points less Black's. */

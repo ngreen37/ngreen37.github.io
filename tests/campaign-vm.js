@@ -31,7 +31,7 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   'warBegin', 'warNote', 'warTurn', 'warEnd', 'betterWar', 'keepBest', 'loadBest', 'warFrames', 'BEST_KEY',
   /* places that fight their own chess (11-11) */
   'RULES', 'RULE_SAY', 'ruleAt', 'EG_CAPS', 'egBudget', 'CLASHES', 'DROP_ORDER', 'battleState', 'dropsOf', 'bLegal',
-  'bMake', 'bResult', 'handValue', 'evalPos', 'ordered', 'queened', 'EG_PUSH'];
+  'bMake', 'bResult', 'handValue', 'evalPos', 'ordered', 'queened', 'EG_PUSH', 'capsOn'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -46,6 +46,7 @@ function gameScript() {
     'setWarWin: function (win) { WAR_WIN = win; }, get WAR_WIN() { return WAR_WIN; }, ' +
     'setEgScale: function (v) { EG_SCALE = v; }, get EG_SCALE() { return EG_SCALE; }, ' +
     'setDrEdge: function (v) { DR_EDGE = v; }, get DR_EDGE() { return DR_EDGE; }, ' +
+    'setPcEdge: function (v) { PC_EDGE = v; }, get PC_EDGE() { return PC_EDGE; }, ' +
     LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +
     EXPOSE.map((k) => k + ': ' + k).join(', ') + ' };\n';
   return src.slice(0, at) + hook + src.slice(at);
