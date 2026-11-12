@@ -158,7 +158,11 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     if (mvW) { await click(mvW[0]); await sleep(150); await click(mvW[1]); await sleep(400); }
     const mcMoved = mvW && await page.evaluate((m) => { const b = PJCCBoard3D.handles[0].o.read().b; return !b[m[0]] && b[m[1]] === m[2]; }, mvW);
     ok(mcMoved, 'MARCHLAND: a tap on the 3D board skips the reveal, and two more play White\'s move by onSquare  ' + JSON.stringify(mvW));
-    // ⚠ READ WHILE NOBODY MOVES: a move in the cut is still played, and its delay credit changes a clock honestly
+    // ⚠ READ WHILE NOBODY MOVES: a move in the cut is still played, and its delay credit changes a clock honestly.
+    // So Black's answer comes first: under a full run's load it landed inside all three tries' reads (11-11).
+    await until(() => page.evaluate(() => PJCCBoard3D.handles[0].o.read().turn === 'w'), 9000);
+    // …and its own cut is over: a capture's cut was running, the measured one was refused, and White's clock ran on
+    await until(() => page.evaluate(() => !PJCCBoard3D.cutting()), 5000);
     const mcRead = () => page.evaluate(() => ({ clk: document.getElementById('clock').textContent,
       pos: PJCCBoard3D.handles[0].o.read().b.join('') }));
     let mk1 = null, mk2 = null;
