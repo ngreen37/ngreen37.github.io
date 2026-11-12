@@ -161,19 +161,22 @@ const ok = (cond, msg) => results.push({ pass: !!cond, msg });
     // ⚠ READ WHILE NOBODY MOVES: a move in the cut is still played, and its delay credit changes a clock honestly.
     // So Black's answer comes first: under a full run's load it landed inside all three tries' reads (11-11).
     await until(() => page.evaluate(() => PJCCBoard3D.handles[0].o.read().turn === 'w'), 9000);
-    // …and its own cut is over: a capture's cut was running, the measured one was refused, and White's clock ran on
+    // …and its own cut is over. ⚠ THE LENS SEES THE ANSWER A FRAME LATE and only then starts that capture's cut, which
+    // replaced the measured one 0.4 s in (White's clock ran 15.0 to 14.6): it is given time to catch up, then to finish.
+    await sleep(500);
     await until(() => page.evaluate(() => !PJCCBoard3D.cutting()), 5000);
     const mcRead = () => page.evaluate(() => ({ clk: document.getElementById('clock').textContent,
-      pos: PJCCBoard3D.handles[0].o.read().b.join('') }));
+      pos: PJCCBoard3D.handles[0].o.read().b.join(''), cut: PJCCBoard3D.cutting() }));
     let mk1 = null, mk2 = null;
     for (let tries = 0; tries < 3; tries++) {
       await page.evaluate(() => PJCCBoard3D.handles[0].cut('mate', PJCCBoard3D.handles[0].o.read().b.indexOf('k')));
       await sleep(120);
       mk1 = await mcRead(); await sleep(800); mk2 = await mcRead();
-      if (mk1.pos === mk2.pos) break;
+      if (mk1.pos === mk2.pos && mk1.cut && mk2.cut) break;
       await page.evaluate(() => PJCCBoard3D.handles[0].endCut()); await sleep(300);
     }
-    ok(mk1.pos === mk2.pos && mk1.clk === mk2.clk, 'MARCHLAND: the battle clocks stand still through a cut  [' + mk1.clk + ' then ' + mk2.clk + ']');
+    ok(mk1.pos === mk2.pos && mk1.cut && mk2.cut && mk1.clk === mk2.clk, 'MARCHLAND: the battle clocks stand still through a cut  [' +
+      mk1.clk + ' then ' + mk2.clk + (mk1.cut && mk2.cut ? '' : ', the cut was not running') + ']');
     const mcSeat = await seatOf();
     ok(mcSeat && mcSeat.who === 'Maxwell' && mcSeat.drawn === 'person', 'MARCHLAND: Maxwell, who commands Red, sits across the battle  ' + JSON.stringify(mcSeat));
     await shot('rooms3d-marchland');
