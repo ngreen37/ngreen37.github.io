@@ -130,6 +130,18 @@ function serve(block) {
        'the die is a true eight: every number once, opposite faces adding to nine');
     await page.close();
 
+    /* ⭐ THE SEA LANE (his #7, 11-16): the campaign's map hands the sand its lane, and the sand draws it in */
+    ok(/lanes: sandLanes/.test(PAGE) && /\(view\.lanes \|\| \[\]\)\.forEach/.test(SRC), 'the page hands the sand its sea lane, and the sand draws it in');
+    const p3 = await browser.newPage();
+    await p3.setViewport({ width: 375, height: 740, deviceScaleFactor: 1 });
+    p3.on('pageerror', (e) => errs.push(e.message));
+    await p3.goto(url, { waitUntil: 'load' });
+    await p3.click('#go');
+    await p3.waitForFunction(() => window.__mc && __mc.SAND && __mc.SAND.up() && __mc.LAND().length === 10, { timeout: 30000 });
+    await sleep(600);
+    await p3.screenshot({ path: path.join(require('os').tmpdir(), 'sand-lane.png') });
+    await p3.close();
+
     /* ⚠ NO 3D: the bundle blocked, and the page is the flat map it always was */
     srv.close();
     srv = await serve('three.pjcc');

@@ -8395,6 +8395,24 @@ const server = http.createServer((req, res) => {
             ok(newsOff.length === 0,
               '⭐ HIS #10 IN THE GAME  (his 11-16: "Do number nine and ten"): the war that ended is noted by the page and the town alike; the paper prints it until a paper has seen it, and Maxwell brings it up once',
               newsOff.length ? 'off: ' + newsOff.join(' · ') : 'one record, three readers');
+            /* ⭐ HIS #7 (11-16, "Sea lanes"): a front across the water, once a round. The corpus holds the rules to the page (sea
+               rows, and every plan the machine makes); this holds the table and the sand to it. */
+            const sandGd = rd('sand_table.gd');
+            const seaOff = offOf({
+              'the rules, the page\'s': /^const LANES := \[\[4,7\]\]/m.test(rd('campaign_book.gd'))
+                && /for j in fronts\(id\):/.test(fnGd(crT, 'fogged')) && /for to in fronts\(from\):/.test(fnGd(crT, 'rival_plan'))
+                && /if c\.sea and \(sailed or c\.siege\):/.test(fnGd(crT, 'rival_plan')) && /g\.sailed = false/.test(fnGd(crT, 'orders_expire'))
+                && /return "sailed" if bool\(g\.get\("sailed", false\)\) else "sea"/.test(fnGd(crT, 'strike_of'))
+                && /"lanes": B\.LANES/.test(fnGd(crT, 'map_of')) && coRows.indexOf('rows.sea.push') >= 0,
+              'the table strikes across it once, and draws it': /elif R\.strike_of\(_sel, id\) == "sailed":/.test(fnGd(ctbT, '_tap'))
+                && /if R\.strike_of\(_sel, id\) == "sea":\s*\n\t+g\.sailed = true/.test(fnGd(ctbT, '_tap'))
+                && /for e in R\.lanes:/.test(fnGd(ctbT, '_paint_map')) && /"lanes": sea/.test(ctbT)
+                && /for q in view\.get\("lanes", \[\]\):/.test(fnGd(sandGd, '_build')),
+              'played': /^[^#\n]*\bcamplane\b/m.test(suiteT) && /camptap:7;camphas:say:Across the water[^"]*camptap:4;[^"]*campis:sailed:true;[^"]*camphas:say:One strike across the water a round/.test(bcCase('camplane')),
+            });
+            ok(seaOff.length === 0,
+              '⭐ HIS #7 IN THE GAME  (his 11-16: "Then work on seven"): Sea-Board and Shogi Island strike each other across the water, once a round, as the page plays it, on the flat map and the sand',
+              seaOff.length ? 'off: ' + seaOff.join(' · ') : 'the page, rule for rule, at the table and on the sand');
           }
         }
 

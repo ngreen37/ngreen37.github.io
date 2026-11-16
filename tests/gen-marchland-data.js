@@ -91,9 +91,11 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.6',
+    version: '0.7',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
+    /* 11-16, his #7: the sea lane, a front across the water (the campaign's map only) */
+    lanes: G.LANES.map((e) => [e[0], e[1]]),
     start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice(), walls: G.START_WALLS.slice() },
     balance: {
       /* THE DIE ITSELF. Everything below is expressed in pips, so this is the first number

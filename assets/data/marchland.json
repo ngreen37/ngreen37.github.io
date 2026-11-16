@@ -2,7 +2,7 @@
   "_generated": "GENERATED FILE — do not hand-edit. Source of truth is assets/games/pjcc_marchland.html; regenerate with `npm run gen:marchland`.",
   "_purpose": "Shared map + balance data. The browser game keeps these inline; a Godot build reads this file so both play the same tuned game.",
   "name": "ChessWild: Campaign",
-  "version": "0.6",
+  "version": "0.7",
   "holdings": [
     {
       "id": 0,
@@ -133,6 +133,12 @@
     [
       8,
       9
+    ]
+  ],
+  "lanes": [
+    [
+      4,
+      7
     ]
   ],
   "start": {

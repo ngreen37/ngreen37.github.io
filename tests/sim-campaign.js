@@ -1,7 +1,7 @@
 /* =============================================================================
  * sim-campaign.js — whole campaigns, machine against machine, on the page's own rules.
  *   npm run sim:campaign
- *   env: N=60 (campaigns per rule) WORKERS=6 RULES=off,win,both GREEN=medium RED=medium CARDS=1 WALLS=1
+ *   env: N=60 (campaigns per rule) WORKERS=6 RULES=off,win,both GREEN=medium RED=medium CARDS=1 WALLS=1 SEA=1
  *        ENGINE_MS=15 SEC_PER_MOVE=1.7 MAX_ROUNDS=60
  *
  * sim:marchland measures ONE battle: how often an attack fails. Nothing measured a CAMPAIGN — how long one runs, how
@@ -24,6 +24,7 @@ const WORKERS = Math.max(1, +env('WORKERS', 6));
 const RULES = env('RULES', 'off,win,both').split(',');
 const GREEN = env('GREEN', 'medium'), RED = env('RED', 'medium');
 const CARDS = env('CARDS', '1') === '1', WALLS = env('WALLS', '1') === '1';
+const SEA = env('SEA', '1') === '1';   // the sea lane (his #7, 11-16): SEA=0 plays the map without it
 const ENGINE_MS = +env('ENGINE_MS', 15), SEC_PER_MOVE = +env('SEC_PER_MOVE', 1.7);
 const MAX_ROUNDS = +env('MAX_ROUNDS', 60);
 const CHECKPOINTS = [1, 3, 5, 10, 15, 20, 30];
@@ -33,6 +34,7 @@ function worker(rule, count) {
   const camp = require(path.join(__dirname, 'campaign-vm.js')).load();
   const C = camp.C;
   camp.setSurvive(rule);
+  camp.setSea(SEA);
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
   const movesAtt = Math.max(1, Math.round(camp.CLOCK_ATT / EFF));
   const movesDef = Math.max(1, Math.round(camp.CLOCK_DEF / EFF));
@@ -178,7 +180,7 @@ if (process.env.SIM_WORKER) {
 } else {
   (async () => {
     console.log(`=== CHESSWILD: CAMPAIGN — WHOLE CAMPAIGNS, MACHINE AGAINST MACHINE ===`);
-    console.log(`  Green ${GREEN} · Red ${RED} · cards ${CARDS ? 'on' : 'off'} · walls ${WALLS ? 'on' : 'off'} · engine ${ENGINE_MS}ms · ` +
+    console.log(`  Green ${GREEN} · Red ${RED} · cards ${CARDS ? 'on' : 'off'} · walls ${WALLS ? 'on' : 'off'} · sea lane ${SEA ? 'on' : 'off'} · engine ${ENGINE_MS}ms · ` +
                 `${SEC_PER_MOVE}s a move · ${N} campaigns a rule on ${WORKERS} workers`);
     for (const rule of RULES) {
       const t0 = Date.now();

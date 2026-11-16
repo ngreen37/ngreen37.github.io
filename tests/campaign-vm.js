@@ -13,7 +13,7 @@ const PAGE = path.join(ROOT, 'assets/games/pjcc_marchland.html');
 
 /* ⚠ THE MAP IS READ LIVE (getters, in the hook): useMap() points LAND, EDGES and ADJ at another map, and a value copied
    once stayed the ten — a war's corpus rows read ten holdings off a sixteen-holding war (11-10) */
-const LIVE = ['LAND', 'EDGES', 'ADJ'];
+const LIVE = ['LAND', 'EDGES', 'ADJ', 'LANES'];
 const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP', 'FACES',
   'CLOCK_ATT', 'CLOCK_DEF', 'MOVE_DELAY', 'MATE_SCORE', 'VAL', 'CARDS', 'DECK', 'DAILY_ROUNDS',
   'newCampaign', 'musterBattle', 'resolveLand', 'rivalPlan', 'deployFor', 'idsOf', 'chained', 'chainCount', 'nbrs',
@@ -31,7 +31,9 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   'warBegin', 'warNote', 'warTurn', 'warEnd', 'betterWar', 'keepBest', 'loadBest', 'warFrames', 'BEST_KEY',
   /* places that fight their own chess (11-11) */
   'RULES', 'RULE_SAY', 'ruleAt', 'EG_CAPS', 'egBudget', 'CLASHES', 'DROP_ORDER', 'battleState', 'dropsOf', 'bLegal',
-  'bMake', 'bResult', 'handValue', 'evalPos', 'ordered', 'queened', 'EG_PUSH', 'capsOn'];
+  'bMake', 'bResult', 'handValue', 'evalPos', 'ordered', 'queened', 'EG_PUSH', 'capsOn',
+  /* the sea lane (11-16, his #7) */
+  'lanesOf', 'lane', 'fronts', 'strikeOf', 'laneCurve', 'srcScore'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -47,6 +49,7 @@ function gameScript() {
     'setEgScale: function (v) { EG_SCALE = v; }, get EG_SCALE() { return EG_SCALE; }, ' +
     'setDrEdge: function (v) { DR_EDGE = v; }, get DR_EDGE() { return DR_EDGE; }, ' +
     'setPcEdge: function (v) { PC_EDGE = v; }, get PC_EDGE() { return PC_EDGE; }, ' +
+    'setSea: function (v) { SEA = v; }, get SEA() { return SEA; }, ' +
     LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +
     EXPOSE.map((k) => k + ': ' + k).join(', ') + ' };\n';
   return src.slice(0, at) + hook + src.slice(at);

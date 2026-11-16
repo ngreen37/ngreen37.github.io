@@ -296,6 +296,8 @@ function serve() {
       m.tapLand(5); m.tapLand(3);
       out.deploy = [G.ranks[5] - g5, G.ranks[3] - r3];
       out.fog = { shogi: m.fogged(7), flats: m.fogged(8), label: document.querySelector('.node[data-id="3"]').getAttribute('aria-label') };
+      /* the sea lane (his #7): Shogi Island shows across the water from Red's Sea-Board, and hides once Sea-Board is not Red's */
+      var wasSea = G.own[4]; G.own[4] = 'm'; out.fog.dry = m.fogged(7); G.own[4] = wasSea;
       G.toPlace = 0; m.setPhase('attack'); m.tapLand(3);
       out.hot = { links: document.querySelectorAll('#links .link.hot').length, chain: $('t-chain').className };
       G.sel = -1;
@@ -308,7 +310,8 @@ function serve() {
       "ending Green's turn raises a curtain for Red before the map  [" + two.pass.who + ']');
     ok(two.red.map && two.red.red && /^Red/.test(two.red.say), "…and behind it is Red's map, in Red's color");
     ok(two.deploy.join() === '0,1', "Red deploys on Red's ground and not on Green's  [" + two.deploy + ']');
-    ok(two.fog.shogi && !two.fog.flats && /Red/.test(two.fog.label), "the fog is Red's: Shogi Island is hidden, Endgame Flats is not");
+    ok(!two.fog.shogi && two.fog.dry && !two.fog.flats && /Red/.test(two.fog.label),
+      "the fog is Red's: Shogi Island shows across the water from Red's Sea-Board and hides once Sea-Board is lost; Endgame Flats shows");
     ok(two.hot.links === 2 && two.hot.chain === 't', "Red's attack lines point at Green, and Red's counts wear red  [" + two.hot.links + ' lines from Checker Town]');
     ok(two.back.side === 'm' && two.back.round === 2, "Red's turn ending starts round 2 for Green");
 
@@ -864,6 +867,45 @@ function serve() {
       return quiet;
     });
     ok(again, '…and a second win at the same honor says nothing new');
+
+    /* ══ 11-16: THE SEA LANE (his #7) ══ Shogi Island strikes Sea-Board across the water, once a round */
+    const sea = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      __mc.newCampaign('medium'); const G = __mc.G;
+      G.started = true; G.fog = true; G.ranks[7] = 5; G.toPlace = 0; G.atks = 3;
+      __mc.show('screen-map'); __mc.setPhase('attack'); __mc.drawMap();
+      out.lane = document.querySelectorAll('#links path.lane').length;
+      out.fog = __mc.fogged(4);
+      __mc.tapLand(7);
+      out.hot = !!document.querySelector('#links path.lane.hot');
+      out.tgt = document.querySelector('#mapbox .node[data-id="4"]').classList.contains('tgt');
+      out.pick = $('map-say').textContent;
+      return out;
+    });
+    await page.screenshot({ path: path.join(require('os').tmpdir(), 'campaign-lane.png') });
+    const sea2 = await E(() => {
+      const $ = id => document.getElementById(id), G = __mc.G, out = {};
+      __mc.tapLand(4);
+      out.went = !!__mc.PEND && __mc.PEND.from === 7 && __mc.PEND.to === 4 && G.sailed === true && G.atks === 2;
+      /* back on the map with the lane spent: the far shore is no target, and a second crossing is refused */
+      __mc.PEND = null; G.busy = false; G.pending = null; G.sel = -1; G.own[4] = 't'; G.ranks[7] = 5;
+      __mc.show('screen-map'); __mc.setPhase('attack'); __mc.drawMap();
+      __mc.tapLand(7);
+      out.tgt = document.querySelector('#mapbox .node[data-id="4"]').classList.contains('tgt');
+      out.cold = !document.querySelector('#links path.lane.hot');
+      __mc.tapLand(4);
+      out.say = $('map-say').textContent;
+      out.atks = G.atks; out.pend = !!__mc.PEND;
+      __mc.resetTurn();
+      out.fresh = G.sailed === false;
+      return out;
+    });
+    ok(sea.lane === 1 && sea.fog === false && sea.hot && sea.tgt && /Across the water: Sea-Board, once a round\./.test(sea.pick),
+       '⭐ the sea lane is drawn, Sea-Board shows across the water, and picking Shogi Island lights it as a target  [' + sea.pick + ']');
+    ok(sea2.went, '…striking across it starts the battle and spends the crossing with the attack');
+    ok(!sea2.tgt && sea2.cold && /One strike across the water a round\./.test(sea2.say) && sea2.atks === 2 && !sea2.pend,
+       '…a second crossing that round is refused, and costs nothing  [' + sea2.say + ']');
+    ok(sea2.fresh, '…and the next turn the water is open again');
     ok(rep.on && rep.frames >= 2 && rep.first === 'The opening.' && rep.last.step === rep.frames + ' of ' + rep.frames && rep.last.btn === 'Done' && rep.backTo,
        'the war plays back from the opening; Skip goes to its last map and Done to the result  [' + rep.frames + ' frames]');
     ok(rep.frame.shown && /^Your best war · Medium · won in round \d+$/.test(rep.frame.say) && rep.again && rep.home,

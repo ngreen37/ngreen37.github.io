@@ -223,6 +223,11 @@
   /* ⭐ A WAR OF THREE OR FOUR (11-10): the other generals' colors (SIDES), and a smaller holding so sixteen fit at 320px */
   .link.hot.hot-u { stroke: #79bfff; } .link.hot.hot-v { stroke: #c99bff; }
   .link.chain-u { stroke: rgba(121,191,255,.5); stroke-width: 0.8; }
+  /* ⭐ the sea lane (his #7): water, not a road, so it is dashed in the sea's blue */
+  .lane { fill: none; stroke: #4f86b8; stroke-width: 0.7; stroke-dasharray: 1.6 1.2; opacity: .85; }
+  .lane.hot { stroke: var(--theirs); stroke-width: 1; opacity: 1; }
+  .lane.hot.hot-u { stroke: #79bfff; } .lane.hot.hot-v { stroke: #c99bff; }
+  .mapbox.mini .lane { stroke-width: 1.1; }
   .link.chain-v { stroke: rgba(201,155,255,.5); stroke-width: 0.8; }
   .node.side-u .disc { background: #132a42; border-color: #79bfff; color: #79bfff; }
   .node.side-v .disc { background: #2c1a44; border-color: #c99bff; color: #c99bff; }
@@ -722,6 +727,8 @@
       Island a piece you take joins your hand, and on your turn you can drop it on any empty square instead of moving.
       Sea-Board is fought at sea: <b>no pawns, only pieces</b>. Down the Sand Mines the light comes and goes; the chess
       is the same.<br>
+      <b>The sea lane:</b> Sea-Board and Shogi Island face each other across the water. Either can strike the other,
+      <b>once a round</b>. Troops never move by sea.<br>
       <b>The war, replayed:</b> watch any campaign back when it ends. Your best one is framed below.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -985,6 +992,12 @@ var LAND = [
 ];
 var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,5],[3,6],[5,6],[5,7],[5,8],[6,8],[7,8],
              [4,9],[6,9],[8,9]];
+/* ⭐ THE SEA LANE (his 11-16, #7 "Sea lanes"): Sea-Board and Shogi Island, the map's two dead ends, strike each other
+   across the water, once a round a side. A lane is a FRONT, not a road: fog lifts across it and the machine plans with it,
+   but troops never fortify over it and it never chains.
+   ⚠ THE CAMPAIGN'S MAP ONLY: a war's sectors already meet at their rims, and the first campaign teaches the roads. */
+var LANES = [[4, 7]];
+var SEA = true;               // sim:campaign's SEA=0 measures the map without it
 /* the opening position: five holdings and fifteen ranks a side, mirrored */
 var START_OWN = ['t','t','m','t','t','m','t','m','m','m'];
 var START_RANKS = [ 3 , 3 , 3 , 4 , 2 , 4 , 3 , 2 , 3 , 3 ];
@@ -1003,6 +1016,26 @@ var ADJ = (function () {
 })();
 function adj(a, b) { return ADJ[a].indexOf(b) >= 0; }
 function nbrs(id) { return ADJ[id]; }
+/* the holdings across the water from `id` */
+function lanesOf(id) {
+  var out = [];
+  if (SEA) LANES.forEach(function (e) { if (e[0] === id) out.push(e[1]); else if (e[1] === id) out.push(e[0]); });
+  return out;
+}
+function lane(a, b) { return lanesOf(a).indexOf(b) >= 0; }
+/* what a holding faces: its roads and the far shore */
+function fronts(id) { var w = lanesOf(id); return w.length ? nbrs(id).concat(w) : nbrs(id); }
+/* how `from` can reach `to` this round: 'road', 'sea', 'sailed' (the lane is spent), or '' (it cannot) */
+function strikeOf(from, to) { return adj(from, to) ? 'road' : !lane(from, to) ? '' : G.sailed ? 'sailed' : 'sea'; }
+/* the lane bowed away from the middle of the map, so it reads as water rather than one more road: [x1, y1, cx, cy, x2, y2]
+   in the 100x112 box the SVG and the sand table share */
+function laneCurve(a, b) {
+  var ax = a.x, ay = a.y * 1.12, bx = b.x, by = b.y * 1.12, mx = (ax + bx) / 2, my = (ay + by) / 2;
+  var vx = mx - 50, vy = my - 56, L = Math.sqrt(vx * vx + vy * vy);
+  if (L < 1) { vx = ay - by; vy = bx - ax; L = Math.sqrt(vx * vx + vy * vy) || 1; }
+  return [ax, ay, mx + vx / L * 14, my + vy / L * 14, bx, by].map(function (v) { return Math.round(v * 100) / 100; });
+}
+function laneD(c) { return 'M' + c[0] + ' ' + c[1] + ' Q' + c[2] + ' ' + c[3] + ' ' + c[4] + ' ' + c[5]; }
 
 /* ── THE CHAIN ──────────────────────────────────────────────────────────────────
    ⚑ 2026-08-24, his: "There should be bonus for your territories being near each other,
@@ -1104,7 +1137,7 @@ function newCampaign(diff, mode, opts) {
         fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
         flash: -1, hot: null, q: [], log: freshLog(), habits: null, dogId: '', dog: -1, sniffed: false,
         lesson: '', teachAt: [], taught: {},
-        gens: [], used: [], ordered: false, orderArm: '', hold: null, bar: null, sight: false, roads: false };
+        gens: [], used: [], ordered: false, orderArm: '', hold: null, bar: null, sight: false, roads: false, sailed: false };
   drawCard();
   G.atks = ATTACK_CAP + cardAtks();
   G.toPlace = deployFor(G.side);
@@ -1139,7 +1172,7 @@ function wallsFor(side) {
 function fogged(id) {
   var s = G.side;
   if (!G.fog || G.card === 'skies' || G.sight || G.own[id] === s || G.seen[s].indexOf(id) >= 0) return false;
-  return !nbrs(id).some(function (j) { return G.own[j] === s; });
+  return !fronts(id).some(function (j) { return G.own[j] === s; });
 }
 
 /* ── EVENT CARDS ── one per round, for both sides. ⚠ none may touch a battle: ATT_EDGE was measured
@@ -1189,6 +1222,11 @@ function siegeHint(from) {
     .map(function (j) {
       return breached(j) ? ' <b>' + LAND[j].nm + '</b>: the walls are down — a win takes it.'
                          : ' <b>' + LAND[j].nm + '</b> is walled — two wins this turn take it.';
+    }).join('') +
+    /* ⭐ the sea lane (his #7) */
+    lanesOf(from).filter(function (j) { return G.own[j] !== G.side && j !== G.truce; }).map(function (j) {
+      return G.sailed ? ' <b>' + LAND[j].nm + '</b> is across the water, and you have crossed it this round.'
+                      : ' Across the water: <b>' + LAND[j].nm + '</b>, once a round.';
     }).join('');
 }
 /* fortify reach: a neighbor, or under Long Roads anything joined to it through your own holdings */
@@ -2005,6 +2043,15 @@ function drawMap() {
              '" x2="' + b.x + '" y2="' + (b.y * 1.12) + '"/>';
     sandLinks.push(cls);
   });
+  /* ⭐ the sea lane (his #7): hot when the holding picked can still cross it, or an attack is crossing it now */
+  var sandLanes = [];
+  if (SEA) LANES.forEach(function (e) {
+    var c = laneCurve(LAND[e[0]], LAND[e[1]]), cls = 'lane';
+    if (G.sel >= 0 && !G.sailed && (e[0] === G.sel || e[1] === G.sel) && G.own[e[0]] !== G.own[e[1]]) cls += ' hot';
+    if (G.hot && ((e[0] === G.hot.from && e[1] === G.hot.to) || (e[1] === G.hot.from && e[0] === G.hot.to))) cls += ' hot hot-' + G.own[G.hot.from];
+    lines += '<path class="' + cls + '" d="' + laneD(c) + '"/>';
+    sandLanes.push(c);
+  });
   svg.innerHTML = lines;
 
   var two = G.mode === 'two';
@@ -2026,7 +2073,8 @@ function drawMap() {
 
     if (G.phase === 'deploy' && mine && G.toPlace > 0) cls += ' can';
     if (G.phase === 'attack' && G.atks > 0) {
-      var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.ranks[G.sel] >= 2 && L.id !== G.truce;
+      var way = G.sel >= 0 ? strikeOf(G.sel, L.id) : '';
+      var isTgt = !mine && (way === 'road' || way === 'sea') && G.ranks[G.sel] >= 2 && L.id !== G.truce;
       if (isTgt) cls += ' tgt';
       if (G.sel >= 0 && !isSel && !isTgt) cls += ' dim';
       if (G.sel < 0 && mine && G.ranks[L.id] >= 2 && L.id !== G.truce) cls += ' can';
@@ -2045,7 +2093,8 @@ function drawMap() {
     el.setAttribute('aria-label', L.nm + ', ' + (two ? sideName(o) : mine ? 'yours' : multi() ? generalOf(o).who + '’s' : 'theirs') + ', ' +
       (fog ? 'troops unknown' : G.ranks[L.id] + ' troop' + (G.ranks[L.id] === 1 ? '' : 's')) +
       (chained(G.own, L.id) || held(L.id) ? ', chained' : '') + (G.truce === L.id ? ', truce' : '') +
-      (walled(L.id) ? (breached(L.id) ? ', walls down' : ', walled') : '') + (ruleAt(L.id) ? ', ' + RULE_SAY[ruleAt(L.id)].tag : ''));
+      (walled(L.id) ? (breached(L.id) ? ', walls down' : ', walled') : '') + (ruleAt(L.id) ? ', ' + RULE_SAY[ruleAt(L.id)].tag : '') +
+      lanesOf(L.id).map(function (j) { return ', across the water from ' + LAND[j].nm; }).join(''));
     el.style.left = L.x + '%'; el.style.top = L.y + '%';
     el.innerHTML = (ruleAt(L.id) ? '<span class="rtag">' + RULE_SAY[ruleAt(L.id)].tag + '</span>' : '') +
       '<span class="disc">' + (fog ? '?' : G.ranks[L.id]) + '</span><span class="nm">' + L.nm + '</span>' +
@@ -2056,7 +2105,7 @@ function drawMap() {
     sandNodes.push({ own: o, ranks: G.ranks[L.id], fog: fog, cls: cls, col: sideColor(o) });
   });
   /* the sand table draws what was just drawn: the same classes, the same troops, the same fog */
-  if (SAND) SAND.set({ land: LAND, edges: EDGES, nodes: sandNodes, links: sandLinks,
+  if (SAND) SAND.set({ land: LAND, edges: EDGES, nodes: sandNodes, links: sandLinks, lanes: sandLanes,
     colors: { m: SIDES.m.col, t: SIDES.t.col, u: SIDES.u.col, v: SIDES.v.col },
     dog: G.dogId && G.dog >= 0 && G.mode !== 'two' && dogFace[G.dogId] && dogFace[G.dogId] !== 'pending' ? dogFace[G.dogId] : '',
     dogAt: G.dogId && G.mode !== 'two' ? G.dog : -1 });
@@ -2178,7 +2227,10 @@ function tapLand(id) {
     drawMap(); return;
   }
   if (G.sel < 0) { say('Start from one of your own holdings.'); return; }
-  if (!adj(G.sel, id)) { say(LAND[id].nm + ' does not border ' + LAND[G.sel].nm + '.'); return; }
+  var way = strikeOf(G.sel, id);
+  if (!way) { say(LAND[id].nm + ' does not border ' + LAND[G.sel].nm + '.'); return; }
+  if (way === 'sailed') { say('One strike across the water a round. ' + LAND[id].nm + ' waits for the next.'); return; }
+  if (way === 'sea') G.sailed = true;
   noteAttack(G.sel, id);
   /* ⚠ THE BUDGET IS SPENT HERE, WHEN THE ATTACK IS COMMITTED — not when it is won. An
      attack you lose is still one of your three; that is what makes choosing them matter. */
@@ -3517,7 +3569,7 @@ function openingWords() {
    ⚠ THE MAP IS SWAPPED WHILE IT IS ON (useMap): every rule reads LAND/EDGES/ADJ, so nothing here re-implements one, and
    the home screen puts the ten back. One save slot of its own. Maxwell attacks once, in its first round, to teach the
    chain; after that he holds. */
-var MAIN_MAP = { land: LAND, edges: EDGES };
+var MAIN_MAP = { land: LAND, edges: EDGES, lanes: LANES };
 var FIRST_MAP = { land: [
     { id:0, nm:'Sand Mines',   x:30, y:16 },
     { id:1, nm:'The Fork',     x:74, y:24 },
@@ -3531,7 +3583,7 @@ var LESSON_STEPS = ['deploy', 'attack', 'roll', 'battle', 'taken', 'missed', 'en
 function mapFor(mode) { return mode === 'first' ? FIRST_MAP : mode === 'three' ? WAR3_MAP : mode === 'four' ? WAR4_MAP : MAIN_MAP; }
 function useMap(m) {
   if (LAND === m.land) return;
-  LAND = m.land; EDGES = m.edges;
+  LAND = m.land; EDGES = m.edges; LANES = m.lanes || [];
   ADJ = LAND.map(function () { return []; });
   EDGES.forEach(function (e) { ADJ[e[0]].push(e[1]); ADJ[e[1]].push(e[0]); });
 }
@@ -3866,6 +3918,7 @@ function drawWar(box, snap, events, small) {
       '" x2="' + x2.toFixed(2) + '" y2="' + y2.toFixed(2) + '"/>' +
       '<circle class="march-head" fill="' + col + '" cx="' + x2.toFixed(2) + '" cy="' + y2.toFixed(2) + '" r="' + (small ? 1.1 : 1.6) + '"/>';
   });
+  if (SEA) LANES.forEach(function (e) { lines += '<path class="lane" d="' + laneD(laneCurve(LAND[e[0]], LAND[e[1]])) + '"/>'; });
   svg.innerHTML = lines;
   box.classList.toggle('big', LAND.length > 10 && !small);
   LAND.forEach(function (L) {
@@ -4012,7 +4065,7 @@ function dogTag(id) {
    an earlier battle in the same turn may have moved the ground under it. */
 /* ⚠ "THE FOE" IS EVERYONE ELSE (a war of three or four): every check asks `!== side`, never one color */
 function srcScore(id, rk, side) {
-  var ns = nbrs(id), best = -99;
+  var ns = fronts(id), best = -99;
   for (var i = 0; i < ns.length; i++) {
     if (G.own[ns[i]] === side) continue;
     var s = rk[id] - rk[ns[i]];
@@ -4032,7 +4085,7 @@ function rivalPlan(side) {
   var add = deployFor(side);
   var rk = G.ranks.slice();
   var front = theirs.filter(function (id) {
-    return nbrs(id).some(function (j) { return G.own[j] !== side; });
+    return fronts(id).some(function (j) { return G.own[j] !== side; });
   });
 
   /* ── the deployment ──
@@ -4061,7 +4114,7 @@ function rivalPlan(side) {
   var cand = [], war = multi();
   theirs.forEach(function (from) {
     if (rk[from] < 2) return;
-    nbrs(from).forEach(function (to) {
+    fronts(from).forEach(function (to) {
       if (G.own[to] === side || from === G.truce || to === G.truce) return;
       var s = rk[from] - rk[to];
       if (L.chainAware && chained(G.own, to)) s += 2;
@@ -4073,7 +4126,7 @@ function rivalPlan(side) {
       if (siege) s -= 1;
       if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing ranks at it
       /* ⚠ a war's even choice is a coin toss (k); a war of two keeps its order (k 0, and the sort is stable) */
-      cand.push({ from:from, to:to, s:s, siege:siege, k: war ? rand() : 0 });
+      cand.push({ from:from, to:to, s:s, siege:siege, k: war ? rand() : 0, sea: !adj(from, to) });
     });
   });
   cand.sort(function (a, b) { return b.s - a.s || a.k - b.k; });
@@ -4082,14 +4135,17 @@ function rivalPlan(side) {
      give the machine a round the player can never have. */
   var cap = Math.min(L.maxAtk, ATTACK_CAP);
   cap = Math.max(0, cap + cardAtks());
-  var attacks = [], used = {};
+  var attacks = [], used = {}, sailed = false;
   for (i = 0; i < cand.length && attacks.length < cap; i++) {
     if (used[cand[i].from]) continue;            // one attack per holding a round
+    /* ⚠ ONE CROSSING A ROUND, and never half a siege: the second win could not come back over the water */
+    if (cand[i].sea && (sailed || cand[i].siege)) continue;
     /* ⚠ the siege is the ONE exception to that: both wins come from the same stack, so the
        pair is booked together or not at all — half a siege spends an attack and takes nothing */
     var need = cand[i].siege ? 2 : 1;
     if (attacks.length + need > cap) continue;
     used[cand[i].from] = 1;
+    if (cand[i].sea) sailed = true;
     attacks.push({ from:cand[i].from, to:cand[i].to });
     if (need === 2) attacks.push({ from:cand[i].from, to:cand[i].to });
   }
@@ -4233,6 +4289,7 @@ function resetTurn() {
   G.fortFrom = -1; G.fortTo = -1; G.fortMoved = 0; G.fortDone = false;
   G.down = [];                                   // a breach lasts one turn and no longer
   G.sniffed = false;
+  G.sailed = false;                              // the sea lane: once a round (his #7)
   /* a general's order lasts until your next turn, which is now */
   G.ordered = false; G.orderArm = ''; G.sight = false; G.roads = false;
   if (G.hold && G.hold.side === G.side) G.hold = null;
@@ -4536,7 +4593,7 @@ function saveCampaign() {
       fortDone:G.fortDone, q:G.q, pending:G.pending || null, log:G.log || null,
       dogId:G.dogId || '', dog:G.dog == null ? -1 : G.dog, sniffed:!!G.sniffed,
       gens:G.gens || [], used:G.used || [], ordered:!!G.ordered, hold:G.hold || null, bar:G.bar || null,
-      sight:!!G.sight, roads:!!G.roads, war:G.war || null, warEv:G.warEv || [] }));
+      sight:!!G.sight, roads:!!G.roads, sailed:!!G.sailed, war:G.war || null, warEv:G.warEv || [] }));
   } catch (e) {}
 }
 function loadSave(mode) {
@@ -4559,7 +4616,7 @@ function resumeCampaign(o) {
         dogId:dogOf(o.dogId) ? o.dogId : '', dog:o.dog == null ? -1 : o.dog, sniffed:!!o.sniffed,
         lesson:'', teachAt:[], taught:{ taken: o.mode === 'first' && o.own[2] === 'm' },
         gens:Array.isArray(o.gens) ? o.gens : [], used:Array.isArray(o.used) ? o.used : [], ordered:!!o.ordered,
-        orderArm:'', hold:o.hold || null, bar:o.bar || null, sight:!!o.sight, roads:!!o.roads,
+        orderArm:'', hold:o.hold || null, bar:o.bar || null, sight:!!o.sight, roads:!!o.roads, sailed:!!o.sailed,
         war:o.war && o.war.start ? o.war : null, warEv:Array.isArray(o.warEv) ? o.warEv : [] };
   var pend = o.pending, broke = false;
   if (pend) { broke = resolveLand(pend, !pend.playerAttacks); warNote(pend, G.own[pend.from], !pend.playerAttacks, broke, null); }

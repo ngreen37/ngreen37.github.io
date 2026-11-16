@@ -1217,6 +1217,46 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
         /<span class="rtag">/.test(slice('function drawMap(', 'function tapLand(')) && /RULE_SAY\[B\.rule\]\.say/.test(slice('function startBattle(', 'function loneKing(')));
 }
 
+/* ══ 19. THE SEA LANE (his 11-16, #7) ══ a front across the water, once a round, and never a road */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  camp.newCampaign('hard', 'solo', { fog: true, cards: false });
+  const G = camp.G;
+  check('⭐ one sea lane, Sea-Board to Shogi Island, and each still has exactly its two roads (his rule)',
+    JSON.stringify(camp.LANES) === '[[4,7]]' && camp.nbrs(4).length === 2 && camp.nbrs(7).length === 2 && !camp.adj(4, 7));
+  check('…either strikes the other across the water, once a round',
+    camp.strikeOf(7, 4) === 'sea' && camp.strikeOf(4, 7) === 'sea' && camp.strikeOf(7, 5) === 'road' && camp.strikeOf(5, 4) === '' &&
+    (G.sailed = true, camp.strikeOf(7, 4) === 'sailed' && camp.strikeOf(7, 5) === 'road'));
+  G.sailed = false;
+  /* never a road: troops do not fortify over it, and it does not chain */
+  G.own[4] = 'm'; G.own[5] = 'm'; G.own[8] = 't';
+  check('…but troops never move by sea, and it never chains',
+    !camp.fortReach(7, 4) && camp.fortReach(7, 5) && !camp.chained(G.own, 7));
+  camp.newCampaign('hard', 'solo', { fog: true, cards: false });
+  /* the machine: a crossing when it is worth one, never two in a turn, never half a siege */
+  let plans = 0, crossings = 0, twice = 0, halfSiege = 0;
+  for (let i = 0; i < 1500; i++) {
+    const g = camp.G;
+    g.own = camp.START_OWN.slice(); g.ranks = g.ranks.map(() => 1 + Math.floor(Math.random() * 8));
+    g.walls = i % 3 === 0 ? [4, 7] : camp.START_WALLS.slice(); g.down = [];
+    ['t', 'm'].forEach((side) => {
+      const sea = camp.rivalPlan(side).attacks.filter((a) => !camp.adj(a.from, a.to));
+      plans++; crossings += sea.length ? 1 : 0;
+      if (sea.length > 1) twice++;
+      if (sea.some((a) => camp.sieged(a.to))) halfSiege++;
+    });
+  }
+  check('…the machine crosses when it is worth it, never twice in a turn, and never into walls it cannot follow up',
+    crossings > 50 && twice === 0 && halfSiege === 0, crossings + ' of ' + plans + ' plans cross · twice ' + twice + ' · into walls ' + halfSiege);
+  camp.useMap(camp.mapFor('three')); const w3 = camp.LANES.length;
+  camp.useMap(camp.mapFor('first')); const f1 = camp.LANES.length;
+  camp.useMap(camp.MAIN_MAP);
+  check('…the campaign\'s map only: a war and the first campaign keep their roads', w3 === 0 && f1 === 0 && camp.LANES.length === 1);
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+  check('…the save carries the spent crossing, and a turn opens the water again',
+    /sailed:!!G\.sailed/.test(page) && /sailed:!!o\.sailed/.test(page) && /G\.sailed = false;/.test(slice('function resetTurn(', 'function passTurn(')));
+}
+
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */
 function report(title) {
   console.log('\n=== ' + title + ' ===\n');

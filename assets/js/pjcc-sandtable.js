@@ -4,7 +4,8 @@
  * A LENS over the page's own map: drawMap() hands it what it drew (each holding's classes, each road's), it draws that
  * on sand, and a press on a holding is pressed through to the page (tapLand), so the page's rules play every tap.
  *   var sand = PJCCSand.mount({ host: el, press: function (id) { ... } });
- *   sand.set({ land: [{id, nm, x, y}], edges: [[a, b]], nodes: [{own, ranks, fog, cls, col}], links: [cls], dog: url })
+ *   sand.set({ land: [{id, nm, x, y}], edges: [[a, b]], nodes: [{own, ranks, fog, cls, col}], links: [cls], dog: url,
+ *              lanes: [[x1, y1, cx, cy, x2, y2]] })   (the sea lane, his #7: the page's laneCurve, drawn into the sand)
  *   sand.throwDice({ from, to, dice: [{ v, side: 'att'|'def', kept, col }] }, done)
  * ⚠ NO WebGL, NO BUNDLE OR NO PAWN: the page keeps its flat map, and nothing else changes.
  * "Map: Flat" is a device preference (pjcc.campaign.map.flat); the sand table until it is pressed. */
@@ -227,6 +228,12 @@
       var l = rnd(); g.fillStyle = l < 0.5 ? 'rgba(120,88,40,' + (0.05 + rnd() * 0.08) + ')' : 'rgba(255,240,205,' + (0.05 + rnd() * 0.1) + ')';
       g.fillRect(rnd() * 512, rnd() * 576, 1 + rnd() * 2, 1 + rnd() * 2);
     }
+    // ⭐ the sea lane (his #7): water drawn into the sand along the page's own curve (laneCurve), dashed
+    (view.lanes || []).forEach(function (q) {
+      var px = function (x) { return ((x - 50) * U + W / 2) / W * 512; }, py = function (y) { return ((y - 56) * U + H / 2) / H * 576; };
+      g.save(); g.strokeStyle = 'rgba(64,112,160,.8)'; g.lineWidth = 6; g.lineCap = 'round'; g.setLineDash([12, 9]);
+      g.beginPath(); g.moveTo(px(q[0]), py(q[1])); g.quadraticCurveTo(px(q[2]), py(q[3]), px(q[4]), py(q[5])); g.stroke(); g.restore();
+    });
     var tex = new T.CanvasTexture(c); tex.colorSpace = T.SRGBColorSpace;
     var sand = new T.Mesh(new T.PlaneGeometry(W, H), new T.MeshStandardMaterial({ map: tex, roughness: 0.95 }));
     sand.rotation.x = -Math.PI / 2; sand.receiveShadow = true; root.add(sand);
