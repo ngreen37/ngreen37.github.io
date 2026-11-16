@@ -98,7 +98,8 @@ check('the wire carries its own class, so the color rule can find it',
       streakInfo: () => w.streak || { current: 0, best: 0, last: '', playedToday: false },
       puzzleRating: () => w.puzzle || { rating: 700, solved: 0, peak: 700 },
       rankFor: () => ({ name: 'Field Agent' }),
-      clearance: () => w.clearanceRung || { level: 1, name: 'Recruit' }
+      clearance: () => w.clearanceRung || { level: 1, name: 'Recruit' },
+      lastWar: () => w.war || null
     };
     try {
       localStorage.clear();
@@ -217,6 +218,32 @@ check('the wire carries its own class, so the color rule can find it',
     pr = await run({ prep: { name: 'Pirc Defense', at: Date.now() } });
     check('…and a record with no opponent says nothing either',
       !findLine(pr), 'this one fill() would also catch — both doors shut');
+  }
+
+  /* ── §4c. THE LAST WAR (his 11-16, #10) ─────────────────────────────────────────
+     PJCC.lastWar(), as the Campaign's page and the town note it. A win is news for a week, a loss for three days,
+     and every figure on the line is the record's: the round, the level, how many generals. */
+  {
+    const now = () => Math.floor(Date.now() / 1000);
+    const WON = { won: true, mode: 'four', diff: 'hard', gens: 3, rounds: 14, at: now() - 3600 };
+    const warLine = (rows) => rows.map((s) => s.text).find((t) => /CAMPAIGN|THE MAP/.test(t)) || '';
+    const wl = warLine(await run({ war: WON }));
+    check('a war you won reaches the wire', !!wl, wl || '(silent)');
+    check('…naming the round, the level and the generals, and no figure the record did not hold',
+      /\bROUND 14\b/.test(wl) && /HARD/.test(wl) && /3 GENERALS/.test(wl) &&
+      (wl.match(/\d+/g) || []).every((d) => ['14', '3'].indexOf(d) >= 0), wl);
+    const wn = warLine(await run({ war: WON, night: true }));
+    check('…and the night desk files it too, in its own voice', !!wn && wn !== wl && /\b14\b/.test(wn), wn.slice(0, 76) + '…');
+    const solo = warLine(await run({ war: Object.assign({}, WON, { gens: 1, diff: 'medium' }) }));
+    check('a campaign against one is against MAXWELL', /MAXWELL/.test(solo) && /MEDIUM/.test(solo) && !/GENERALS/.test(solo), solo);
+    const lost = Object.assign({}, WON, { won: false, at: now() - 2 * 86400 });
+    const ll = warLine(await run({ war: lost }));
+    check('a war you lost two days ago is still news, said as a loss', !!ll && ll !== wl && /\bROUND 14\b/.test(ll), ll || '(silent)');
+    check('…but at four days it is not', !warLine(await run({ war: Object.assign({}, lost, { at: now() - 4 * 86400 }) })), '(silent, correctly)');
+    check('a win at six days is still news, and at eight it is not',
+      !!warLine(await run({ war: Object.assign({}, WON, { at: now() - 6 * 86400 }) })) &&
+      !warLine(await run({ war: Object.assign({}, WON, { at: now() - 8 * 86400 }) })));
+    check('a record with no round is refused', !warLine(await run({ war: Object.assign({}, WON, { rounds: 0 }) })), 'ROUND 0 is not a fact');
   }
 
   /* ── §5. AN EMPTY DESK FILES NOTHING ────────────────────────────────────────────── */

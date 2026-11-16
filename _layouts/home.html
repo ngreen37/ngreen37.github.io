@@ -1317,6 +1317,16 @@ function ctParts() {
     prep: {
       day:   'PREP WATCH: {who} LOST IN THE {opening} AGAINST {bot} — THEORY HELD TO MOVE {n}',
       night: '{who2} PLAYS THE {opening}. IT DID NOT HOLD AGAINST {bot}. THEORY GOT THEM TO MOVE {n}, WHICH IS FURTHER THAN ANYTHING GETS ME'
+    },
+    /* ⭐ THE LAST WAR (his 11-16, #10): a campaign or a war of three or four, as it ended. {foe} is MAXWELL or "3
+       GENERALS", {level} EASY / MEDIUM / HARD, {n} the round it ended. ⚠ STAND-INS: the words are his to rewrite. */
+    war_won: {
+      day:   'THE CAMPAIGN: {who} TOOK THE MAP FROM {foe} ON {level} — ROUND {n}',
+      night: '{who2} BEAT {foe} AT THE CAMPAIGN. ROUND {n}, ON {level}. I WATCH THE MAP ON THE MONITOR. IT NEVER MOVES FOR ME'
+    },
+    war_lost: {
+      day:   'THE CAMPAIGN: {foe} HELD THE MAP AGAINST {who} ON {level} — ROUND {n}',
+      night: '{foe} KEPT THE MAP FROM {who2} IN ROUND {n}. THE MAP IS STILL THERE IN THE MORNING. SO IS THE DESK'
     }
   };
   // ── end of the wording ───────────────────────────────────────────────────────────
@@ -1375,6 +1385,14 @@ function ctParts() {
       var pf = JSON.parse(localStorage.getItem('pjcc.pt.prep.v1') || 'null');
       if (pf && pf.name && pf.bot && pf.move > 0 && (Date.now() - (pf.at || 0)) < 3 * 864e5)
         out.push({ kind: 'prep', opening: up(pf.name), bot: up(pf.bot), n: pf.move });
+    } catch (e) {}
+    /* ⭐ THE LAST WAR (his 11-16, #10): PJCC.lastWar(), noted by the Campaign's page and by the town. A win is news for a
+       week; a loss for three days, the prep line's window, for the prep line's reason. */
+    try {
+      var lw = P.lastWar && P.lastWar(), age = lw ? Date.now() / 1000 - lw.at : 0;
+      if (lw && lw.rounds > 0 && age < (lw.won ? 7 : 3) * 86400)
+        out.push({ kind: lw.won ? 'war_won' : 'war_lost', n: lw.rounds, level: up(lw.diff),
+                   foe: lw.gens > 1 ? lw.gens + ' GENERALS' : 'MAXWELL' });
     } catch (e) {}
     return out;
   }

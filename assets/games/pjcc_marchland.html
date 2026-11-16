@@ -4295,6 +4295,8 @@ function campaignOver(won) {
   $('watch').hidden = !war;
   $('framed').hidden = !framed;
   keepsakeLine(window.PJCC && PJCC.bankWar ? PJCC.bankWar(war) : []);
+  /* ⭐ and the town hears of it (his #10): the front door's wire, the town's paper, Maxwell */
+  if (war && window.PJCC && PJCC.noteWar) PJCC.noteWar(war);
   var last = G.mode === 'solo' && won != null ? lineFor(won ? 'lose' : 'win') : '';
   $('result-mx').textContent = last ? RIVAL.who + ': \u201c' + last + '\u201d' : '';
   $('result-mx').hidden = !last;

@@ -1676,6 +1676,22 @@
     return out;
   };
 
+  /* ⭐ THE LAST WAR (his 11-16, #10 "The town remembers your wars"): the page and the town (web) note each campaign or war
+     of three or four that ends; the front door's wire, the town's paper and Maxwell read it back.
+     ⚠ THIS DEVICE'S, NOT THE ACCOUNT'S: news is about this screen's reader, as the town's "since your last paper" is.
+     ⚠ `at` IS IN SECONDS: the town stamps its own copy with Godot's clock and keeps the newer. */
+  var LAST_WAR_KEY = 'pjcc.campaign.last.v1';
+  PJCC.noteWar = function (w) {
+    if (!w || ['solo', 'three', 'four'].indexOf(w.mode) === -1) return null;
+    var b = { won: w.won === true, mode: w.mode, diff: String(w.diff || ''), gens: Math.max(1, (w.sides || []).length - 1),
+              rounds: +w.rounds || 0, at: Math.floor(Date.now() / 1000) };
+    try { localStorage.setItem(LAST_WAR_KEY, JSON.stringify(b)); } catch (e) {}
+    return b;
+  };
+  PJCC.lastWar = function () {
+    try { var b = JSON.parse(localStorage.getItem(LAST_WAR_KEY)); return b && b.at > 0 && b.rounds > 0 ? b : null; } catch (e) { return null; }
+  };
+
   // --- profile / companion ---------------------------------------------------
   // Merge a patch into the companion jsonb (avatar, owned[], etc.) and persist.
   async function updateCompanion(patch) {

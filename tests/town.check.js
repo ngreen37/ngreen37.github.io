@@ -8375,6 +8375,26 @@ const server = http.createServer((req, res) => {
             ok(keepOff.length === 0,
               '⭐ HIS #9 IN THE GAME  (his 11-16: "Do number nine and ten"): a won war at Maxwell\'s table banks its honor on the account through the site, as the page does, and names the keepsake it opened in the page\'s words',
               keepOff.length ? 'off: ' + keepOff.join(' · ') : 'the page and the table bank alike');
+            /* ⭐ HIS #10 (11-16, "The town remembers your wars"): one last-war record, written by the page and the town alike, read
+               by the front door's wire, the town's paper and Maxwell. ⚠ MECHANISM ONLY: the words are his. */
+            const ppT = rd('paper.gd'), mxT = rd('maxwell.gd'), npT = rd('npc.gd'), stownT = rd('state_town.gd');
+            const mxLines = fs.readFileSync(path.join(GD, 'people/lines/maxwell.txt'), 'utf8');
+            const newsOff = offOf({
+              'the town notes it, and reads the newer of its own and the site\'s': /if \(P && P\.noteWar\) P\.noteWar\(w\)/.test(fnGd(cpT, 'note_war'))
+                && /not str\(w\.get\("mode", ""\)\) in \["solo", "three", "four"\]/.test(fnGd(cpT, 'note_war'))
+                && /P\.lastWar \? P\.lastWar\(\)/.test(fnGd(cpT, 'last_war')) && /int\(d\.get\("at", 0\)\) > int\(out\.get\("at", 0\)\)/.test(fnGd(cpT, 'last_war'))
+                && /"last": last, "told": told/.test(fnGd(cpT, 'to_save')) && /GameState\.campaign\.note_war\(_war\)/.test(fnGd(ctbT, '_campaign_over'))
+                && /if \(war && window\.PJCC && PJCC\.noteWar\) PJCC\.noteWar\(war\);/.test(mlT),
+              'the paper prints it once a paper has not seen it': /"war": int\(GameState\.campaign\.last_war\(\)\.get\("at", 0\)\)/.test(fnGd(stownT, '_paper_state'))
+                && /int\(w\.get\("at", 0\)\) <= int\(GameState\.town\.paper_was\(\)\.get\("war", 0\)\)/.test(fnGd(ppT, '_war')),
+              'Maxwell brings it up once, in his own file\'s words': /var r := remembers\(\)/.test(fnGd(npT, 'interact'))
+                && /if at <= 0 or at <= GameState\.campaign\.told:/.test(fnGd(mxT, 'remembers')) && /GameState\.campaign\.told = at/.test(fnGd(mxT, 'remembers'))
+                && ['war_won', 'war_lost', 'gens_won', 'gens_lost'].every((h) => new RegExp('^\\[' + h + '\\]\\s*\\n[^\\[#\\s]', 'm').test(mxLines.replace(/\r/g, ''))),
+              'played': /^[^#\n]*\bcampnews\b/m.test(suiteT) && /paperwar:0;campopen;[^"]*campover:true;[^"]*paperwar:1;paperseen;paperwar:0;[^"]*use:Maxwell;mxwar:1;[^"]*use:Maxwell;mxwar:0/.test(bcCase('campnews')),
+            });
+            ok(newsOff.length === 0,
+              '⭐ HIS #10 IN THE GAME  (his 11-16: "Do number nine and ten"): the war that ended is noted by the page and the town alike; the paper prints it until a paper has seen it, and Maxwell brings it up once',
+              newsOff.length ? 'off: ' + newsOff.join(' · ') : 'one record, three readers');
           }
         }
 

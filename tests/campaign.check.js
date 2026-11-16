@@ -831,6 +831,7 @@ function serve() {
       out.result = { watch: !$('watch').hidden, framed: !$('framed').hidden };
       out.keep = $('keepsake').hidden ? '' : $('keepsake').textContent;
       out.banked = localStorage.getItem('pjcc.best.campaign-war');
+      out.noted = JSON.parse(localStorage.getItem('pjcc.campaign.last.v1') || 'null');
       $('watch').click();
       out.on = $('screen-war').classList.contains('on');
       out.frames = __mc.replay.frames.length;
@@ -851,6 +852,10 @@ function serve() {
     /* ⭐ HIS #9 (11-16): a won war banks its honor, and the keepsake it opens is named */
     ok(rep.keep === 'New keepsake: The Banner. Sign in to claim it in your Collection.' && rep.banked === '1',
        '⭐ a first won campaign opens The Banner in your Collection, and says so  [' + (rep.keep || 'nothing said') + ']');
+    /* ⭐ HIS #10 (11-16): the war that ended is noted for the front door's wire, the town's paper and Maxwell */
+    const nt = rep.noted || {};
+    ok(nt.won === true && nt.mode === 'solo' && nt.diff === 'medium' && nt.gens === 1 && nt.rounds >= 1 && Math.abs(nt.at - Date.now() / 1000) < 600,
+       '⭐ the war that ended is noted for the town to hear of: won, Medium, against one, its round and when  [' + JSON.stringify(nt) + ']');
     const again = await E(() => {
       __mc.newCampaign('medium'); __mc.G.own = __mc.G.own.map(() => 'm'); __mc.campaignOver(true);
       const quiet = document.getElementById('keepsake').hidden;
