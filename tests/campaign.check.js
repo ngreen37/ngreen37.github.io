@@ -826,8 +826,11 @@ function serve() {
     /* ══ 11-10: THE WAR, REPLAYED (his #7) ══ */
     const rep = await E(() => {
       const $ = id => document.getElementById(id), out = {};
+      localStorage.removeItem('pjcc.best.campaign-war');
       __mc.campaignOver(true);
       out.result = { watch: !$('watch').hidden, framed: !$('framed').hidden };
+      out.keep = $('keepsake').hidden ? '' : $('keepsake').textContent;
+      out.banked = localStorage.getItem('pjcc.best.campaign-war');
       $('watch').click();
       out.on = $('screen-war').classList.contains('on');
       out.frames = __mc.replay.frames.length;
@@ -845,6 +848,17 @@ function serve() {
       return out;
     });
     ok(rep.result.watch && rep.result.framed, 'a won campaign offers its war back, and goes in the frame');
+    /* ⭐ HIS #9 (11-16): a won war banks its honor, and the keepsake it opens is named */
+    ok(rep.keep === 'New keepsake: The Banner. Sign in to claim it in your Collection.' && rep.banked === '1',
+       '⭐ a first won campaign opens The Banner in your Collection, and says so  [' + (rep.keep || 'nothing said') + ']');
+    const again = await E(() => {
+      __mc.newCampaign('medium'); __mc.G.own = __mc.G.own.map(() => 'm'); __mc.campaignOver(true);
+      const quiet = document.getElementById('keepsake').hidden;
+      document.getElementById('cont').click();
+      localStorage.removeItem('pjcc.best.campaign-war');
+      return quiet;
+    });
+    ok(again, '…and a second win at the same honor says nothing new');
     ok(rep.on && rep.frames >= 2 && rep.first === 'The opening.' && rep.last.step === rep.frames + ' of ' + rep.frames && rep.last.btn === 'Done' && rep.backTo,
        'the war plays back from the opening; Skip goes to its last map and Done to the result  [' + rep.frames + ' frames]');
     ok(rep.frame.shown && /^Your best war · Medium · won in round \d+$/.test(rep.frame.say) && rep.again && rep.home,

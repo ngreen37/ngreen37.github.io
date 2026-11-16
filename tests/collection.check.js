@@ -148,6 +148,36 @@ check('Legendary is the top band', P.BANDS[P.BANDS.length - 1].key === 'legendar
   check('a flag of "0" does NOT unlock it', zero.earnedMet(flagEgg, null, []) === false);
 }
 
+/* ── 6b. ⭐ THE CAMPAIGN'S KEEPSAKES (his 11-16, #9): a won war banks an honor, and three pieces read it ── */
+{
+  const war = (mode, diff, n, won) => ({ mode, diff, won: won === undefined ? true : won, sides: ['m', 'r', 'b', 'y'].slice(0, n) });
+  const H = P.warHonor;
+  check('a won Campaign is honor 1, on Hard 2, a war of four players on Hard 3',
+    H(war('solo', 'easy', 2)) === 1 && H(war('three', 'medium', 3)) === 1 && H(war('four', 'medium', 4)) === 1 &&
+    H(war('solo', 'hard', 2)) === 2 && H(war('three', 'hard', 3)) === 2 && H(war('four', 'hard', 4)) === 3);
+  check('…and a lost war, a Daily, two players or the first campaign is none',
+    H(war('solo', 'hard', 2, false)) === 0 && H(war('daily', 'hard', 2)) === 0 && H(war('two', 'hard', 2)) === 0 &&
+    H(war('first', 'hard', 2)) === 0 && H(null) === 0);
+  const store = {}, b = boot(store), real = b.saveScore;
+  let writes = 0;
+  b.saveScore = function () { writes++; return real.apply(this, arguments); };
+  const first = b.bankWar(war('solo', 'easy', 2)), dup = b.bankWar(war('solo', 'medium', 2)), wrote = writes;
+  const up = b.bankWar(war('four', 'hard', 4)), after = store['pjcc.best.' + b.WAR_SLUG];
+  check('a first win opens The Banner; a second at the same honor opens nothing',
+    first.join() === 'The Banner' && dup.length === 0 && wrote === 1, JSON.stringify([first, dup]) + ' · ' + wrote + ' write(s)');
+  check('a war of four on Hard after it opens the other two, and the honor banked is 3',
+    up.join() === 'Iron General,The War Medal' && after === '3', up.join(' · ') + ' · banked ' + after);
+  check('a first win of four on Hard opens all three at once',
+    boot().bankWar(war('four', 'hard', 4)).join() === 'The Banner,Iron General,The War Medal');
+  const keeps = ['ea-banner', 'general', 'ea-medal'].map(k => P.EARNED.find(e => e.key === k));
+  check('the three are EARNED pieces, so they can be neither sold nor staked',
+    keeps.every(e => e && P.isEarned(e.kind, e.key) && P.sellValue(e.kind, e.key) === 0));
+  keeps.forEach((e, i) => {
+    const at = n => P.earnedMet(e, null, [{ game: P.WAR_SLUG, best_score: n, plays: 1 }]);
+    check('  ' + e.label + ' is met at honor ' + (i + 1) + ' and not below it', at(i) === false && at(i + 1) === true && at(3) === true);
+  });
+}
+
 /* ── 7. the claim refuses everything it should ────────────────────────────────────── */
 {
   const g = boot();

@@ -54,7 +54,8 @@
     'sp-bear': '🐻', 'sp-otter': '🦦', 'sp-stag': '🦌', 'sp-octopus': '🐙',
     'sp-shark': '🦈', 'sp-tortoise': '🐢', 'sp-bat': '🦇', 'sp-moon': '🌙',
     // EARNED — no shop sells these and the altar never hands them out (see EARNED below)
-    'ea-compass': '🧭', 'ea-scope': '🔭', 'ea-key': '🗝️', 'ea-laurel': '🏅'
+    'ea-compass': '🧭', 'ea-scope': '🔭', 'ea-key': '🗝️', 'ea-laurel': '🏅',
+    'ea-banner': '🚩', 'ea-medal': '🎖️'
   };
   var HUMAN_LABELS = {
     'human-1': 'The Sleuth', 'human-2': 'The Shadow', 'human-3': 'The Agent', 'human-4': 'The Princess',
@@ -68,7 +69,7 @@
     'sp-octopus': 'The Octopus', 'sp-shark': 'The Shark', 'sp-tortoise': 'The Tortoise',
     'sp-bat': 'The Nightwing', 'sp-moon': 'The Moon',
     'ea-compass': 'The Compass', 'ea-scope': 'The Long View', 'ea-key': 'The Key',
-    'ea-laurel': 'The Laurel'
+    'ea-laurel': 'The Laurel', 'ea-banner': 'The Banner', 'ea-medal': 'The War Medal'
   };
   var AVATAR_FREE = ['human-1', 'human-2', 'human-3', 'human-4', 'human-5', 'human-6', 'human-7', 'human-8'];
   /* PRICES (re-set 2026-07-27 — Nate: "just by gambling everything I had a few times, I
@@ -230,7 +231,14 @@
        ⚠ THE COUNT MOVED: 62 → 60 collectables. Anything that states the total in prose needs to
        move with it — [[collection-and-hidden-boards]]. */
     { kind: 'title',  key: 'citizen',    value: 1050, label: 'Citizen of Chess City',
-      rule: 'found:pjcc.fork.chesscity.v1', how: 'Walk all 1,000 puzzles to Chess City' }
+      rule: 'found:pjcc.fork.chesscity.v1', how: 'Walk all 1,000 puzzles to Chess City' },
+    /* ⭐ THE CAMPAIGN'S KEEPSAKES (his 11-16, #9): one per honor a won war banks (WAR_SLUG below). Names are mine, veto open. */
+    { kind: 'avatar', key: 'ea-banner',  value: 460, label: 'The Banner',
+      rule: 'ach:campaigner',    how: 'Win a Campaign, or a war of three or four players' },
+    { kind: 'title',  key: 'general',    value: 700, label: 'Iron General',
+      rule: 'ach:iron-general',  how: 'Win a Campaign or a war on Hard' },
+    { kind: 'avatar', key: 'ea-medal',   value: 980, label: 'The War Medal',
+      rule: 'ach:last-general',  how: 'Win a war of four players on Hard' }
   ];
   EARNED.forEach(function (e) { if (e.kind === 'avatar' && !AVATARS[e.key]) AVATARS[e.key] = '★'; });
   function earnedEntry(kind, key) {
@@ -1148,6 +1156,9 @@
            account owns, so a second pull for the trainer's book would be a duplicate round
            trip for data already in hand. */
         var bk = (rows || []).find(function (r) { return r.game === 'opening-trainer'; });
+        /* the honor a war won on another device banked: raised here so a lesser win on this one says nothing new */
+        var cw = (rows || []).find(function (r) { return r.game === WAR_SLUG; });
+        if (cw) setLocalBest(WAR_SLUG, +cw.best_score || 0);
         if (bk && bk.data && bk.data.book) trainerBookMerge(bk.data.book);
         var tw = (rows || []).find(function (r) { return r.game === 'checker-town'; });
         for (var ts = 1; ts <= TOWN_SAVES; ts++) {
@@ -1641,6 +1652,30 @@
     } catch (e) {}
   };
 
+  /* ⭐ A WON WAR BANKS ITS HONOR (his 11-16, #9 "Earned keepsakes"): 1 a Campaign or a war of three or four won, 2 won on
+     Hard, 3 a war of four players won on Hard. The page and the town (web) call bankWar() when a war ends; the Campaign's
+     keepsakes in EARNED read it as best_score (WAR_KEEPS, one per honor).
+     ⚠ ONE NUMBER, NOT A LIST: the honors nest, so a MAX holds them all and the server's max never walks one back.
+     ⚠ A WRITE ONLY FOR A NEW HONOR: a fourth easy win sends nothing. */
+  var WAR_SLUG = 'campaign-war';
+  var WAR_KEEPS = [null, ['avatar', 'ea-banner'], ['title', 'general'], ['avatar', 'ea-medal']];
+  function warHonor(w) {
+    if (!w || w.won !== true || ['solo', 'three', 'four'].indexOf(w.mode) === -1) return 0;
+    if (w.diff !== 'hard') return 1;
+    return (w.sides || []).length >= 4 ? 3 : 2;
+  }
+  PJCC.WAR_SLUG = WAR_SLUG;
+  PJCC.warHonor = warHonor;
+  /* the keepsakes this war opens that were not open before, by label: [] when it opens none.
+     ⚠ A FIRST WIN ON HARD WITH FOUR OPENS ALL THREE: the honors nest. */
+  PJCC.bankWar = function (w) {
+    var h = warHonor(w), had = PJCC.localBest(WAR_SLUG), out = [];
+    if (h <= had) return out;
+    PJCC.saveScore(WAR_SLUG, h, {});
+    for (var i = had + 1; i <= h; i++) out.push(earnedEntry(WAR_KEEPS[i][0], WAR_KEEPS[i][1]).label);
+    return out;
+  };
+
   // --- profile / companion ---------------------------------------------------
   // Merge a patch into the companion jsonb (avatar, owned[], etc.) and persist.
   async function updateCompanion(patch) {
@@ -1941,7 +1976,10 @@
     { key: 'crowned',       icon: '👑', label: 'Crowned',        desc: 'Clear all ten Gauntlet floors',    test: function (c) { return c.best('the-gauntlet') >= 10; } },
     { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',    test: function (c) { return JOURNEY.every(function (s) { return !s.game || c.played(s.game); }); } },
     { key: 'dedicated',     icon: '🔥', label: 'Dedicated',      desc: 'Play 50 rounds total',             test: function (c) { return c.totalPlays >= 50; } },
-    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own something from the Shopkeeper', test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } }
+    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own something from the Shopkeeper', test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } },
+    { key: 'campaigner',    icon: '🚩', label: 'Campaigner',     desc: 'Win a Campaign',                   test: function (c) { return c.best(WAR_SLUG) >= 1; } },
+    { key: 'iron-general',  icon: '🛡', label: 'Iron General',   desc: 'Win a Campaign on Hard',           test: function (c) { return c.best(WAR_SLUG) >= 2; } },
+    { key: 'last-general',  icon: '🎖', label: 'Last General',   desc: 'Win a war of four players on Hard', test: function (c) { return c.best(WAR_SLUG) >= 3; } }
   ];
   PJCC.ACHIEVEMENTS = ACHIEVEMENTS;
   PJCC.earnedAchievements = function (prof, stats) {
@@ -1998,7 +2036,8 @@
        behaves exactly like `'vault'` in unlockedTitles() (you have it or you don't), and is
        a separate word only so the Quartermaster can say WHERE it came from. */
     'finder':    { label: 'The Finder',            rule: 'earned' },
-    'citizen':   { label: 'Citizen of Chess City', rule: 'earned' }
+    'citizen':   { label: 'Citizen of Chess City', rule: 'earned' },
+    'general':   { label: 'Iron General',          rule: 'earned' }
   };
   PJCC.TITLES = TITLES;
   // ⚑ RE-TIERED 2026-08-04 with the avatar shelf — see the note on AVATAR_SHOP.

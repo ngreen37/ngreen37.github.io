@@ -8360,6 +8360,21 @@ const server = http.createServer((req, res) => {
             ok(ruleOff.length === 0,
               '⭐⭐ HIS #8 IN THE GAME  (his 11-11: "Go with option B", then "the sea board pieces only"): Endgame Flats, Shogi Island and Sea-Board fight their own chess as the site rules them — an endgame on half the points with no queen mustered, won by the first pawn to make one; a take into the hand and dropped back on an empty square, by a tap, H or a pad\'s top button; a battle at sea with no pawn mustered, the roll screen saying so; the Sand Mines\' light failing now and then, a picture alone and never with motion reduced; none in the first campaign; each with its own measured odds when two machines meet (probed: a knight dropped, the hand cycled and let go; a pawn queened on the Flats and the ground taken; Sea-Board fought with no pawns; the mines gone dark, and not with motion reduced)',
               ruleOff.length ? 'off: ' + ruleOff.join(' · ') : 'the page, rule for rule, at the table');
+            /* ⭐ HIS #9 (11-16, "Earned keepsakes"): a won war banks its honor on the account, from the page and the town alike */
+            const mlT = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+            const kLine = (/function keepsakeLine\(labels\) \{[\s\S]*?\n\}/.exec(mlT) || [''])[0];
+            const keepOff = offOf({
+              'the town banks it through the site, on the web only': /if not OS\.has_feature\("web"\) or w\.is_empty\(\):/.test(fnGd(cpT, 'bank_war'))
+                && /labels: P\.bankWar\(w\)/.test(fnGd(cpT, 'bank_war')) && /"won": w\.get\("won"\), "mode": w\.get\("mode", ""\), "diff": w\.get\("diff", ""\), "sides": w\.get\("sides", \[\]\)/.test(fnGd(cpT, 'bank_war')),
+              'a war that ends banks, and an old best war on opening': /_keep_text = _keepsake_line\(GameState\.campaign\.bank_war\(_war\)\)/.test(fnGd(ctbT, '_campaign_over'))
+                && /GameState\.campaign\.bank_war\(GameState\.campaign\.best\)/.test(fnGd(ctbT, '_ready'))
+                && /keepsakeLine\(window\.PJCC && PJCC\.bankWar \? PJCC\.bankWar\(war\) : \[\]\)/.test(mlT) && /PJCC\.ready\.then\(function \(\) \{ PJCC\.bankWar\(loadBest\(\)\); \}\)/.test(mlT),
+              'in the page\'s words': ['New keepsake', 'Sign in to claim ', 'Claim ', ' in your Collection.'].every((w) => kLine.indexOf(w) >= 0 && fnGd(ctbT, '_keepsake_line').indexOf(w) >= 0)
+                && /y = _text\("keep", _keep_text, x, y, w, 13\.0, 1\)/.test(ctbT),
+            });
+            ok(keepOff.length === 0,
+              '⭐ HIS #9 IN THE GAME  (his 11-16: "Do number nine and ten"): a won war at Maxwell\'s table banks its honor on the account through the site, as the page does, and names the keepsake it opened in the page\'s words',
+              keepOff.length ? 'off: ' + keepOff.join(' · ') : 'the page and the table bank alike');
           }
         }
 

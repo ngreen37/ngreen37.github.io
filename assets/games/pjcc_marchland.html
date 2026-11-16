@@ -844,6 +844,8 @@
     <p class="sub mx" id="result-mx" hidden></p>
     <!-- ⭐ the war, replayed (11-10): this one, and a note when it is your best and goes in the frame -->
     <p class="sub framed" id="framed" hidden>Framed on the home screen: your best war yet.</p>
+    <!-- ⭐ his #9 (11-16): the keepsake a won war opens in your Collection -->
+    <p class="sub framed" id="keepsake" hidden></p>
     <button class="btn ghost" id="watch" hidden>Watch the war</button>
     <button class="btn ghost" id="share" hidden>Copy result</button>
     <button class="btn" id="cont">Continue</button>
@@ -4277,6 +4279,13 @@ function campaignCheck() {
   return false;
 }
 
+/* ⭐ HIS #9 (11-16): what a won war opened, said under the verdict. labels: PJCC.bankWar()'s, [] says nothing */
+function keepsakeLine(labels) {
+  var signed = !!(window.PJCC && PJCC.currentUser && PJCC.currentUser()), many = labels.length > 1;
+  $('keepsake').textContent = labels.length ? 'New keepsake' + (many ? 's' : '') + ': ' + labels.join(', ') + '. ' +
+    (signed ? 'Claim ' : 'Sign in to claim ') + (many ? 'them' : 'it') + ' in your Collection.' : '';
+  $('keepsake').hidden = !labels.length;
+}
 /* won: true/false = Green holds all / none; null = the Daily ran out of rounds */
 function campaignOver(won) {
   var v = $('verdict'), rs = $('result-say'), held = idsOf('m').length;
@@ -4285,6 +4294,7 @@ function campaignOver(won) {
   var war = warEnd(won), framed = keepBest(war);
   $('watch').hidden = !war;
   $('framed').hidden = !framed;
+  keepsakeLine(window.PJCC && PJCC.bankWar ? PJCC.bankWar(war) : []);
   var last = G.mode === 'solo' && won != null ? lineFor(won ? 'lose' : 'win') : '';
   $('result-mx').textContent = last ? RIVAL.who + ': \u201c' + last + '\u201d' : '';
   $('result-mx').hidden = !last;
@@ -4646,6 +4656,8 @@ document.addEventListener('keydown', function (e) {
 setSound(sndOn);
 newCampaign(chosenLevel);
 paintHome();
+/* a best war won before keepsakes existed banks its honor once the account is known (nothing to say: no war just ended) */
+if (window.PJCC && PJCC.ready && PJCC.bankWar) PJCC.ready.then(function () { PJCC.bankWar(loadBest()); });
 })();
 </script>
 </body>
