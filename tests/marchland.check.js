@@ -1319,6 +1319,48 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     /Maxwell goes for holdings cut off from the rest, Vince rushes, Wes\s+digs in/.test(page));
 }
 
+/* ══ 21. SCENARIOS WITH STARS (his 11-16, #2) ══ set pieces, the same for everyone, a checklist read at the end */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const dealt = camp.SCENARIOS.map((sc) => {
+    camp.useMap(camp.MAIN_MAP);
+    camp.newCampaign('hard', 'scenario', { scen: sc.id, fog: true, cards: true });
+    const G = camp.G;
+    return G.diff === sc.level && G.fog === false && G.cards === false && G.card === null && G.scen === sc.id &&
+      JSON.stringify(G.own) === JSON.stringify(sc.own || camp.START_OWN) && JSON.stringify(G.scenStart) === JSON.stringify(G.own) &&
+      G.scenStart !== G.own && G.scenTook === 0;
+  });
+  check('⭐ four scenarios, each dealt as written: its own map, its own level, no fog and no cards whatever the options say',
+    camp.SCENARIOS.length === 4 && dealt.every(Boolean), camp.SCENARIOS.map((s) => s.nm).join(' · '));
+  const ls = camp.scenOf('last-stand'), bz = camp.scenOf('blitz'), st0 = ls.own.slice();
+  const lost = (o, i, to) => { const x = o.slice(); x[i] = to; return x; };
+  check('…a stand: the keep held is one star, Chess City too is two, losing nothing is three; the keep lost is none',
+    camp.scenStars(ls, st0, 0, st0) === 3 && camp.scenStars(ls, lost(st0, 7, 't'), 0, st0) === 2 &&
+    camp.scenStars(ls, lost(st0, 5, 't'), 0, st0) === 1 && camp.scenStars(ls, lost(st0, 2, 't'), 0, st0) === 0);
+  const won = lost(camp.START_OWN, 3, 'm');
+  check('…a take: held at the end is one, losing none of yours another, taking it fast the third — and never one without the first',
+    camp.scenStars(bz, won, 1, camp.START_OWN) === 3 && camp.scenStars(bz, won, 2, camp.START_OWN) === 2 &&
+    camp.scenStars(bz, lost(won, 7, 't'), 1, camp.START_OWN) === 2 && camp.scenStars(bz, lost(won, 7, 't'), 3, camp.START_OWN) === 1 &&
+    camp.scenStars(bz, camp.START_OWN, 1, camp.START_OWN) === 0 && camp.scenStars(bz, lost(camp.START_OWN, 8, 't'), 0, camp.START_OWN) === 0);
+  /* the run: a take is noted when it falls and does not end there; the last round ends it; a stand ends when the keep falls */
+  camp.useMap(camp.MAIN_MAP);
+  camp.newCampaign('medium', 'scenario', { scen: 'blitz' });
+  camp.G.started = true; camp.G.round = 2; camp.G.own[3] = 'm';
+  const goesOn = camp.scenCheck(false) === false && camp.G.scenTook === 2;
+  camp.G.round = 3; camp.G.own[3] = 't';
+  const stillTook = camp.scenCheck(false) === false && camp.G.scenTook === 2;
+  const ends = camp.scenCheck(true) === true;
+  camp.newCampaign('medium', 'scenario', { scen: 'last-stand' });
+  camp.G.started = true; camp.G.own[2] = 't';
+  const standFalls = camp.scenCheck(false) === true;
+  check('…a take is noted the round it falls and plays on, the last round ends it, and a stand ends the moment its keep falls',
+    goesOn && stillTook && ends && standFalls);
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+  check('…no save, no file on you, no keepsake: a set piece is not a campaign',
+    /if \(!G \|\| !G\.started \|\| G\.mode === 'scenario'\) return;/.test(page) && /G\.mode === 'scenario' \|\| multi\(\) \|\| !G\.log\) return;/.test(page) &&
+    /if \(G\.mode === 'scenario' && G\.round >= scen\(\)\.rounds\) \{ scenCheck\(true\); return; \}/.test(page));
+}
+
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */
 function report(title) {
   console.log('\n=== ' + title + ' ===\n');

@@ -80,7 +80,9 @@ function build() {
     /* 11-11, his #8: places that fight their own chess */
     slice(src, 'var RULES',          '/* ⭐ THE MUSTER ON ITS OWN') +
     slice(src, 'var CLASHES',        'function clashBin') +
-    slice(src, 'var DARK = {',       'function darkOn(');
+    slice(src, 'var DARK = {',       'function darkOn(') +
+    /* 11-16, his #2: the scenarios, a start, a level and a checklist each */
+    slice(src, 'var SCENARIOS = [',  'var STARS_KEY');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -91,7 +93,7 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.8',
+    version: '0.9',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     /* 11-16, his #7: the sea lane, a front across the water (the campaign's map only) */
@@ -169,7 +171,11 @@ function build() {
       return o;
     }, {}),
     /* 11-16, his #5: each general's own way of playing the map, leaning on the level */
-    styles: { of: G.STYLE_OF, ways: G.STYLES }
+    styles: { of: G.STYLE_OF, ways: G.STYLES },
+    /* 11-16, his #2: scenarios with stars (a missing own/ranks/walls is the campaign's own start) */
+    scenarios: G.SCENARIOS.map((s) => Object.assign({ id: s.id, name: s.nm, kind: s.kind, at: s.at, rounds: s.rounds, level: s.level,
+      goal: s.goal, stars: s.stars.slice() }, s.also != null ? { also: s.also } : {}, s.fast != null ? { fast: s.fast } : {},
+      s.own ? { own: s.own.slice(), ranks: s.ranks.slice(), walls: s.walls.slice() } : {}))
   };
   return JSON.stringify(data, null, 2) + '\n';
 }

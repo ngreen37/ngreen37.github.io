@@ -28,7 +28,7 @@ window.__mc = {
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
   dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
-  MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; },
+  MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; }, campaignCheck: campaignCheck,
   get replay() { return replay; }, idsOf: idsOf, loadBest: loadBest, SAND: SAND, hurry: hurry,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
@@ -922,6 +922,42 @@ function serve() {
     const op = await E(() => ({ hot: !!__mc.G.hot, line: document.getElementById('mx-line').textContent,
       want: __mc.MAXWELL_LINES.opening.map((s) => s.replace('{to}', 'Chess City').replace('{from}', __mc.LAND()[__mc.G.hot ? __mc.G.hot.from : 0].nm)) }));
     ok(op.hot && op.want.indexOf(op.line) >= 0, '⭐ Maxwell marches on a holding of yours cut off from the rest, and says his line for an opening  [' + op.line + ']');
+
+    /* ══ 11-16: SCENARIOS WITH STARS (his #2) ══ the list, a Blitz played to its last round, and the stars kept */
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction(() => !!window.__mc);
+    const sc1 = await E(() => {
+      const $ = id => document.getElementById(id), out = {}, rows = () => [...document.querySelectorAll('#scen-list .scen')].map(b => b.dataset.id + ' ' + b.querySelector('.st').textContent);
+      localStorage.removeItem('pjcc.campaign.stars.v1');
+      $('scens').click();
+      out.on = $('screen-scen').classList.contains('on'); out.rows = rows();
+      document.querySelector('#scen-list .scen[data-id="blitz"]').click();
+      const G = __mc.G;
+      out.map = $('screen-map').classList.contains('on') && G.mode === 'scenario' && G.scen === 'blitz' && !G.fog;
+      out.round = $('t-round').textContent; out.say = $('map-say').textContent;
+      G.own[3] = 'm';
+      out.goesOn = __mc.campaignCheck() === false && G.scenTook === 1 && !$('screen-result').classList.contains('on');
+      G.round = 3; G.busy = false; __mc.startYourTurn();
+      out.result = $('screen-result').classList.contains('on'); out.verdict = $('verdict').textContent; out.rs = $('result-say').textContent;
+      out.kept = localStorage.getItem('pjcc.campaign.stars.v1');
+      $('cont').click(); $('scens').click(); out.rows2 = rows();
+      /* a stand lost: no star, and your best is untouched */
+      document.querySelector('#scen-list .scen[data-id="last-stand"]').click();
+      __mc.G.own[2] = 't'; __mc.campaignCheck();
+      out.lost = { verdict: $('verdict').textContent, rs: $('result-say').textContent, kept: localStorage.getItem('pjcc.campaign.stars.v1') };
+      $('cont').click(); $('scens').click();
+      return out;
+    });
+    await page.screenshot({ path: path.join(require('os').tmpdir(), 'campaign-scenarios.png') });
+    ok(sc1.on && sc1.rows.join() === 'last-stand ☆☆☆,blitz ☆☆☆,across ☆☆☆,storm ☆☆☆',
+       '⭐ Scenarios opens a list of four, no stars yet  [' + sc1.rows.join(' · ') + ']');
+    ok(sc1.map && sc1.round === '1 of 3' && /^Blitz: Take Checker Town and hold it to the end of round 3./.test(sc1.say),
+       '…Blitz opens on its own map with its goal, counting its rounds  [' + sc1.round + ' · ' + sc1.say.slice(0, 60) + '…]');
+    ok(sc1.goesOn && sc1.result && sc1.verdict === 'BLITZ  ★★★' && /★ Hold Checker Town · ★ Lose none of yours · ★ Take it in round 1/.test(sc1.rs),
+       '…taken in round 1 and held to the end of round 3, nothing lost: three stars, each named  [' + sc1.verdict + ' · ' + sc1.rs + ']');
+    ok(JSON.parse(sc1.kept || '{}').blitz === 3 && sc1.rows2[1] === 'blitz ★★★', '…kept as your best, and the list shows it');
+    ok(sc1.lost.verdict === 'LAST STAND  ☆☆☆' && /Gauntlet Keep fell./.test(sc1.lost.rs) && JSON.parse(sc1.lost.kept || '{}')['last-stand'] === undefined,
+       '…a stand whose keep falls ends there with no star, and keeps nothing  [' + sc1.lost.rs + ']');
     ok(rep.on && rep.frames >= 2 && rep.first === 'The opening.' && rep.last.step === rep.frames + ' of ' + rep.frames && rep.last.btn === 'Done' && rep.backTo,
        'the war plays back from the opening; Skip goes to its last map and Done to the result  [' + rep.frames + ' frames]');
     ok(rep.frame.shown && /^Your best war · Medium · won in round \d+$/.test(rep.frame.say) && rep.again && rep.home,

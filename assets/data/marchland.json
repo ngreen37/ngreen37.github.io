@@ -2,7 +2,7 @@
   "_generated": "GENERATED FILE — do not hand-edit. Source of truth is assets/games/pjcc_marchland.html; regenerate with `npm run gen:marchland`.",
   "_purpose": "Shared map + balance data. The browser game keeps these inline; a Godot build reads this file so both play the same tuned game.",
   "name": "ChessWild: Campaign",
-  "version": "0.8",
+  "version": "0.9",
   "holdings": [
     {
       "id": 0,
@@ -1463,5 +1463,123 @@
         "guard": 1
       }
     }
-  }
+  },
+  "scenarios": [
+    {
+      "id": "last-stand",
+      "name": "Last Stand",
+      "kind": "hold",
+      "at": 2,
+      "rounds": 6,
+      "level": "medium",
+      "goal": "Hold Gauntlet Keep to the end of round 6.",
+      "stars": [
+        "Hold Gauntlet Keep",
+        "Hold Chess City too",
+        "Lose nothing"
+      ],
+      "also": 5,
+      "own": [
+        "t",
+        "t",
+        "m",
+        "t",
+        "t",
+        "m",
+        "t",
+        "m",
+        "t",
+        "t"
+      ],
+      "ranks": [
+        4,
+        3,
+        5,
+        4,
+        2,
+        3,
+        3,
+        2,
+        3,
+        2
+      ],
+      "walls": [
+        2,
+        0
+      ]
+    },
+    {
+      "id": "blitz",
+      "name": "Blitz",
+      "kind": "take",
+      "at": 3,
+      "rounds": 3,
+      "level": "medium",
+      "goal": "Take Checker Town and hold it to the end of round 3.",
+      "stars": [
+        "Hold Checker Town",
+        "Lose none of yours",
+        "Take it in round 1"
+      ],
+      "fast": 1
+    },
+    {
+      "id": "across",
+      "name": "Across the Water",
+      "kind": "take",
+      "at": 4,
+      "rounds": 4,
+      "level": "medium",
+      "goal": "Take Sea-Board and hold it to the end of round 4.",
+      "stars": [
+        "Hold Sea-Board",
+        "Lose none of yours",
+        "Take it by round 2"
+      ],
+      "fast": 2,
+      "own": [
+        "t",
+        "t",
+        "m",
+        "t",
+        "t",
+        "m",
+        "t",
+        "m",
+        "m",
+        "t"
+      ],
+      "ranks": [
+        3,
+        3,
+        3,
+        4,
+        3,
+        3,
+        3,
+        5,
+        3,
+        3
+      ],
+      "walls": [
+        2,
+        0
+      ]
+    },
+    {
+      "id": "storm",
+      "name": "Storm the Keep",
+      "kind": "take",
+      "at": 0,
+      "rounds": 5,
+      "level": "medium",
+      "goal": "Take Sand Mines, Maxwell's walled keep, and hold it to the end of round 5.",
+      "stars": [
+        "Hold Sand Mines",
+        "Lose none of yours",
+        "Take it by round 3"
+      ],
+      "fast": 3
+    }
+  ]
 }

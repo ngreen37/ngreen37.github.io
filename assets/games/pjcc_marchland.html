@@ -237,6 +237,12 @@
   #orders.ready { border-color: rgba(107,255,184,.6); color: var(--mine); }
   #screen-orders { gap: 6px; }
   .gens { display: flex; flex-direction: column; gap: 6px; max-height: 62vh; overflow-y: auto; }
+  /* ⭐ SCENARIOS (his #2): a set piece a row, its goal and your best stars */
+  .scens { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin: 14px auto 6px; }
+  .scen { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; min-height: 44px; padding: 10px 12px;
+    text-align: left; border: 1px solid #33294f; border-radius: 10px; background: #161127; color: inherit; font: inherit; cursor: pointer; }
+  .scen b { font-size: 15px; } .scen .goal { font-size: 13px; color: var(--ink-2); }
+  .scen .st { color: #ffd66a; letter-spacing: 2px; font-size: 15px; } .scen .st.none { color: var(--ink-3); }
   .gen { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 4px; text-align: left;
     background: rgba(107,255,184,.05); border: 1px solid rgba(107,255,184,.32); border-radius: 12px; color: var(--ink);
     font: 12px 'Trebuchet MS', sans-serif; line-height: 1.35; cursor: pointer; min-height: 44px; }
@@ -658,6 +664,8 @@
       <button class="btn ghost slim" id="four">Four players</button>
     </div>
     <button class="btn ghost slim" id="first">First campaign</button>
+    <!-- ⭐ SCENARIOS (his #2, 11-16): short set pieces, one to three stars, your best kept -->
+    <button class="btn ghost slim" id="scens">Scenarios</button>
     <button class="btn ghost" id="how">How it works</button>
     <!-- ⭐ your best war, framed (11-10): its last map with every march you won on it; tap to watch it again -->
     <button class="frame" id="frame" hidden><span class="mapbox mini" id="framebox"><svg viewBox="0 0 100 112" preserveAspectRatio="none"></svg></span><span id="frame-say"></span></button>
@@ -731,6 +739,8 @@
       is the same.<br>
       <b>The sea lane:</b> Sea-Board and Shogi Island face each other across the water. Either can strike the other,
       <b>once a round</b>. Troops never move by sea.<br>
+      <b>Scenarios:</b> short set pieces, the same for everyone: hold a holding for so many rounds, or take one in time.
+      One to three stars; your best is kept.<br>
       <b>The war, replayed:</b> watch any campaign back when it ends. Your best one is framed below.
     </p>
     <button class="btn ghost" id="back">Back</button>
@@ -783,6 +793,14 @@
     <p class="sub" id="orders-say">One order a round. Each general gives one a campaign.</p>
     <div class="gens" id="gens"></div>
     <button class="btn ghost" id="orders-back">Back to the map</button>
+  </section>
+
+  <!-- ══ SCENARIOS (his #2) ══ -->
+  <section class="screen" id="screen-scen">
+    <h2>Scenarios</h2>
+    <p class="sub">Short set pieces against Maxwell, the same for everyone. One to three stars; your best is kept.</p>
+    <div class="scens" id="scen-list"></div>
+    <button class="btn ghost" id="scen-back">Back</button>
   </section>
 
   <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
@@ -1141,21 +1159,24 @@ if (SAND) $('maprow').appendChild(SAND.button('btn ghost slim mapview'));
 function newCampaign(diff, mode, opts) {
   mode = mode || 'solo'; opts = opts || {};
   var day = mode === 'daily' ? dayKey() : null, war = WAR_START[mode];
-  var start = mode === 'first' ? { own: FIRST_START.own.slice(), ranks: FIRST_START.ranks.slice(), walls: FIRST_START.walls.slice() }
+  var sc = mode === 'scenario' ? scenOf(opts.scen) : null;
+  var start = sc ? { own: (sc.own || START_OWN).slice(), ranks: (sc.ranks || START_RANKS).slice(), walls: (sc.walls || START_WALLS).slice() }
+    : mode === 'first' ? { own: FIRST_START.own.slice(), ranks: FIRST_START.ranks.slice(), walls: FIRST_START.walls.slice() }
     : war ? { own: war.own.slice(), ranks: war.ranks.slice(), walls: war.walls.slice() }
     : day ? dailyStart(day) : { own: START_OWN.slice(), ranks: START_RANKS.slice() };
   var sides = sidesFor(mode), seen = {};
   sides.forEach(function (s) { seen[s] = []; });
   G = { own: start.own, ranks: start.ranks, round: 1, sel: -1, busy: false,
-        diff: diff || 'medium', mode: mode, day: day, side: 'm', sides: sides, acting: '', fallen: [],
-        fog: opts.fog !== false, cards: !!opts.cards, card: null, truce: -1, lastCard: null,
+        diff: sc ? sc.level : diff || 'medium', mode: mode, day: day, side: 'm', sides: sides, acting: '', fallen: [],
+        fog: !sc && opts.fog !== false, cards: !sc && !!opts.cards, card: null, truce: -1, lastCard: null,
         walls: start.walls || START_WALLS.slice(), down: [],
         seen: seen, scoutArm: -1,
         phase: 'deploy', toPlace: 0, atks: ATTACK_CAP,
         fortFrom: -1, fortTo: -1, fortMoved: 0, fortDone: false,
         flash: -1, hot: null, q: [], log: freshLog(), habits: null, dogId: '', dog: -1, sniffed: false,
         lesson: '', teachAt: [], taught: {},
-        gens: [], used: [], ordered: false, orderArm: '', hold: null, bar: null, sight: false, roads: false, sailed: false };
+        gens: [], used: [], ordered: false, orderArm: '', hold: null, bar: null, sight: false, roads: false, sailed: false,
+        scen: sc ? sc.id : '', scenStart: sc ? start.own.slice() : null, scenTook: 0 };
   drawCard();
   G.atks = ATTACK_CAP + cardAtks();
   G.toPlace = deployFor(G.side);
@@ -1263,6 +1284,81 @@ function fortReach(from, to) {
     }
   }
   return false;
+}
+
+/* ── SCENARIOS (his 11-16, #2 "Scenarios with stars") ── short set pieces on the campaign's map, at a set level, rated one
+   to three stars, your best kept (and synced: PJCC.bankStars). A CHECKLIST read off the map when the last round ends, the
+   goal first: 'hold' keeps `at`, a star for keeping `also` and one for losing nothing; 'take' holds `at` (taken), a star
+   for losing none of yours and one for having taken it by round `fast`.
+   ⚠ A TAKE IS HELD TO THE END, NOT WON ON THE SPOT (measured, a machine heading for the target): a target that falls, falls
+   in the first round it can, before Maxwell has moved, so ending there handed out all three stars or none (Blitz 66% ★★★).
+   ⚠ NO FOG, NO CARDS, NO DOG, NO ORDERS: a set piece is the same piece for everyone. No save either: restart it. */
+var SCENARIOS = [
+  { id: 'last-stand', nm: 'Last Stand', kind: 'hold', at: 2, also: 5, rounds: 6, level: 'medium',
+    own: ['t','t','m','t','t','m','t','m','t','t'], ranks: [4, 3, 5, 4, 2, 3, 3, 2, 3, 2], walls: [2, 0],
+    goal: 'Hold Gauntlet Keep to the end of round 6.', stars: ['Hold Gauntlet Keep', 'Hold Chess City too', 'Lose nothing'] },
+  { id: 'blitz', nm: 'Blitz', kind: 'take', at: 3, rounds: 3, fast: 1, level: 'medium',
+    goal: 'Take Checker Town and hold it to the end of round 3.', stars: ['Hold Checker Town', 'Lose none of yours', 'Take it in round 1'] },
+  { id: 'across', nm: 'Across the Water', kind: 'take', at: 4, rounds: 4, fast: 2, level: 'medium',
+    own: ['t','t','m','t','t','m','t','m','m','t'], ranks: [3, 3, 3, 4, 3, 3, 3, 5, 3, 3], walls: [2, 0],
+    goal: 'Take Sea-Board and hold it to the end of round 4.', stars: ['Hold Sea-Board', 'Lose none of yours', 'Take it by round 2'] },
+  { id: 'storm', nm: 'Storm the Keep', kind: 'take', at: 0, rounds: 5, fast: 3, level: 'medium',
+    goal: 'Take Sand Mines, Maxwell\'s walled keep, and hold it to the end of round 5.', stars: ['Hold Sand Mines', 'Lose none of yours', 'Take it by round 3'] }
+];
+var STARS_KEY = 'pjcc.campaign.stars.v1';
+function scenOf(id) { for (var i = 0; i < SCENARIOS.length; i++) if (SCENARIOS[i].id === id) return SCENARIOS[i]; return null; }
+function scen() { return G && G.mode === 'scenario' ? scenOf(G.scen) : null; }
+/* which of a scenario's three the map at its end meets, the goal first ([] the goal is not met). took: the round `at` was
+   first taken (0 never). ⚠ A STAR WITHOUT THE GOAL IS NONE: losing nothing while failing is not a star */
+function scenMet(sc, own, took, start) {
+  if (own[sc.at] !== 'm') return [];
+  var kept = start.every(function (o, i) { return o !== 'm' || own[i] === 'm'; });
+  return [true, sc.kind === 'take' ? kept : own[sc.also] === 'm', sc.kind === 'take' ? took > 0 && took <= sc.fast : kept];
+}
+function scenStars(sc, own, took, start) {
+  return scenMet(sc, own, took, start).filter(Boolean).length;
+}
+/* is the scenario over: out of rounds (ended), your keep lost, or nobody left on one side. Ends it when it is, and notes the
+   round a take's target first fell */
+function scenCheck(ended) {
+  var sc = scen();
+  if (sc.kind === 'take' && G.own[sc.at] === 'm' && !G.scenTook) G.scenTook = G.round;
+  if (!alive('m') || (sc.kind === 'hold' && G.own[sc.at] !== 'm')) { campaignOver(false); return true; }
+  if (ended || !alive('t')) { campaignOver(G.own[sc.at] === 'm'); return true; }
+  return false;
+}
+function starsText(n) { return new Array(n + 1).join('\u2605') + new Array(4 - n).join('\u2606'); }
+function loadStars() {
+  if (window.PJCC && PJCC.scenarioStars) return PJCC.scenarioStars();
+  try { var o = JSON.parse(localStorage.getItem(STARS_KEY)); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; }
+}
+/* your best for `id`, raised to `n` if `n` is better */
+function bankScenario(id, n) {
+  if (window.PJCC && PJCC.bankStars) PJCC.bankStars(id, n);
+  else { var o = loadStars(); if (n > (o[id] || 0)) { o[id] = n; try { localStorage.setItem(STARS_KEY, JSON.stringify(o)); } catch (e) {} } }
+  return loadStars()[id] || 0;
+}
+function paintScens() {
+  var best = loadStars(), box = $('scen-list');
+  box.innerHTML = '';
+  SCENARIOS.forEach(function (sc) {
+    var n = Math.min(3, best[sc.id] || 0), b = document.createElement('button');
+    b.type = 'button'; b.className = 'scen'; b.setAttribute('data-id', sc.id);
+    b.setAttribute('aria-label', sc.nm + '. ' + sc.goal + ' Best: ' + n + ' of 3 stars.');
+    b.innerHTML = '<b>' + sc.nm + '</b><span class="goal">' + sc.goal + '</span><span class="st' + (n ? '' : ' none') + '">' + starsText(n) + '</span>';
+    b.addEventListener('click', function () { startScenario(sc.id); });
+    box.appendChild(b);
+  });
+}
+function startScenario(id) {
+  initAudio();
+  useMap(MAIN_MAP);
+  newCampaign(scenOf(id).level, 'scenario', { scen: id });
+  G.started = true;
+  warBegin();
+  setPhase('deploy');
+  say(deployLine());
+  drawMap(); show('screen-map');
 }
 
 /* ── THE DAILY ── same start, and the same attack rolls the same dice, for everyone */
@@ -1972,7 +2068,8 @@ function keptShare(start, end, color, hand) {
 
 /* ── SCREENS ───────────────────────────────────────────────────────────────────── */
 function show(id) {
-  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass','screen-orders','screen-war']
+  /* ⚠ A SCREEN NOT ON THIS LIST NEVER SHOWS: show() only switches these (the Scenarios screen was missing, 11-16) */
+  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass','screen-orders','screen-war','screen-scen']
     .forEach(function (s) { $(s).classList.toggle('on', s === id); });
 }
 function say(t) { $('map-say').innerHTML = t; }
@@ -2132,7 +2229,7 @@ function drawMap() {
   var m = 0, t = 0;
   for (var i = 0; i < LAND.length; i++) { if (G.own[i] === 'm') m++; else if (G.own[i] === 't' || !multi()) t++; }
   /* a war of three or four counts toward its line: "4/10" */
-  $('t-mine').textContent = multi() ? m + '/' + WAR_WIN[G.mode] : m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
+  $('t-mine').textContent = multi() ? m + '/' + WAR_WIN[G.mode] : m; $('t-theirs').textContent = t; $('t-round').textContent = G.round + (G.mode === 'scenario' ? ' of ' + scen().rounds : '');
   /* a war of three or four counts every general's holdings, a fallen one struck through */
   ['u', 'v'].forEach(function (s) {
     var on = multi() && G.sides.indexOf(s) >= 0;
@@ -2281,6 +2378,7 @@ function deployLine() {
      the same reason the chain got a counter in the tally. */
   var w = G.walls.filter(function (id) { return G.own[id] === G.side; });
   return (G.mode === 'two' ? '<b>' + sideName(G.side) + '</b> · ' : '') +
+    (G.mode === 'scenario' && G.round === 1 ? '<b>' + scen().nm + ':</b> ' + scen().goal + ' ' : '') +
     'Deployment — place <b>' + G.toPlace + '</b> troop' + (G.toPlace === 1 ? '' : 's') + '.' +
     (w.length ? ' <b>' + w.length + '</b> from ' + w.map(function (id) { return LAND[id].nm; }).join(' and ') + '.' : '');
 }
@@ -3509,7 +3607,7 @@ function noteTurn() {
 }
 /* ⚠ A CAMPAIGN GOES INTO HIS FILE ONCE, WHEN IT ENDS */
 function fileCampaign(won) {
-  if (!G || G.mode === 'two' || G.mode === 'first' || multi() || !G.log) return;
+  if (!G || G.mode === 'two' || G.mode === 'first' || G.mode === 'scenario' || multi() || !G.log) return;
   var f = loadFile() || { v: 1, games: 0, won: 0, lost: 0, open: {}, keep: 0, thin: {}, turns: 0, forts: 0 };
   f.games++;
   if (won === true) f.won++; else if (won === false) f.lost++;
@@ -4327,6 +4425,7 @@ function startYourTurn() {
   if (campaignCheck()) return;
   $('mx-speech').hidden = true;
   if (G.mode === 'daily' && G.round >= DAILY_ROUNDS) { campaignOver(null); return; }
+  if (G.mode === 'scenario' && G.round >= scen().rounds) { scenCheck(true); return; }
   G.round++;
   drawCard();
   resetTurn();
@@ -4381,6 +4480,7 @@ function overFor() {
   return '';
 }
 function campaignCheck() {
+  if (G.mode === 'scenario') return scenCheck(false);
   var o = overFor();
   if (o) { campaignOver(o === 'm'); return true; }
   return false;
@@ -4422,6 +4522,13 @@ function campaignOver(won) {
       (today ? ' Best today: ' + (better ? held : today.best.held) + ' of ' + LAND.length + '.' : '');
     $('share').dataset.text = 'ChessWild: Campaign · Daily ' + dayLabel(G.day) + ' · ' + variantLabel() + ' · ' + held + '/' + LAND.length +
       ' held · ' + troops + ' troops' + (today ? ' · replay' : '');
+  } else if (G.mode === 'scenario') {
+    var sc = scen(), met = won ? scenMet(sc, G.own, G.scenTook || 0, G.scenStart) : [], n = met.filter(Boolean).length;
+    var best = bankScenario(sc.id, n);
+    v.textContent = sc.nm.toUpperCase() + '  ' + starsText(n);
+    v.className = 'verdict ' + (n ? 'win' : 'lose');
+    rs.textContent = (n ? sc.stars.map(function (t, i) { return (met[i] ? '★ ' : '☆ ') + t; }).join(' · ') + '.'
+      : sc.kind === 'take' && !G.scenTook ? LAND[sc.at].nm + ' was not taken.' : LAND[sc.at].nm + ' fell.') + ' Your best: ' + starsText(best) + '.';
   } else if (G.mode === 'first') {
     if (won) { try { localStorage.setItem(FIRST_DONE, '1'); } catch (e) {} }
     v.textContent = won ? 'THE FIRST CAMPAIGN IS YOURS' : 'THE FIRST CAMPAIGN IS LOST';
@@ -4560,6 +4667,8 @@ $('share').addEventListener('click', function () {
   catch (e) { done(fallback()); }
 });
 $('how').addEventListener('click', function () { show('screen-how'); });
+$('scens').addEventListener('click', function () { paintScens(); show('screen-scen'); });
+$('scen-back').addEventListener('click', function () { show('screen-home'); });
 $('back').addEventListener('click', function () { show('screen-home'); });
 $('endturn').addEventListener('click', function () {
   if (G.phase === 'theirs') { hurry(); return; }
@@ -4633,7 +4742,7 @@ function saveKey(mode) {
     : mode === 'first' ? 'pjcc.campaign.save.first.v1' : WAR_START[mode] ? 'pjcc.campaign.save.' + mode + '.v1' : SAVE_KEY;
 }
 function saveCampaign() {
-  if (!G || !G.started) return;
+  if (!G || !G.started || G.mode === 'scenario') return;
   try {
     localStorage.setItem(saveKey(G.mode), JSON.stringify({ v:1, mode:G.mode, day:G.day, side:G.side, seen:G.seen,
       sides:G.sides, acting:G.acting || '', fallen:G.fallen || [],

@@ -8353,7 +8353,7 @@ const server = http.createServer((req, res) => {
               'played': ['campdrops', 'campflats', 'campsea', 'campdark', 'campdarkcalm'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
                 && /battleis:rule:dark;battleis:darks:0;battleuntil:darks:1:900/.test(bcCase('campdark'))
                 && /gs:motion_on=false;[^"]*battleis:rule:dark;[^"]*wait:500;battleis:darks:0/.test(bcCase('campdarkcalm'))
-                && /camphas:pos:AT SEA;[^"]*battleis:rule:pieces;battleis:pawns:0/.test(bcCase('campsea'))
+                && /camphas:poslow:at sea;[^"]*battleis:rule:pieces;battleis:pawns:0/.test(bcCase('campsea'))
                 && /battlehand:w:n:1;battlehand:w:p:2;handpress:n;battleis:dsel:n;key:h:6;battleis:dsel:p;[^"]*tablepress:d5;battleis:sq:d5:N/.test(bcCase('campdrops'))
                 && /battleis:rule:endgame;battleis:eg:true;battleis:queens:0;[^"]*tablemove:a7a8;wait:20;tableis:result:won-queen/.test(bcCase('campflats')),
             });
@@ -8427,6 +8427,24 @@ const server = http.createServer((req, res) => {
             ok(styleOff.length === 0,
               '⭐ HIS #5 IN THE GAME  (his 11-16: "the generals with personality"): Maxwell goes for what is cut off, Vince rushes, Wes digs in, plan for plan as the page plays them, and each says so',
               styleOff.length ? 'off: ' + styleOff.join(' · ') : 'the page\'s generals, at the table');
+            /* ⭐ HIS #2 (11-16, "Scenarios with stars"): the page's set pieces at Maxwell's table. The corpus holds each dealt
+               start and every checklist to the page (scen rows); this holds the run, the stars kept and their glyphs. */
+            const scenOff = offOf({
+              'the rules, the page\'s': /^const SCENARIOS := \[\{"id":"last-stand"/m.test(rd('campaign_book.gd')) && coRows.indexOf('rows.scen.push') >= 0
+                && /if str\(sc\["kind"\]\) == "take" and str\(g\.own\[at\]\) == "m" and int\(g\.get\("scen_took", 0\)\) == 0:/.test(fnGd(crT, 'scen_over'))
+                && /"fog": sc\.is_empty\(\) and bool\(opts\.get\("fog", true\)\)/.test(fnGd(crT, 'new_campaign')),
+              'the table runs one to its last round, and keeps your best': /if mode == "scenario":\s*\n\t+var o: Variant = R\.scen_over\(false\)/.test(fnGd(ctbT, '_check_over'))
+                && /if mode == "scenario" and int\(R\.g\.round\) >= int\(CampaignRules\.scen_of\(str\(R\.g\.scen\)\)\["rounds"\]\):/.test(fnGd(ctbT, '_start_your_turn'))
+                && /var best := GameState\.campaign\.bank_stars\(str\(sc\["id"\]\), n\)/.test(fnGd(ctbT, '_campaign_over'))
+                && /or mode == "scenario":/.test(fnGd(ctbT, '_save')) && /"scenario"\]/.test(fnGd(cpT, 'file_campaign'))
+                && /P\.bankStars\(id, n\)/.test(fnGd(cpT, 'bank_stars')) && /"stars": stars/.test(fnGd(cpT, 'to_save')),
+              'its stars are drawn by a font that has them': /return Speech\.mixed_font\(\)/.test(fnGd(ctbT, '_star_font'))
+                && /\(_btns\["sc%d" % i\] as Button\)\.add_theme_font_override\("font", _star_font\(\)\)/.test(fnGd(ctbT, '_scen_layout')),
+              'played': /^[^#\n]*\bcampscen\b/m.test(suiteT) && /camppress:scens;campis:screen:scen;[^"]*campset:own:3:m;campcheck;[^"]*campis:scen_took:1;campset:round:3;campturn;campis:screen:result;[^"]*campis:stars:blitz:3/.test(bcCase('campscen')),
+            });
+            ok(scenOff.length === 0,
+              '⭐ HIS #2 IN THE GAME  (his 11-16: "Do number 2 as well"): the page\'s four scenarios at Maxwell\'s table, dealt as the page deals them, run to their last round, starred by the page\'s checklist and kept',
+              scenOff.length ? 'off: ' + scenOff.join(' · ') : 'the page\'s set pieces, at the table');
           }
         }
 

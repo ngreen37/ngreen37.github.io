@@ -35,7 +35,9 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   /* the sea lane (11-16, his #7) */
   'lanesOf', 'lane', 'fronts', 'strikeOf', 'laneCurve', 'srcScore',
   /* the generals' own ways (11-16, his #5) */
-  'STYLES', 'styleOf', 'threatOf', 'hasLine', 'cutOff'];
+  'STYLES', 'styleOf', 'threatOf', 'hasLine', 'cutOff',
+  /* scenarios with stars (11-16, his #2) */
+  'SCENARIOS', 'scenOf', 'scen', 'scenStars', 'scenMet', 'scenCheck', 'starsText', 'loadStars', 'bankScenario'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');

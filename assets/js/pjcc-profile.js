@@ -1159,6 +1159,9 @@
         /* the honor a war won on another device banked: raised here so a lesser win on this one says nothing new */
         var cw = (rows || []).find(function (r) { return r.game === WAR_SLUG; });
         if (cw) setLocalBest(WAR_SLUG, +cw.best_score || 0);
+        /* scenario stars earned on another device */
+        var cs = (rows || []).find(function (r) { return r.game === STARS_SLUG; });
+        if (cs && cs.data && cs.data.stars) scenStarsMerge(cs.data.stars);
         if (bk && bk.data && bk.data.book) trainerBookMerge(bk.data.book);
         var tw = (rows || []).find(function (r) { return r.game === 'checker-town'; });
         for (var ts = 1; ts <= TOWN_SAVES; ts++) {
@@ -1674,6 +1677,36 @@
     PJCC.saveScore(WAR_SLUG, h, {});
     for (var i = had + 1; i <= h; i++) out.push(earnedEntry(WAR_KEEPS[i][0], WAR_KEEPS[i][1]).label);
     return out;
+  };
+
+  /* ⭐ THE CAMPAIGN'S SCENARIO STARS (his 11-16, #2 "Scenarios with stars"): your best, 0–3, by scenario id. EARNED, SO IT
+     SYNCS ([[everything-earned-syncs]]): MAX per scenario, never a rewind, mirrored to game_stats `campaign-stars` (its
+     data.stars; best_score the total) and merged back by the myStats pull. The page and the town (web) bank through here. */
+  var STARS_KEY = 'pjcc.campaign.stars.v1', STARS_SLUG = 'campaign-stars';
+  function scenStars() {
+    try { var o = JSON.parse(localStorage.getItem(STARS_KEY)); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; }
+    catch (e) { return {}; }
+  }
+  /* raises each id to the better of the two; true when something rose */
+  function scenStarsMerge(st) {
+    var cur = scenStars(), up = false;
+    for (var k in st) {
+      if (!st.hasOwnProperty(k)) continue;
+      var n = Math.max(0, Math.min(3, parseInt(st[k], 10) || 0));
+      if (n > (cur[k] || 0)) { cur[k] = n; up = true; }
+    }
+    if (up) { try { localStorage.setItem(STARS_KEY, JSON.stringify(cur)); } catch (e) {} }
+    return up;
+  }
+  PJCC.scenarioStars = scenStars;
+  /* a finished scenario's stars: true when it beat your best (and the account was told) */
+  PJCC.bankStars = function (id, n) {
+    var one = {}; one[id] = n;
+    if (!scenStarsMerge(one)) return false;
+    var all = scenStars(), total = 0;
+    for (var k in all) if (all.hasOwnProperty(k)) total += all[k];
+    PJCC.saveScore(STARS_SLUG, total, { data: { stars: all } });
+    return true;
   };
 
   /* ⭐ THE LAST WAR (his 11-16, #10 "The town remembers your wars"): the page and the town (web) note each campaign or war

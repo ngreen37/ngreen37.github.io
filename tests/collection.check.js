@@ -178,6 +178,21 @@ check('Legendary is the top band', P.BANDS[P.BANDS.length - 1].key === 'legendar
   });
 }
 
+/* ── 6c. ⭐ THE SCENARIO STARS (his 11-16, #2): your best per scenario, never walked back, and the account told once ── */
+{
+  const store = {}, b = boot(store), real = b.saveScore;
+  let writes = 0;
+  b.saveScore = function () { writes++; return real.apply(this, arguments); };
+  const first = b.bankStars('blitz', 2), worse = b.bankStars('blitz', 1), more = b.bankStars('blitz', 3), other = b.bankStars('storm', 1);
+  check('a scenario\'s best only rises, and only a rise is sent to the account',
+    first && !worse && more && other && writes === 3 && JSON.stringify(b.scenarioStars()) === '{"blitz":3,"storm":1}',
+    JSON.stringify(b.scenarioStars()) + ' · ' + writes + ' writes');
+  check('…and stars kept on this device are the ones the page reads', JSON.parse(store['pjcc.campaign.stars.v1']).blitz === 3);
+  const junk = boot({ 'pjcc.campaign.stars.v1': '[1,2]' });
+  check('…a broken record reads as no stars, and a number past three is three',
+    JSON.stringify(junk.scenarioStars()) === '{}' && junk.bankStars('blitz', 9) && junk.scenarioStars().blitz === 3);
+}
+
 /* ── 7. the claim refuses everything it should ────────────────────────────────────── */
 {
   const g = boot();
