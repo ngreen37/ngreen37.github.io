@@ -2,6 +2,7 @@
  * sim-war.js — whole wars of three and four, every seat played by the machine.
  *   npm run sim:war
  *   env: N=400 (wars a mode) MODES=three,four LEVEL=medium CARDS=1 MAX_ROUNDS=80 WORKERS=6 WIN3= WIN4= (the line, 99 none)
+ *        STYLES=1 (his #5, 11-16: 0 plays every general plain)
  *
  * His pick #10 (11-10). sim:campaign measures a campaign of two with every battle played out; a war of three or four
  * is the same rules round more seats, and every battle here is decided the way two machines' battles are in the game
@@ -26,6 +27,7 @@ function worker(mode, count) {
   if (process.env.WIN3) win.three = +process.env.WIN3;
   if (process.env.WIN4) win.four = +process.env.WIN4;
   camp.setWarWin(win);
+  if (env('STYLES', '1') === '0') camp.setStyleOf({});
   const need = win[mode];
   const held = (G, s) => G.own.filter((o) => o === s).length;
   for (let c = 0; c < count; c++) {
@@ -96,7 +98,7 @@ if (process.env.SIM_WORKER) {
 } else {
   (async () => {
     console.log(`=== CHESSWILD: CAMPAIGN — WARS OF THREE AND FOUR, MACHINE AGAINST MACHINE ===`);
-    console.log(`  ${LEVEL} · cards ${CARDS ? 'on' : 'off'} · every battle by clash() · ${N} wars a mode`);
+    console.log(`  ${LEVEL} · cards ${CARDS ? 'on' : 'off'} · styles ${env('STYLES', '1') === '0' ? 'off' : 'on'} · every battle by clash() · ${N} wars a mode`);
     for (const mode of MODES) {
       const t0 = Date.now(), rs = await run(mode), sides = mode === 'three' ? ['m', 't', 'u'] : ['m', 't', 'u', 'v'];
       const done = rs.filter((r) => r.winner), rounds = done.map((r) => r.rounds);

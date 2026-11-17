@@ -91,7 +91,7 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.7',
+    version: '0.8',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     /* 11-16, his #7: the sea lane, a front across the water (the campaign's map only) */
@@ -167,7 +167,9 @@ function build() {
                paceMs: L.pace, note: L.note, minEdge: L.minEdge, maxAttacks: L.maxAtk,
                smart: L.smart, chainAware: L.chainAware };
       return o;
-    }, {})
+    }, {}),
+    /* 11-16, his #5: each general's own way of playing the map, leaning on the level */
+    styles: { of: G.STYLE_OF, ways: G.STYLES }
   };
   return JSON.stringify(data, null, 2) + '\n';
 }

@@ -8413,6 +8413,20 @@ const server = http.createServer((req, res) => {
             ok(seaOff.length === 0,
               '⭐ HIS #7 IN THE GAME  (his 11-16: "Then work on seven"): Sea-Board and Shogi Island strike each other across the water, once a round, as the page plays it, on the flat map and the sand',
               seaOff.length ? 'off: ' + seaOff.join(' · ') : 'the page, rule for rule, at the table and on the sand');
+            /* ⭐ HIS #5 (11-16, "the generals with personality"): each general plays the map his own way and says so. The corpus
+               holds every plan to the page (war_plan and rival rows, dug included); this holds the table's words to it. */
+            const styleOff = offOf({
+              'the plan, the page\'s': /^const STYLES := \{"openings":/m.test(rd('campaign_book.gd')) && /^const STYLE_OF := /m.test(rd('campaign_book.gd'))
+                && /var opening: bool = opens > 0 and cut_off\(to\)/.test(fnGd(crT, 'rival_plan')) && /elif i < guard:/.test(fnGd(crT, 'rival_plan'))
+                && /var base := int\(L\["maxAttacks"\]\) if plain else maxi\(1, int\(L\["maxAttacks"\]\) \+ int\(St\.cap\)\)/.test(fnGd(crT, 'rival_plan'))
+                && /plan\["dug"\] = true/.test(fnGd(crT, 'rival_plan')) && /got\["dug"\] = plan\.dug/.test(fs.readFileSync(path.join(GD, 'tests/campaign_rules_test.gd'), 'utf8')),
+              'the table says it where his way shows': /"k": "dig" if bool\(plan\.get\("dug", false\)\) and CampaignRules\.has_line\("dig", gw\) else "turn"/.test(fnGd(ctbT, '_their_turn'))
+                && /"how": str\(a\.get\("how", ""\)\)/.test(fnGd(ctbT, '_their_turn'))
+                && /how if how != "" and CampaignRules\.has_line\(how, /.test(fnGd(ctbT, '_pump')),
+            });
+            ok(styleOff.length === 0,
+              '⭐ HIS #5 IN THE GAME  (his 11-16: "the generals with personality"): Maxwell goes for what is cut off, Vince rushes, Wes digs in, plan for plan as the page plays them, and each says so',
+              styleOff.length ? 'off: ' + styleOff.join(' · ') : 'the page\'s generals, at the table');
           }
         }
 

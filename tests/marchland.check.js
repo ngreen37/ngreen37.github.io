@@ -200,7 +200,9 @@ check('two neighbors of your own is a chain', G.CHAIN_MIN === 2);
 check('the attack budget is three', G.ATTACK_CAP === 3);
 check('⚠ the machine cannot out-attack the player',
       Object.keys(G.LEVELS).every(k => Math.min(G.LEVELS[k].maxAtk, G.ATTACK_CAP) <= G.ATTACK_CAP) &&
-      /Math\.min\(L\.maxAtk, ATTACK_CAP\)/.test(src),
+      /* his #5: a general's style moves the level's count (Wes one fewer) inside the same clamp */
+      /Math\.min\(plain \? L\.maxAtk : Math\.max\(1, L\.maxAtk \+ St\.cap\), ATTACK_CAP\)/.test(src) &&
+      Object.keys(G.STYLES).every((k) => G.STYLES[k].cap <= 0),
       'Hard already plays 3; the clamp is what keeps that true after the next edit');
 check('…and the budget is spent when an attack is COMMITTED, not when it is won',
       /G\.atks--;\s*\n\s*beginBattle\(G\.sel, id, true\)/.test(src),
@@ -769,7 +771,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const LINES = camp.MAXWELL_LINES;
   const TOKENS = { record: ['won', 'lost'], habit_open: ['from'], habit_thin: ['at'], declare: ['from', 'to'],
     took: ['to'], lost: ['to'], held: ['to'], repelled: ['to'], breach_his: ['to'], breach_yours: ['to'],
-    war: ['holdings', 'generals'] };
+    war: ['holdings', 'generals'], opening: ['from', 'to'] };
   /* ⚠ THE WORDS ARE JOINED HERE, NOT WRITTEN: the house spelling gate reads every source file, this one included */
   const UK = new RegExp('\\b(' + ['colo.ur', 'favo.ur', 'hono.ur', 'behavio.ur', 'reali.s', 'organi.s', 'cent.re', 'defen.ce',
     'offen.ce', 'whil.st'].map((w) => w.replace('.', '')).join('|') + ')', 'i');
@@ -1255,6 +1257,66 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
   check('…the save carries the spent crossing, and a turn opens the water again',
     /sailed:!!G\.sailed/.test(page) && /sailed:!!o\.sailed/.test(page) && /G\.sailed = false;/.test(slice('function resetTurn(', 'function passTurn(')));
+}
+
+/* ══ 20. THE GENERALS PLAY THEIR OWN WAY (his 11-16, #5) ══ on top of the level, and they say so */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  check('⭐ Maxwell takes openings, Vince rushes, Wes digs in; Green plays plain',
+    camp.styleOf('t') === 'openings' && camp.styleOf('u') === 'rush' && camp.styleOf('v') === 'dig' && camp.styleOf('m') === '');
+  camp.useMap(camp.mapFor('four'));
+  const stats = { t: { n: 0, atk: 0, how: {} }, u: { n: 0, atk: 0, how: {} }, v: { n: 0, atk: 0, how: {}, dug: 0 } };
+  let stackOk = true, guardOk = true, edgeOk = true, capOk = true;
+  for (let i = 0; i < 600; i++) {
+    camp.newCampaign('medium', 'four', { fog: false, cards: false });
+    const G = camp.G;
+    G.ranks = G.ranks.map(() => 1 + Math.floor(Math.random() * 7));
+    ['t', 'u', 'v'].forEach((side) => {
+      const rk = G.ranks.slice(), p = camp.rivalPlan(side), S = stats[side];
+      S.n++; S.atk += p.attacks.length; if (p.dug) S.dug++;
+      p.attacks.forEach((a) => { S.how[a.how || 'plain'] = (S.how[a.how || 'plain'] || 0) + 1; });
+      const front = camp.idsOf(side).filter((id) => camp.fronts(id).some((j) => G.own[j] !== side));
+      if (!front.length || p.deploy.length < 2) return;
+      if (side === 'u' && p.deploy[0] !== p.deploy[1]) stackOk = false;     // his first two go where he attacks from
+      if (side === 'v') {                                                  // his first goes where he is most threatened
+        const worst = Math.max(...front.map((id) => camp.threatOf(id, rk, side)));
+        if (camp.threatOf(p.deploy[0], rk, side) !== worst) guardOk = false;
+        if (p.attacks.length > 1) capOk = false;                           // Medium's two, less one
+        if (p.attacks.some((a) => a.how === 'rush')) edgeOk = false;
+      }
+      if (side === 't' && p.attacks.some((a) => a.how === 'rush')) edgeOk = false;
+    });
+  }
+  const T = stats.t, U = stats.u, V = stats.v;
+  /* the same positions, Maxwell styled and plain: the openings he takes are his, not the level's */
+  camp.useMap(camp.MAIN_MAP);
+  let styled = 0, plainly = 0, tagged = 0;
+  for (let i = 0; i < 1200; i++) {
+    camp.newCampaign('medium', 'solo', { fog: false, cards: false });
+    const G = camp.G;
+    G.ranks = G.ranks.map(() => 1 + Math.floor(Math.random() * 5));
+    for (let k = 0; k < 10; k++) if (Math.random() < 0.3) G.own[k] = G.own[k] === 'm' ? 't' : 'm';
+    const st = JSON.stringify({ own: G.own, ranks: G.ranks }), ones = (p) => p.attacks.filter((a) => camp.cutOff(a.to)).length;
+    const sp = camp.rivalPlan('t');
+    styled += ones(sp); tagged += sp.attacks.filter((a) => a.how === 'opening').length;
+    Object.assign(G, JSON.parse(st)); camp.setStyleOf({});
+    plainly += ones(camp.rivalPlan('t'));
+    camp.setStyleOf({ Maxwell: 'openings', Vince: 'rush', Wes: 'dig' });
+  }
+  check('…Maxwell goes for a holding cut off from its own side far more than the level alone would, and says so (opening)',
+    tagged > 100 && styled > plainly * 1.3, 'cut-off targets ' + styled + ' styled, ' + plainly + ' plain · said ' + tagged + ' times');
+  check('…Vince marches at worse odds than the level would (rush), and stacks his first two troops together',
+    (U.how.rush || 0) > 30 && stackOk, JSON.stringify(U.how) + (stackOk ? '' : ' · split his first two'));
+  check('…Wes attacks less, once a turn on Medium, reinforces his worst front first, and passes up what Medium would take (dug)',
+    V.atk / V.n < U.atk / U.n && V.atk / V.n < T.atk / T.n && capOk && guardOk && edgeOk && V.dug > 30,
+    'attacks a plan: Maxwell ' + (T.atk / T.n).toFixed(2) + ' · Vince ' + (U.atk / U.n).toFixed(2) + ' · Wes ' + (V.atk / V.n).toFixed(2) + ' · dug ' + V.dug);
+  check('…and each has his words for it, his to write (a style with no line falls back to the plain one)',
+    camp.hasLine('opening', 'Maxwell') && camp.hasLine('rush', 'Vince') && camp.hasLine('dig', 'Wes') && !camp.hasLine('rush', 'Wes'));
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+  check('…said where his way shows: the turn line when he digs in, the declare when he comes for you',
+    /k: plan\.dug && hasLine\('dig', generalOf\(side\)\.who\) \? 'dig' : 'turn'/.test(page) &&
+    /s\.how && hasLine\(s\.how, generalOf\(who\)\.who\) \? s\.how : 'declare'/.test(page) &&
+    /Maxwell goes for holdings cut off from the rest, Vince rushes, Wes\s+digs in/.test(page));
 }
 
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */

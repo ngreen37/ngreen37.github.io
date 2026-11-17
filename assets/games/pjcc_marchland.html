@@ -720,6 +720,8 @@
       <b>Three players and four players:</b> you against two or three generals on a bigger map. <b>Hold ten holdings</b>
       and the war is yours. When two generals fight each other, it is decided at once, at the odds real battles
       measured.<br>
+      <b>Their generals each play their own way:</b> Maxwell goes for holdings cut off from the rest, Vince rushes, Wes
+      digs in.<br>
       <b>Generals:</b> everyone whose square you have won in the town's Assembly gives you one order a campaign,
       on the map, one a round.<br>
       <b>Endgame Flats, Shogi Island and Sea-Board</b> fight their own chess. A battle for the Flats is an endgame: no
@@ -1095,6 +1097,22 @@ var LEVELS = {
             note:'Plays the map, not just the board.',
             minEdge:1, maxAtk:3, smart:true,  chainAware:true }
 };
+/* ⭐ THE GENERALS PLAY THEIR OWN WAY (his 11-16, #5 "Generals with personalities"), leaning on the level, never replacing it:
+     openings  Maxwell. A holding cut off from its own side (no road to a friendly one: cutOff) is worth two points more
+               to him (open). ⚠ NOT a one-troop holding: the plain plan already takes those first, so it changed nothing.
+     rush      Vince. Attacks at a point less edge, and his first two new troops go where he attacks from (stack).
+     dig       Wes. Wants two points more edge, attacks one fewer, and his first new troop goes where he is most
+               threatened (guard).
+   They say so (lineFor kinds 'opening', 'rush', 'dig'). ⚠ A STYLE IS A GENERAL'S, so Green has none when the sims hand
+   it to the machine, and Easy still scatters its troops: how well is the level's, the leaning is theirs.
+   ⚠ TUNED SO EVERY SEAT WINS WHAT IT DID PLAIN (`STYLES=0|1 sim:war`, 3,000 wars): stacking EVERY troop sank Vince to
+   27%, none lifted him to 39%; guarding with EVERY troop won Wes 55% of wars of four. */
+var STYLES = {
+  openings: { edge: 0,  cap: 0,  open: 2, stack: 1, guard: 0 },
+  rush:     { edge: -1, cap: 0,  open: 0, stack: 2, guard: 0 },
+  dig:      { edge: 2,  cap: -1, open: 0, stack: 1, guard: 1 }
+};
+var STYLE_OF = { Maxwell: 'openings', Vince: 'rush', Wes: 'dig' };
 
 var G = null;          // campaign state
 var B = null;          // battle state
@@ -3451,6 +3469,8 @@ var MAXWELL_LINES = {
   lost:         ['Keep {to}. For now.'],
   held:         ['Not today.'],
   repelled:     ['Fine. You keep it.'],
+  /* his #5: he takes openings */
+  opening:      ['{to} is cut off. That is an invitation.'],
   breach_his:   ['My walls! Fine.'],
   breach_yours: ['Your walls are down.'],
   war:          ['{holdings} holdings and {generals} of us. Watch your back.'],
@@ -3524,6 +3544,11 @@ function habitsOf(obs) {
   });
   return h;
 }
+/* does the general have a line for `kind` (a style's line falls back to the plain one when he has none) */
+function hasLine(kind, who) {
+  var book = !who || who === RIVAL.who ? MAXWELL_LINES : (GENERAL_LINES[who] || {});
+  return !!(book[kind] && book[kind].length);
+}
 /* who: the general speaking (Maxwell when not said) */
 function lineFor(kind, data, who) {
   var book = !who || who === RIVAL.who ? MAXWELL_LINES : (GENERAL_LINES[who] || {});
@@ -3535,9 +3560,11 @@ function lineFor(kind, data, who) {
 /* ⭐ THE OTHER GENERALS' WORDS, a war of three or four: HIS, placeholders. A kind with no line is silence. */
 var GENERAL_LINES = {
   Vince: { open: ['Three of us, one map.'], turn: ['My turn.'], declare: ['Here I come.'], took: ['{to} is mine now.'],
-           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'] },
+           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'],
+           rush: ["Odds? I don't count them."] },
   Wes:   { open: ['Everybody wants the middle.'], turn: ['My turn.'], declare: ['Here I come.'], took: ['{to} is mine now.'],
-           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'] }
+           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'],
+           dig: ['Not yet. I can wait.'] }
 };
 /* a general's face and line on the map: side is whose (Red, Maxwell, when not said). ⚠ Never in two players */
 function speak(kind, data, side) {
@@ -3683,6 +3710,8 @@ function sidesFor(mode) { return WAR_START[mode] ? WAR_START[mode].sides.slice()
 function multi() { return !!G && (G.mode === 'three' || G.mode === 'four'); }
 /* the general across from you on that side: Maxwell for Red, the regulars for the rest */
 function generalOf(side) { return SIDES[side] && SIDES[side].who ? SIDES[side] : SIDES.t; }
+/* the general's way of playing the map (STYLES), '' for Green */
+function styleOf(side) { return side !== 'm' && SIDES[side] && STYLE_OF[SIDES[side].who] || ''; }
 function alive(side) { for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) return true; return false; }
 /* the next machine to move after `side`, round the table; '' when it comes back to you */
 function nextSide(side) {
@@ -4077,7 +4106,7 @@ function srcScore(id, rk, side) {
 /* side: the color the machine plays, Red unless the sim hands Green to it */
 function rivalPlan(side) {
   side = side || 't';
-  var L = LEVELS[G.diff] || LEVELS.medium;
+  var L = LEVELS[G.diff] || LEVELS.medium, St = STYLES[styleOf(side)] || STYLES.openings, plain = !styleOf(side);
   var theirs = idsOf(side);
   if (!theirs.length) return { deploy: [], attacks: [], move: null };
   /* ⭐ ON HARD MAXWELL PLAYS AGAINST YOUR HABITS (his file): a campaign only, never a Daily, never Easy or Medium */
@@ -4099,8 +4128,11 @@ function rivalPlan(side) {
   }
   if (L.smart && front.length) {
     var order = front.slice().sort(function (a, b) { return srcScore(b, rk, side) - srcScore(a, rk, side); });
+    /* ⭐ a digger's first troops (guard) go where he is most threatened; the rest, and everyone else's, where he attacks from */
+    var guard = plain ? 0 : St.guard, worst = guard ? front.slice().sort(function (a, b) { return threatOf(b, rk, side) - threatOf(a, rk, side); }) : null;
     for (i = 0; i < add; i++) {
-      var pickId = i < pre.length ? pre[i] : (i === 0 || rand() < 0.7) ? order[0] : order[Math.min(order.length - 1, 1 + ((rand() * 2) | 0))];
+      var pickId = i < pre.length ? pre[i] : i < guard ? worst[0] :
+        (i < (plain ? 1 : Math.max(1, St.stack)) || rand() < 0.7) ? order[0] : order[Math.min(order.length - 1, 1 + ((rand() * 2) | 0))];
       deploy.push(pickId); rk[pickId]++;
     }
   } else {
@@ -4111,6 +4143,8 @@ function rivalPlan(side) {
   }
 
   /* ── the attacks, planned against the POST-deployment ranks ── */
+  /* ⚠ GREEN, WHEN THE SIMS HAND IT TO THE MACHINE, PLAYS PLAIN: a style is a general's */
+  var edge = L.minEdge + (plain ? 0 : St.edge), opens = plain ? 0 : St.open, passed = 0;
   var cand = [], war = multi();
   theirs.forEach(function (from) {
     if (rk[from] < 2) return;
@@ -4119,21 +4153,24 @@ function rivalPlan(side) {
       var s = rk[from] - rk[to];
       if (L.chainAware && chained(G.own, to)) s += 2;
       if (H && H.thin === to && rk[to] <= 2) s += 2;                 // the holding you always leave thin
+      var opening = opens > 0 && cutOff(to);
+      if (opening) s += opens;                                       // his #5: Maxwell takes openings
       /* ⚠ A SIEGE IS TWO ATTACKS OUT OF THREE, so a smart machine wants a point more edge
          before it starts one. Easy is not siege-aware on purpose: it throws one attack at a
          walled holding, breaks the walls and cannot follow up — a mistake you can punish. */
       var siege = sieged(to) && L.smart;
       if (siege) s -= 1;
-      if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing ranks at it
+      if (s < edge) { if (s >= L.minEdge) passed++; return; }   // ⚠ Hard DECLINES a bad attack; a digger declines more
       /* ⚠ a war's even choice is a coin toss (k); a war of two keeps its order (k 0, and the sort is stable) */
-      cand.push({ from:from, to:to, s:s, siege:siege, k: war ? rand() : 0, sea: !adj(from, to) });
+      cand.push({ from:from, to:to, s:s, siege:siege, k: war ? rand() : 0, sea: !adj(from, to),
+                  how: s < L.minEdge ? 'rush' : opening ? 'opening' : '' });
     });
   });
   cand.sort(function (a, b) { return b.s - a.s || a.k - b.k; });
   /* ⚠ THE MACHINE IS HELD TO THE SAME CEILING AS THE PLAYER. Hard's maxAtk is already 3,
      so this clamp changes nothing today — it is here so raising one number cannot quietly
      give the machine a round the player can never have. */
-  var cap = Math.min(L.maxAtk, ATTACK_CAP);
+  var cap = Math.min(plain ? L.maxAtk : Math.max(1, L.maxAtk + St.cap), ATTACK_CAP);
   cap = Math.max(0, cap + cardAtks());
   var attacks = [], used = {}, sailed = false;
   for (i = 0; i < cand.length && attacks.length < cap; i++) {
@@ -4146,7 +4183,9 @@ function rivalPlan(side) {
     if (attacks.length + need > cap) continue;
     used[cand[i].from] = 1;
     if (cand[i].sea) sailed = true;
-    attacks.push({ from:cand[i].from, to:cand[i].to });
+    var a1 = { from:cand[i].from, to:cand[i].to };
+    if (cand[i].how) a1.how = cand[i].how;                     // what he says when he comes for you
+    attacks.push(a1);
     if (need === 2) attacks.push({ from:cand[i].from, to:cand[i].to });
   }
 
@@ -4159,7 +4198,17 @@ function rivalPlan(side) {
       if (ns.length) move = { from: rear[i], to: ns[0], n: rk[rear[i]] - 1 };
     }
   }
-  return { deploy: deploy, attacks: attacks, move: move };
+  var plan = { deploy: deploy, attacks: attacks, move: move };
+  if (passed && !attacks.length) plan.dug = true;              // a digger passed up what the level would have taken
+  return plan;
+}
+/* ⭐ an opening (his #5, Maxwell's eye): a holding with no road to one of its own side, so nothing can reinforce it */
+function cutOff(id) { return !nbrs(id).some(function (j) { return G.own[j] === G.own[id]; }); }
+/* how badly the enemy outnumbers `id` across its fronts (a digger reinforces the worst first) */
+function threatOf(id, rk, side) {
+  var ns = fronts(id), worst = -99;
+  for (var i = 0; i < ns.length; i++) if (G.own[ns[i]] !== side) worst = Math.max(worst, rk[ns[i]] - rk[id]);
+  return worst;
 }
 
 /* side: the machine to move \u2014 Red when your turn ends, then (a war of three or four) each general round the table.
@@ -4174,10 +4223,10 @@ function theirTurn(side) {
   G.down = [];                                   // walls go back up when a turn ends
   var plan = G.mode === 'first' ? firstPlan()
     : G.mode === 'daily' ? seeded('campaign|' + G.day + '|' + G.round + '|rival', rivalPlan) : rivalPlan(side);
-  G.q = [{ t:'speak', k:'turn', s: generalOf(side).who + '\u2019s turn.', side: side }];
+  G.q = [{ t:'speak', k: plan.dug && hasLine('dig', generalOf(side).who) ? 'dig' : 'turn', s: generalOf(side).who + '\u2019s turn.', side: side }];
   plan.deploy.forEach(function (id) { G.q.push({ t:'deploy', id:id, side: side }); });
   plan.attacks.forEach(function (a) {
-    G.q.push({ t:'declare', from:a.from, to:a.to, side: side });
+    G.q.push({ t:'declare', from:a.from, to:a.to, side: side, how: a.how || '' });
     G.q.push({ t:'attack', from:a.from, to:a.to, side: side });
   });
   if (plan.move) G.q.push({ t:'move', from:plan.move.from, to:plan.move.to, n:plan.move.n, side: side });
@@ -4237,7 +4286,8 @@ function pump() {
     say('<b>' + LAND[s.from].nm + '</b> marches on <b>' + LAND[s.to].nm + '</b>' +
       (multi() && G.own[s.to] !== 'm' ? ', ' + generalOf(G.own[s.to]).who + '’s.' : '.'));
     /* ⚠ a general speaks when he comes for YOU; a war between two of them is narrated, not announced */
-    if (G.own[s.to] === 'm') speak(G.mode === 'first' ? 'teach_defend' : 'declare', { from: LAND[s.from].nm, to: LAND[s.to].nm }, who);
+    if (G.own[s.to] === 'm') speak(G.mode === 'first' ? 'teach_defend' : s.how && hasLine(s.how, generalOf(who).who) ? s.how : 'declare',
+      { from: LAND[s.from].nm, to: LAND[s.to].nm }, who);
     drawMap();
     beat(G.own[s.to] === 'm' ? 1200 : 700, pump);
     return;

@@ -35,6 +35,7 @@ function worker(rule, count) {
   const C = camp.C;
   camp.setSurvive(rule);
   camp.setSea(SEA);
+  if (env('STYLES', '1') === '0') camp.setStyleOf({});   // his #5: STYLES=0 plays Maxwell plain
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
   const movesAtt = Math.max(1, Math.round(camp.CLOCK_ATT / EFF));
   const movesDef = Math.max(1, Math.round(camp.CLOCK_DEF / EFF));

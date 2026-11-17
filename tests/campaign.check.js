@@ -28,6 +28,7 @@ window.__mc = {
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
   dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
+  MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; },
   get replay() { return replay; }, idsOf: idsOf, loadBest: loadBest, SAND: SAND, hurry: hurry,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
@@ -906,6 +907,21 @@ function serve() {
     ok(!sea2.tgt && sea2.cold && /One strike across the water a round\./.test(sea2.say) && sea2.atks === 2 && !sea2.pend,
        '…a second crossing that round is refused, and costs nothing  [' + sea2.say + ']');
     ok(sea2.fresh, '…and the next turn the water is open again');
+
+    /* ══ 11-16: THE GENERALS PLAY THEIR OWN WAY (his #5) ══ Maxwell marches on a holding of yours cut off from the rest, and
+       says his line for it. ⚠ The words are his: read from his table, never typed here.
+       ⚠ A FRESH PAGE: the crossing above was cut short mid-roll, and its timers would fire into this one */
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction(() => !!window.__mc);
+    await E(() => {
+      __mc.newCampaign('medium'); const G = __mc.G;
+      G.started = true; G.fog = false; G.own = G.own.map(() => 't'); G.own[5] = 'm'; G.ranks = G.ranks.map(() => 5); G.ranks[5] = 3;
+      __mc.show('screen-map'); __mc.theirTurn('t');
+    });
+    await page.waitForFunction(() => __mc.G.hot && __mc.G.hot.to === 5, { timeout: 20000 }).catch(() => {});
+    const op = await E(() => ({ hot: !!__mc.G.hot, line: document.getElementById('mx-line').textContent,
+      want: __mc.MAXWELL_LINES.opening.map((s) => s.replace('{to}', 'Chess City').replace('{from}', __mc.LAND()[__mc.G.hot ? __mc.G.hot.from : 0].nm)) }));
+    ok(op.hot && op.want.indexOf(op.line) >= 0, '⭐ Maxwell marches on a holding of yours cut off from the rest, and says his line for an opening  [' + op.line + ']');
     ok(rep.on && rep.frames >= 2 && rep.first === 'The opening.' && rep.last.step === rep.frames + ' of ' + rep.frames && rep.last.btn === 'Done' && rep.backTo,
        'the war plays back from the opening; Skip goes to its last map and Done to the result  [' + rep.frames + ' frames]');
     ok(rep.frame.shown && /^Your best war · Medium · won in round \d+$/.test(rep.frame.say) && rep.again && rep.home,

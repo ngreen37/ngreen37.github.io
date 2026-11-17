@@ -2,7 +2,7 @@
   "_generated": "GENERATED FILE — do not hand-edit. Source of truth is assets/games/pjcc_marchland.html; regenerate with `npm run gen:marchland`.",
   "_purpose": "Shared map + balance data. The browser game keeps these inline; a Godot build reads this file so both play the same tuned game.",
   "name": "ChessWild: Campaign",
-  "version": "0.7",
+  "version": "0.8",
   "holdings": [
     {
       "id": 0,
@@ -235,6 +235,9 @@
       ],
       "repelled": [
         "Fine. You keep it."
+      ],
+      "opening": [
+        "{to} is cut off. That is an invitation."
       ],
       "breach_his": [
         "My walls! Fine."
@@ -985,6 +988,9 @@
         ],
         "repelled": [
           "Fine. You keep it."
+        ],
+        "rush": [
+          "Odds? I don't count them."
         ]
       },
       "Wes": {
@@ -1008,6 +1014,9 @@
         ],
         "repelled": [
           "Fine. You keep it."
+        ],
+        "dig": [
+          "Not yet. I can wait."
         ]
       }
     }
@@ -1423,6 +1432,36 @@
       "maxAttacks": 3,
       "smart": true,
       "chainAware": true
+    }
+  },
+  "styles": {
+    "of": {
+      "Maxwell": "openings",
+      "Vince": "rush",
+      "Wes": "dig"
+    },
+    "ways": {
+      "openings": {
+        "edge": 0,
+        "cap": 0,
+        "open": 2,
+        "stack": 1,
+        "guard": 0
+      },
+      "rush": {
+        "edge": -1,
+        "cap": 0,
+        "open": 0,
+        "stack": 2,
+        "guard": 0
+      },
+      "dig": {
+        "edge": 2,
+        "cap": -1,
+        "open": 0,
+        "stack": 1,
+        "guard": 1
+      }
     }
   }
 }
