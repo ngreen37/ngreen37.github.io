@@ -824,6 +824,23 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const oldFail = run('off', false, { a: 0.9, d: 0.25, rout: null }, 4, 4);
   check('…and the old rule is one word away (off): all but one march, a hold keeps everything',
         old.to === 3 && old.from === 1 && oldFail.to === 4 && oldFail.from === 1);
+  /* ⚑ his 11-18, the defender's mate: #2 PRISONERS (half that marched, rounded up, join the garrison) and #7 ROUTED! */
+  const mated = run('win', false, { a: 0.6, d: 0.5, rout: 'att', mated: true }, 6, 4);
+  const flagged = run('win', false, { a: 0.6, d: 0.5, rout: null }, 6, 4);
+  const one = run('win', false, { a: 1, d: 1, rout: 'att', mated: true }, 2, 3);
+  check('⭐ a defender who MATES the attacker takes half that marched prisoner, rounded up (6 troops, 5 go: 3 join the 2 left)',
+        mated.to === 5 && mated.t.taken === 3 && mated.t.stand === 2 && mated.from === 1 && mated.own === 't' &&
+        one.to === 4 && one.t.taken === 1, 'mated ' + mated.to + ' (taken ' + mated.t.taken + ') · one went ' + one.t.taken);
+  check('…a flag, a draw or a withdrawal takes none', flagged.to === 2 && !flagged.t.taken && left.to === 4);
+  const words = slice('function finish(how)', 'function lightMate');
+  check('…the card says ROUTED! when the attacker is the one mated, and only then (never the withdrawal `gone` also counts)',
+        /var routed = \(how === 'won-mate' \? 'b' : how === 'lost-mate' \? 'w' : ''\) === aCol;/.test(words) &&
+        /mated: routed/.test(words) && /if \(routed\) \{ word = 'ROUTED!'; cls = 'routed'; \}/.test(words));
+  check('…and says the prisoners: "2 of 4 still stand, and 3 prisoners join them"',
+        / still stand, and 3 prisoners join them\./.test(camp.troopsLine({ to: 3 })) || (() => {
+          run('win', false, { a: 0.6, d: 0.5, rout: 'att', mated: true }, 6, 4);
+          return / still stand, and 3 prisoners join them\./.test(camp.troopsLine({ to: 3 }));
+        })(), camp.troopsLine({ to: 3 }));
   camp.setSurvive(shipped);
   const b1 = new Array(64).fill(''), b2 = new Array(64).fill('');
   b1[60] = 'K'; b1[52] = 'P'; b2[60] = 'K'; b2[4] = 'Q';

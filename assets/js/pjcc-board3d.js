@@ -9,7 +9,9 @@
  *   var b3 = PJCCBoard3D.mount({
  *     board: function () { return document.querySelector('.pt-board'); },   // the flat board now (rooms redraw it)
  *     read:  function () { return { b: S.b, flip: !white, last: [from, to], sel: i, dots: [...], check: i } },
- *                                          // also: turn, mate, hint: [...], quiet (no cuts), woods: { lt, dk, frame }
+ *                                          // also: turn, mate, hint: [...], quiet (no cuts), woods: { lt, dk, frame },
+ *                                          // lost: 'w'/'b' the side that lost however it lost (his pawn bows; a mate
+ *                                          // the lens sees itself)
  *     press: function (i) { ... },        // optional: the default clicks the square [data-sq=i] / [data-i=i]
  *     into:  false,                       // a canvas room: true, and it draws b3.drawInto(ctx, x, y, w, h) itself
  *     onCut: function (kind) { ... },     // a cut began (its kind) or ended (''): a room's own clock stops and starts
@@ -42,7 +44,8 @@
     mate: { secs: 1.60, zoom: 1.40, push: 1.75, turn: 0.06, circle: 0.35 },
   };
   var TALL = { K: 1.43, Q: 1.30, B: 1.34, N: 1.278, R: 0.86, P: 0.97 };
-  var CODES = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
+  // ⭐ P IS HIS PAWN THAT BOWS IN DEFEAT (his 11-18), rigged, for both sides in his two materials, as the May set is
+  var CODES = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
   var KEY = 'pjcc.board.flat';
 
   // ── WHOEVER SITS ACROSS, THE ROOM'S LIGHT, AND THEIR ANSWER TO YOUR MOVE (his 11-05 view ideas #1, #4, #5; of the
@@ -295,7 +298,13 @@
   function models(T) {
     if (!modelP) modelP = Promise.all(CODES.map(function (c) {
       return new Promise(function (ok, bad) {
-        new T.GLTFLoader().load(MODELS + c + '.glb', function (g) { ok([c, g.scene]); }, undefined, bad);
+        new T.GLTFLoader().load(MODELS + c + '.glb', function (g) {
+          var sk = false;
+          g.scene.traverse(function (n) { if (n.isSkinnedMesh) sk = true; });
+          g.scene.userData.skinned = sk;
+          g.scene.userData.clips = g.animations || [];
+          ok([c, g.scene]);
+        }, undefined, bad);
       });
     })).then(function (list) {
       var out = {};
@@ -324,6 +333,7 @@
     this.o = opts; this.T = null; this.M = null;
     this.flip = false; this.b = null; this.key = '';
     this.pieces = {};              // room square -> { node, code }
+    this.bowed = ''; this.bowing = 0;   // the side whose pawns bowed in defeat, and seconds of it still to draw
     this.falling = []; this.flying = null; this.squash = null; this.cut = null; this.cutAfter = null;
     this.live = 0; this.dist = 30; this.size = [2, 2];
     // whoever sits across, how they sit, and the room's light (drawn on their own canvas, under the board's picture)
@@ -459,7 +469,8 @@
   P.make = function (c) {
     var M = this.M, white = c.charAt(0) === 'w';
     var his = !!M[c], src = M[c] || M[c.charAt(1)];
-    var n = src.clone(true), sk = this.skins[c.charAt(0)];
+    // ⚠ a rigged piece is cloned with its own skeleton (cloneSkinned), or every copy bends the first one's bones
+    var n = src.userData.skinned ? this.T.cloneSkinned(src) : src.clone(true), sk = this.skins[c.charAt(0)];
     n.traverse(function (m) {
       if (!m.isMesh) return;
       m.castShadow = true;
@@ -471,7 +482,37 @@
     // black's pieces face white's, a knight looking across the board
     g.rotation.y = white === !this.flip ? 0 : Math.PI;
     g.userData.yaw = g.rotation.y;
+    // his pawn's bow, ready to play once and hold (bow())
+    var clip = src.userData.clips && src.userData.clips[0];
+    if (clip) {
+      var mixer = new this.T.AnimationMixer(n), act = mixer.clipAction(clip);
+      act.setLoop(this.T.LoopOnce, 1); act.clampWhenFinished = true;
+      g.userData.bow = { mixer: mixer, act: act, secs: clip.duration };
+    }
     return g;
+  };
+
+  // ⭐ HIS PAWN BOWS IN DEFEAT (his 11-18; the game's Board3D.bow): every pawn of the side that lost plays his bow once and
+  // holds it, toward the side that beat it (P.glb is turned to bow forward). calm: straight to the bowed pose.
+  P.bow = function (side) {
+    var c = calm(), longest = 0;
+    this.bowed = side;
+    for (var k in this.pieces) {
+      var bw = this.pieces[k].node.userData.bow;
+      if (this.pieces[k].code !== side + 'P' || !bw) continue;
+      bw.act.reset().play();
+      if (c) bw.mixer.update(bw.secs);
+      longest = Math.max(longest, bw.secs);
+    }
+    this.bowing = c ? 0 : longest + 0.1;
+    this.touch();
+  };
+  // a game that is not over: the bowed pawns are made again, standing (one whose square did not change stayed bowed)
+  P.unbow = function () {
+    for (var k in this.pieces) {
+      if (this.pieces[k].code === this.bowed + 'P' && this.pieces[k].node.userData.bow) { this.root.remove(this.pieces[k].node); delete this.pieces[k]; }
+    }
+    this.bowed = ''; this.bowing = 0;
   };
 
   // ── the position, read off the room every frame it changed ──
@@ -491,7 +532,7 @@
       if (st.mate == null) st.mate = this.jv.mate;
     }
     var key = b.join(',') + '|' + (st.last || []).join(',') + '|' + st.sel + '|' + (st.dots || []).join(',') + '|' +
-      st.check + '|' + (st.hint || []).join(',') + '|' + (st.cursor == null ? -1 : st.cursor);
+      st.check + '|' + (st.hint || []).join(',') + '|' + (st.cursor == null ? -1 : st.cursor) + '|' + (st.lost || '');
     if (key === this.key) return;
     this.key = key;
     var mv = prev ? moved(prev, b, st.last) : null;
@@ -511,6 +552,9 @@
       if (kind && at >= 0 && !calm()) this.cutAfter = { kind: kind, at: at };
     }
     if (!this.T) return;
+    // the side that lost: the room's word, or the side to move when it is mated (his pawn bows, 11-18)
+    var lost = st.lost || (st.mate ? turn : '');
+    if (this.bowed && this.bowed !== lost) this.unbow();
     // the pieces: one node per square, made again only where the piece changed
     for (var k in this.pieces) {
       if (!b[k] || code(b[k]) !== this.pieces[k].code) { this.root.remove(this.pieces[k].node); delete this.pieces[k]; }
@@ -528,6 +572,7 @@
       this.flights = (this.flights || 0) + 1;     // a probe hook: a slow frame can start and land a flight at once
       if (mv.taken) this.knock(mv.takenAt, code(mv.taken), mv.from, SLIDE * 0.7);
     }
+    if (lost && this.bowed !== lost) this.bow(lost);
     this.setMarks(st);
     this.touch();
   };
@@ -1040,6 +1085,11 @@
     }
     if (this.falling.length) this.touch();
     this.falling = keep;
+    if (this.bowing > 0) {
+      this.bowing -= dt;
+      for (var kb in this.pieces) { var bw = this.pieces[kb].node.userData.bow; if (bw) bw.mixer.update(dt); }
+      this.touch();
+    }
     if (this.cut) {
       this.cut.t += dt;
       if (this.cut.t >= CUTS[this.cut.kind].secs) this.endCut();

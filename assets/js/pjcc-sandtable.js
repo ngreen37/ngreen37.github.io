@@ -268,7 +268,8 @@
   P.at = function (L) { return new this.T.Vector3((L.x - 50) * U, 0, (L.y * 1.12 - 56) * U); };
 
   P.pawn = function (col) {
-    var T = this.T, src = this.M.wP, n = src.clone(true);
+    // his pawn (his 11-18, rigged, the boards' too): ⚠ cloned with its own skeleton, or every troop draws at the first's
+    var T = this.T, src = this.M.P, n = T.cloneSkinned ? T.cloneSkinned(src) : src.clone(true);
     if (!this.pawnSkin[col]) this.pawnSkin[col] = new T.MeshStandardMaterial({ color: col, roughness: 0.45, metalness: 0.05 });
     var sk = this.pawnSkin[col];
     n.traverse(function (m) { if (m.isMesh) { m.material = sk; m.castShadow = true; } });
@@ -524,7 +525,7 @@
     if (!ticking) { ticking = true; requestAnimationFrame(tick); }
     if (!webgl()) return;
     lib().then(function (T) {
-      return Promise.all([model(T, 'wP'), model(T, 'R')]).then(function (m) { return [T, { wP: m[0], R: m[1] }]; });
+      return Promise.all([model(T, 'P'), model(T, 'R')]).then(function (m) { return [T, { P: m[0], R: m[1] }]; });
     }).then(function (TM) {
       t.attach(TM[0], TM[1]);
       if (t.view) { var v = t.view; t.view = null; t.set(v); }

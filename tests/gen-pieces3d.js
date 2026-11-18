@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* gen-pieces3d.js — his 3D chess pieces for the chess rooms' tilted board (assets/js/pjcc-board3d.js).
  * Run:  npm run gen:pieces3d      Out: assets/models/pieces3d/<code>.glb
- * ⭐ ONE PIPELINE: Checker Town's tests/gen_pieces3d.js makes them from his Blender saves (his pawns and bishops, the
+ * ⭐ ONE PIPELINE: Checker Town's tests/gen_pieces3d.js makes them from his Blender saves (his bowing pawn and bishops, the
  * May set for the rest), and this copies the game's pieces3d/ here byte for byte, so the site's board and the game's
  * are the same pieces. A piece he models later: run the game's script, then this. */
 'use strict';
@@ -11,7 +11,8 @@ const path = require('path');
 const GAME = process.env.CHECKERTOWN_PROJECT || 'C:/Users/Nate/Documents/checker-town';
 const FROM = path.join(GAME, 'pieces3d');
 const OUT = path.join(__dirname, '..', 'assets', 'models', 'pieces3d');
-const CODES = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
+// ⭐ P is his pawn that bows in defeat (11-18), rigged, both sides; his September wP/bP are retired from the board
+const CODES = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
 
 const missing = CODES.filter((c) => !fs.existsSync(path.join(FROM, c + '.glb')));
 if (missing.length) {

@@ -20,10 +20,14 @@ const EXPORTS = [
   'CanvasTexture', 'AmbientLight', 'Quaternion', 'NoToneMapping', 'PCFShadowMap',
   // the Campaign's sand table and its eight-sided dice, built face by face (pjcc-sandtable.js)
   'BufferGeometry', 'Float32BufferAttribute',
+  // his pawn that bows in defeat, rigged (pjcc-board3d.js, his 11-18): its bow played once and held
+  'AnimationMixer', 'LoopOnce',
 ];
 
 const entry = `export { ${EXPORTS.join(', ')} } from 'three';
 export { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+// ⚠ a skinned model must be cloned with its own skeleton, or every copy bends the first one's bones
+export { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 export const REVISION = ${JSON.stringify(VERSION)};`;
 
 const res = esbuild.buildSync({

@@ -544,6 +544,10 @@
   .endcard.on { display: block; animation: endcard-in .28s ease-out both; }
   .endcard .eword { font-size: 25px; font-weight: 900; letter-spacing: 1px; line-height: 1.1; }
   .endcard .eword.win { color: var(--mine); } .endcard .eword.lose { color: var(--theirs); }
+  /* ⚑ ROUTED! (his 11-18, #7 of the defender's-mate ideas): the attacker mated by the defender, large and gold in either
+     chair and slammed in like CASTLED! (the `castled` and `castglow` keyframes) */
+  .endcard .eword.routed { font-size: 36px; letter-spacing: 3px; color: #ffd66a; text-shadow: 0 0 16px rgba(255,214,106,.7);
+    animation: castled .7s cubic-bezier(.2,1.4,.4,1) both, castglow 1.6s ease-in-out .7s 2; }
   .endcard .eline { font-size: 12px; opacity: .82; margin-top: 5px; }
   @keyframes endcard-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .endcard.on { animation: none; } }
@@ -633,7 +637,7 @@
     /* ⚠ `.die.castle::before` PARKS VISIBLE rather than being switched off — it is
        INFORMATION (this die castles), not flourish. Stillness must cost the picture, never
        the fact. */
-    .die.roll, .die.kept, .die.kept::after, .die.castle::before, .vline.castled > b,
+    .die.roll, .die.kept, .die.kept::after, .die.castle::before, .vline.castled > b, .endcard .eword.routed,
     .node.flash .disc, .node.doom .disc, .pc.arrive, .cardbar.deal { animation: none; }
     .pc { transition: none; }
     .clock.crit { animation: none; }
@@ -1160,7 +1164,8 @@ var B3 = window.PJCCBoard3D ? PJCCBoard3D.mount({
   read: function () {
     if (!B) return null;
     return { b: B.S.b, flip: false, last: B.last ? [B.last.drop ? B.last.to : B.last.from, B.last.to] : null, sel: B.sel,
-      dots: B.moves.map(function (m) { return m.to; }), turn: B.S.turn, hint: B.mate ? B.mate.sealed : [] };
+      dots: B.moves.map(function (m) { return m.to; }), turn: B.S.turn, hint: B.mate ? B.mate.sealed : [],
+      lost: B.over ? B.lost || '' : '' };
   },
   /* ⭐ MAXWELL SITS ACROSS (his 11-10): every battle against Red; two players face each other, nobody between */
   seat: function () { var g = B && !B.two ? generalOf(B.foeSide) : null; return g ? { who: g.who, key: g.key } : null; },
@@ -3384,8 +3389,14 @@ function finish(how) {
      the side to move) */
   var aCol = p.attWhite ? 'w' : 'b';
   var gone = how === 'won-mate' ? 'b' : how === 'lost-mate' ? 'w' : how === 'resign' ? (B.two ? B.S.turn : 'w') : null;
+  /* the defender mated the attacker (his 11-18): prisoners and ROUTED! — a mate, never the withdrawal `gone` also counts */
+  var routed = (how === 'won-mate' ? 'b' : how === 'lost-mate' ? 'w' : '') === aCol;
+  /* the side that lost, however it lost: his pawns bow on the 3D board (pjcc-board3d.js `lost`, his 11-18) */
+  B.lost = how === 'won-mate' || how === 'won-queen' ? 'b' : how === 'lost-mate' || how === 'lost-queen' ? 'w'
+    : how === 'time-att' ? aCol : how === 'time-def' ? (aCol === 'w' ? 'b' : 'w') : how === 'resign' ? gone : '';
   var breach = resolveLand(p, attackerWon, { a: keptShare(p.board, B.S.b, aCol, B.S.hand),
-    d: keptShare(p.board, B.S.b, aCol === 'w' ? 'b' : 'w', B.S.hand), rout: gone ? (gone === aCol ? 'att' : 'def') : null });
+    d: keptShare(p.board, B.S.b, aCol === 'w' ? 'b' : 'w', B.S.hand), rout: gone ? (gone === aCol ? 'att' : 'def') : null,
+    mated: routed });
   warNote(p, G.own[p.from], attackerWon, breach, how === 'won-mate' || how === 'lost-mate' ? B.S.b : null);
 
   /* one word for what happened to the GROUND, from your side of the table.
@@ -3404,6 +3415,8 @@ function finish(how) {
     else if (how === 'lost-queen') line = 'A pawn made a queen. The attack is broken.';
     else if (how === 'resign') line = (playerWon ? def : att) + ' gave up the fight.';
   }
+  /* ⚑ ROUTED! (his 11-18, #7): the defender mated the attacker — large and gold in either chair, as CASTLED! is */
+  if (routed) { word = 'ROUTED!'; cls = 'routed'; }
   /* ⚠ A BREACH IS A WON BATTLE THAT TOOK NOTHING, and the card has to say so in the same
      breath or the map will look broken: the holding is still theirs after a win. */
   if (breach) {
@@ -3558,7 +3571,8 @@ function troopsLine(p) {
   var t = G.troops;
   if (!t || (SURVIVE === 'off' && !t.fetched)) return '';
   if (t.march != null) return ' ' + t.march + ' of ' + t.went + ' march into ' + LAND[p.to].nm + '.';
-  var stand = ' ' + t.stand + ' of ' + t.held + ' still stand' + (t.breach ? ' behind the broken walls.' : '.');
+  var stand = ' ' + t.stand + ' of ' + t.held + ' still stand' + (t.breach ? ' behind the broken walls.' :
+    t.taken ? ', and ' + t.taken + (t.taken === 1 ? ' prisoner joins' : ' prisoners join') + ' them.' : '.');
   return t.breach ? stand : (t.home ? ' ' + t.home + ' of ' + t.went + ' come home.' : ' None of the ' + t.went + ' come home.') +
     (t.fetched ? ' ' + t.fetched + ' brings one more home.' : '') + stand;
 }
@@ -3607,7 +3621,11 @@ function resolveGround(p, attackerWon, kept) {
     var home = SURVIVE === 'both' && k.rout !== 'att' ? 1 + Math.round((p.aRanks - 1) * k.a) : 1;
     G.ranks[p.from] = home;
     G.ranks[p.to] = share(dRanks, k.d);
-    G.troops = { home: home - 1, went: p.aRanks - 1, stand: G.ranks[p.to], held: dRanks };
+    /* ⚑ PRISONERS (his 11-18, his #2 of the defender's-mate ideas): a defender who MATES the attacker takes half the
+       troops that marched, rounded up, into the garrison. A mate only (k.mated): never a flag, a draw or a withdrawal. */
+    var taken = k.mated ? Math.ceil((p.aRanks - 1) / 2) : 0;
+    G.ranks[p.to] += taken;
+    G.troops = { home: home - 1, went: p.aRanks - 1, stand: G.ranks[p.to] - taken, held: dRanks, taken: taken };
     return false;
   }
   /* ⚠ the attacking stack is untouched by a breach: the second attack has to be affordable,

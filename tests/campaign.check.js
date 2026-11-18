@@ -614,6 +614,31 @@ function serve() {
     ok(fit.lines === 1 && fit.bottom <= fit.button && /time \d+s to \d+s/.test(fit.tally),
       '…and on a 390×844 phone the tally with its clocks is one line and scrolls clear of the button, on the longest clause  [' + fit.lines + ' line, ends ' + fit.bottom + ' · button ' + fit.button + ' · ' + fit.tally + ']');
 
+    /* ⚑ his 11-18, the defender's mate: #7 ROUTED! large and gold on the card, in either chair, and #2 its prisoners */
+    const routed = await E(() => {
+      const m = __mc, $ = (id) => document.getElementById(id);
+      const card = () => ({ word: $('eword').textContent, cls: $('eword').className, line: $('eline').textContent,
+        size: parseFloat(getComputedStyle($('eword')).fontSize), color: getComputedStyle($('eword')).color });
+      const play = (playerAttacks, how) => {
+        m.newCampaign('medium', 'solo'); m.G.started = false;
+        const G = m.G;
+        G.own[5] = playerAttacks ? 'm' : 't'; G.own[3] = playerAttacks ? 't' : 'm'; G.ranks[5] = 6; G.ranks[3] = 4;
+        m.setB('4k3/8/8/8/8/8/8/R3K3 w - - 0 1', playerAttacks);
+        m.PEND = { from: 5, to: 3, playerAttacks: playerAttacks, aRanks: 6, dRanks: 4, attWhite: playerAttacks,
+                   dInfo: { castled: false, chain: 0 }, aArmy: [], dArmy: [] };
+        m.finish(how);
+        const out = Object.assign(card(), { garrison: G.ranks[3] });
+        m.hideEndcard && m.hideEndcard();
+        return out;
+      };
+      return { defending: play(false, 'won-mate'), attacking: play(true, 'lost-mate'), control: play(true, 'won-mate') };
+    });
+    ok(routed.defending.word === 'ROUTED!' && /routed/.test(routed.defending.cls) && routed.defending.size >= 30 &&
+       routed.defending.color === 'rgb(255, 214, 106)' && /3 prisoners join them/.test(routed.defending.line) && routed.defending.garrison === 7,
+       '⭐ you defend and mate the attacker: ROUTED! large and gold, and 3 of the 5 that marched join your 4  [' + routed.defending.size + 'px · ' + routed.defending.line + ']');
+    ok(routed.attacking.word === 'ROUTED!' && /prisoners join them/.test(routed.attacking.line) && routed.control.word === 'TAKEN',
+       '…mated attacking, the card says ROUTED! too; a mate by the attacker still reads TAKEN  [' + routed.control.word + ']');
+
     /* ── save and continue ── */
     await E(() => localStorage.removeItem('pjcc.campaign.save.v1'));
     await page.reload({ waitUntil: 'load' });

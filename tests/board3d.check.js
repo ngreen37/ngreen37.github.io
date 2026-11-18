@@ -51,11 +51,16 @@ if (b3gd && ctgd) {
     if (!(a > 0 && a === b)) off.push('TALL.' + L);
   }
   ok(off.length === 0, 'every number is the game\'s: the tilt, the lens, the fit, the cuts, the card\'s half second, his pieces\' heights  [' + (off.join(' ') || 'all equal') + ']');
-  const glbOff = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => {
+  /* ⭐ P is his pawn that bows in defeat (his 11-18), one rigged file for both sides */
+  const glbOff = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => {
     const a = path.join(ROOT, 'assets/models/pieces3d', c + '.glb'), b = path.join(GAME, 'pieces3d', c + '.glb');
     return !fs.existsSync(a) || !fs.existsSync(b) || !fs.readFileSync(a).equals(fs.readFileSync(b));
   });
-  ok(glbOff.length === 0, 'his eight pieces are the game\'s own, byte for byte (npm run gen:pieces3d)  [' + (glbOff.join(' ') || 'all eight') + ']');
+  ok(glbOff.length === 0, 'his seven pieces are the game\'s own, byte for byte (npm run gen:pieces3d)  [' + (glbOff.join(' ') || 'all seven') + ']');
+  const pawn = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d/P.glb'));
+  const pj = JSON.parse(pawn.slice(20, 20 + pawn.readUInt32LE(12)).toString());
+  ok((pj.skins || []).length === 1 && (pj.animations || []).length === 1 && pj.animations[0].channels.length > 0,
+     '⭐ his pawn is rigged and carries its bow (a skin and one animation)  [' + ((pj.animations || [])[0] || {}).name + ']');
 } else ok(true, 'the game is not checked out here: its numbers are not compared');
 /* ── 1b. whoever sits across, the room's light and the judge are the game's (his view ideas #1, #4, #5) ── */
 if (b3gd) {
@@ -202,8 +207,13 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate(() => T3.setFen('4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1'));
     await sleep(100);
     await page.evaluate(() => T3.moveUci('e5d6'));
-    await sleep(40);
-    const epAt = await page.evaluate(() => { const f = T3.b3.b.falling[0]; return f ? [Math.round(f.pos.x * 2) / 2, Math.round(f.pos.z * 2) / 2] : null; });
+    /* ⚠ WAITED FOR, NOT SLEPT (11-18): the lens syncs on its next frame, and with his heavier pawn under software GL one
+       frame outlasted the old 40 ms; the taken pawn falls for most of a second, so it is caught falling */
+    let epAt = null;
+    for (let t = 0; t < 40 && !epAt; t++) {
+      await sleep(30);
+      epAt = await page.evaluate(() => { const f = T3.b3.b.falling[0]; return f ? [Math.round(f.pos.x * 2) / 2, Math.round(f.pos.z * 2) / 2] : null; });
+    }
     ok(epAt && epAt[0] === -0.5 && epAt[1] === -0.5, 'en passant\'s pawn is knocked over on d5, where it stood, not on d6  [' + JSON.stringify(epAt) + ']');
     await sleep(800);
     /* ── 5. a check: the push in on the king, the clock standing still, every square pressed where drawn ── */
@@ -362,6 +372,38 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
       btn: document.querySelector('.pjcc-board-view').hidden, tr: document.getElementById('board').style.transform.slice(0, 7) }));
     ok(!down.canvas && !down.up && down.cut === 'check' && down.btn && down.tr === 'matrix(',
       'with the 3D bundle blocked the room keeps its own flat board, no Board button, and still cuts  ' + JSON.stringify(down));
+    await page.close();
+    /* ── ⭐ HIS PAWN BOWS IN DEFEAT (his 11-18) ── mated, the loser's pawns play his bow and hold it; a new game, they stand ── */
+    page = await open();
+    const bones = () => page.evaluate(() => {
+      const b = T3.b3.b, out = {};
+      for (const k in b.pieces) {
+        if (b.pieces[k].code !== 'bP') continue;
+        const at = [];
+        b.pieces[k].node.updateMatrixWorld(true);
+        b.pieces[k].node.traverse((n) => { if (n.isBone) { const v = n.getWorldPosition(new n.position.constructor()); at.push([v.x, v.y, v.z]); } });
+        out[k] = at;
+      }
+      return { at: out, bowed: b.bowed };
+    });
+    await page.evaluate(() => T3.setFen('6k1/2pp1ppp/8/8/8/8/5PPP/R5K1 w - - 0 1'));
+    await sleep(500);
+    const stand = await bones();
+    await page.evaluate(() => T3.moveUci('a1a8'));
+    await sleep(2800);
+    const bent = await bones();
+    let moved = 0, n = 0;
+    for (const k in stand.at) {
+      if (!bent.at[k]) continue;
+      n++;
+      const far = Math.max(...stand.at[k].map((p, i) => Math.hypot(p[0] - bent.at[k][i][0], p[1] - bent.at[k][i][1], p[2] - bent.at[k][i][2])));
+      if (far > 0.05) moved++;
+    }
+    ok(bent.bowed === 'b' && n === 5 && moved === 5, '⭐ mated, every pawn of the side that lost bows (his 11-18)  [bowed ' + bent.bowed + ', ' + moved + ' of ' + n + ' pawns bent]');
+    await page.evaluate(() => T3.setFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'));
+    await sleep(500);
+    const again = await bones();
+    ok(again.bowed === '' && Object.keys(again.at).length === 8, '…and a new game stands them up again  [bowed \'' + again.bowed + '\', ' + Object.keys(again.at).length + ' black pawns]');
     await page.close();
   } catch (e) {
     errors.push('TEST: ' + e.message);

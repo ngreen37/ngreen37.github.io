@@ -7707,7 +7707,7 @@ const server = http.createServer((req, res) => {
               const b = +((new RegExp('"' + L + '": ([\\d.]+)').exec(b3F('tall')) || [])[1]);
               return !(g > 0 && Math.abs(g - b) < 0.0015);
             });
-            const glbOff = ['wP', 'bP', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb'))
+            const glbOff = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb'))
               || !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb.import')));
             const tapT = (/\n\t{3}"tapmap":[\s\S]*?(?=\n\t{3}"|\n\S)/.exec(gdTxt('tests/probe.gd')) || [''])[0];
             ok(/^class_name Board3D\nextends SubViewportContainer/.test(b3T) && /_vp\.own_world_3d = true/.test(b3T)
@@ -8472,6 +8472,34 @@ const server = http.createServer((req, res) => {
             ok(diceOff.length === 0,
               '⭐ HIS 11-17 IN THE GAME  ("the dice don\'t seem important enough"): a 7 or better always castles and an 8 brings the rook and three pawns, the attacker\'s pawns start halfway up with a vanguard the die gives, thirty seconds shared by the armies, the dice spinning on the roll screen and CASTLED! lit in large gold letters',
               diceOff.length ? 'off: ' + diceOff.join(' · ') : 'the page\'s muster and its words, at the table');
+            /* ⭐ HIS 11-18: his pawn bows in defeat (pieces3d/P.glb, rigged, from Desktop/Blender_Laptop), and the defender's mate
+               takes prisoners and reads ROUTED! (his #2, #7). The corpus holds the prisoners to the page; this holds the rest. */
+            const b3Txt = rd('board3d.gd'), ctTxt = rd('chess_table.gd'), gp3 = fs.readFileSync(path.join(GD, 'tests/gen_pieces3d.js'), 'utf8');
+            const pawnGlb = path.join(GD, 'pieces3d', 'P.glb');
+            const pawnBuf = fs.existsSync(pawnGlb) ? fs.readFileSync(pawnGlb) : null;
+            const pawnJ = pawnBuf ? JSON.parse(pawnBuf.slice(20, 20 + pawnBuf.readUInt32LE(12)).toString()) : {};
+            const bowOff = offOf({
+              'his pawn, rigged, bowing': (pawnJ.skins || []).length === 1 && (pawnJ.animations || []).length === 1
+                && fs.existsSync(pawnGlb + '.import') && !fs.existsSync(path.join(GD, 'pieces3d', 'wP.glb'))
+                && /const LAPTOP = process\.env\.LAPTOP_DIR \|\| 'C:\/Users\/Nate\/Desktop\/Blender_Laptop';/.test(gp3)
+                && /const pawn = newestSave\('pawn', LAPTOP\);/.test(gp3) && /turn: PAWN_TURN/.test(gp3),
+              'the board bows the side that lost': /func bow\(color: String, calm := false\) -> void:/.test(b3Txt)
+                && /ap\.play\(ap\.get_animation_list\(\)\[0\]\)/.test(fnGd(b3Txt, 'bow')) && /ap\.stop\(\)/.test(fnGd(b3Txt, 'unbow'))
+                && /_bow_t -= dt/.test(fnGd(b3Txt, 'step'))
+                && /_b3\.bow\("b" if res == "1-0" else \("w" if res == "0-1" else ""\), TableFX\.calm\(\)\)/.test(fnGd(ctTxt, '_end'))
+                && /_b3\.unbow\(\)/.test(fnGd(ctTxt, '_start')) && /_b3\.bow\(lost, TableFX\.calm\(\)\)/.test(fnGd(cbT, '_battle_over')),
+              'prisoners and ROUTED!': /var taken := int\(ceil\(\(a_ranks - 1\) \/ 2\.0\)\) if bool\(k\.get\("mated", false\)\) else 0/.test(fnGd(crT, '_resolve_ground'))
+                && /if routed:\s*\n\t+word = "ROUTED!"\s*\n\t+cls = "routed"/.test(fnGd(ctbT, '_on_battle_end'))
+                && /"mated": routed/.test(fnGd(ctbT, '_on_battle_end'))
+                && /rl\.add_theme_color_override\("font_color", ROUTED_GOLD\)/.test(fnGd(cbT, '_layout')),
+              'played': ['tablebow', 'tablewin', 'camprouted'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /tablebtn:resign;tablebtn:resign;wait:10;tableis:bowed:w/.test(bcCase('tablebow'))
+                && /tablemove:a1a8;wait:12;tableis:result:1-0;tableis:bowed:b/.test(bcCase('tablewin'))
+                && /campend:won-mate;wait:12;battleis:card:ROUTED!;tableis:bowed:b;[^"]*campis:prisoners:true/.test(bcCase('camprouted')),
+            });
+            ok(bowOff.length === 0,
+              '⭐ HIS 11-18 IN THE GAME  (his "a good pawn that can also bow in defeat", and "let\'s do 2 and 7"): his rigged pawn from the laptop folder is every board\'s pawn and the side that lost bows, at the tables and in a Campaign battle; a defender who mates the attacker takes half that marched prisoner and the card reads ROUTED! in gold',
+              bowOff.length ? 'off: ' + bowOff.join(' · ') : 'his pawn, bowing, and the defender\'s mate rewarded');
           }
         }
 

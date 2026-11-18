@@ -68,7 +68,7 @@ function worker(rule, count) {
     }
     const attackerWon = how === 'mate-att' || how === 'flag-def';
     const kept = { a: camp.keptShare(P.board, S.b, 'w'), d: camp.keptShare(P.board, S.b, 'b'),
-                   rout: how === 'mate-att' ? 'def' : how === 'mate-def' ? 'att' : null };
+                   rout: how === 'mate-att' ? 'def' : how === 'mate-def' ? 'att' : null, mated: how === 'mate-def' };
     return { P, how, attackerWon, kept, plies };
   }
 
