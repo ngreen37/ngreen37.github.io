@@ -94,7 +94,7 @@ window.__ML = { d20:d20, matBudget:matBudget, muster:muster, buildBoard:buildBoa
   applyAttackerPos:applyAttackerPos, applyDefenderPos:applyDefenderPos, bestMove:bestMove,
   poolFor:poolFor, rollPool:rollPool, bestOf:bestOf, capsFor:capsFor,
   CLOCK_ATT:CLOCK_ATT, CLOCK_DEF:CLOCK_DEF, MAT_SCALE:MAT_SCALE, MOVE_DELAY:MOVE_DELAY,
-  DICE_CAP:DICE_CAP, QUEEN_RANKS:QUEEN_RANKS,
+  DICE_CAP:DICE_CAP, QUEEN_RANKS:QUEEN_RANKS, battleClocks:battleClocks, material:material,
   edge: function () { return ATT_EDGE; },
   setEdge: function (v) { ATT_EDGE = v; } };
 `;
@@ -144,13 +144,13 @@ function serve(html) {
          changed shape and this sim must be re-read, not "fixed" by stubbing it */
       const need = ['d20', 'matBudget', 'muster', 'buildBoard', 'applyAttackerPos',
                     'applyDefenderPos', 'bestMove', 'poolFor', 'rollPool', 'bestOf', 'capsFor',
-                    'CLOCK_ATT', 'CLOCK_DEF', 'MAT_SCALE', 'MOVE_DELAY', 'DICE_CAP', 'setEdge'];
+                    'CLOCK_ATT', 'CLOCK_DEF', 'MAT_SCALE', 'MOVE_DELAY', 'DICE_CAP', 'setEdge', 'battleClocks', 'material'];
       const ML = window.__ML || {};
       const missing = need.filter((k) => typeof ML[k] === 'undefined');
       if (missing.length) return { error: 'the game no longer exposes: ' + missing.join(', ') };
       const { matBudget, muster, buildBoard, applyAttackerPos, applyDefenderPos,
               bestMove, poolFor, rollPool, bestOf, capsFor,
-              CLOCK_ATT, CLOCK_DEF, MAT_SCALE, MOVE_DELAY, DICE_CAP } = ML;
+              CLOCK_ATT, CLOCK_DEF, MAT_SCALE, MOVE_DELAY, DICE_CAP, battleClocks, material } = ML;
 
       const C = window.PJCCChess;
       /* ⚑ THE DELAY, IN THE MOVE-BUDGET MODEL. A move only costs you the part of it that
@@ -191,8 +191,11 @@ function serve(html) {
         /* the attacker is White in this sim; the real game only ever swaps which chair
            the PLAYER sits in, and the board is symmetric about that */
         const board = buildBoard(aArmy, dArmy);
-        applyAttackerPos(board, 'w', bestOf(rollPool(aDice)));
-        applyDefenderPos(board, 'b', bestOf(rollPool(dDice)));
+        applyAttackerPos(board, 'w', bestOf(rollPool(aDice)), '');
+        applyDefenderPos(board, 'b', bestOf(rollPool(dDice)), '');
+        /* ⚑ TIME FOLLOWS THE ARMIES (11-17): each battle's own clocks, as a move budget */
+        const ck = battleClocks(material(board, 'w'), material(board, 'b'));
+        const movesAtt = Math.max(1, Math.round(ck.att / EFF)), movesDef = Math.max(1, Math.round(ck.def / EFF));
 
         let S = { b: board, turn: 'w', cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 };
         let usedW = 0, usedB = 0, done = null, ply = 0;
@@ -254,7 +257,7 @@ function serve(html) {
   console.log(`  ${N} battles per band, engine vs engine`);
   console.log(`  clock ${out.clockAtt}s vs ${out.clockDef}s with a ${out.delay}s delay a move;` +
     ` at ${SEC_PER_MOVE}s a move that is ${out.eff.toFixed(2)}s of real cost`);
-  console.log(`  → move budget: attacker ${out.movesAtt}, defender ${out.movesDef}` +
+  console.log(`  → move budget at an even muster: attacker ${out.movesAtt}, defender ${out.movesDef} (each battle's own clocks follow its armies)` +
     `   ·   chain rate assumed ${CHAIN_RATE} (see the header)`);
   console.log('');
   console.log('   ATT_EDGE   att pts   def pts   plies   att Q%   FAILED    band');

@@ -37,11 +37,12 @@ function worker(rule, count) {
   camp.setSea(SEA);
   if (env('STYLES', '1') === '0') camp.setStyleOf({});   // his #5: STYLES=0 plays Maxwell plain
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
-  const movesAtt = Math.max(1, Math.round(camp.CLOCK_ATT / EFF));
-  const movesDef = Math.max(1, Math.round(camp.CLOCK_DEF / EFF));
+  if (env('EDGE', '') !== '') camp.setAttEdge(+env('EDGE', ''));
 
   function fight(from, to) {
     const P = camp.musterBattle(from, to, true);              // the attacker is White, as the page builds it
+    /* ⚠ each battle's own clocks: time follows the armies (11-17) */
+    const movesAtt = Math.max(1, Math.round(P.clocks.att / EFF)), movesDef = Math.max(1, Math.round(P.clocks.def / EFF));
     let S = { b: P.board.slice(), turn: 'w', cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 };
     let usedW = 0, usedB = 0, how = null, plies = 0;
     while (!how) {

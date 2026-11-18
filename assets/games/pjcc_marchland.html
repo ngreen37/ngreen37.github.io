@@ -347,7 +347,10 @@
   .die.b3 { background: var(--band-3); color: var(--band-3-ink); box-shadow: 0 3px 0 #b28a44; }
   .die.b4 { background: var(--band-4); color: var(--band-4-ink);
             box-shadow: 0 3px 0 #b89a17, 0 0 14px rgba(247,213,76,.5); }
-  .die.roll { animation: tumble .42s ease; }
+  /* ⚑ A DIE SPINS AND LANDS (his 11-17: "the dice should spin on THIS screen for the reveal"): two turns over
+     ROLL_MS, its faces flickering (rollStep), then a thud as the kept one locks */
+  .die.roll { animation: spin .64s cubic-bezier(.25,.8,.35,1); }
+  .die.kept { animation: thud .3s ease; }
   /* THE LOCK-IN, his words: "they roll, then lock in with a colored outline". The ring is
      a second, independent channel — the fill already said how big the number is, the ring
      says this is the one that counts. */
@@ -376,7 +379,9 @@
     62%  { transform: translateX(-50%) translateY(-3px) scale(1.18); opacity: 1; }
     100% { transform: translateX(-50%) scale(1); opacity: 1; } }
   .die.drop { transform: scale(.72); opacity: .34; box-shadow: 0 2px 0 rgba(0,0,0,.25); }
-  @keyframes tumble { 0%{transform:rotate(0) scale(.7)} 60%{transform:rotate(340deg) scale(1.12)} 100%{transform:none} }
+  @keyframes spin { 0% { transform: translateY(-10px) rotate(0) scale(.6); } 55% { transform: translateY(2px) rotate(560deg) scale(1.12); }
+                    80% { transform: rotate(700deg) scale(.96); } 100% { transform: rotate(720deg) scale(1); } }
+  @keyframes thud { 0% { transform: scale(1.28); } 100% { transform: scale(1); } }
   @keyframes lockin { 0% { transform: scale(1.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   /* THE VERDICT. Bolder and briefer, his request: one word, then one short clause. The
      arithmetic is still there for anyone who wants it — one tap on the line. */
@@ -388,6 +393,14 @@
   .vline > i { font-style: normal; font-size: 11.5px; color: var(--ink-2); }
   .vline.good > b { color: var(--mine); } .vline.bad > b { color: var(--theirs); }
   .vline.hot  > b { color: #ffd66a; }     .vline.flat > b { color: var(--ink-2); }
+  /* ⚑ CASTLED! (his 11-17: "should light up in large words to show the importance of the dice roll better"): gold in
+     either chair (gold is the castle's own color, the king on its die), slammed in, then glowing twice */
+  .vline.castled > b { font-size: 30px; line-height: 1.05; letter-spacing: 3px; color: #ffd66a; text-shadow: 0 0 16px rgba(255,214,106,.7);
+    animation: castled .7s cubic-bezier(.2,1.4,.4,1) both, castglow 1.6s ease-in-out .7s 2; }
+  /* the material line above still says its "numbers"; this one is tapped the same way, and the phone needs the line */
+  .vline.castled .tap { display: none; }
+  @keyframes castled { 0% { transform: scale(2.4); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes castglow { 50% { text-shadow: 0 0 30px rgba(255,214,106,1), 0 0 6px #fff3c4; } }
   /* THE ARITHMETIC IS ONE TAP AWAY, not gone and not always on. Briefer was the request; the
      numbers still have to be checkable, because a die whose effect you cannot verify is a die
      that feels like the game cheating. Hidden by default buys ~50px a verdict on a 320px
@@ -587,7 +600,10 @@
      have time to see the position before you lose": by the time the clock starts you have
      already looked at it for as long as you wanted to. */
   /* ⚠ padding-bottom clears #tobattle's 14px ground ring and its upward shadow, which painted over the coach line */
-  .preview { margin: 6px auto 0; width: 100%; max-width: 258px; padding-bottom: 26px; }
+  /* ⚠ THE BOARD IS 258px, ITS LINES ARE NOT (11-17): in the board's width the clocks made the tally two lines, and with
+     CASTLED! above it that pushed it under the button on a 390×844 phone (measured: ends 762, button 740) */
+  .preview { margin: 6px auto 0; width: 100%; padding-bottom: 26px; }
+  #pboard { max-width: 258px; margin: 0 auto; }
   .previewhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
   .ptally { text-align: center; font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
@@ -617,7 +633,7 @@
     /* ⚠ `.die.castle::before` PARKS VISIBLE rather than being switched off — it is
        INFORMATION (this die castles), not flourish. Stillness must cost the picture, never
        the fact. */
-    .die.roll, .die.kept::after, .die.castle::before,
+    .die.roll, .die.kept, .die.kept::after, .die.castle::before, .vline.castled > b,
     .node.flash .disc, .node.doom .disc, .pc.arrive, .cardbar.deal { animation: none; }
     .pc { transition: none; }
     .clock.crit { animation: none; }
@@ -702,11 +718,13 @@
       <i>chained</i> &mdash; an <b>extra die every time it defends</b>.<br><br>
       <b>5. Two dice a battle: material, then position.</b> Material buys your army at real
       chess value — queen 9, rook 5, bishop or knight 3, pawn 1. Kings are free.<br><br>
-      <b>6. Position places it.</b> High rolls march an attacker's pawns up the board.
-      Defending, <b>7 or better</b> tucks your king into the corner with a pawn in front of
-      him &mdash; and <b>an 8</b> brings his rook around and three pawns with him.<br><br>
-      <b>7. Fifteen seconds each,</b> a second back on every move. <b>Run your own clock out
-      and you lose.</b> Checkmate takes the ground. A draw goes to the defender.<br><br>
+      <b>6. Position places it.</b> Attacking, your pawns start halfway up the board, and the
+      die sends <b>up to three</b> further &mdash; given if you bought none. Defending, <b>7 or
+      better</b> castles your king behind a pawn &mdash; and <b>an 8</b> brings his rook around
+      and three pawns with him.<br><br>
+      <b>7. Thirty seconds between you, shared by material:</b> the bigger army gets more time,
+      and a second back on every move. <b>Run your own clock out and you lose.</b> Checkmate
+      takes the ground. A draw goes to the defender.<br><br>
       <b>8. What's left marches in.</b> Your troops follow your pieces: keep three quarters of
       your points on the board and three quarters of the troops march in. A defense that holds
       keeps its share the same way.<br><br>
@@ -1547,8 +1565,13 @@ function dieBand(v) { return Math.min(4, Math.max(1, Math.ceil(v * 4 / FACES)));
    same one-pawn-minimum and same fifteen-point swing, in eight steps instead of fifteen.
    ⚠ MAT_SCALE IS STILL EXPORTED TO THE SIM by name, so it keeps its name and its meaning
    (points per pip); MAT_BASE is the new half of the pair. budget = die*MAT_SCALE + MAT_BASE. */
+/* ⚑⚑ 0 SINCE 11-17, WHEN THE DICE STARTED TO MATTER (his: "Generally speaking, the dice don't seem important enough").
+   With the vanguard, the castle that delivers and time following the armies, the old 12 let 95% of attacks through
+   (sim:marchland). RE-SWEPT, N=150 a band: -2 → 68% fail · 0 → 41% · 2 → 41% · 4 → 25% (sim:clash: 0 → 51% fail). At 0
+   the attacker brings no flat head start at all: the dice and the troops decide who is bigger, and the bigger army gets
+   the time. The history below measured a different game. */
 var MAT_SCALE = 2, MAT_BASE = -1;
-var ATT_EDGE = 12;
+var ATT_EDGE = 0;
 var DEF_EDGE = 0;
 function matBudget(die, rk, isDefender) {
   var v = Math.round(die * MAT_SCALE) + MAT_BASE + Math.floor(rk / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
@@ -1742,27 +1765,36 @@ function pawnsOf(b, side) {
   for (var i = 0; i < 64; i++) if (b[i] === ch) out.push(i);
   return out;
 }
-function applyAttackerPos(b, side, die) {
-  var steps = posSteps(die), dir = side === 'w' ? -8 : 8;
-  if (!steps) return 0;
-  var ps = pawnsOf(b, side), moved = 0;
-  /* from the middle outward — a central pawn is the one worth space */
-  ps.sort(function (x, y) { return Math.abs(3.5 - (x % 8)) - Math.abs(3.5 - (y % 8)); });
-  for (var i = 0; i < ps.length && moved < steps; i++) {
-    var from = ps[i], to = from + dir;
-    if (to < 0 || to > 63 || b[to]) continue;
-    b[to] = b[from]; b[from] = '';
-    /* the top band buys a SECOND rank for the first pawn that gets one */
-    if (posTop(die) && moved === 0) {
-      var far = to + dir;
-      if (far >= 0 && far <= 63 && !b[far]) { b[far] = b[to]; b[to] = ''; }
-    }
-    moved++;
+/* ══ THE VANGUARD ══ his 11-17: "for the attacker pawns only are valuable if they start up closer to the defender's end
+   anyway so let's incorporate that". The attacker's pawns stand on its 4th rank, and the position die puts posSteps of
+   them on its 5th (the top face sends the first to its 6th, nearly through). ⚠ THE DIE GIVES WHAT THE MUSTER DID NOT
+   BUY: it said "no pawns to push" over 36% of attacks (measured 11-17), a die rolled for nothing. Returns how many stand
+   up front. ⚠ Not at sea (no pawns). ⚠ ON THE FLATS TOO (measured 11-17): with the old push from home there, the
+   castle's given shield won the race to a queen 24% of the time and attacks took the Flats 30%. */
+var LINE_RANK = 4, VAN_RANK = 5;
+var FILES_OUT = W_PAWN.map(function (s) { return s % 8; });     /* e d f c g b h a: the center out */
+function rowOf(side, n) { return side === 'w' ? 8 - n : n - 1; } /* a side's own n-th rank, as a board row */
+function applyAttackerPos(b, side, die, rule) {
+  if (rule === 'pieces') return 0;
+  var ch = side === 'w' ? 'P' : 'p', had = pawnsOf(b, side), van = posSteps(die), used = {}, i;
+  had.forEach(function (s) { b[s] = ''; });
+  for (i = 0; i < van; i++) { b[rowOf(side, VAN_RANK) * 8 + FILES_OUT[i]] = ch; used[FILES_OUT[i]] = true; }
+  if (van && posTop(die)) { b[rowOf(side, VAN_RANK) * 8 + FILES_OUT[0]] = ''; b[rowOf(side, VAN_RANK + 1) * 8 + FILES_OUT[0]] = ch; }
+  for (var rest = had.length - van, j = 0; j < FILES_OUT.length && rest > 0; j++) {
+    if (used[FILES_OUT[j]]) continue;
+    b[rowOf(side, LINE_RANK) * 8 + FILES_OUT[j]] = ch; rest--;
   }
-  return moved;
+  return van;
 }
-function applyDefenderPos(b, side, die) {
-  var out = { chain: 0, castled: false, rook: false, shield: 0 };
+/* ══ THE CASTLE DELIVERS (his 11-17: "it says they get three pawns but they don't have them pictured") ══ MEASURED ON
+   THE SHIPPED RULE, 20,000 musters: a full castle's rook came round 9% of the times there was one (the muster had stood
+   a piece on f), its three pawns stood 0.2%, and 9% of ALL battles began with the castled king in check down an open
+   g-file, the attacker to move (its first legal move took the king). So: a 7 or better always castles (a piece on his
+   square steps across to the one he left: e and g are both light, so a bishop keeps its color), an 8 always brings a
+   rook if one was mustered, and the shield stands — pulled across first, GIVEN where the muster bought none (not at
+   sea, where no pawn is: clearFile moves the piece that would bear on him). `given` is how many the castle gave. */
+function applyDefenderPos(b, side, die, rule) {
+  var out = { chain: 0, castled: false, rook: false, shield: 0, given: 0 };
   var dir = side === 'w' ? -8 : 8;
   var home = side === 'w' ? 6 : 1;                 // the pawns' own second rank, as a ROW
   var pawnCh = side === 'w' ? 'P' : 'p';
@@ -1777,21 +1809,26 @@ function applyDefenderPos(b, side, die) {
     var rook = side === 'w' ? 'R' : 'r', king = side === 'w' ? 'K' : 'k';
     var back = side === 'w' ? 56 : 0;
     var gSq = back + 6, fSq = back + 5;
-    /* ── BAND ONE (16+): THE KING MOVES, AND THAT IS ALL THAT IS GUARANTEED ──
-       ⚠ The g-square can be occupied — the muster fills the back rank from the center out,
-       so a knight or a bishop may already be standing there. No square, no castle. */
-    if (b[kFrom] === king && !b[gSq]) {
-      b[kFrom] = ''; b[gSq] = king;
+    /* ── BAND ONE (7+): THE KING MOVES, always: whatever stood on g steps across to e ── */
+    if (b[kFrom] === king) {
+      b[kFrom] = b[gSq] || ''; b[gSq] = king;
       out.castled = true;
 
-      /* ── BAND TWO (18+): THE ROOK HOOKS AROUND ──
-         Kingside if anything rook-shaped is on the back rank. Still conditional on there
-         BEING a rook — a roll cannot conjure material the muster did not buy. */
-      if (posCastleFull(die) && !b[fSq]) {
+      /* ── BAND TWO (8): THE ROOK HOOKS AROUND, the one nearest his corner. The piece on f stands where the rook stood
+         (a bishop on any free square of its own color, his pair rule); a roll still never conjures a rook. */
+      if (posCastleFull(die) && b[fSq] !== rook) {
         var haveRook = -1;
-        for (var s = back; s < back + 8; s++) if (b[s] === rook) { haveRook = s; break; }
-        if (haveRook >= 0) { b[haveRook] = ''; b[fSq] = rook; out.rook = true; }
+        for (var s = back + 7; s >= back; s--) if (b[s] === rook) { haveRook = s; break; }
+        if (haveRook >= 0) {
+          var inWay = b[fSq], to = haveRook;
+          b[haveRook] = ''; b[fSq] = rook;
+          if (inWay && inWay.toLowerCase() === 'b' && sqLight(to) !== sqLight(fSq)) {
+            for (var s2 = back; s2 < back + 8; s2++) if (!b[s2] && sqLight(s2) === sqLight(fSq)) { to = s2; break; }
+          }
+          if (inWay) b[to] = inWay;
+        }
       }
+      out.rook = b[fSq] === rook;
 
       /* ── BAND TWO (18+): THE THREE PAWNS THAT TYPICALLY PROTECT A CASTLED KING ──
          f, g and h on the pawns' own rank. A pawn already standing there is kept and frozen;
@@ -1816,8 +1853,8 @@ function applyDefenderPos(b, side, die) {
          Which also keeps the two bands meaningfully different — the whole point of having
          two — while making the lower one honest. "Depending on the roll" is his phrasing
          and it is exactly the rule.
-         ⚠ IT STILL NEVER INVENTS A PAWN. A defender who mustered no pawns castles bare, and
-         the roll screen says so — a roll cannot conjure material the muster did not buy. */
+         ⚑ 11-17 THE SHIELD IS GIVEN where the muster bought none (above): "it never invents a pawn" made it a promise
+         the board kept 0.2% of the time. Still never at sea. */
       var wantFiles = posCastleFull(die) ? [5, 6, 7] : [6];
       for (var wi = 0; wi < wantFiles.length; wi++) {
         var k = wantFiles[wi], sq = home * 8 + k;
@@ -1828,10 +1865,15 @@ function applyDefenderPos(b, side, die) {
           var cand = home * 8 + f2;
           if (b[cand] === pawnCh && !frozen[cand]) { take = cand; break; }
         }
-        if (take < 0) continue;                      /* not enough pawns — do not fake it */
-        b[sq] = pawnCh; b[take] = '';
+        if (take >= 0) b[take] = '';
+        else if (rule !== 'pieces') out.given++;
+        else continue;
+        b[sq] = pawnCh;
         frozen[sq] = true; out.shield++;
       }
+      /* neither king starts in check: his, and the attacker's, whose file a piece stepped across to e can open */
+      clearFile(b, side, gSq);
+      clearFile(b, side === 'w' ? 'b' : 'w', side === 'w' ? 4 : 60);
     }
   }
   var steps = posSteps(die);
@@ -1862,6 +1904,21 @@ function applyDefenderPos(b, side, die) {
   }
   out.chain = moved;
   return out;
+}
+/* ⛑ NO BATTLE STARTS IN CHECK (11-17, THE CASTLE DELIVERS): the first man up the file from side's king at k, if it is
+   the other side's rook or queen, steps aside on its own back rank, to a free square off that file or into a knight's
+   place there. ⚠ At the start only a file can reach a king from the far back rank (no diagonal from it does). */
+function clearFile(b, side, k) {
+  var step = side === 'w' ? -8 : 8, upper = side === 'w';
+  for (var s = k + step; s >= 0 && s < 64; s += step) {
+    var pc = b[s];
+    if (!pc) continue;
+    if ((pc === pc.toUpperCase()) === upper || 'rq'.indexOf(pc.toLowerCase()) < 0) return;
+    var order = upper ? B_BACK : W_BACK, i;
+    for (i = 0; i < order.length; i++) if (!b[order[i]] && order[i] % 8 !== k % 8) { b[order[i]] = pc; b[s] = ''; return; }
+    for (i = 0; i < order.length; i++) if (b[order[i]] && b[order[i]].toLowerCase() === 'n') { b[s] = b[order[i]]; b[order[i]] = pc; return; }
+    return;
+  }
 }
 
 /* ── DROPS (Shogi Island) ───────────────────────────────────────────────────────
@@ -2400,7 +2457,7 @@ function atksLine() {
 var PEND = null;
 var GLY = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
 var rollTimers = [];
-function clearRollTimers() { rollTimers.forEach(clearTimeout); rollTimers = []; }
+function clearRollTimers() { rollTimers.forEach(function (t) { clearTimeout(t); clearInterval(t); }); rollTimers = []; }
 
 /* ══ PLACES THAT FIGHT THEIR OWN CHESS ══════════════════════════════════════════════════
    ⚑ His #8, 11-11 ("Go with option B"): a battle plays the rule of the ground it is fought for.
@@ -2421,12 +2478,13 @@ var RULE_SAY = {
   dark:    { tag: 'dark', chip: 'down the mines &middot; low light', say: 'Down the mines, the light comes and goes.' }
 };
 function ruleAt(id) { return LAND[id] && !(G && G.mode === 'first') ? RULES[LAND[id].nm] || '' : ''; }
-var EG_SCALE = 0.5;
+/* ⚑ 0.75 SINCE 11-17 (sim:clash RULE=endgame, the vanguard on the Flats too): 0.5 → 51% took · 0.75 → 46%, plain 50% */
+var EG_SCALE = 0.75;
 var EG_CAPS = { q: 0, r: 1, b: 1, n: 1, p: 6 };
 var EG_PUSH = 14;           // centipawns a rank for a pawn on the Flats, so the machine runs the race it is judged by
 function egBudget(v) { return Math.max(1, Math.round(v * EG_SCALE)); }
-var DR_EDGE = 10;           // points off the attacker's budget in a drop battle: a take comes back, so the edge is worth more
-var PC_EDGE = 6;            // points off the attacker's budget at sea: an open board mates faster (47.9% took it without)
+var DR_EDGE = 3;            // points off the attacker's budget in a drop battle: a take comes back (11-17, at edge 0: 0 → 58% took, 3 → 47%, 6 → 37%)
+var PC_EDGE = 0;            // points off the attacker's budget at sea (11-17, at edge 0: 0 → 44% took, plain 50%; the sea sends no vanguard)
 /* the caps a rule's ground puts on a muster: the Flats' endgame, the sea's no pawns (capsFor hands back a fresh object) */
 function capsOn(rule, caps) {
   if (rule === 'endgame') return EG_CAPS;
@@ -2487,13 +2545,14 @@ function musterBattle(from, to, playerAttacks) {
      pawns on it, whenever the muster spent its whole budget on pieces. Caught by looking
      at a render, not by reading the code. RE-MEASURE, NEVER RECOMPUTE — the same rule the
      defender's chair already followed with "no rook to bring". */
-  var aMoved = applyAttackerPos(board, attWhite ? 'w' : 'b', aPos);
-  var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', dPos);
+  var aMoved = applyAttackerPos(board, attWhite ? 'w' : 'b', aPos, rule);
+  var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', dPos, rule);
+  var clocks = battleClocks(material(board, attWhite ? 'w' : 'b'), material(board, attWhite ? 'b' : 'w'));
   return { from:from, to:to, playerAttacks:playerAttacks, aRanks:aRanks, dRanks:dRanks,
            aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos, aMat:aMat, dMat:dMat,
            aBud:aBud, dBud:dBud, board:board, dInfo:dInfo, aMoved:aMoved, attWhite:attWhite,
            aMatPool:aMatPool, aPosPool:aPosPool, dMatPool:dMatPool, dPosPool:dPosPool,
-           dChain:dChain, rule:rule };
+           dChain:dChain, rule:rule, clocks:clocks };
 }
 function beginBattle(from, to, playerAttacks) {
   G.busy = true;
@@ -2526,12 +2585,9 @@ function beginBattle(from, to, playerAttacks) {
   $('v-pos').innerHTML = '&nbsp;'; $('v-pos').className = 'vline';
   $('preview').hidden = true;
   $('tobattle').disabled = true;
-  /* ⭐ ON THE SAND TABLE THE DICE ARE THROWN ON IT FIRST, and the roll screen opens on them rolled (his #6) */
-  if (SAND && SAND.on() && $('screen-map').classList.contains('on') &&
-      SAND.throwDice(sandThrow(PEND, sideColor(G.own[from]), sideColor(G.own[to])), function () {
-        if (!PEND || PEND.from !== from || PEND.to !== to) return;
-        show('screen-roll'); finishRoll();
-      })) return;
+  /* ⚑ THE DICE SPIN HERE, on the screen that says what they bought (his 11-17: "the dice should spin on THIS screen for
+     the reveal"). The sand table threw them first and this opened on them landed; it still throws the dice of a battle
+     two generals fight between themselves (pump). */
   show('screen-roll');
   runRoll();
 }
@@ -2573,13 +2629,27 @@ function paintDice(host, arr, keptIdx, isDef, revealed, isPos) {
     return '<span class="' + cls + '">' + v + '</span>';
   }).join('');
 }
+/* ⭐ A DIE SPINS, its faces flickering, then lands and locks (his 11-17). ⚠ The flicker never draws on rand(): a Daily's
+   seeded stream and the town's corpus record every draw, and a picture must not move either. */
+var ROLL_MS = 640, FLICK_MS = 70;
 function rollStep(hostId, pool, isDef, isPos, done) {
-  var host = $(hostId);
+  var host = $(hostId), tick = 0;
   paintDice(host, pool, -1, isDef, false, isPos);
+  var faces = host.querySelectorAll('.die');
+  var flick = setInterval(function () {
+    tick++;
+    for (var i = 0; i < faces.length; i++) {
+      var v = 1 + (tick * 3 + i * 5) % FACES;
+      faces[i].textContent = v;
+      faces[i].className = 'die roll b' + dieBand(v);
+    }
+  }, FLICK_MS);
+  rollTimers.push(flick);
   rollTimers.push(setTimeout(function () {
+    clearInterval(flick);
     paintDice(host, pool, keptIndex(pool), isDef, true, isPos);
     if (done) done();
-  }, 430));
+  }, ROLL_MS));
 }
 function finishRoll() {
   clearRollTimers();
@@ -2640,53 +2710,50 @@ function matVerdict() {
   el.className = 'vline ' + cls;
   el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
 }
+/* ⚑ THE WORDS ARE THE BOARD'S (his 11-17: "it says they get three pawns but they don't have them pictured"). Every count
+   is read off what the muster built (dInfo, aMoved), never off the die: RE-MEASURE, NEVER RECOMPUTE. A castle takes the
+   headline in either chair, CASTLED! in large gold letters (his 11-17: "to show the importance of the dice roll better").
+   The clause carries the other chair's half, so a castle never swallows the attacker's own roll. */
+var NUM = ['no', 'one', 'two', 'three'];
+function count(n, what) { return (NUM[n] || n) + ' ' + what + (n === 1 ? '' : 's'); }
+function castleWords(d, whose) {
+  var parts = [whose + ' king'];
+  if (d.rook) parts.push('rook');
+  if (d.shield) parts.push(count(d.shield, 'pawn'));
+  return parts.length === 1 ? parts[0] + ' alone' : parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+}
+/* the first face that sends k pawns up front, so the fine print follows posSteps */
+function firstFace(k) { for (var d = 1; d <= FACES; d++) if (posSteps(d) >= k) return d; return FACES; }
 function posVerdict() {
   var p = PEND, word, clause, cls;
-  var dHasRook = p.dArmy.indexOf('r') >= 0;
-  var sea = p.rule === 'pieces';         // ⚠ no pawn mustered: nothing to push, dig in or shield, and the screen must not say otherwise
+  var sea = p.rule === 'pieces', van = p.aMoved;
+  var up = van ? count(van, 'pawn') + ' up front' + (posTop(p.aPos) ? ', one nearly through' : '') : '';
   if (p.playerAttacks) {
-    /* your position die is the attacker's; theirs is the castle.
-       ⚠ `st` IS WHAT MOVED, NOT WHAT THE DIE PROMISED — a 20 buys nothing when the muster
-       left you no pawns, and a screen that says otherwise is lying about the board you are
-       about to play. `promised` separates "the die was low" from "there was nothing to push". */
-    var st = p.aMoved, promised = posSteps(p.aPos);
-    if (posTop(p.aPos) && st) { word = 'PAWNS UP ' + st; clause = 'space, and one is nearly through'; cls = 'hot'; }
-    else if (st >= 2)     { word = 'PAWNS UP ' + st; clause = 'you have room to work'; cls = 'good'; }
-    else if (st === 1)    { word = 'ONE PAWN UP'; clause = 'not much, but it is something'; cls = 'flat'; }
-    else if (sea)         { word = 'AT SEA'; clause = 'no pawns to push: pieces against pieces'; cls = 'flat'; }
-    else if (promised)    { word = 'NO PAWNS TO PUSH'; clause = 'the muster spent it all on pieces — the die is wasted'; cls = 'bad'; }
-    else                  { word = 'NOTHING GAINED'; clause = 'your pawns are still at home'; cls = 'bad'; }
-    /* ⚠ THEIR CASTLE IS THE BIGGER NEWS AND TAKES THE HEADLINE — but it must not SWALLOW your
-       own roll. A 17 on the attacker's die is three pawns up and one of them a rank further,
-       and a screen that answers a great roll with a sentence about the enemy has thrown the
-       information away. The word is theirs; the clause carries both halves. */
-    var yours = st ? 'your pawns are up ' + st
-                   : sea ? 'no pawns at sea' : promised ? 'you have no pawns to push' : 'your pawns are still home';
-    if (posCastleFull(p.dPos) && dHasRook) { word = 'THEY CASTLE FULLY'; clause = (sea ? 'king and rook' : 'king, rook and three pawns') + ' · ' + yours; cls = 'bad'; }
-    else if (posCastles(p.dPos))           { word = 'THEIR KING TUCKS IN'; clause = 'no rook, no shield · ' + yours; cls = 'flat'; }
+    var yours = up ? 'yours: ' + up : sea ? 'no pawns at sea' : 'no pawn of yours up front';
+    if (p.dInfo.castled)          { word = 'CASTLED!'; clause = castleWords(p.dInfo, 'their') + ' · ' + yours; cls = 'castled'; }
+    else if (van && posTop(p.aPos)) { word = 'PAWNS UP ' + van; clause = 'space, and one is nearly through'; cls = 'hot'; }
+    else if (van >= 2)            { word = 'PAWNS UP ' + van; clause = 'you have room to work'; cls = 'good'; }
+    else if (van === 1)           { word = 'ONE PAWN UP'; clause = 'not much, but it is something'; cls = 'flat'; }
+    else if (sea)                 { word = 'AT SEA'; clause = 'no pawns to push: pieces against pieces'; cls = 'flat'; }
+    else                          { word = 'NOTHING GAINED'; clause = 'no pawn of yours up front'; cls = 'bad'; }
   } else {
-    /* you are the defender: the castle is yours, and the attacker's pawns are the threat */
-    if (posCastleFull(p.dPos)) {
-      word = 'FULL CASTLE';
-      clause = dHasRook ? (sea ? 'king and rook' : 'king, rook and three pawns')
-                        : (sea ? 'the king alone — no rook to bring' : 'king and a pawn shield — no rook to bring');
-      cls = 'hot';
-    } else if (posCastles(p.dPos)) { word = 'KING IN THE CORNER'; clause = 'no rook, no shield'; cls = 'good'; }
+    var theirs = up ? ' · theirs: ' + up : '';
+    if (p.dInfo.castled)           { word = 'CASTLED!'; clause = castleWords(p.dInfo, 'your') + theirs; cls = 'castled'; }
     else if (sea)                  { word = 'AT SEA'; clause = 'no pawns to dig in: pieces against pieces'; cls = 'flat'; }
-    /* ⚠ SAME RULE ON THIS CHAIR: `dInfo.chain` is how many pawns really dug in. Reading
-       posSteps() again would announce a chain the muster never had pawns to build. */
-    else if (p.dInfo.chain)        { word = 'A CHAIN HOLDS'; clause = p.dInfo.chain + ' pawns dug in and guarded'; cls = 'flat'; }
-    else if (posSteps(p.dPos))     { word = 'NO PAWNS TO DIG IN'; clause = 'the muster bought pieces, not a shield'; cls = 'bad'; }
-    else                           { word = 'FLAT LINE'; clause = 'nobody dug in — your king is loose'; cls = 'bad'; }
+    /* ⚠ SAME RULE ON THIS CHAIR: `dInfo.chain` is how many pawns really dug in, never posSteps() again */
+    else if (p.dInfo.chain)        { word = 'A CHAIN HOLDS'; clause = count(p.dInfo.chain, 'pawn') + ' dug in and guarded' + theirs; cls = 'flat'; }
+    else if (posSteps(p.dPos))     { word = 'NO PAWNS TO DIG IN'; clause = 'the muster bought pieces, not a shield' + theirs; cls = 'bad'; }
+    else                           { word = 'FLAT LINE'; clause = 'nobody dug in — your king is loose' + theirs; cls = 'bad'; }
   }
   /* derived, never typed: this read "16+ … 18+" for three weeks after the die became a d8 */
   var maths = '<span class="maths">attacker <b>' + p.aPos + '</b> · defender <b>' + p.dPos + '</b>' +
-    ' &mdash; ' + POS_CASTLE + '+ tucks the king in, ' + POS_TOP + (POS_TOP < FACES ? '+' : '') + ' brings the rook</span>';
+    ' &mdash; ' + firstFace(1) + ', ' + firstFace(2) + ' and ' + firstFace(3) + ' send one, two and three pawns up front; ' +
+    POS_CASTLE + '+ castles behind a pawn, ' + POS_TOP + (POS_TOP < FACES ? '+' : '') + ' brings the rook and three</span>';
   var el = $('v-pos');
   el.className = 'vline ' + cls;
   el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
+  if (cls === 'castled') sfx('castle');
 }
-
 /* ── THE PREVIEW BOARD ─────────────────────────────────────────────────────────────
    The same 8x8 markup the battle uses, at a third the size — pieces scale off the board
    through `cqw`, so nothing here needs its own numbers. */
@@ -2718,13 +2785,17 @@ function paintPreview() {
     $('coach').appendChild(document.createTextNode(lineFor('teach_roll')));
     $('coach').hidden = false;
   } else if (G.diff === 'easy' && G.mode !== 'two') rollTimers.push(setTimeout(function () { paintCoach(p); }, 40));
+  /* the clocks the armies bought (TIME FOLLOWS THE ARMIES), White's first: the player is always White */
+  var cw = p.attWhite ? p.clocks.att : p.clocks.def, cb = p.attWhite ? p.clocks.def : p.clocks.att;
   if (G.mode === 'two') {
     var a = G.own[p.from], d = G.own[p.to];
     $('ptally').innerHTML = sideName(a) + ' <b style="color:' + sideColor(a) + '">' + mw + '</b> · ' + sideName(d) + ' <b style="color:' + sideColor(d) + '">' + mb + '</b>' +
+      ' &nbsp;·&nbsp; time <b style="color:' + sideColor(a) + '">' + cw + 's</b> to <b style="color:' + sideColor(d) + '">' + cb + 's</b>' +
       ' &nbsp;·&nbsp; ' + sideName(a) + ' moves first';
     return;
   }
   $('ptally').innerHTML = 'you <b class="m">' + mw + '</b> · them <b class="t">' + mb + '</b>' +
+    ' &nbsp;·&nbsp; time <b class="m">' + cw + 's</b> to <b class="t">' + cb + 's</b>' +
     ' &nbsp;·&nbsp; ' + (p.playerAttacks ? 'you move first' : 'they move first');
 }
 
@@ -2825,6 +2896,18 @@ function paintCoach(p) {
    numbers move together or neither moves. */
 var CLOCK_ATT = 15, CLOCK_DEF = 15;
 var MOVE_DELAY = 1.0;
+/* ⚑ TIME FOLLOWS THE ARMIES (his 11-17: "We also need to reward better the attacker who has a large army advantage,
+   or vice versa"). The thirty seconds his two clocks make are shared out by the material on the mustered board: an
+   even muster is fifteen each, as ever; 28 against 12 is 21 against 9. MEASURED (sim:clash, 11-17, before this): a
+   +15 gap took the ground 49% of the time, a coin toss, because a big army still had to mate inside fifteen seconds.
+   ⚠ EACH SIDE'S FLAG STAYS ITS OWN LOSS, so nothing here pays a side for waiting (THE CLOCKS, above). CLOCK_MIN is the
+   least a side gets, whole seconds. ⚠ ATT_EDGE AND THE CLASH TABLES WERE RE-MEASURED WITH IT, never carried over. */
+var CLOCK_MIN = 6;
+function battleClocks(am, dm) {
+  var pool = CLOCK_ATT + CLOCK_DEF, att = am + dm > 0 ? Math.round(pool * am / (am + dm)) : CLOCK_ATT;
+  att = Math.max(CLOCK_MIN, Math.min(pool - CLOCK_MIN, att));
+  return { att: att, def: pool - att };
+}
 /* THE REVEAL BEAT. The clock does not start with the screen — the muster walks on, you get
    a beat to read it, and only then does anything move. Before this, `startBattle` rendered
    the board, started the timer in the same frame and fired the machine's first move 150ms
@@ -2867,7 +2950,7 @@ function startBattle() {
     dsel: '',                                            // the piece type picked out of the hand to drop
     rule: p.rule || '',
     attWhite: attWhite,
-    clk: { w: attWhite ? CLOCK_ATT : CLOCK_DEF, b: attWhite ? CLOCK_DEF : CLOCK_ATT },
+    clk: { w: attWhite ? p.clocks.att : p.clocks.def, b: attWhite ? p.clocks.def : p.clocks.att },
     tLast: Date.now(), turnStart: 0,
     ids: new Array(64).fill(0), els: {}, seq: 0, anim: false,
     /* one mercy pause per battle — see MERCY_PLY. A new battle is a new B, so this
@@ -2891,7 +2974,7 @@ function startBattle() {
     ? '<b>' + RIVAL.who + ':</b> ' + lineFor('teach_battle')
     : p.playerAttacks
     ? 'You attack. <b>Force it, or the attack stalls.</b>'
-    : 'You defend. <b>Outlast their fifteen seconds.</b>' +
+    : 'You defend. <b>Outlast their ' + p.clocks.att + ' seconds.</b>' +
       (p.dInfo.castled ? ' Your king is castled.' : ''));
   $('ready').textContent = 'READY…';
   B.revealTimer = setTimeout(goLive, REVEAL_MS);
@@ -3792,11 +3875,15 @@ var WAR_START = {
    defender's), in bins of CLASH.bin from CLASH.lo, the ends open. p = how often the attack took the ground; ka = the share
    of its points an attack that won still had standing, kd = a defense that held. MEASURED (`npm run sim:clash`, 5,800
    battles, 11-10): the attacker's ATT_EDGE puts most gaps between +3 and +20, and 40% of attacks took the ground — the
-   whole-campaign sim's "about one in three", from the other side. */
-var CLASH = { lo: -3, bin: 3,
-  p:  [0.06, 0.11, 0.21, 0.27, 0.36, 0.45, 0.49, 0.60, 0.63, 0.76],
-  ka: [0.82, 0.76, 0.78, 0.80, 0.80, 0.80, 0.80, 0.86, 0.87, 0.92],
-  kd: [0.35, 0.27, 0.22, 0.19, 0.18, 0.14, 0.15, 0.15, 0.14, 0.15] };
+   whole-campaign sim's "about one in three", from the other side.
+   ⚑ RE-MEASURED 11-17 (3,000 battles), when time began to follow the armies and ATT_EDGE went to 0: 47.7% took the
+   ground, and the gap DECIDES now — a +3..5 lead took it 88% (21% before), +15..17 every time (49% before): his "reward
+   better the attacker who has a large army advantage, or vice versa". ⚠ CLAMPED to 0.01..0.99 (measured 0 in 235 and
+   1 in 168): an upset is always possible, however the gap stands — the check's "a share in every bin". */
+var CLASH = { lo: -12, bin: 3,
+  p:  [0.01, 0.02, 0.04, 0.11, 0.46, 0.88, 0.96, 0.98, 0.99, 0.99, 0.99, 0.99],
+  ka: [0.99, 0.99, 0.96, 0.92, 0.72, 0.63, 0.74, 0.80, 0.92, 0.98, 0.99, 0.99],
+  kd: [0.86, 0.67, 0.57, 0.51, 0.49, 0.47, 0.36, 0.53, 0.53, 0.53, 0.53, 0.53] };
 /* ⭐ HOLD TEN AND THE WAR IS YOURS (or be the last one standing). MEASURED (`npm run sim:war`, 2,000 wars a size, every
    seat the machine's, 11-10): taking every holding ran a war of three to a median of 28 rounds and a war of four to 40;
    ten ends them at 12 and 19 (a campaign of two runs 15). Seats in a war of three win a fair share (31/33/36%); in a war
@@ -3820,20 +3907,22 @@ function nextSide(side) {
 /* a place that fights its own chess has its own odds, measured the same way (`RULE=endgame npm run sim:clash`).
    MEASURED 11-11, 3,000 battles a rule: 36.2% of attacks took the Flats (34% by a queen), 35.7% the Island and 36.5%
    the sea (47.9% before PC_EDGE took six points off the attacker), against 40% on plain ground — the defender's own
-   terrain, by four points. */
+   terrain, by four points.
+   ⚑ RE-MEASURED 11-17 (3,000 a rule; the vanguard, the castle that delivers and time following the armies, DR_EDGE 3,
+   PC_EDGE 0, EG_SCALE 0.75): the Flats 44.6%, the Island 47.2%, the sea 43.7%, plain ground 47.7%. */
 var CLASHES = {
   endgame: { lo: -12, bin: 3,
-    p:  [0.08, 0.08, 0.08, 0.08, 0.11, 0.18, 0.44, 0.67, 0.81, 1.00, 1.00, 1.00],
-    ka: [0.95, 0.95, 0.95, 0.95, 0.99, 0.96, 0.98, 0.99, 1.00, 1.00, 1.00, 1.00],
-    kd: [0.62, 0.62, 0.62, 0.62, 0.50, 0.54, 0.61, 0.68, 0.99, 0.99, 0.99, 0.99] },
+    p:  [0.00, 0.08, 0.10, 0.16, 0.43, 0.85, 0.91, 0.99, 1.00, 1.00, 1.00, 1.00],
+    ka: [1.00, 1.00, 1.00, 1.00, 0.72, 0.76, 0.83, 0.96, 0.96, 0.96, 0.96, 0.96],
+    kd: [0.96, 0.88, 0.83, 0.76, 0.66, 0.72, 0.84, 1.00, 1.00, 1.00, 1.00, 1.00] },
   drops: { lo: -12, bin: 3,
-    p:  [0.08, 0.15, 0.16, 0.26, 0.36, 0.38, 0.45, 0.47, 0.60, 0.62, 0.82, 0.82],
-    ka: [1.00, 0.99, 0.99, 1.00, 0.99, 0.99, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00],
-    kd: [0.90, 0.91, 0.90, 0.92, 0.91, 0.89, 0.89, 0.80, 0.75, 0.52, 0.40, 0.40] },
+    p:  [0.05, 0.26, 0.29, 0.43, 0.63, 0.76, 0.83, 0.99, 0.99, 1.00, 1.00, 1.00],
+    ka: [1.00, 1.00, 1.00, 0.99, 0.96, 0.94, 0.94, 0.96, 0.98, 1.00, 1.00, 1.00],
+    kd: [0.95, 0.90, 0.87, 0.87, 0.91, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00] },
   pieces: { lo: -12, bin: 3,
-    p:  [0.00, 0.00, 0.01, 0.01, 0.19, 0.32, 0.39, 0.49, 0.61, 0.69, 0.72, 0.95],
-    ka: [0.75, 0.75, 0.75, 1.00, 0.73, 0.76, 0.76, 0.77, 0.82, 0.90, 0.96, 0.96],
-    kd: [0.53, 0.49, 0.44, 0.37, 0.29, 0.28, 0.27, 0.30, 0.25, 0.27, 0.28, 0.50] } };
+    p:  [0.00, 0.00, 0.02, 0.06, 0.41, 0.83, 0.89, 0.98, 1.00, 1.00, 1.00, 1.00],
+    ka: [0.75, 0.75, 0.75, 0.85, 0.70, 0.69, 0.81, 0.89, 0.95, 0.99, 1.00, 1.00],
+    kd: [0.85, 0.59, 0.48, 0.38, 0.30, 0.17, 0.13, 0.00, 0.00, 0.00, 0.00, 0.00] } };
 function clashBin(gap, T) { T = T || CLASH; return Math.max(0, Math.min(T.p.length - 1, Math.floor((gap - T.lo) / T.bin))); }
 /* two machines' battle, at once: the muster a played one would have, then the measured odds. Returns the muster with
    how it went (attackerWon, broke). ⚠ The board's White is the attacker, so the gap is White's points less Black's. */
@@ -4838,6 +4927,7 @@ function sfx(k) {
   var t = actx.currentTime;
   if (k === 'roll') { for (var i = 0; i < 3; i++) tone(180 + Math.random() * 220, t + i * 0.05, 0.03, 'square', 0.04); }
   else if (k === 'lock') tone(740, t, 0.08, 'triangle', 0.1);
+  else if (k === 'castle') [392, 523, 659, 784].forEach(function (f, i) { tone(f, t + 0.12 + i * 0.07, 0.3, 'triangle', 0.13); });
   else if (k === 'move') tone(520, t, 0.05, 'sine', 0.1);
   else if (k === 'capture') { tone(220, t, 0.09, 'triangle', 0.16); tone(150, t + 0.03, 0.1, 'sine', 0.12); }
   else if (k === 'check') { tone(660, t, 0.07, 'square', 0.07); tone(880, t + 0.08, 0.09, 'square', 0.07); }

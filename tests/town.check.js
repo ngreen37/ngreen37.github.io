@@ -8316,13 +8316,14 @@ const server = http.createServer((req, res) => {
                 && /GameState\.challenge\.lesson_wanted\.emit\(\{ "who": "Maxwell", "lesson": "campaign", "war": true \}\)/.test(hmWar)
                 && coRows.indexOf('rows.better.push') >= 0,
               'the sand table, the site\'s numbers': sandOff.length === 0 && !!facesJ && facesJ === facesG && !!bandJ && !!bandG && bandJ.join() === bandG.join()
-                && /static func able\(\) -> bool:/.test(sdGd) && /if screen == MAP and _sand_on\(\) and _sand\.visible and _sand\.throw_dice\(/.test(fnGd(ctbT, '_begin_battle')),
+                && /static func able\(\) -> bool:/.test(sdGd) && /_sand\.throw_dice\(_sand_throw\(P, _side_col\(att\), _side_col\(dfd\)\), done\)/.test(fnGd(ctbT, '_throw'))
+                && !/throw_dice/.test(fnGd(ctbT, '_begin_battle')),
               'played': ['campfour', 'campthree', 'campgens', 'campwar', 'campsand'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
                 && /campuntil:phase:deploy:3600;campis:round:2;campis:turns:4;campis:held:4/.test(bcCase('campfour'))
                 && /campgen:Matsu;campis:screen:map;camptap:5;campis:ranks:5:6;campis:used:Matsu/.test(bcCase('campgens'))
                 && /campover:true;campis:screen:result;camphas:best:won in;camppress:watch;campis:screen:war/.test(bcCase('campwar'))
                 && /scene:res:\/\/rooms\/home\.tscn;wait:40;shot:house_war;useat:-140,-226;wait:30;campis:screen:war/.test(bcCase('campwar'))
-                && /camptap:3;campis:throwing:true;campis:screen:map;[^"]*campuntil:screen:roll:600;campis:roll:5/.test(bcCase('campsand')),
+                && /camptap:3;campis:throwing:false;campis:screen:roll;[^"]*campuntil:roll:5:600;campis:roll:5/.test(bcCase('campsand')),
             });
             ok(warOff.length === 0,
               '⭐⭐ HIS PICKS 6, 7, 9, 10 IN THE GAME  (his 11-10: "Let\'s do 6, 7, 9, 10"): a war of three or four round the table, two machines\' battle decided at once at the measured odds, hold ten and it is yours; everyone whose square you have won gives an order a campaign, one a round; every war plays back, your best framed in your house and pressed there; and the map on sand, his pawns as troops and the dice thrown on it, on the site\'s own numbers (probed: a war of four round the table, a war of three dealt, Matsu\'s order, a war won and watched and its frame pressed at home, the sand table and its throw)',
@@ -8354,7 +8355,7 @@ const server = http.createServer((req, res) => {
                 && /battleis:rule:dark;battleis:darks:0;battleuntil:darks:1:900/.test(bcCase('campdark'))
                 && /gs:motion_on=false;[^"]*battleis:rule:dark;[^"]*wait:500;battleis:darks:0/.test(bcCase('campdarkcalm'))
                 && /camphas:poslow:at sea;[^"]*battleis:rule:pieces;battleis:pawns:0/.test(bcCase('campsea'))
-                && /battlehand:w:n:1;battlehand:w:p:2;handpress:n;battleis:dsel:n;key:h:6;battleis:dsel:p;[^"]*tablepress:d5;battleis:sq:d5:N/.test(bcCase('campdrops'))
+                && /battlehand:w:n:1;battlehand:w:p:2;handpress:n;battleis:dsel:n;key:h:6;battleis:dsel:p;[^"]*tablepress:d3;battleis:sq:d3:N/.test(bcCase('campdrops'))
                 && /battleis:rule:endgame;battleis:eg:true;battleis:queens:0;[^"]*tablemove:a7a8;wait:20;tableis:result:won-queen/.test(bcCase('campflats')),
             });
             ok(ruleOff.length === 0,
@@ -8445,6 +8446,32 @@ const server = http.createServer((req, res) => {
             ok(scenOff.length === 0,
               '⭐ HIS #2 IN THE GAME  (his 11-16: "Do number 2 as well"): the page\'s four scenarios at Maxwell\'s table, dealt as the page deals them, run to their last round, starred by the page\'s checklist and kept',
               scenOff.length ? 'off: ' + scenOff.join(' · ') : 'the page\'s set pieces, at the table');
+            /* ⭐ HIS 11-17 ("the dice don't seem important enough"): the castle that delivers, the vanguard, time following the
+               armies. The corpus holds every muster's board, dInfo and clocks to the page; this holds the screen and the battle. */
+            const diceOff = offOf({
+              'the muster, the page\'s': /^const CLOCK_MIN := \d+/m.test(rd('campaign_book.gd')) && /^const VAN_RANK := 5/m.test(rd('campaign_book.gd'))
+                && /var a_moved := apply_attacker_pos\(board, "w" if att_white else "b", a_pos, rule\)/.test(fnGd(crT, 'muster_battle'))
+                && /var d_info := apply_defender_pos\(board, "b" if att_white else "w", d_pos, rule\)/.test(fnGd(crT, 'muster_battle'))
+                && /var clocks := battle_clocks\(material\(board,/.test(fnGd(crT, 'muster_battle'))
+                && /elif rule != "pieces":\s*\n\t+out\.given \+= 1/.test(fnGd(crT, 'apply_defender_pos'))
+                && /clear_file\(b, side, g_sq\)/.test(fnGd(crT, 'apply_defender_pos')) && !/push_pawns/.test(crT) && !/flats/.test(fnGd(ctbT, '_pos_verdict'))
+                && /clocks: P\.clocks/.test(coRows) && /"clocks": P\.clocks \}/.test(fs.readFileSync(path.join(GD, 'tests/campaign_rules_test.gd'), 'utf8'))
+                && /rows\.pos\.push\(/.test(coRows),
+              'the words are the board\'s, CASTLED! large and gold': /if bool\(p\.d_info\.castled\):\s*\n\t+return CASTLED \+ SEP \+ _castle_words\(p\.d_info, "their"\)/.test(fnGd(ctbT, '_pos_verdict'))
+                && /return CASTLED \+ SEP \+ _castle_words\(p\.d_info, "your"\)/.test(fnGd(ctbT, '_pos_verdict'))
+                && !/three pawns"|TUCKS IN|FULL CASTLE/.test(fnGd(ctbT, '_pos_verdict'))
+                && /_art\.draw_string\(bf, at, CASTLED, HORIZONTAL_ALIGNMENT_LEFT, -1, bs, GOLD/.test(fnGd(ctbT, '_paint_roll'))
+                && /var bs := int\(CASTLED_PX \* _k \* sc\)/.test(fnGd(ctbT, '_paint_roll')) && /^const CASTLED_PX := 30\.0/m.test(ctbT),
+              'the dice spin on the roll screen': /_art\.draw_set_transform\(rect\.get_center\(\)[^\n]*turn \* TAU \* 2\.0/.test(fnGd(ctbT, '_paint_roll'))
+                && /^const ROLL_BEAT := 0\.64/m.test(ctbT) && !/randi\(\)/.test(fnGd(ctbT, '_paint_roll')),
+              'the battle runs on the clocks the armies bought': /"clocks": p\.clocks,/.test(fnGd(ctbT, '_start_battle'))
+                && /var att_s := float\(ck\.get\("att", CB\.CLOCK_ATT\)\)/.test(fnGd(cbT, '_start'))
+                && /time %ds to %ds/.test(fnGd(ctbT, '_roll_layout')),
+              'played': /^[^#\n]*\bcampcastled\b/m.test(suiteT) && /campremuster:castled;[^"]*campuntil:roll:5:900;campis:castled:true;[^"]*camphas:pos:CASTLED!;camphas:tally:time ;camppress:tobattle;[^"]*battleis:bought:true/.test(bcCase('campcastled')),
+            });
+            ok(diceOff.length === 0,
+              '⭐ HIS 11-17 IN THE GAME  ("the dice don\'t seem important enough"): a 7 or better always castles and an 8 brings the rook and three pawns, the attacker\'s pawns start halfway up with a vanguard the die gives, thirty seconds shared by the armies, the dice spinning on the roll screen and CASTLED! lit in large gold letters',
+              diceOff.length ? 'off: ' + diceOff.join(' · ') : 'the page\'s muster and its words, at the table');
           }
         }
 

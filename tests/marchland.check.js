@@ -68,8 +68,8 @@ const code =
   slice('var MAT_SCALE',    '/* ── THE POSITION DIE') +
   slice('var POS_CASTLE',   'function posSteps') +
   slice('function posSteps', '/* ── THE MUSTER') +
-  slice('var VAL = {',      '/* Placement:') +
-  slice('function pawnsOf', '/* ── THE ENGINE') +
+  /* ⚠ ONE SLICE FROM VAL TO THE ENGINE since 11-17: the vanguard reads W_PAWN's files and clearFile the back ranks */
+  slice('var VAL = {',      '/* ── THE ENGINE') +
   /* ⚠ THE CLOCK CONSTANTS LIVE FAR DOWN THE FILE and were not in this context at first —
      so the JSON check below compared the generated file against `undefined` and failed
      loudly, which is exactly what it should do. A check that reads a name it was never
@@ -301,7 +301,7 @@ check('it is a glyph, not the ownership colors',
       !/\.die\.castle[^{]*\{[^}]*var\(--mine\)/.test(src),
       '--mine/--theirs already answer "whose die is this" on this screen');
 check('reduced motion parks the castle mark VISIBLE',
-      /\.die\.roll, \.die\.kept::after, \.die\.castle::before,/.test(src),
+      /\.die\.roll, \.die\.kept, \.die\.kept::after, \.die\.castle::before,/.test(src),
       'it is information, not flourish — stillness costs the picture, never the fact');
 
 /* ══ 5b. THE SECOND QUEEN — 2026-08-25 ════════════════════════════════════
@@ -402,25 +402,58 @@ check('a short muster PULLS pawns across to make the shield',
 check('…and it moved them rather than inventing them',
       bPull.filter(x => x === 'p').length === 3, 'still exactly three pawns on the board');
 
-/* not enough pawns: report the truth, do not fake a shield */
+/* ⚑ 11-17, his "it says they get three pawns but they don't have them pictured": THE SHIELD IS GIVEN where the muster
+   bought none. The old check here asserted the opposite (a shield of one), and the board kept the promise 0.2% of the time. */
 const bThin = freshDefender(true, [0]);                 // one pawn, on a7
-const oThin = G.applyDefenderPos(bThin, 'b', 20);
-check('one pawn buys a shield of one, not of three', oThin.shield === 1,
-      'shield of ' + oThin.shield + ' — a roll cannot conjure material the muster did not buy');
+const oThin = G.applyDefenderPos(bThin, 'b', 8, '');
+check('one pawn and an 8: the one walks across and two more are GIVEN — three in front of him', oThin.shield === 3 &&
+      oThin.given === 2 && bThin[F.f7] === 'p' && bThin[F.g7] === 'p' && bThin[F.h7] === 'p',
+      'shield of ' + oThin.shield + ', given ' + oThin.given);
+const bBare = freshDefender(true, []);
+const oBare = G.applyDefenderPos(bBare, 'b', 7, '');
+check('…and a 7 with no pawn at all still stands one in front of him', oBare.shield === 1 && oBare.given === 1 && bBare[F.g7] === 'p');
+const bSea = freshDefender(true, []);
+const oSea = G.applyDefenderPos(bSea, 'b', 8, 'pieces');
+check('…but never at sea, where no pawn is', oSea.castled && oSea.rook && oSea.shield === 0 && oSea.given === 0 &&
+      bSea.indexOf('p') < 0, 'king and rook only');
 
 const noRook = freshDefender(false);
 const nr = G.applyDefenderPos(noRook, 'b', 20);
 check('with no rook the king still castles and still gets his shield',
       nr.castled === true && nr.rook === false && nr.shield === 3);
 
-/* the g-square can be occupied by the muster — then there is no castle at all */
+/* ⚑ 11-17: a piece on g steps across to e — the castle ALWAYS happens (it failed 6.7% of 7s, measured) */
 const blocked = freshDefender(true);
 blocked[F.g8] = 'n';
-check('a knight on g8 blocks the castle rather than overwriting itself',
-      G.applyDefenderPos(blocked, 'b', 20).castled === false && blocked[F.g8] === 'n');
+check('a knight on g8 steps across to e8 and the king castles anyway',
+      G.applyDefenderPos(blocked, 'b', 8, '').castled === true && blocked[F.g8] === 'k' && blocked[F.e8] === 'n');
+/* ⚑ 11-17: the rook comes round past a piece on f (it came 9% of the times there was one, measured) */
+const inWay = freshDefender(false);
+inWay[3] = 'r'; inWay[F.f8] = 'b';                   // rook d8, bishop f8: both dark squares
+const oWay = G.applyDefenderPos(inWay, 'b', 8, '');
+check('an 8 brings the rook round past a bishop on f8, which stands where the rook stood',
+      oWay.rook === true && inWay[F.f8] === 'r' && inWay[3] === 'b', 'rook f8 · bishop d8');
+const lightRook = freshDefender(false);
+lightRook[2] = 'r'; lightRook[F.f8] = 'b';           // rook c8 (light), bishop f8 (dark)
+G.applyDefenderPos(lightRook, 'b', 8, '');
+const bAt = lightRook.findIndex((c, i) => i < 8 && c === 'b');
+check('…and a bishop keeps its color when the rook stood on the other one (his pair rule)',
+      lightRook[F.f8] === 'r' && bAt >= 0 && G.sqLight(bAt) === G.sqLight(F.f8), 'bishop on ' + bAt);
+/* ⛑ NO BATTLE STARTS IN CHECK (measured 11-17: 9% of battles did, and the attacker's first legal move took the king) */
+const seaCheck = freshDefender(true, []);
+seaCheck[60] = 'K'; seaCheck[62] = 'R';                // the attacker's rook on g1, the g-file open at sea
+G.applyDefenderPos(seaCheck, 'b', 8, 'pieces');
+const file = (b, f0) => [1, 2, 3, 4, 5, 6, 7].map((r) => b[r * 8 + f0]).filter(Boolean)[0] || '';
+check('at sea the rook at the far end of his open g-file steps aside, so he is not in check',
+      seaCheck[F.g8] === 'k' && file(seaCheck, 6) !== 'R' && seaCheck.filter((c) => c === 'R').length === 1);
+const eFile = freshDefender(false, [0, 1, 2, 3]);       // nothing on the e-file between the kings
+eFile[F.g8] = 'r'; eFile[60] = 'K';
+G.applyDefenderPos(eFile, 'b', 7, '');
+check('…and a rook that stepped across to e8 never starts with the attacker\'s king in check down the e-file',
+      eFile[F.g8] === 'k' && eFile[F.e8] !== 'r' && eFile.filter((c) => c === 'r').length === 1);
 
 /* ══ 7. THE WIRING — his 2026-08-11 answer: the POSITION die, and only that ═════════ */
-const call = /applyDefenderPos\(\s*board\s*,\s*[^,]+,\s*([A-Za-z0-9_.]+)\s*\)/.exec(src);
+const call = /applyDefenderPos\(\s*board\s*,\s*[^,]+,\s*([A-Za-z0-9_.]+)\s*,\s*rule\s*\)/.exec(src);
 check('the defender\'s castle is fed by the POSITION die', !!call && /\bdPos\b/.test(call[1]),
       call ? 'applyDefenderPos(…, ' + call[1] + ')' : 'CALL SITE NOT FOUND');
 check('the MATERIAL die has no path to it', !/applyDefenderPos\([^)]*dMat/.test(src),
@@ -481,12 +514,13 @@ const howScreen = slice('<section class="screen" id="screen-how">', '</section>'
    ⭐ AND THE 7-BAND CLAUSE GREW RATHER THAN SHRANK, because the RULE changed the same day —
    a 7 now brings a pawn with the king, so the screen has to say so. */
 check('the how-it-works screen states BOTH castling bands',
-      /<b>7 or better<\/b> tucks your king into the corner/.test(howScreen.replace(/\s+/g, ' ')) &&
-      /<b>an 8<\/b> brings his rook around/.test(howScreen.replace(/\s+/g, ' ')),
+      /<b>7 or better<\/b> castles your king behind a pawn/.test(howScreen.replace(/\s+/g, ' ')) &&
+      /<b>an 8<\/b> brings his rook around and three pawns with him/.test(howScreen.replace(/\s+/g, ' ')),
       'the page and the rule agree, on both halves of it — re-checked when the die shrank');
-check('…and that the lower band brings a pawn',
-      /with a pawn in front of him/.test(howScreen.replace(/\s+/g, ' ')),
-      'his 2026-08-25 rule: a castled king is never bare');
+check('…and the attacker\'s vanguard, given when the muster bought none',
+      /your pawns start halfway up the board/.test(howScreen.replace(/\s+/g, ' ')) && /given if you bought none/.test(howScreen.replace(/\s+/g, ' ')));
+check('…and that time follows the armies',
+      /shared by material:<\/b> the bigger army gets more time/.test(howScreen.replace(/\s+/g, ' ')));
 /* ⚠ \s+ BETWEEN THE WORDS, NOT A LITERAL SPACE. This copy is hand-wrapped HTML, so any
    trim that re-flows a line puts a newline and six spaces in the middle of a phrase — and
    three of these checks went red on the 2026-08-25 trim for exactly that, reporting missing
@@ -629,17 +663,29 @@ const attChair = verdictFn.slice(0, chairSplit);
 const defChair = verdictFn.slice(chairSplit);
 check('posVerdict really does have two chairs to check', chairSplit > 0 && defChair.length > 200,
       'attacker half ' + attChair.length + ' chars, defender half ' + defChair.length);
-check('ATTACKING, the screen tells a full enemy castle from a bare king',
-      /THEY CASTLE FULLY[\s\S]{0,90}king, rook and three pawns/.test(attChair) &&
-      /THEIR KING TUCKS IN[\s\S]{0,90}no rook, no shield/.test(attChair),
-      'a 16 and an 18 do not read identically from the attacker chair');
-check('DEFENDING, it tells your own full castle from your own bare king',
-      /FULL CASTLE[\s\S]{0,140}king, rook and three pawns/.test(defChair) &&
-      /KING IN THE CORNER[\s\S]{0,90}no rook, no shield/.test(defChair),
-      'checked in the branch that writes it, not anywhere in the file');
-check('…and it names the no-rook case honestly',
-      /no rook to bring/.test(defChair),
-      'a roll cannot conjure a rook the muster never bought');
+/* ⚑ 11-17: CASTLED! in either chair, and the castle's words read off dInfo (his "it says they get three pawns but they
+   don't have them pictured") — never a phrase typed for the die */
+check('ATTACKING, a castle is CASTLED! in their words, read off the board',
+      /if \(p\.dInfo\.castled\)\s*\{ word = 'CASTLED!'; clause = castleWords\(p\.dInfo, 'their'\)/.test(attChair),
+      'dInfo.castled, not posCastles(dPos)');
+check('DEFENDING, a castle is CASTLED! in yours',
+      /if \(p\.dInfo\.castled\)\s*\{ word = 'CASTLED!'; clause = castleWords\(p\.dInfo, 'your'\)/.test(defChair));
+check('no castle phrase is typed for the die any more',
+      !/three pawns'|no rook, no shield|TUCKS IN|FULL CASTLE/.test(verdictFn), 'the old words described the die, not the board');
+{
+  const cw = vm.runInNewContext(slice('var NUM = [', 'function posVerdict()') + ';({ castleWords: castleWords, firstFace: firstFace })',
+    { FACES: G.FACES, posSteps: G.posSteps });
+  check('…and the castle words say what stands there',
+        cw.castleWords({ rook: true, shield: 3 }, 'their') === 'their king, rook and three pawns' &&
+        cw.castleWords({ rook: false, shield: 1 }, 'your') === 'your king and one pawn' &&
+        cw.castleWords({ rook: true, shield: 0 }, 'their') === 'their king and rook' &&
+        cw.castleWords({ rook: false, shield: 0 }, 'your') === 'your king alone',
+        cw.castleWords({ rook: false, shield: 1 }, 'your'));
+  check('…and the fine print\'s faces follow posSteps', cw.firstFace(1) === 3 && cw.firstFace(2) === 5 && cw.firstFace(3) === 7);
+}
+check('CASTLED! is large and gold, and still under reduced motion',
+      /\.vline\.castled > b \{ font-size: 30px;[^}]*color: #ffd66a/.test(src) &&
+      /\.die\.roll, \.die\.kept, \.die\.kept::after, \.die\.castle::before, \.vline\.castled > b,/.test(src));
 
 /* ══ 9b. THE VERDICT REPORTS THE BOARD, NOT THE DIE ═════════════════════════════════
    ⛑⛑ 2026-08-25, found by LOOKING at a render. `applyAttackerPos` has always returned how
@@ -650,28 +696,52 @@ check('…and it names the no-rook case honestly',
 check('the pawns that moved are KEPT, not re-derived',
       /var aMoved = applyAttackerPos\(/.test(src) && /aMoved:aMoved/.test(src),
       'the truth was already being computed and thrown away');
-check('ATTACKING, the headline counts what MOVED',
-      /var st = p\.aMoved/.test(attChair) && !/var st = posSteps/.test(attChair),
+check('ATTACKING, the headline counts what stands up front',
+      /van = p\.aMoved/.test(attChair) && !/van = posSteps/.test(attChair),
       'not what the die promised');
-check('…and a wasted die is said out loud rather than dressed up',
-      /NO PAWNS TO PUSH/.test(attChair) && /no pawns to push/.test(attChair),
-      'the headline and the second clause both stop claiming pawns you do not have');
+check('…and no die is wasted any more: "no pawns to push" is gone from the screen (it was 36% of attacks)',
+      !/NO PAWNS TO PUSH|no pawns to push'/.test(attChair) && !/flats/.test(verdictFn));
 check('DEFENDING, the chain counts pawns that really dug in',
-      /p\.dInfo\.chain \+ ' pawns dug in/.test(defChair) &&
+      /count\(p\.dInfo\.chain, 'pawn'\) \+ ' dug in/.test(defChair) &&
       /NO PAWNS TO DIG IN/.test(defChair),
       'dInfo.chain is the measurement; posSteps is the promise');
+/* ══ THE VANGUARD (his 11-17: "for the attacker pawns only are valuable if they start up closer to the defender's end") ══
+   The die GIVES what the muster did not buy: "no pawns to push" was 36% of attacks (measured 11-17). */
 {
-  /* and prove the premise in the vm: an all-pieces muster cannot advance a pawn, so the
-     die really is wasted and the old headline really was describing nothing. */
   const noPawns = new Array(64).fill('');
   'RNBQKBNR'.split('').forEach((c, f) => { noPawns[56 + f] = c; });
-  check('an all-pieces muster really does advance zero pawns',
-        G.applyAttackerPos(noPawns, 'w', 20) === 0,
-        'a 20 on the position die and nothing to spend it on — this is the board that lied');
-  const withPawns = new Array(64).fill('');
-  [48, 49, 50, 51].forEach((i) => { withPawns[i] = 'P'; });
-  check('…while a muster with pawns advances them',
-        G.applyAttackerPos(withPawns, 'w', 20) > 0);
+  check('an all-pieces muster and an 8: three pawns up front, the first nearly through',
+        G.applyAttackerPos(noPawns, 'w', 8, '') === 3 && noPawns[20] === 'P' && noPawns[27] === 'P' && noPawns[29] === 'P' &&
+        noPawns.filter((c) => c === 'P').length === 3, 'e6 · d5 · f5');
+  const four = new Array(64).fill('');
+  [48, 49, 50, 51].forEach((i) => { four[i] = 'P'; });
+  check('…a 5 with four pawns bought: two up front, the other two on the line beside them',
+        G.applyAttackerPos(four, 'w', 5, '') === 2 && four[28] === 'P' && four[27] === 'P' && four[37] === 'P' && four[34] === 'P' &&
+        four.filter((c) => c === 'P').length === 4, 'e5 d5 · f4 c4');
+  const low = new Array(64).fill('');
+  [48, 49].forEach((i) => { low[i] = 'P'; });
+  check('…a 1 gives nothing, and the pawns bought still start on the line, halfway up',
+        G.applyAttackerPos(low, 'w', 1, '') === 0 && low[36] === 'P' && low[35] === 'P' && low.filter((c) => c === 'P').length === 2);
+  const black = new Array(64).fill('');
+  check('…from the top, the attacker\'s own ranks: a 3 stands one on e4',
+        G.applyAttackerPos(black, 'b', 3, '') === 1 && black[36] === 'p');
+  const sea = new Array(64).fill('');
+  check('…none at sea', G.applyAttackerPos(sea, 'w', 8, 'pieces') === 0 && sea.indexOf('P') < 0);
+  const flatsB = new Array(64).fill('');
+  [48, 49, 50, 51].forEach((i) => { flatsB[i] = 'P'; });
+  check('…and the Flats get it too (the old push from home lost the race to the castle\'s given shield, measured)',
+        G.applyAttackerPos(flatsB, 'w', 3, 'endgame') === 1 && flatsB[28] === 'P' && flatsB.filter((c, i) => c === 'P' && i >= 48).length === 0);
+}
+/* ══ TIME FOLLOWS THE ARMIES (his 11-17: "reward better the attacker who has a large army advantage, or vice versa") ══ */
+{
+  const ck = (a, d) => { const c = G.battleClocks(a, d); return c.att + '/' + c.def; };
+  check('an even muster is his fifteen each', ck(20, 20) === '15/15' && ck(0, 0) === '15/15');
+  check('28 against 12 is 21 seconds against 9, and the other way round', ck(28, 12) === '21/9' && ck(12, 28) === '9/21');
+  check('…never under CLOCK_MIN, and always his thirty between them', ck(40, 1) === (30 - G.CLOCK_MIN) + '/' + G.CLOCK_MIN &&
+        [[3, 30], [9, 9], [27, 2], [1, 1]].every((x) => { const c = G.battleClocks(x[0], x[1]); return c.att + c.def === G.CLOCK_ATT + G.CLOCK_DEF; }));
+  check('the battle runs on the clocks the muster bought',
+        /clk: \{ w: attWhite \? p\.clocks\.att : p\.clocks\.def, b: attWhite \? p\.clocks\.def : p\.clocks\.att \}/.test(src) &&
+        /var clocks = battleClocks\(material\(board, attWhite \? 'w' : 'b'\), material\(board, attWhite \? 'b' : 'w'\)\);/.test(src));
 }
 const matFn = slice('function matVerdict()', 'function posVerdict');
 check('the material verdict is one bold word plus one clause, not a sum',
@@ -715,7 +785,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
           Object.keys(d.levels).length + ' levels');
     check('...including every balance dial, so nothing has to be retyped',
           d.balance.attEdge === G.ATT_EDGE && d.balance.clockAtt === G.CLOCK_ATT &&
-          d.balance.moveDelay === G.MOVE_DELAY && d.balance.queenRanks === G.QUEEN_RANKS,
+          d.balance.moveDelay === G.MOVE_DELAY && d.balance.queenRanks === G.QUEEN_RANKS && d.balance.clockMin === G.CLOCK_MIN &&
+          d.balance.vanRank === G.VAN_RANK && d.balance.lineRank === G.LINE_RANK,
           'ATT_EDGE ' + d.balance.attEdge + ' - clocks ' + d.balance.clockAtt + '/' +
           d.balance.clockDef + ' - delay ' + d.balance.moveDelay + 's');
   }
@@ -1131,8 +1202,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     buds.push(P.aBud);
   }
   check('⭐ the Flats muster an endgame: no queen in 200 battles, a rook, a bishop and a knight at most a side, six pawns',
-        queens === 0 && over === 0 && plain === 0 && Math.max(...buds) <= camp.egBudget(15 + 4 + 12), 'queens ' + queens + ', over ' + over + ', top budget ' + Math.max(...buds));
-  check('…on half the points the dice give (a pawn at least)', camp.egBudget(21) === 11 && camp.egBudget(1) === 1);
+        queens === 0 && over === 0 && plain === 0 && Math.max(...buds) <= camp.egBudget(15 + 4 + camp.ATT_EDGE), 'queens ' + queens + ', over ' + over + ', top budget ' + Math.max(...buds));
+  check('…on three quarters of the points the dice give, a pawn at least (0.75 since 11-17, measured)', camp.egBudget(20) === 15 && camp.egBudget(1) === 1);
   let seaPawns = 0, seaPlain = 0, seaPieces = 0;
   for (let i = 0; i < 200; i++) {
     G.own[9] = 'm'; G.own[4] = 't'; G.ranks[9] = 2 + (i % 8); G.ranks[4] = 1 + (i % 9);
@@ -1145,7 +1216,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
         seaPawns === 0 && seaPlain === 0 && seaPieces > 200, 'pawns ' + seaPawns + ', attacking pieces ' + seaPieces);
   check('…and the roll screen says so, in both chairs, instead of mourning pawns that were never mustered',
         (slice('function posVerdict(', 'function boardCells(').match(/AT SEA/g) || []).length === 2 &&
-        /sea \? 'king and rook' : 'king, rook and three pawns'/.test(slice('function posVerdict(', 'function boardCells(')));
+        /'no pawns at sea'/.test(slice('function posVerdict(', 'function boardCells(')));
 
   /* a take, and the drop it buys */
   let b = empty(); b[at('e1')] = 'K'; b[at('d1')] = 'R'; b[at('e8')] = 'k'; b[at('d4')] = 'n';
@@ -1637,26 +1708,46 @@ const ENDED = "document.getElementById('endcard').classList.contains('on')";
         const b = await board();
         const ms = C2.legalMoves({ b, turn: 'w', cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 })
           .filter((m) => !m.promo && !m.ep);
-        const m = ms.find((x) => b[x.to]) || ms[(k * 7) % Math.max(1, ms.length)];
+        /* ⚠ TOWARD THE ENEMY, NOT AT RANDOM (11-17): with no flat edge the armies are small, and a random walk went fourteen
+           moves without a take. A capture first, else the move that ends nearest one of theirs. */
+        const foes = []; b.forEach((c, i) => { if (c && c === c.toLowerCase()) foes.push(i); });
+        const near = (s) => Math.min(...foes.map((e) => Math.max(Math.abs((s >> 3) - (e >> 3)), Math.abs((s & 7) - (e & 7)))));
+        const m = ms.find((x) => b[x.to]) || ms.slice().sort((x, y) => near(x.to) - near(y.to) || x.to - y.to)[0];
         if (!m) break;
         await press(m.from); await press(m.to);
         if (b[m.to]) took = b[m.to].toLowerCase();
         await wait(200);
       }
-      for (let w = 0; w < 120 && took && !(await mine()); w++) {
-        if (await page.evaluate(ENDED)) { over = true; break; }
-        await wait(100);
+      let drop = { why: over ? 'the battle ended before a take' : 'no take in fourteen moves' };
+      for (let tries = 0; took && !over && tries < 4; tries++) {
+        for (let w = 0; w < 120 && !(await mine()); w++) {
+          if (await page.evaluate(ENDED)) { over = true; break; }
+          await wait(100);
+        }
+        if (over) { drop = { why: 'the battle ended before a drop' }; break; }
+        /* ⚠ IN CHECK BY A KNIGHT OR A PAWN NO DROP CAN BLOCK, and the screen rightly lights nothing (1 run in 3 on the 11-17
+           starting positions): step out of it, and drop on the next turn */
+        const b0 = await board();
+        const S0 = { b: b0, turn: 'w', cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 };
+        if (C2.inCheck(S0, 'w')) {
+          const esc = C2.legalMoves(S0).filter((x) => !x.promo)[0];
+          if (!esc) break;
+          await press(esc.from); await press(esc.to);
+          await wait(200);
+          continue;
+        }
+        drop = await page.evaluate((t) => {
+          const hb = document.querySelector('#hand-me button[data-t="' + t + '"]');
+          if (!hb) return { why: 'no ' + t + ' in the hand row' };
+          hb.click();
+          const lit = [].slice.call(document.querySelectorAll('#sqs .sq.hint')).map((c) => +c.getAttribute('data-i'));
+          const on = !!document.querySelector('#hand-me button.on');
+          if (!lit.length) return { why: 'nothing lit', on };
+          document.querySelector('#sqs [data-i="' + lit[0] + '"]').click();
+          return { on, lit, at: lit[0] };
+        }, took);
+        break;
       }
-      const drop = took && !over ? await page.evaluate((t) => {
-        const hb = document.querySelector('#hand-me button[data-t="' + t + '"]');
-        if (!hb) return { why: 'no ' + t + ' in the hand row' };
-        hb.click();
-        const lit = [].slice.call(document.querySelectorAll('#sqs .sq.hint')).map((c) => +c.getAttribute('data-i'));
-        const on = !!document.querySelector('#hand-me button.on');
-        if (!lit.length) return { why: 'nothing lit', on };
-        document.querySelector('#sqs [data-i="' + lit[0] + '"]').click();
-        return { on, lit, at: lit[0] };
-      }, took) : { why: over ? 'the battle ended before a take' : 'no take in fourteen moves' };
       await wait(300);
       const after = await board();
       check('⭐⭐ ON THE REAL PAGE: a piece you took goes into your hand, pressed it lights the empty squares, and a click drops it there',

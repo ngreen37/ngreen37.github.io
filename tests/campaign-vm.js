@@ -37,7 +37,9 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   /* the generals' own ways (11-16, his #5) */
   'STYLES', 'styleOf', 'threatOf', 'hasLine', 'cutOff',
   /* scenarios with stars (11-16, his #2) */
-  'SCENARIOS', 'scenOf', 'scen', 'scenStars', 'scenMet', 'scenCheck', 'starsText', 'loadStars', 'bankScenario'];
+  'SCENARIOS', 'scenOf', 'scen', 'scenStars', 'scenMet', 'scenCheck', 'starsText', 'loadStars', 'bankScenario',
+  /* the dice matter more (11-17): the vanguard, the castle that delivers, time follows the armies */
+  'battleClocks', 'CLOCK_MIN', 'clearFile', 'VAN_RANK', 'LINE_RANK'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -53,6 +55,7 @@ function gameScript() {
     'setEgScale: function (v) { EG_SCALE = v; }, get EG_SCALE() { return EG_SCALE; }, ' +
     'setDrEdge: function (v) { DR_EDGE = v; }, get DR_EDGE() { return DR_EDGE; }, ' +
     'setPcEdge: function (v) { PC_EDGE = v; }, get PC_EDGE() { return PC_EDGE; }, ' +
+    'setAttEdge: function (v) { ATT_EDGE = v; }, get ATT_EDGE() { return ATT_EDGE; }, ' +
     'setSea: function (v) { SEA = v; }, get SEA() { return SEA; }, ' +
     'setStyleOf: function (v) { STYLE_OF = v; }, get STYLE_OF() { return STYLE_OF; }, ' +
     LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +

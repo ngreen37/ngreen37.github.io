@@ -57,6 +57,8 @@ function build() {
     slice(src, 'var POS_CASTLE',   'function posSteps') +
     slice(src, 'var VAL = {',      'function capsFor') +
     slice(src, 'var CLOCK_ATT',    '/* THE REVEAL BEAT') +
+    /* 11-17: the vanguard's two ranks (the clock's share and its floor ride the slice above) */
+    slice(src, 'var LINE_RANK',    'var FILES_OUT') +
     /* 11-10: what a result is worth, Maxwell and his words, the dogs, and the first campaign — data a port reads, so
        his words and the small map are typed once */
     slice(src, 'var SURVIVE',      '/* the share of its points') +
@@ -93,7 +95,7 @@ function build() {
     _purpose: 'Shared map + balance data. The browser game keeps these inline; a Godot build ' +
               'reads this file so both play the same tuned game.',
     name: 'ChessWild: Campaign',
-    version: '0.9',
+    version: '0.10',
     holdings: G.LAND.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     /* 11-16, his #7: the sea lane, a front across the water (the campaign's map only) */
@@ -120,6 +122,11 @@ function build() {
       posTop: G.POS_TOP,
       clockAtt: G.CLOCK_ATT,
       clockDef: G.CLOCK_DEF,
+      /* 11-17, the dice matter more: the least a side's clock gets once time follows the armies, and the ranks the
+         attacker's pawns stand on (its line, and the vanguard the position die sends) */
+      clockMin: G.CLOCK_MIN,
+      lineRank: G.LINE_RANK,
+      vanRank: G.VAN_RANK,
       moveDelay: G.MOVE_DELAY,
       pieceValues: G.VAL,
       survive: G.SURVIVE             // what's left on the board marches in: 'win' = the side that won the ground keeps a share

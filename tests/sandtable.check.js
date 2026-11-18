@@ -86,20 +86,20 @@ function serve(block) {
     ok(dep.now === mine.was + 1 && dep.left === mine.left - 1, 'a press on a holding of yours places a troop there, as a tap on the flat map does');
     await page.evaluate(() => { const G = __mc.G; while (G.phase === 'deploy' && G.toPlace > 0) __mc.tapLand(__mc.idsOf('m')[3]); });
     await sleep(500);
-    /* the dice: thrown on the table first, the roll screen opening on them rolled */
+    /* ⚑ 11-17, his "the dice should spin on THIS screen for the reveal": your own battle opens the roll screen at once and
+       its dice spin there; the table throws only a battle two generals fight between themselves (below) */
     const thrown = await page.evaluate(() => {
       const G = __mc.G, from = 3, to = __mc.nbrs(3).filter((j) => G.own[j] !== 'm')[0];
       __mc.tapLand(from); __mc.tapLand(to);
-      const P = __mc.PEND;
       return { throwing: __mc.SAND.throwing(), roll: document.getElementById('screen-roll').classList.contains('on'),
-        pools: [].concat(P.aMatPool, P.aPosPool, P.dMatPool, P.dPosPool), dice: __mc.SAND.dice().map((d) => d.v) };
+        spinning: document.querySelectorAll('#att-mat .die.roll').length };
     });
-    ok(thrown.throwing && !thrown.roll && thrown.dice.join() === thrown.pools.join(),
-       '⭐ an attack throws its dice on the table — every die the roll will show, and the roll screen waits  [' + thrown.dice.join(' ') + ']');
-    await page.waitForFunction(() => document.getElementById('screen-roll').classList.contains('on'), { timeout: 6000 });
+    ok(!thrown.throwing && thrown.roll && thrown.spinning > 0,
+       '⭐ your attack opens the roll screen at once, its dice spinning there, not on the table  [' + thrown.spinning + ' spinning]');
+    await page.waitForFunction(() => !document.getElementById('tobattle').disabled, { timeout: 8000 });
     const rolled = await page.evaluate(() => ({ ready: !document.getElementById('tobattle').disabled, preview: !document.getElementById('preview').hidden,
       dice: document.querySelectorAll('#att-mat .die.kept, #def-mat .die.kept, #att-pos .die.kept, #def-pos .die.kept').length }));
-    ok(rolled.ready && rolled.preview && rolled.dice === 4, '…then the roll screen opens on them rolled, nothing rolled twice');
+    ok(rolled.ready && rolled.preview && rolled.dice === 4, '…then they land and lock, one kept a pool');
     /* two machines' battle throws its dice too, and waits for nobody */
     const clash = await page.evaluate(() => {
       const G = __mc.G, $ = (id) => document.getElementById(id);
@@ -114,7 +114,8 @@ function serve(block) {
     /* Map: Flat, and back */
     await page.evaluate(() => { const $ = (id) => document.getElementById(id); $('screen-roll').classList.remove('on'); $('screen-map').classList.add('on'); });
     await page.click('.mapview');
-    await sleep(120);
+    /* ⚠ WAITED FOR, NOT SLEPT (11-17): 120 ms missed the flat map's fade once with the machine busy */
+    await page.waitForFunction(() => !__mc.SAND.on() && getComputedStyle(document.querySelector('#mapbox .node')).opacity === '1', { timeout: 3000 }).catch(() => {});
     const flat = await page.evaluate(() => ({ on: __mc.SAND.on(), sand: document.getElementById('mapbox').classList.contains('sand-on'),
       btn: document.querySelector('.mapview').textContent, op: getComputedStyle(document.querySelector('#mapbox .node')).opacity,
       kept: localStorage.getItem('pjcc.campaign.map.flat') }));

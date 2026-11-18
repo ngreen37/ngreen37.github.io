@@ -21,7 +21,7 @@ var __sfx = sfx, __sounds = [];
 sfx = function (k) { __sounds.push(k); return __sfx(k); };
 window.__mc = {
   get G() { return G; }, get B() { return B; }, get PEND() { return PEND; }, set PEND(v) { PEND = v; },
-  sounds: __sounds, tapLand: tapLand, beginBattle: beginBattle, tickClock: tickClock, posVerdict: posVerdict,
+  sounds: __sounds, tapLand: tapLand, beginBattle: beginBattle, tickClock: tickClock, posVerdict: posVerdict, musterBattle: musterBattle,
   playAI: playAI, applyMove: applyMove, autoPromo: autoPromo, pump: pump, setPhase: setPhase, drawMap: drawMap,
   newCampaign: newCampaign, campaignOver: campaignOver, show: show, paintDice: paintDice,
   fogged: fogged, dailyStart: dailyStart, startYourTurn: startYourTurn, startBattle: startBattle, goLive: goLive,
@@ -88,7 +88,8 @@ function serve() {
     /* ── the arithmetic line follows the die ── */
     const maths = await E(() => { __mc.PEND = { playerAttacks: false, dArmy: ['r'], aMoved: 0, aPos: 3, dPos: 8, dInfo: { chain: 0 } };
       __mc.posVerdict(); return document.querySelector('#v-pos .maths').textContent; });
-    ok(/7\+ tucks the king in, 8 brings the rook/.test(maths), 'the "numbers" line states the d8 thresholds  [' + maths.split('—')[1] + ']');
+    ok(/3, 5 and 7 send one, two and three pawns up front; 7\+ castles behind a pawn, 8 brings the rook and three/.test(maths),
+      'the "numbers" line states the d8 thresholds  [' + maths.split('—')[1] + ']');
 
     const badge = await E(() => { const h = document.createElement('div'); __mc.paintDice(h, [8], 0, false, true, true); const att = !!h.querySelector('.castle');
       __mc.paintDice(h, [8], 0, true, true, true); return { att, def: !!h.querySelector('.castle') }; });
@@ -565,7 +566,7 @@ function serve() {
       const m = __mc, $ = id => document.getElementById(id), C = window.PJCCChess;
       const run = async (diff, mode, fen, attacking) => {
         m.newCampaign(diff, mode); m.G.started = false;
-        m.PEND = { from: 5, to: 3, aRanks: 4, dRanks: 3, dInfo: { castled: false, chain: 0 },
+        m.PEND = { from: 5, to: 3, aRanks: 4, dRanks: 3, dInfo: { castled: false, chain: 0 }, clocks: { att: 15, def: 15 },
           playerAttacks: attacking, attWhite: attacking, board: C.parseFEN(fen).b };
         m.show('screen-roll'); $('preview').hidden = false; m.paintPreview();
         await new Promise(r => setTimeout(r, 800));
@@ -585,6 +586,33 @@ function serve() {
     ok(!coach.threat.hidden && /they have a forced mate/.test(coach.threat.text) && /Ra1#/.test(coach.threat.text), '…warns a defender of one coming  [' + coach.threat.text + ']');
     ok(!coach.up.hidden && /You are up 9\. They have only pawns/.test(coach.up.text) && /Try [A-Z]?[a-h]/.test(coach.up.text), '…and otherwise gives the material and a first move  [' + coach.up.text + ']');
     ok(coach.medium.hidden && coach.two.hidden, 'no coach on Medium, and none between two people');
+
+    /* ⚑ 11-17 (his "'Castled!' should light up in large words"): a castle reads CASTLED! large and gold, and on a phone the
+       tally — the clocks the armies bought — is one line that scrolls clear of the button. The first cut wrapped it in the
+       board's width and left it under the button (measured). ⚠ The longest clause (an 8 up front as well) wraps, so this
+       asks for the screen scrolled to its end, which is where a phone in Safari always reads it. */
+    await page.setViewport({ width: 390, height: 844 });
+    const fit = await E(async () => {
+      const m = __mc, $ = (id) => document.getElementById(id);
+      m.newCampaign('medium', 'solo'); m.G.started = false;
+      m.beginBattle(5, 3, true);
+      let P = null;
+      for (let i = 0; i < 800 && !(P && P.dInfo.castled && P.dInfo.rook && P.dInfo.shield === 3 && P.aMoved >= 2 && P.aPos === 8); i++) P = m.musterBattle(5, 3, true);
+      m.PEND = P; m.finishRoll();
+      await new Promise((r) => setTimeout(r, 900));
+      $('screen-roll').scrollTop = 1e6;
+      await new Promise((r) => setTimeout(r, 60));
+      const t = $('ptally').getBoundingClientRect(), b = $('tobattle').getBoundingClientRect(), w = $('v-pos').querySelector('b');
+      const out = { word: w.textContent, size: parseFloat(getComputedStyle(w).fontSize), color: getComputedStyle(w).color,
+        lines: Math.round(t.height / 14), bottom: Math.round(t.bottom), button: Math.round(b.top), tally: $('ptally').textContent };
+      m.G.busy = false; m.show('screen-map');
+      return out;
+    });
+    await page.setViewport({ width: 460, height: 760 });
+    ok(fit.word === 'CASTLED!' && fit.size >= 28 && fit.color === 'rgb(255, 214, 106)',
+      'a castle lights CASTLED! large and gold  [' + fit.size + 'px ' + fit.color + ']');
+    ok(fit.lines === 1 && fit.bottom <= fit.button && /time \d+s to \d+s/.test(fit.tally),
+      '…and on a 390×844 phone the tally with its clocks is one line and scrolls clear of the button, on the longest clause  [' + fit.lines + ' line, ends ' + fit.bottom + ' · button ' + fit.button + ' · ' + fit.tally + ']');
 
     /* ── save and continue ── */
     await E(() => localStorage.removeItem('pjcc.campaign.save.v1'));

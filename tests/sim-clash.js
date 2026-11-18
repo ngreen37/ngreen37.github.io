@@ -26,15 +26,16 @@ const LO = +env('LO', -12), BIN = +env('BIN', 3), BINS = +env('BINS', 12);
 /* RULE: a place that fights its own chess (endgame | drops) — only battles for its ground; unset, only battles for ground
    with no rule. EG_SCALE overrides the page's endgame budget scale, for the sweep. */
 const RULE = env('RULE', ''), EG = env('EG_SCALE', ''), DR = env('DR_EDGE', ''), PC = env('PC_EDGE', '');
+/* EDGE: the attacker's ATT_EDGE for the sweep (11-17, when time began to follow the armies) */
+const EDGE = env('EDGE', '');
 
 function worker(count, seed) {
   const camp = require(path.join(__dirname, 'campaign-vm.js')).load();
   if (EG !== '') camp.setEgScale(+EG);
   if (DR !== '') camp.setDrEdge(+DR);
   if (PC !== '') camp.setPcEdge(+PC);
+  if (EDGE !== '') camp.setAttEdge(+EDGE);
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
-  const movesAtt = Math.max(1, Math.round(camp.CLOCK_ATT / EFF));
-  const movesDef = Math.max(1, Math.round(camp.CLOCK_DEF / EFF));
   let s = seed >>> 0;
   const rnd = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const pick = (n) => Math.floor(rnd() * n);
@@ -53,6 +54,8 @@ function worker(count, seed) {
     const [from, to] = opts[pick(opts.length)];
     G.ranks[from] = 2 + pick(8);
     const P = camp.musterBattle(from, to, true);
+    /* ⚠ each battle's own clocks: time follows the armies (11-17) */
+    const movesAtt = Math.max(1, Math.round(P.clocks.att / EFF)), movesDef = Math.max(1, Math.round(P.clocks.def / EFF));
     let S = camp.battleState(P);
     let usedW = 0, usedB = 0, how = null;
     while (!how) {
@@ -126,7 +129,7 @@ if (process.env.SIM_WORKER) {
     const t0 = Date.now();
     console.log(`=== CHESSWILD: CAMPAIGN — THE ODDS A MACHINES' BATTLE IS DECIDED AT ===`);
     console.log(`  ${N} battles · engine ${ENGINE_MS}ms · ${SEC_PER_MOVE}s a move · bins of ${BIN} from ${LO}, ${BINS} of them` +
-                ` · ${RULE ? 'the ground of rule "' + RULE + '"' : 'ground with no rule'}${EG !== '' ? ' · EG_SCALE ' + EG : ''}` +
+                ` · ${RULE ? 'the ground of rule "' + RULE + '"' : 'ground with no rule'}${EG !== '' ? ' · EG_SCALE ' + EG : ''}${EDGE !== '' ? ' · ATT_EDGE ' + EDGE : ''}` +
                 `${DR !== '' ? ' · DR_EDGE ' + DR : ''}${PC !== '' ? ' · PC_EDGE ' + PC : ''}`);
     const rs = await run();
     if (process.env.RAW) require('fs').writeFileSync(process.env.RAW, rs.map((r) => JSON.stringify(r)).join('\n') + '\n');
