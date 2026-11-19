@@ -200,9 +200,9 @@ check('two neighbors of your own is a chain', G.CHAIN_MIN === 2);
 check('the attack budget is three', G.ATTACK_CAP === 3);
 check('⚠ the machine cannot out-attack the player',
       Object.keys(G.LEVELS).every(k => Math.min(G.LEVELS[k].maxAtk, G.ATTACK_CAP) <= G.ATTACK_CAP) &&
-      /* his #5: a general's style moves the level's count (Wes one fewer) inside the same clamp */
+      /* his #5: a general's style moves the level's count (Wes one fewer, the Seaboard Rep one more) inside the same clamp */
       /Math\.min\(plain \? L\.maxAtk : Math\.max\(1, L\.maxAtk \+ St\.cap\), ATTACK_CAP\)/.test(src) &&
-      Object.keys(G.STYLES).every((k) => G.STYLES[k].cap <= 0),
+      Object.keys(G.STYLES).every((k) => G.STYLES[k].cap <= 1),
       'Hard already plays 3; the clamp is what keeps that true after the next edit');
 check('…and the budget is spent when an attack is COMMITTED, not when it is won',
       /G\.atks--;\s*\n\s*beginBattle\(G\.sel, id, true\)/.test(src),
@@ -741,7 +741,11 @@ check('DEFENDING, the chain counts pawns that really dug in',
         [[3, 30], [9, 9], [27, 2], [1, 1]].every((x) => { const c = G.battleClocks(x[0], x[1]); return c.att + c.def === G.CLOCK_ATT + G.CLOCK_DEF; }));
   check('the battle runs on the clocks the muster bought',
         /clk: \{ w: attWhite \? p\.clocks\.att : p\.clocks\.def, b: attWhite \? p\.clocks\.def : p\.clocks\.att \}/.test(src) &&
-        /var clocks = battleClocks\(material\(board, attWhite \? 'w' : 'b'\), material\(board, attWhite \? 'b' : 'w'\)\);/.test(src));
+        /var clocks = battleClocks\(material\(board, attWhite \? 'w' : 'b'\), material\(board, attWhite \? 'b' : 'w'\), rule\);/.test(src));
+  /* ⚑ his 11-18: "Is it first to make a queen? Then time should be like 15 seconds for each player, right?" */
+  const eg = (a, d) => { const c = G.battleClocks(a, d, 'endgame'); return c.att + '/' + c.def; };
+  check('⭐ the Flats are fifteen each, whatever the armies (a race to a queen is a race)',
+        eg(28, 12) === '15/15' && eg(3, 20) === '15/15' && ck(28, 12) === '21/9');
 }
 const matFn = slice('function matVerdict()', 'function posVerdict');
 check('the material verdict is one bold word plus one clause, not a sum',
@@ -1072,10 +1076,12 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   /* every general's word is shippable, as Maxwell's are */
   const bad = [];
   Object.keys(camp.GENERAL_LINES).forEach((w) => Object.keys(camp.GENERAL_LINES[w]).forEach((k) => camp.GENERAL_LINES[w][k].forEach((s) => {
-    if (!/[.?!]["”]?$/.test(s) || s.length > 220 || (s.match(/\{(\w+)\}/g) || []).some((t) => t !== '{to}' && t !== '{from}')) bad.push(w + '.' + k + ': ' + s);
+    const may = ['{to}', '{from}'].concat(k === 'war' ? ['{holdings}', '{generals}'] : []);   // what the game hands them, as Maxwell's
+    if (!/[.?!]["”]?$/.test(s) || s.length > 220 || (s.match(/\{(\w+)\}/g) || []).some((t) => may.indexOf(t) < 0)) bad.push(w + '.' + k + ': ' + s);
   })));
-  check('the other generals\' words are shippable and they are the seats\' generals',
-        bad.length === 0 && Object.keys(camp.GENERAL_LINES).every((w) => ['u', 'v'].some((s) => camp.SIDES[s].who === w)),
+  check('the other generals\' words are shippable, and every general you can pick but Maxwell has a book of them (his 11-18)',
+        bad.length === 0 && Object.keys(camp.GENERAL_LINES).every((w) => camp.FOES.some((f) => f.who === w && w !== camp.RIVAL.who)) &&
+        camp.FOES.every((f) => f.who === camp.RIVAL.who || !!camp.GENERAL_LINES[f.who]),
         bad.join(' · ') || Object.keys(camp.GENERAL_LINES).join(', '));
   camp.useMap(camp.MAIN_MAP);
 }
@@ -1220,7 +1226,14 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   }
   check('⭐ the Flats muster an endgame: no queen in 200 battles, a rook, a bishop and a knight at most a side, six pawns',
         queens === 0 && over === 0 && plain === 0 && Math.max(...buds) <= camp.egBudget(15 + 4 + camp.ATT_EDGE), 'queens ' + queens + ', over ' + over + ', top budget ' + Math.max(...buds));
-  check('…on three quarters of the points the dice give, a pawn at least (0.75 since 11-17, measured)', camp.egBudget(20) === 15 && camp.egBudget(1) === 1);
+  check('…on three tenths of the points the dice give, a pawn at least (0.3 since 11-18, measured at his fifteen each)', camp.egBudget(20) === 6 && camp.egBudget(1) === 1);
+  let even = 0;
+  for (let i = 0; i < 60; i++) {
+    G.own[5] = 'm'; G.own[8] = 't'; G.ranks[5] = 2 + (i % 8); G.ranks[8] = 1 + (i % 7);
+    const P = camp.musterBattle(5, 8, true);
+    if (P.clocks.att === camp.CLOCK_ATT && P.clocks.def === camp.CLOCK_DEF) even++;
+  }
+  check('…and every battle mustered there runs on fifteen each', even === 60, even + ' of 60');
   let seaPawns = 0, seaPlain = 0, seaPieces = 0;
   for (let i = 0; i < 200; i++) {
     G.own[9] = 'm'; G.own[4] = 't'; G.ranks[9] = 2 + (i % 8); G.ranks[4] = 1 + (i % 9);
@@ -1387,9 +1400,9 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     const st = JSON.stringify({ own: G.own, ranks: G.ranks }), ones = (p) => p.attacks.filter((a) => camp.cutOff(a.to)).length;
     const sp = camp.rivalPlan('t');
     styled += ones(sp); tagged += sp.attacks.filter((a) => a.how === 'opening').length;
-    Object.assign(G, JSON.parse(st)); camp.setStyleOf({});
+    Object.assign(G, JSON.parse(st)); const kept = camp.STYLE_OF; camp.setStyleOf({});
     plainly += ones(camp.rivalPlan('t'));
-    camp.setStyleOf({ Maxwell: 'openings', Vince: 'rush', Wes: 'dig' });
+    camp.setStyleOf(kept);
   }
   check('…Maxwell goes for a holding cut off from its own side far more than the level alone would, and says so (opening)',
     tagged > 100 && styled > plainly * 1.3, 'cut-off targets ' + styled + ' styled, ' + plainly + ' plain · said ' + tagged + ' times');
@@ -1445,8 +1458,166 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     goesOn && stillTook && ends && standFalls);
   const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
   check('…no save, no file on you, no keepsake: a set piece is not a campaign',
-    /if \(!G \|\| !G\.started \|\| G\.mode === 'scenario'\) return;/.test(page) && /G\.mode === 'scenario' \|\| multi\(\) \|\| !G\.log\) return;/.test(page) &&
+    /if \(!G \|\| !G\.started \|\| G\.mode === 'scenario'\) return;/.test(page) && /G\.mode === 'scenario' \|\| multi\(\) \|\| !G\.log \|\| whoOf\('t'\) !== RIVAL\.who\) return;/.test(page) &&
     /if \(G\.mode === 'scenario' && G\.round >= scen\(\)\.rounds\) \{ scenCheck\(true\); return; \}/.test(page));
+}
+
+/* ══ 22. NUMBER OF OPPONENTS (his 11-18) ══ six generals to pick from, a word each, each their own way at the map and
+   their own pace at the board */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+  check('⭐ six generals, a word each, and six ways the map knows',
+    camp.FOES.length === 6 && camp.FOES.every((f) => /^[A-Z][a-z]+$/.test(f.word) && (camp.STYLES[f.style] || f.style === 'adapt')) &&
+    new Set(camp.FOES.map((f) => f.style)).size === 6 && new Set(camp.FOES.map((f) => f.word)).size === 6,
+    camp.FOES.map((f) => f.who + ' ' + f.word).join(' · '));
+  camp.useMap(camp.mapFor('four'));
+  camp.newCampaign('medium', 'four', { fog: false, cards: false, foes: ['Seaboard Rep', 'Auston', 'Puzzle Champ'] });
+  check('…picked, they sit in the order picked, Red, Blue, Violet, each with their own face in the seat\'s color',
+    camp.whoOf('t') === 'Seaboard Rep' && camp.whoOf('u') === 'Auston' && camp.whoOf('v') === 'Puzzle Champ' &&
+    camp.generalOf('u').who === 'Auston' && camp.generalOf('u').key === 'auston' && camp.generalOf('u').col === camp.SIDES.u.col &&
+    camp.styleOf('t') === 'relentless' && camp.styleOf('u') === 'adapt' && camp.styleOf('v') === 'cunning' && camp.styleOf('m') === '');
+  check('…and your Assembly never lends you anyone across the table',
+    JSON.stringify(camp.musterGenerals(['Auston', 'Vince', 'Seaboard Rep', 'Puzzle Champ', 'Milo'])) === JSON.stringify(['Vince', 'Milo']));
+  camp.useMap(camp.MAIN_MAP);
+  camp.newCampaign('medium', 'solo', { fog: false, cards: false });
+  const plainSolo = camp.whoOf('t');
+  camp.newCampaign('medium', 'two', { fog: false, cards: false });
+  check('…a mode with no choice keeps the seats\' own (Maxwell Red), and only a campaign or a war takes your picks',
+    plainSolo === 'Maxwell' && camp.whoOf('t') === 'Maxwell' &&
+    /foes: mode === 'solo' \|\| WAR_START\[mode\] \? picked : null/.test(page) &&
+    /foes:G\.foes \|\| \[\]/.test(page) && /foes:Array\.isArray\(o\.foes\) && o\.foes\.length === sides\.length - 1 \? o\.foes : seatFoes\(o\.mode \|\| 'solo'\)/.test(page));
+  check('…a war played back names who fought it, and a war saved before the picking (no foes) names the seats\' own',
+    camp.whoOf('u', { mode: 'three', sides: ['m', 't', 'u'], foes: ['Wes', 'Auston'] }) === 'Auston' &&
+    camp.whoOf('u', { mode: 'three', sides: ['m', 't', 'u'] }) === 'Vince' && /foes: \(G\.foes \|\| \[\]\)\.slice\(\)/.test(page));
+
+  /* Maxwell's file is about you against Maxwell: a campaign against another general goes into nobody's */
+  camp.newCampaign('medium', 'solo', { fog: false, cards: false, foes: ['Vince'] });
+  camp.G.log = camp.freshLog(); camp.fileCampaign(true);
+  const noFile = camp.loadFile() === null;
+  camp.newCampaign('medium', 'solo', { fog: false, cards: false, foes: ['Maxwell'] });
+  camp.G.log = camp.freshLog(); camp.fileCampaign(true);
+  check('…Maxwell keeps his file on you only from campaigns against him, and plays it only when he sits across',
+    noFile && !!camp.loadFile() && camp.loadFile().games === 1 &&
+    /G\.diff === 'hard' && whoOf\('t'\) === RIVAL\.who \? G\.habits : null/.test(page) &&
+    /if \(whoOf\('t'\) === RIVAL\.who\) openingWords\(\); else speak\('open'\);/.test(page));
+
+  /* ── their ways at the map ── */
+  const stats = {};
+  const plan = (who, mode, n, deal) => {
+    const S = stats[who + mode] = { n: 0, atk: 0, three: 0, most: 0, how: {}, split: 0 };
+    camp.useMap(camp.mapFor(mode));
+    for (let i = 0; i < n; i++) {
+      camp.newCampaign('medium', mode, { fog: false, cards: false, foes: camp.sidesFor(mode).slice(1).map((s, k) => (k ? ['Vince', 'Wes'][k - 1] : who)) });
+      const G = camp.G;
+      G.ranks = G.ranks.map(() => 1 + Math.floor(Math.random() * 7));
+      if (deal) deal(G);
+      const p = camp.rivalPlan('t');
+      S.n++; S.atk += p.attacks.length; if (p.attacks.length >= 3) S.three++; S.most = Math.max(S.most, p.attacks.length);
+      p.attacks.forEach((a) => { S.how[a.how || 'plain'] = (S.how[a.how || 'plain'] || 0) + 1; if (camp.splitsOff(a.to)) S.split++; });
+    }
+    camp.useMap(camp.MAIN_MAP);
+    return S;
+  };
+  const flip = (G) => { for (let k = 0; k < G.own.length; k++) if (Math.random() < 0.3) G.own[k] = G.own[k] === 'm' ? 't' : 'm'; };
+  const pc = plan('Puzzle Champ', 'solo', 800, flip), mx = plan('Maxwell', 'solo', 800, flip);
+  check('⭐ the Puzzle Champ goes for the holding whose fall cuts another off from the rest, more than Maxwell does, and says so (split)',
+    pc.split > mx.split * 1.3 && (pc.how.split || 0) > 40, 'split targets ' + pc.split + ' vs Maxwell ' + mx.split + ' · said ' + (pc.how.split || 0));
+  const sr = plan('Seaboard Rep', 'solo', 800, flip);
+  check('…the Seaboard Rep attacks once more a round than Medium lets Maxwell (three), never past the player\'s three',
+    sr.three > 20 && mx.three === 0 && sr.atk / sr.n > mx.atk / mx.n, 'plans of three: ' + sr.three + ' vs Maxwell ' + mx.three);
+  /* Wes digs in fully only in a war of four; with fewer sides he plays `few` */
+  const w4 = (() => {
+    camp.useMap(camp.mapFor('four')); let most = 0, n = 0;
+    for (let i = 0; i < 400; i++) {
+      camp.newCampaign('medium', 'four', { fog: false, cards: false, foes: ['Wes', 'Vince', 'Maxwell'] });
+      camp.G.ranks = camp.G.ranks.map(() => 1 + Math.floor(Math.random() * 7));
+      const p = camp.rivalPlan('t'); most = Math.max(most, p.attacks.length); n += p.attacks.length;
+    }
+    camp.useMap(camp.MAIN_MAP); return { most, n };
+  })();
+  const w1 = plan('Wes', 'solo', 800, flip);
+  check('…Wes attacks once a turn on Medium in a war of four, and as often as Medium lets him with fewer sides (few)',
+    w4.most === 1 && w1.most === 2 && camp.STYLES.dig.few && camp.STYLES.dig.few.cap === 0,
+    'war of four: at most ' + w4.most + ' a plan · one on one: at most ' + w1.most + ', ' + (w1.atk / w1.n).toFixed(2) + ' a plan');
+  /* Auston: behind the strongest other side by ADAPT_BY she rushes, ahead she digs in, between she takes openings */
+  camp.newCampaign('medium', 'three', { fog: false, cards: false, foes: ['Auston', 'Vince'] });
+  camp.useMap(camp.mapFor('three'));
+  const deal3 = (t, u) => { const G = camp.G; G.own = G.own.map((o, i) => (i < t ? 't' : i < t + u ? 'u' : 'm')); };
+  const by = camp.ADAPT_BY;
+  deal3(3, 3 + by); const behind = camp.adaptOf('t');
+  deal3(4 + by, 4); const ahead = camp.adaptOf('t');
+  deal3(5, 5 + by - 1); const level = camp.adaptOf('t');
+  camp.useMap(camp.MAIN_MAP);
+  check('…Auston rushes ' + by + ' holdings behind the strongest other side, digs in as far ahead, and takes openings between',
+    behind === 'rush' && ahead === 'dig' && level === 'openings' && camp.hasLine('rush', 'Auston') && camp.hasLine('dig', 'Auston'),
+    behind + ' · ' + ahead + ' · ' + level);
+  check('…every general has the words a campaign and a war ask of them (HIS to write)',
+    camp.FOES.every((f) => ['open', 'war', 'turn', 'declare', 'took', 'lost', 'held', 'repelled', 'win', 'lose'].every((k) => camp.hasLine(k, f.who))),
+    camp.FOES.filter((f) => !['open', 'war', 'win', 'lose'].every((k) => camp.hasLine(k, f.who))).map((f) => f.who).join(', '));
+
+  /* ── their pace at the board (his: "slightly random and anywhere from 0.5 seconds to 5 seconds") ── */
+  const ways = Object.keys(camp.TEMPO).concat(['adapt']);
+  let inBounds = true, spread = true, costs = [];
+  ['easy', 'medium', 'hard'].forEach((lv) => {
+    const L = camp.LEVELS[lv], pay = (L.pace + L.ms) / 1000 - camp.MOVE_DELAY;
+    ways.forEach((w) => {
+      let sum = 0, lo = 9, hi = 0;
+      for (let i = 0; i < 20000; i++) {
+        const t = camp.aiPause(w, lv, 99, null);
+        if (t < camp.TEMPO_MIN || t > camp.TEMPO_MAX) inBounds = false;
+        sum += Math.max(0, t - camp.MOVE_DELAY); lo = Math.min(lo, t); hi = Math.max(hi, t);
+      }
+      if (hi - lo < 1) spread = false;
+      costs.push({ lv, w, pay, got: sum / 20000 });
+    });
+  });
+  const worst = costs.reduce((a, c) => (Math.abs(c.got - c.pay) > Math.abs(a.got - a.pay) ? c : a));
+  check('⭐ a machine\'s move comes between half a second and five, and never twice alike (each way spans more than a second)',
+    inBounds && spread);
+  check('…and a move costs its clock on average what the level\'s old pace did, whoever is thinking (the battles stay as measured)',
+    Math.abs(worst.got - worst.pay) < 0.04, 'worst: ' + worst.w + ' on ' + worst.lv + ' ' + worst.got.toFixed(3) + 's vs ' + worst.pay.toFixed(3) + 's');
+  check('…in time trouble nobody stares (a third of what is left at most), and Auston answers at your pace',
+    camp.aiPause('dig', 'hard', 3, null, [0, 1, 0]) === 1 && camp.aiPause('dig', 'hard', 1, null, [0, 1, 0]) === camp.TEMPO_MIN &&
+    camp.aiPause('adapt', 'medium', 15, 3.2) === 3.2 && camp.aiPause('adapt', 'medium', 15, 9) === camp.TEMPO_MAX &&
+    camp.aiPause('adapt', 'medium', 15, 0.1) === camp.TEMPO_MIN);
+  check('…the pause is the battle\'s, read where the machine is asked to move, and your last move is timed for her',
+    /var s = aiPause\(styleOf\(B\.foeSide\), G\.diff, B\.clk\.b, B\.yours\);/.test(page) &&
+    /if \(mover === 'w' && !B\.two\) B\.yours = Math\.max\(0, B\.turnStart - B\.clk\.w\);/.test(page));
+}
+
+/* ══ 23. THE ODDS (his 11-18: "There should be a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is
+   more clear who has the advantage") ══ the measured tables two machines' battles are decided by, read by the gap */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+  /* a board with that material gap (pawns against bare kings), the attacker White */
+  const P = (gap, rule) => {
+    const b = new Array(64).fill(''); b[60] = 'K'; b[4] = 'k';
+    for (let i = 0; i < Math.abs(gap); i++) b[gap > 0 ? 40 + i : 16 + i] = gap > 0 ? 'P' : 'p';
+    return { board: b, attWhite: true, rule: rule || '' };
+  };
+  const T = camp.CLASH, mid = (k, t) => t.lo + t.bin * k + (t.bin - 1) / 2;
+  const atMid = [3, 4, 5, 6].every((k) => Math.abs(camp.oddsOf(P(mid(k, T))) - Math.max(0.01, Math.min(0.99, T.p[k]))) < 1e-9);
+  const g0 = camp.oddsOf(P(0)), g2 = camp.oddsOf(P(2));
+  check('⭐ the odds are the measured ones: at the middle of each bin its own share, and between two bins a straight line',
+    atMid && Math.abs(g0 - (T.p[3] + (T.p[4] - T.p[3]) * 2 / 3)) < 1e-9 && Math.abs(g2 - (T.p[4] + (T.p[5] - T.p[4]) / 3)) < 1e-9,
+    'even ' + Math.round(g0 * 100) + '% · +2 ' + Math.round(g2 * 100) + '% · +4 ' + Math.round(camp.oddsOf(P(4)) * 100) + '%');
+  let mono = true, edges = true;
+  ['', 'endgame', 'drops', 'pieces', 'dark'].forEach((rule) => {
+    let last = 0;
+    for (let gap = -20; gap <= 24; gap++) {
+      const o = camp.oddsOf(P(Math.max(-15, Math.min(15, gap)), rule));
+      if (o < last - 1e-12) mono = false;
+      if (o < 0.01 || o > 0.99) edges = false;
+      last = o;
+    }
+  });
+  check('…every ground its own table (the Sand Mines the plain one), never falling as the gap grows, and never 0 or 100',
+    mono && edges && Math.abs(camp.oddsOf(P(1, 'endgame')) - camp.CLASHES.endgame.p[4]) < 1e-9 && camp.oddsOf(P(1, 'dark')) === camp.oddsOf(P(1)));
+  check('…shown with the board on both roads (rolled out, or skipped), hidden while the dice roll',
+    /paintPreview\(\);\s*\n\s*paintOdds\(\);\s*\n\s*\$\('preview'\)\.hidden = false;/.test(page) &&
+    (page.match(/paintOdds\(\);/g) || []).length === 2 && /\$\('preview'\)\.hidden = true;\s*\n\s*\$\('odds'\)\.hidden = true;/.test(page));
 }
 
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */

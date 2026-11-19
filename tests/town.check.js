@@ -8272,7 +8272,7 @@ const server = http.createServer((req, res) => {
                 && /if not S\.has\("eg"\) and white == att_white and _result\(_make\(S, q\), 0\) == "stalemate":/.test(fnGd(cbT, '_try')),
               'what is left marches in, as the site rules': /var moved := _share\(a_ranks - 1, float\(k\.a\)\)/.test(crT) && /static func kept_share/.test(crT)
                 && /CampaignRules\.kept_share\(p\.board, board, a_col, hand\)/.test(fnGd(ctbT, '_on_battle_end')),
-              'Maxwell, his file, his words': /var foe := CampaignRules\.general_of\(dfd if p\.player_attacks else att\)/.test(fnGd(ctbT, '_start_battle'))
+              'Maxwell, his file, his words': /var foe := R\.general_of\(dfd if p\.player_attacks else att\)/.test(fnGd(ctbT, '_start_battle'))
                 && /"who": "" if two else str\(foe\["who"\]\)/.test(fnGd(ctbT, '_start_battle')) && /file_campaign\(g, won\)/.test(fnGd(ctbT, '_campaign_over'))
                 && /static func observe_file/.test(crT) && /CampaignRules\.line_for\(/.test(ctbT),
               'saved, one slot a mode': /const CampaignPart := preload\("res:\/\/core\/state\/state_campaign\.gd"\)/.test(gsC) && /"campaign": campaign\.to_save\(\)/.test(gsC)
@@ -8500,6 +8500,71 @@ const server = http.createServer((req, res) => {
             ok(bowOff.length === 0,
               '⭐ HIS 11-18 IN THE GAME  (his "a good pawn that can also bow in defeat", and "let\'s do 2 and 7"): his rigged pawn from the laptop folder is every board\'s pawn and the side that lost bows, at the tables and in a Campaign battle; a defender who mates the attacker takes half that marched prisoner and the card reads ROUTED! in gold',
               bowOff.length ? 'off: ' + bowOff.join(' · ') : 'his pawn, bowing, and the defender\'s mate rewarded');
+            /* ⭐ HIS 11-18 (part 2): NUMBER OF OPPONENTS — six generals to pick, their ways at the map and their pace at the board,
+               the Flats fifteen each. The corpus holds who commands which side, every general's plan and every pause to the
+               page (rows foe, fplan, pause); this holds the book, the table, the battle, the save and the news to it. */
+            const mjFoes = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/data/marchland.json'), 'utf8'));
+            const bookF = rd('campaign_book.gd'), stCamp = rd('state_campaign.gd'), paperF = rd('paper.gd'), mxF = rd('maxwell.gd');
+            const crTest = fs.readFileSync(path.join(GD, 'tests/campaign_rules_test.gd'), 'utf8');
+            const foesOff = offOf({
+              'the six, their ways and their pace, the page\'s': bookF.indexOf('const FOES := ' + JSON.stringify(mjFoes.foes)) >= 0
+                && bookF.indexOf('const TEMPO := ' + JSON.stringify(mjFoes.battle.tempo.ways)) >= 0
+                && new RegExp('^const ADAPT_BY := ' + mjFoes.styles.adaptBy + '$', 'm').test(bookF)
+                && new RegExp('^const EG_SCALE := ' + Number(mjFoes.rules.egScale).toFixed(2) + '$', 'm').test(bookF)
+                && mjFoes.foes.length === 6 && mjFoes.foes.map((f) => f.word).join() === 'Strategic,Aggressive,Defensive,Adaptive,Cunning,Relentless',
+              'whoever you pick commands, seat by seat': /func who_of\(side: String, w: Dictionary = \{\}\) -> String:/.test(crT)
+                && /var f := foe_of\(who_of\(s\)\)/.test(fnGd(crT, 'general_of')) && /across\.append\(who_of\(str\(s\)\)\)/.test(fnGd(crT, 'muster_generals'))
+                && /else seat_foes\(mode\) \}/.test(fnGd(crT, 'new_campaign')) && /"foes": \(g\.get\("foes", \[\]\) as Array\)\.duplicate\(\)/.test(fnGd(crT, 'war_begin'))
+                && !/CampaignRules\.general_of\(/.test(ctbT) && /R\.who_of\(str\(t\.s\), w\)/.test(fnGd(ctbT, '_war_frames')),
+              'each their own way at the map': /var way := adapt_of\(side\) if style_of\(side\) == "adapt" else style_of\(side\)/.test(fnGd(crT, 'rival_plan'))
+                && /if St\.has\("few"\) and \(g\.sides as Array\)\.size\(\) < 4:/.test(fnGd(crT, 'rival_plan'))
+                && /var parts: bool = splits > 0 and splits_off\(to\)/.test(fnGd(crT, 'rival_plan'))
+                && /who_of\("t"\) == str\(B\.RIVAL\["who"\]\)/.test(fnGd(crT, 'rival_plan'))
+                && /return "rush" if mine <= most - int\(B\.ADAPT_BY\)/.test(fnGd(crT, 'adapt_of')),
+              'the Flats fifteen each': /if rule == "endgame":\s*\n\t+return \{ "att": int\(B\.CLOCK_ATT\), "def": int\(B\.CLOCK_DEF\) \}/.test(fnGd(crT, 'battle_clocks'))
+                && /var clocks := battle_clocks\(material\(board, "w" if att_white else "b"\), material\(board, "b" if att_white else "w"\), rule\)/.test(fnGd(crT, 'muster_battle')),
+              'a person\'s pace at the board': /static func ai_pause\(way: String, level: String, left: float, yours: float, r: Array\) -> float:/.test(crT)
+                && /_hold_ms = 1000\.0 \* CampaignRules\.ai_pause\(_way, _diff, float\(left\[S\.turn\]\) \/ 1000\.0, _yours,/.test(fnGd(cbT, '_their_turn'))
+                && /var budget := mini\(int\(L\.get\("paceMs", 1500\)\), int\(_hold_ms\)\)/.test(fnGd(cbT, '_their_turn'))
+                && /_yours = maxf\(0\.0, \(float\(_turn_start\[mover\]\) - float\(left\[mover\]\)\) \/ 1000\.0\)/.test(fnGd(cbT, '_apply'))
+                && /"way": R\.style_of\(dfd if p\.player_attacks else att\), "diff": str\(R\.g\.diff\),/.test(fnGd(ctbT, '_start_battle')),
+              'their own screen, and Begin is for that many': /enum \{ HOME, HOW, MAP, ROLL, RESULT, PASS, ORDERS, WAR, SCEN, FOES \}/.test(ctbT)
+                && /"Number of opponents  ·  %d" % p\.size\(\)/.test(fnGd(ctbT, '_home_layout')) && /_start_mode\(_foes_mode\(\)\)/.test(fnGd(ctbT, '_press'))
+                && /var o := GameState\.campaign\.saved\(_foes_mode\(\)\)/.test(fnGd(ctbT, '_press'))
+                && !/"Three players"|"Four players"/.test(ctbT) && /"Three at most\. Tap one to let them go\."/.test(fnGd(ctbT, '_pick_foe'))
+                && /if m in \["solo", "three", "four"\]:\s*\n\t+opts\["foes"\] = _picked\(\)/.test(fnGd(ctbT, '_start_mode'))
+                && /"foes": foes/.test(fnGd(stCamp, 'to_save')),
+              'his file is about him, and the news names who you fought': /str\(f\[0\]\) != str\(CampaignRules\.B\.RIVAL\["who"\]\)/.test(fnGd(stCamp, 'file_campaign'))
+                && /"foes": \(w\.get\("foes", \[\]\) as Array\)\.duplicate\(\)/.test(fnGd(stCamp, 'note_war'))
+                && /"won": "\{you\} took the whole map from \{foe\}/.test(paperF) && /\.replace\("\{foe\}", /.test(fnGd(paperF, 'war_words'))
+                && /if not f\.is_empty\(\) and not f\.has\(who\):/.test(fnGd(mxF, 'remembers')),
+              'held to the page': /rows\.foe\.push\(/.test(coRows) && /rows\.fplan\.push\(/.test(coRows) && /rows\.pause\.push\(/.test(coRows)
+                && /for c in rows\.get\("foe", \[\]\):/.test(crTest) && /for c in rows\.get\("fplan", \[\]\):/.test(crTest)
+                && /for c in rows\.get\("pause", \[\]\):/.test(crTest),
+              'played': /^[^#\n]*\bcampfoes\b/m.test(suiteT)
+                && /camppress:foes;campis:screen:foes;campfoe:Vince;campfoe:Wes;campis:picked:Maxwell,Vince,Wes;campfoe:Auston;campis:picked:Maxwell,Vince,Wes;/.test(bcCase('campfoes'))
+                && /camppress:go;campis:mode:four;campis:foes:Wes,Auston,Puzzle Champ;/.test(bcCase('campfoes'))
+                && /seatis:Vince;tableis:_way:rush;tableis:_diff:medium;/.test(bcCase('campfoes')),
+            });
+            ok(foesOff.length === 0,
+              '⭐ HIS 11-18 IN THE GAME  ("put number of players on a second screen and call it number of opponents… Think of like six of them"): Number of Opponents at Maxwell\'s table, six generals a face and a word each, picked into Red, Blue and Violet, each playing the map their own way and thinking at the board at their own pace; the Flats fifteen each; his file and the town\'s news about whoever you fought',
+              foesOff.length ? 'off: ' + foesOff.join(' · ') : 'the page\'s generals, picked, at the table');
+            /* ⭐ HIS 11-18 (part 3): THE ODDS BAR. The corpus holds every number to the page (rows odds); this holds the screen. */
+            const oddsOff = offOf({
+              'the page\'s odds, off the measured tables': /static func odds_of\(p: Dictionary\) -> float:/.test(crT)
+                && /var at := \(float\(gap\) - float\(T\.lo\) - \(float\(T\.bin\) - 1\.0\) \/ 2\.0\) \/ float\(T\.bin\)/.test(fnGd(crT, 'odds_of'))
+                && /return clampf\(lo \+ \(hi - lo\) \* \(at - float\(k\)\), 0\.01, 0\.99\)/.test(fnGd(crT, 'odds_of')),
+              'on the roll screen once the dice land, swinging from even as the page\'s': /_odds_box = Rect2\(x, y, w, ODDS_H \* k\)/.test(fnGd(ctbT, '_roll_layout'))
+                && /var oa := roundi\(CampaignRules\.odds_of\(p\) \* 100\.0\)/.test(fnGd(ctbT, '_paint_roll'))
+                && /var share := lerpf\(0\.5, float\(oa\) \/ 100\.0, 1\.0 - pow\(1\.0 - ot, 3\.0\)\)/.test(fnGd(ctbT, '_paint_roll'))
+                && /^const ODDS_SWING := 0\.7/m.test(ctbT) && /\.obar i \{[^}]*transition: width \.7s/.test(mlT)
+                && /_odds_t = 0\.0/.test(fnGd(ctbT, '_finish_roll')) && /_odds_t = -1\.0/.test(fnGd(ctbT, '_begin_battle')),
+              'held to the page': /rows\.odds\.push\(/.test(coRows) && /for c in rows\.get\("odds", \[\]\):/.test(crTest),
+              'played': /campis:oddsshown:false;camppress:tobattle;wait:4;campis:oddsshown:true;/.test(bcCase('campfoes')),
+            });
+            ok(oddsOff.length === 0,
+              '⭐ HIS 11-18 IN THE GAME  ("There should be a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is more clear who has the advantage"): once the dice land at Maxwell\'s table, the attacker\'s chance from the left in its color, the defender\'s from the right, off the page\'s measured odds, swinging from even',
+              oddsOff.length ? 'off: ' + oddsOff.join(' · ') : 'the page\'s odds, at the table');
           }
         }
 

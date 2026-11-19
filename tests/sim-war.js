@@ -2,7 +2,8 @@
  * sim-war.js — whole wars of three and four, every seat played by the machine.
  *   npm run sim:war
  *   env: N=400 (wars a mode) MODES=three,four LEVEL=medium CARDS=1 MAX_ROUNDS=80 WORKERS=6 WIN3= WIN4= (the line, 99 none)
- *        STYLES=1 (his #5, 11-16: 0 plays every general plain)
+ *        STYLES=1 (his #5, 11-16: 0 plays every general plain) FOES=Maxwell,Vince (11-18: who commands Red, Blue, Violet;
+ *        MODES=solo is a campaign of two, won by taking all ten)
  *
  * His pick #10 (11-10). sim:campaign measures a campaign of two with every battle played out; a war of three or four
  * is the same rules round more seats, and every battle here is decided the way two machines' battles are in the game
@@ -28,10 +29,14 @@ function worker(mode, count) {
   if (process.env.WIN4) win.four = +process.env.WIN4;
   camp.setWarWin(win);
   if (env('STYLES', '1') === '0') camp.setStyleOf({});
-  const need = win[mode];
+  /* STYLE_SET='{"dig":{"edge":1}}': a style's numbers under test, merged over the page's */
+  if (env('ADAPT_BY', '')) camp.setAdaptBy(+env('ADAPT_BY', ''));
+  if (env('STYLE_SET', '')) { const o = JSON.parse(env('STYLE_SET', '')); Object.keys(o).forEach((k) => Object.assign(camp.STYLES[k], o[k])); }
+  const need = mode === 'solo' ? camp.LAND.length : win[mode];
+  const FOES = env('FOES', '') ? env('FOES', '').split(',') : null;
   const held = (G, s) => G.own.filter((o) => o === s).length;
   for (let c = 0; c < count; c++) {
-    camp.newCampaign(LEVEL, mode, { fog: false, cards: CARDS });
+    camp.newCampaign(LEVEL, mode, { fog: false, cards: CARDS, foes: FOES });
     const G = camp.G;
     const out = { mode, winner: null, rounds: 0, battles: 0, took: 0, out: [], at5: null, idle: 0, turns: 0 };
     let over = false;
@@ -98,9 +103,9 @@ if (process.env.SIM_WORKER) {
 } else {
   (async () => {
     console.log(`=== CHESSWILD: CAMPAIGN — WARS OF THREE AND FOUR, MACHINE AGAINST MACHINE ===`);
-    console.log(`  ${LEVEL} · cards ${CARDS ? 'on' : 'off'} · styles ${env('STYLES', '1') === '0' ? 'off' : 'on'} · every battle by clash() · ${N} wars a mode`);
+    console.log(`  ${LEVEL} · cards ${CARDS ? 'on' : 'off'} · styles ${env('STYLES', '1') === '0' ? 'off' : 'on'} · every battle by clash() · ${N} wars a mode${env('FOES', '') ? ' · ' + env('FOES', '') : ''}`);
     for (const mode of MODES) {
-      const t0 = Date.now(), rs = await run(mode), sides = mode === 'three' ? ['m', 't', 'u'] : ['m', 't', 'u', 'v'];
+      const t0 = Date.now(), rs = await run(mode), sides = mode === 'solo' ? ['m', 't'] : mode === 'three' ? ['m', 't', 'u'] : ['m', 't', 'u', 'v'];
       const done = rs.filter((r) => r.winner), rounds = done.map((r) => r.rounds);
       console.log(`\n── ${mode} · ${rs.length} wars · ${((Date.now() - t0) / 1000).toFixed(0)} s`);
       console.log(`   finished ${done.length} (${rs.length - done.length} still going at round ${MAX_ROUNDS}) · rounds: median ${q(rounds, 0.5)}` +

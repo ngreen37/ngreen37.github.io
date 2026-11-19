@@ -236,6 +236,8 @@ check('the wire carries its own class, so the color rule can find it',
     check('…and the night desk files it too, in its own voice', !!wn && wn !== wl && /\b14\b/.test(wn), wn.slice(0, 76) + '…');
     const solo = warLine(await run({ war: Object.assign({}, WON, { gens: 1, diff: 'medium' }) }));
     check('a campaign against one is against MAXWELL', /MAXWELL/.test(solo) && /MEDIUM/.test(solo) && !/GENERALS/.test(solo), solo);
+    const vs = warLine(await run({ war: Object.assign({}, WON, { gens: 1, diff: 'medium', foes: ['Vince'] }) }));
+    check('…unless you picked another (his 11-18): then it is against them', /VINCE/.test(vs) && !/MAXWELL/.test(vs), vs);
     const lost = Object.assign({}, WON, { won: false, at: now() - 2 * 86400 });
     const ll = warLine(await run({ war: lost }));
     check('a war you lost two days ago is still news, said as a loss', !!ll && ll !== wl && /\bROUND 14\b/.test(ll), ll || '(silent)');

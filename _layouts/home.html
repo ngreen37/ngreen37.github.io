@@ -1392,7 +1392,7 @@ function ctParts() {
       var lw = P.lastWar && P.lastWar(), age = lw ? Date.now() / 1000 - lw.at : 0;
       if (lw && lw.rounds > 0 && age < (lw.won ? 7 : 3) * 86400)
         out.push({ kind: lw.won ? 'war_won' : 'war_lost', n: lw.rounds, level: up(lw.diff),
-                   foe: lw.gens > 1 ? lw.gens + ' GENERALS' : 'MAXWELL' });
+                   foe: lw.gens > 1 ? lw.gens + ' GENERALS' : String(lw.foes && lw.foes[0] || 'Maxwell').toUpperCase() });
     } catch (e) {}
     return out;
   }

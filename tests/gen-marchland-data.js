@@ -84,7 +84,9 @@ function build() {
     slice(src, 'var CLASHES',        'function clashBin') +
     slice(src, 'var DARK = {',       'function darkOn(') +
     /* 11-16, his #2: the scenarios, a start, a level and a checklist each */
-    slice(src, 'var SCENARIOS = [',  'var STARS_KEY');
+    slice(src, 'var SCENARIOS = [',  'var STARS_KEY') +
+    /* 11-18, his: how the machine thinks at the board (the six generals ride the LEVELS slice) */
+    slice(src, 'var TEMPO_MIN',      'function tempoCost');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -138,7 +140,9 @@ function build() {
     dailyRounds: G.DAILY_ROUNDS,
     engine: { ev: G.EV, mateScore: G.MATE_SCORE },
     placement: { wBack: G.W_BACK.slice(), wPawn: G.W_PAWN.slice(), bBack: G.B_BACK.slice(), bPawn: G.B_PAWN.slice() },
-    battle: { revealMs: G.REVEAL_MS, mercyMs: G.MERCY_MS, mercyPly: G.MERCY_PLY, mercyOdds: G.MERCY_ODDS },
+    battle: { revealMs: G.REVEAL_MS, mercyMs: G.MERCY_MS, mercyPly: G.MERCY_PLY, mercyOdds: G.MERCY_ODDS,
+              /* 11-18: the machine's pause, quick (q) or a think (t), seconds, each general's own */
+              tempo: { min: G.TEMPO_MIN, max: G.TEMPO_MAX, ways: G.TEMPO } },
     /* a war of three or four: the seats (whose color, which general), each map and its dealt start, the line that ends
        it, the measured odds two machines' battle is decided at, and the other generals' words (HIS) */
     war: {
@@ -178,7 +182,9 @@ function build() {
       return o;
     }, {}),
     /* 11-16, his #5: each general's own way of playing the map, leaning on the level */
-    styles: { of: G.STYLE_OF, ways: G.STYLES },
+    styles: { of: G.STYLE_OF, ways: G.STYLES, adaptBy: G.ADAPT_BY },
+    /* 11-18, his: the six you pick from (who, the face's key, the word, the way); the first commands Red */
+    foes: G.FOES.map((f) => ({ who: f.who, key: f.key, word: f.word, style: f.style })),
     /* 11-16, his #2: scenarios with stars (a missing own/ranks/walls is the campaign's own start) */
     scenarios: G.SCENARIOS.map((s) => Object.assign({ id: s.id, name: s.nm, kind: s.kind, at: s.at, rounds: s.rounds, level: s.level,
       goal: s.goal, stars: s.stars.slice() }, s.also != null ? { also: s.also } : {}, s.fast != null ? { fast: s.fast } : {},

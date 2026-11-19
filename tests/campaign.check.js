@@ -28,6 +28,8 @@ window.__mc = {
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
   dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
+  get picked() { return picked; }, paintFoes: paintFoes, oddsOf: oddsOf,
+  setPicked: function (a) { picked = a.slice(); try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {} paintHome(); },
   MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; }, campaignCheck: campaignCheck,
   get replay() { return replay; }, idsOf: idsOf, loadBest: loadBest, SAND: SAND, hurry: hurry,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
@@ -614,6 +616,39 @@ function serve() {
     ok(fit.lines === 1 && fit.bottom <= fit.button && /time \d+s to \d+s/.test(fit.tally),
       '…and on a 390×844 phone the tally with its clocks is one line and scrolls clear of the button, on the longest clause  [' + fit.lines + ' line, ends ' + fit.bottom + ' · button ' + fit.button + ' · ' + fit.tally + ']');
 
+    /* ⭐ his 11-18: "a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is more clear who has the
+       advantage" — hidden while the dice roll, then the attacker's share from the left, each side in its own color */
+    const odds = await E(async () => {
+      const m = __mc, $ = (id) => document.getElementById(id), out = {};
+      const read = () => ({ a: $('odds-a').textContent, d: $('odds-d').textContent, shown: !$('odds').hidden,
+        ca: getComputedStyle($('odds-a')).color, cd: getComputedStyle($('odds-d')).color, want: Math.round(m.oddsOf(m.PEND) * 100),
+        fill: Math.round($('odds-fill').getBoundingClientRect().width / $('obar').getBoundingClientRect().width * 100) });
+      m.newCampaign('medium', 'solo'); m.G.started = false;
+      m.beginBattle(5, 3, true);
+      out.rolling = $('odds').hidden;
+      m.finishRoll();
+      await new Promise((r) => setTimeout(r, 900));
+      out.att = read();
+      m.G.busy = false; m.show('screen-map');
+      m.G.ranks[3] = 6;
+      m.beginBattle(3, 5, false);
+      out.again = $('odds').hidden;
+      m.finishRoll();
+      await new Promise((r) => setTimeout(r, 900));
+      out.def = read();
+      m.G.busy = false; m.show('screen-map');
+      return out;
+    });
+    const pct = (t) => +((/(\d+)%/.exec(t) || [])[1]);
+    const GREEN = 'rgb(107, 255, 184)', RED = 'rgb(255, 110, 138)';
+    ok(odds.rolling && odds.att.shown && /^You \d+%$/.test(odds.att.a) && /^\d+% Maxwell$/.test(odds.att.d) &&
+       pct(odds.att.a) + pct(odds.att.d) === 100 && pct(odds.att.a) === odds.att.want && Math.abs(odds.att.fill - odds.att.want) <= 1 &&
+       odds.att.ca === GREEN && odds.att.cd === RED,
+       '⭐ his 11-18: once the dice land, a bar says who has the advantage: your share from the left in Green, his in Red, as the measured odds  [' + odds.att.a + ' · ' + odds.att.d + ' · bar ' + odds.att.fill + '%]');
+    ok(odds.again && odds.def.shown && /^Maxwell \d+%$/.test(odds.def.a) && /^\d+% You$/.test(odds.def.d) &&
+       pct(odds.def.a) + pct(odds.def.d) === 100 && Math.abs(odds.def.fill - odds.def.want) <= 1 && odds.def.ca === RED && odds.def.cd === GREEN,
+       '…hidden again while the next dice roll, and defending, the attacker is still the left  [' + odds.def.a + ' · ' + odds.def.d + ']');
+
     /* ⚑ his 11-18, the defender's mate: #7 ROUTED! large and gold on the card, in either chair, and #2 its prisoners */
     const routed = await E(() => {
       const m = __mc, $ = (id) => document.getElementById(id);
@@ -810,14 +845,34 @@ function serve() {
        'winning it marks it done, and he sends you to a real one  [' + first.done.mx + ']');
     ok(first.home.on && !first.home.door && first.solo === 10, '…and the ten come back for the real campaign  [' + first.solo + ' holdings]');
 
-    /* ══ 11-10: A WAR OF THREE OR FOUR (his #10) ══ on the flat map: the sand table has its own check */
+    /* ══ 11-10: A WAR OF THREE OR FOUR (his #10), begun from NUMBER OF OPPONENTS (his 11-18) ══ on the flat map: the sand
+       table has its own check */
     const war = await E(() => {
       const $ = id => document.getElementById(id), out = {};
       ['pjcc.campaign.save.four.v1', 'pjcc.campaign.save.three.v1', 'pjcc.town.v1', 'pjcc.campaign.best.v1', 'pjcc.campaign.save.v1'].forEach(k => localStorage.removeItem(k));
       localStorage.setItem('pjcc.campaign.map.flat', '1');
-      __mc.paintHome();
-      out.doors = [$('three').textContent, $('four').textContent];
-      $('four').click();
+      __mc.setPicked(['Maxwell']);
+      out.doors = ['three', 'four'].filter(id => $(id)).length;
+      $('opt-foes').click();
+      const card = w => document.querySelector('#foe-list .foe[data-who="' + w + '"]');
+      const say = b => [...b.querySelectorAll('small')].map(x => x.textContent).join(' · ');
+      const lit = () => [...document.querySelectorAll('#foe-list .foe.on')].map(b => b.getAttribute('data-who') + ':' + say(b));
+      out.screen = $('screen-foes').classList.contains('on');
+      out.cards = [...document.querySelectorAll('#foe-list .foe')].map(b => b.querySelector('b').textContent + ' ' + say(b));
+      out.faces = document.querySelectorAll('#foe-list .foe canvas').length;
+      card('Vince').click(); card('Wes').click();
+      out.lit = lit(); out.size = $('foe-say').textContent;
+      card('Auston').click();
+      out.full = $('foe-say').textContent + ' · ' + __mc.picked.length;
+      card('Maxwell').click(); card('Vince').click(); card('Wes').click();
+      out.least = $('foe-say').textContent + ' · ' + __mc.picked.join();
+      card('Maxwell').click(); card('Vince').click();
+      out.again = lit();
+      $('foe-done').click();
+      out.home = { on: $('screen-home').classList.contains('on'), label: $('opt-foes').textContent, note: $('foes-note').textContent,
+                   go: $('go').textContent, resume: $('resume').hidden };
+      __mc.setPicked(['Maxwell', 'Vince', 'Wes']);
+      $('go').click();
       out.n = document.querySelectorAll('#mapbox .node').length;
       out.tally = ['tw-u', 'tw-v'].map(id => $(id).hidden ? '' : $(id).textContent.replace(/\s+/g, ' ').trim());
       out.mine = $('t-mine').textContent;
@@ -833,7 +888,17 @@ function serve() {
         noted: G.warEv.length ? G.warEv[0].s + ':' + G.warEv[0].r : '' };
       return out;
     });
-    ok(war.doors[0] === 'Three players' && war.doors[1] === 'Four players', 'a war of three and of four each have a door on the home screen');
+    ok(war.doors === 0 && war.screen && war.faces === 6 && war.cards.join(' | ') ===
+       'Maxwell Strategic · Red | Vince Aggressive | Wes Defensive | Auston Adaptive | Puzzle Champ Cunning | Seaboard Rep Relentless',
+       '⭐ his 11-18: the war doors are gone; Number of Opponents opens six generals, a face and a word each, the one picked wearing Red  [' + war.cards.join(' | ') + ']');
+    ok(war.lit.join() === 'Maxwell:Strategic · Red,Vince:Aggressive · Blue,Wes:Defensive · Violet' && war.size === 'Three opponents: a war of four on sixteen holdings.',
+       '…picked in order, they take Red, Blue and Violet, and the screen says what that makes  [' + war.lit.join(' · ') + ']');
+    ok(war.full === 'Three at most. Tap one to let them go. · 3' && war.least === 'Pick at least one. · Wes' &&
+       war.again.join() === 'Maxwell:Strategic · Blue,Vince:Aggressive · Violet,Wes:Defensive · Red',
+       '…never more than three, never none, and the seats follow the order you pick  [' + war.full + ' · ' + war.least + ']');
+    ok(war.home.on && war.home.label === 'Number of opponents · 3' && war.home.note === 'Against Wes, Maxwell and Vince: a war of four.' &&
+       war.home.go === 'Begin the war' && war.home.resume,
+       '…Done goes home, which says how many and who, and Begin is for that war  [' + war.home.label + ' · ' + war.home.note + ']');
     ok(war.n === 16 && war.tally[0] === 'Vince 4' && war.tally[1] === 'Wes 4' && war.mine === '4/10' && war.colors.join() === '4,4',
        'a war of four is sixteen holdings, four a seat, every general counted, and yours counted toward ten  [' + war.tally.join(' · ') + ' · ' + war.mine + ']');
     ok(/16 holdings and 3 of us/.test(war.speech), 'Maxwell opens a war with its size  [' + war.speech + ']');
@@ -843,9 +908,53 @@ function serve() {
     const back = await E(() => {
       const $ = id => document.getElementById(id);
       __mc.paintHome();
-      return { label: $('four').textContent, slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
+      return { label: $('resume').hidden ? '' : $('resume').textContent, go: $('go').textContent, slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
     });
-    ok(/^Four players · round \d+$/.test(back.label) && back.slot, 'a war of four keeps its own save and resumes from its own door  [' + back.label + ']');
+    ok(/^Continue · round \d+ · \d+ of 16 held$/.test(back.label) && back.go === 'Begin a new war' && back.slot,
+       'a war of four keeps its own save, and Continue is for it while three are picked  [' + back.label + ' · ' + back.go + ']');
+
+    /* ⚠ A BEAT IS ITS CAMPAIGN'S (11-18): a machine's turn still waiting when you begin anew never plays on in the new one */
+    const stale = await E(async () => {
+      const G0 = __mc.G;
+      G0.phase = 'theirs'; G0.busy = true; G0.acting = 'u'; G0.q = [{ t: 'say', s: 'Still their turn.' }];
+      __mc.pump();
+      localStorage.removeItem('pjcc.campaign.save.v1'); __mc.setPicked(['Maxwell']);
+      document.getElementById('go').click();
+      const G1 = __mc.G;
+      await new Promise((r) => setTimeout(r, 1200));
+      return { fresh: G1 !== G0 && __mc.G === G1, phase: G1.phase, busy: G1.busy, round: G1.round };
+    });
+    ok(stale.fresh && stale.phase === 'deploy' && !stale.busy && stale.round === 1,
+       '⚠ a beat the last campaign left waiting never runs in the one you begin  [' + stale.phase + (stale.busy ? ', busy' : '') + ']');
+
+    /* ⭐ his 11-18: whoever you pick commands, speaks and is named, a war or one on one */
+    const picks = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      ['pjcc.campaign.save.three.v1', 'pjcc.campaign.save.v1'].forEach(k => localStorage.removeItem(k));
+      __mc.setPicked(['Auston', 'Puzzle Champ']);
+      out.go = $('go').textContent;
+      $('go').click();
+      out.n = document.querySelectorAll('#mapbox .node').length;
+      out.red = $('l-theirs').textContent;
+      out.blue = $('tw-u').hidden ? '' : $('tw-u').textContent.replace(/\s+/g, ' ').trim();
+      out.who = $('mx-name').textContent; out.line = $('mx-line').textContent; out.foes = __mc.G.foes.join();
+      __mc.setPicked(['Vince']);
+      $('go').click();
+      out.solo = { n: document.querySelectorAll('#mapbox .node').length, red: $('l-theirs').textContent, who: $('mx-name').textContent,
+                   line: $('mx-line').textContent, foes: __mc.G.foes.join() };
+      __mc.campaignOver(false);
+      out.solo.last = $('result-mx').textContent;
+      $('cont').click();
+      __mc.setPicked(['Maxwell']);
+      ['pjcc.campaign.save.three.v1', 'pjcc.campaign.save.v1'].forEach(k => localStorage.removeItem(k));
+      return out;
+    });
+    ok(picks.go === 'Begin the war' && picks.n === 15 && picks.foes === 'Auston,Puzzle Champ' && picks.red === 'Auston' &&
+       /^Puzzle Champ \d+$/.test(picks.blue) && picks.who === 'Auston' && picks.line === '15 holdings. Show me how you play.',
+       '…a war of three against Auston and the Puzzle Champ: she commands Red and opens it, he holds Blue  [' + picks.red + ' · ' + picks.blue + ' · ' + picks.line + ']');
+    ok(picks.solo.n === 10 && picks.solo.foes === 'Vince' && picks.solo.red === 'Vince' && picks.solo.who === 'Vince' &&
+       picks.solo.line === "Ten holdings. I'll take them fast." && /^Vince: “/.test(picks.solo.last),
+       '…one on one against Vince: his map, his opening line, his last word  [' + picks.solo.line + ' · ' + picks.solo.last + ']');
 
     /* ══ 11-10: GENERALS FROM YOUR ASSEMBLY (his #9) ══ */
     const gens = await E(() => {
@@ -911,8 +1020,9 @@ function serve() {
        '⭐ a first won campaign opens The Banner in your Collection, and says so  [' + (rep.keep || 'nothing said') + ']');
     /* ⭐ HIS #10 (11-16): the war that ended is noted for the front door's wire, the town's paper and Maxwell */
     const nt = rep.noted || {};
-    ok(nt.won === true && nt.mode === 'solo' && nt.diff === 'medium' && nt.gens === 1 && nt.rounds >= 1 && Math.abs(nt.at - Date.now() / 1000) < 600,
-       '⭐ the war that ended is noted for the town to hear of: won, Medium, against one, its round and when  [' + JSON.stringify(nt) + ']');
+    ok(nt.won === true && nt.mode === 'solo' && nt.diff === 'medium' && nt.gens === 1 && nt.rounds >= 1 && Math.abs(nt.at - Date.now() / 1000) < 600 &&
+       JSON.stringify(nt.foes) === '["Maxwell"]',
+       '⭐ the war that ended is noted for the town to hear of: won, Medium, against whom, its round and when  [' + JSON.stringify(nt) + ']');
     const again = await E(() => {
       __mc.newCampaign('medium'); __mc.G.own = __mc.G.own.map(() => 'm'); __mc.campaignOver(true);
       const quiet = document.getElementById('keepsake').hidden;
@@ -941,6 +1051,7 @@ function serve() {
       const $ = id => document.getElementById(id), G = __mc.G, out = {};
       __mc.tapLand(4);
       out.went = !!__mc.PEND && __mc.PEND.from === 7 && __mc.PEND.to === 4 && G.sailed === true && G.atks === 2;
+      out.at = { pend: __mc.PEND && [__mc.PEND.from, __mc.PEND.to], sailed: G.sailed, atks: G.atks, phase: G.phase, sel: G.sel, busy: G.busy, say: $('map-say').textContent.slice(0, 90) };
       /* back on the map with the lane spent: the far shore is no target, and a second crossing is refused */
       __mc.PEND = null; G.busy = false; G.pending = null; G.sel = -1; G.own[4] = 't'; G.ranks[7] = 5;
       __mc.show('screen-map'); __mc.setPhase('attack'); __mc.drawMap();
@@ -956,7 +1067,7 @@ function serve() {
     });
     ok(sea.lane === 1 && sea.fog === false && sea.hot && sea.tgt && /Across the water: Sea-Board, once a round\./.test(sea.pick),
        '⭐ the sea lane is drawn, Sea-Board shows across the water, and picking Shogi Island lights it as a target  [' + sea.pick + ']');
-    ok(sea2.went, '…striking across it starts the battle and spends the crossing with the attack');
+    ok(sea2.went, '…striking across it starts the battle and spends the crossing with the attack  [' + JSON.stringify(sea2.at) + ']');
     ok(!sea2.tgt && sea2.cold && /One strike across the water a round\./.test(sea2.say) && sea2.atks === 2 && !sea2.pend,
        '…a second crossing that round is refused, and costs nothing  [' + sea2.say + ']');
     ok(sea2.fresh, '…and the next turn the water is open again');

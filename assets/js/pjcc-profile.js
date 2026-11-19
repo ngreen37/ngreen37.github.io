@@ -1716,8 +1716,10 @@
   var LAST_WAR_KEY = 'pjcc.campaign.last.v1';
   PJCC.noteWar = function (w) {
     if (!w || ['solo', 'three', 'four'].indexOf(w.mode) === -1) return null;
+    /* ⚠ WHO, since 11-18 (his: you pick who you face): a campaign against Vince is not news about Maxwell */
     var b = { won: w.won === true, mode: w.mode, diff: String(w.diff || ''), gens: Math.max(1, (w.sides || []).length - 1),
-              rounds: +w.rounds || 0, at: Math.floor(Date.now() / 1000) };
+              rounds: +w.rounds || 0, at: Math.floor(Date.now() / 1000),
+              foes: Array.isArray(w.foes) ? w.foes.slice(0, 3).map(String) : [] };
     try { localStorage.setItem(LAST_WAR_KEY, JSON.stringify(b)); } catch (e) {}
     return b;
   };

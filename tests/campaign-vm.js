@@ -39,7 +39,11 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   /* scenarios with stars (11-16, his #2) */
   'SCENARIOS', 'scenOf', 'scen', 'scenStars', 'scenMet', 'scenCheck', 'starsText', 'loadStars', 'bankScenario',
   /* the dice matter more (11-17): the vanguard, the castle that delivers, time follows the armies */
-  'battleClocks', 'CLOCK_MIN', 'clearFile', 'VAN_RANK', 'LINE_RANK'];
+  'battleClocks', 'CLOCK_MIN', 'clearFile', 'VAN_RANK', 'LINE_RANK',
+  /* who you face, picked (11-18): the six, their ways at the map and their pace at the board */
+  'FOES', 'seatFoes', 'foeOf', 'whoOf', 'splitsOff', 'adaptOf', 'TEMPO', 'TEMPO_MIN', 'TEMPO_MAX', 'tempoCost', 'thinkOdds', 'aiPause',
+  /* the odds bar on the roll screen (11-18) */
+  'oddsOf'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -58,6 +62,7 @@ function gameScript() {
     'setAttEdge: function (v) { ATT_EDGE = v; }, get ATT_EDGE() { return ATT_EDGE; }, ' +
     'setSea: function (v) { SEA = v; }, get SEA() { return SEA; }, ' +
     'setStyleOf: function (v) { STYLE_OF = v; }, get STYLE_OF() { return STYLE_OF; }, ' +
+    'setAdaptBy: function (v) { ADAPT_BY = v; }, get ADAPT_BY() { return ADAPT_BY; }, ' +
     LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +
     EXPOSE.map((k) => k + ': ' + k).join(', ') + ' };\n';
   return src.slice(0, at) + hook + src.slice(at);

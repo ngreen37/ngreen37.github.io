@@ -243,6 +243,15 @@
     text-align: left; border: 1px solid #33294f; border-radius: 10px; background: #161127; color: inherit; font: inherit; cursor: pointer; }
   .scen b { font-size: 15px; } .scen .goal { font-size: 13px; color: var(--ink-2); }
   .scen .st { color: #ffd66a; letter-spacing: 2px; font-size: 15px; } .scen .st.none { color: var(--ink-3); }
+  /* ⭐ NUMBER OF OPPONENTS (his 11-18): six generals, two a row; a picked one wears the color of the side they command */
+  .foes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 420px; margin: 14px auto 4px; }
+  .foe { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 56px; padding: 6px 8px 6px 4px; text-align: left;
+    border: 1px solid #33294f; border-radius: 12px; background: #161127; color: var(--ink-3); font: 12px 'Trebuchet MS', sans-serif;
+    cursor: pointer; }
+  .foe canvas { width: 40px; height: 45px; flex: none; }
+  .foe span { min-width: 0; }
+  .foe b { display: block; font-size: 14px; color: var(--ink); overflow-wrap: anywhere; }
+  .foe small { display: block; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
   .gen { display: flex; align-items: center; gap: 10px; width: 100%; padding: 5px 10px 5px 4px; text-align: left;
     background: rgba(107,255,184,.05); border: 1px solid rgba(107,255,184,.32); border-radius: 12px; color: var(--ink);
     font: 12px 'Trebuchet MS', sans-serif; line-height: 1.35; cursor: pointer; min-height: 44px; }
@@ -328,6 +337,13 @@
   .wallchip::before { content: '\265C\00a0'; }
   .rowhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
+  /* ⭐ THE ODDS (his 11-18): an eval bar between the two chairs, the attacker's color from the left; it swings from even */
+  .odds { margin: 0 0 4px; }
+  .olabs { display: flex; justify-content: space-between; gap: 8px; font: 800 12px 'Trebuchet MS', sans-serif; letter-spacing: .5px; margin-bottom: 4px; }
+  .obar { position: relative; height: 10px; border-radius: 999px; overflow: hidden; background: var(--d); }
+  .obar i { position: absolute; left: 0; top: 0; bottom: 0; width: 50%; background: var(--a); transition: width .7s cubic-bezier(.2, .8, .2, 1); }
+  .obar::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: rgba(13, 10, 26, .55); }
+  @media (prefers-reduced-motion: reduce) { .obar i { transition: none; } }
   /* ⚠ THE 10px OF PADDING IS THE CASTLE BADGE'S ROOM, AND IT WAS MEASURED, NOT GUESSED.
      The king sits 13px above its die. Before this, the "POSITION" label's box ran 242→253
      and the badge ran 247→262 — a six-pixel overlap, across the label's full width, so the
@@ -666,6 +682,12 @@
       <button id="opt-fog" class="on" aria-pressed="true">Fog of War · On</button>
       <button id="opt-cards" class="on" aria-pressed="true">Event Cards · On</button>
     </div>
+    <!-- ⭐ NUMBER OF OPPONENTS (his 11-18: "put number of players on a second screen and call it number of opponents"):
+         who you face is picked on its own screen and kept; Continue and Begin below are for that many -->
+    <div class="levels opts">
+      <button id="opt-foes">Number of opponents · 1</button>
+    </div>
+    <p class="lvl-note" id="foes-note"></p>
     <div class="levels opts">
       <button id="opt-dog" aria-pressed="false">Dog · None</button>
     </div>
@@ -677,11 +699,6 @@
     <div class="modes">
       <button class="btn ghost slim" id="daily">Daily</button>
       <button class="btn ghost slim" id="two">Two players</button>
-    </div>
-    <!-- ⭐ A WAR OF THREE OR FOUR (11-10): you against two or three generals, each resuming its own -->
-    <div class="modes">
-      <button class="btn ghost slim" id="three">Three players</button>
-      <button class="btn ghost slim" id="four">Four players</button>
     </div>
     <button class="btn ghost slim" id="first">First campaign</button>
     <!-- ⭐ SCENARIOS (his #2, 11-16): short set pieces, one to three stars, your best kept -->
@@ -726,8 +743,8 @@
       die sends <b>up to three</b> further &mdash; given if you bought none. Defending, <b>7 or
       better</b> castles your king behind a pawn &mdash; and <b>an 8</b> brings his rook around
       and three pawns with him.<br><br>
-      <b>7. Thirty seconds between you, shared by material:</b> the bigger army gets more time,
-      and a second back on every move. <b>Run your own clock out and you lose.</b> Checkmate
+      <b>7. Thirty seconds between you, shared by material:</b> the bigger army gets more time
+      (the Flats: fifteen each), and a second back on every move. <b>Run your own clock out and you lose.</b> Checkmate
       takes the ground. A draw goes to the defender.<br><br>
       <b>8. What's left marches in.</b> Your troops follow your pieces: keep three quarters of
       your points on the board and three quarters of the troops march in. A defense that holds
@@ -739,19 +756,21 @@
       twice to scout it &mdash; that costs one of your attacks.<br><br>
       <b>12. Event cards</b> (an option). Each round opens with a card that bends one rule for
       both sides.<br><br>
-      <b>Maxwell</b> commands Red. He remembers how you play, and on Hard he plays against it.<br>
+      <b>Maxwell</b> remembers how you play, and on Hard he plays against it.<br>
       <b>Your dog</b> (an option) stands with your troops. Argus sniffs out a hidden holding past
       his border each round; Milo brings a troop home from a failed attack.<br>
       <b>First campaign:</b> five holdings, one rule at a time, Maxwell showing you.<br>
       <b>Coach:</b> on Easy, the roll screen suggests a plan.<br>
+      <b>Chance to win:</b> after the roll, a bar shows how battles like this one went, the attacker's share on the left.<br>
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
       rounds; hold as much as you can. Scores compare at the same settings.<br>
       <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.<br>
-      <b>Three players and four players:</b> you against two or three generals on a bigger map. <b>Hold ten holdings</b>
-      and the war is yours. When two generals fight each other, it is decided at once, at the odds real battles
-      measured.<br>
-      <b>Their generals each play their own way:</b> Maxwell goes for holdings cut off from the rest, Vince rushes, Wes
-      digs in.<br>
+      <b>Number of opponents:</b> pick one, two or three of six generals. One is a campaign; two or three is a war on a
+      bigger map, and <b>holding ten</b> wins it. When two generals fight each other, it is decided at once, at the odds
+      real battles measured.<br>
+      <b>Each general plays their own way:</b> Maxwell goes for holdings cut off from the rest, Vince rushes, Wes digs in,
+      Auston rushes when behind and digs in when ahead, the Puzzle Champ takes the holding that cuts yours apart, and the
+      Seaboard Rep attacks once more a round, walls or not. Each thinks at the board at their own pace.<br>
       <b>Generals:</b> everyone whose square you have won in the town's Assembly gives you one order a campaign,
       on the map, one a round.<br>
       <b>Endgame Flats, Shogi Island and Sea-Board</b> fight their own chess. A battle for the Flats is an endgame: no
@@ -825,6 +844,16 @@
     <button class="btn ghost" id="scen-back">Back</button>
   </section>
 
+  <!-- ══ NUMBER OF OPPONENTS (his 11-18) ══ -->
+  <section class="screen" id="screen-foes">
+    <h2>Number of Opponents</h2>
+    <p class="sub">Pick one, two or three generals. One is a campaign of ten holdings; two or three is a war on a bigger
+      map, and the first to hold ten wins it.</p>
+    <div class="foes" id="foe-list"></div>
+    <p class="lvl-note" id="foe-say"></p>
+    <button class="btn" id="foe-done">Done</button>
+  </section>
+
   <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-roll">
     <h2 id="roll-title">The Roll</h2>
@@ -844,6 +873,13 @@
       <div><div class="dice" id="def-pos"></div></div>
     </div>
     <p class="vline" id="v-pos">&nbsp;</p>
+    <!-- ⭐ THE ODDS (his 11-18: "There should be a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is
+         more clear who has the advantage"): how battles like this went, the attacker's share left, the defender's right -->
+    <div class="odds" id="odds" hidden>
+      <p class="rowhead">Chance to win</p>
+      <div class="olabs"><span id="odds-a"></span><span id="odds-d"></span></div>
+      <div class="obar" id="obar"><i id="odds-fill"></i></div>
+    </div>
     <div class="preview" id="preview" hidden>
       <p class="previewhead">The position</p>
       <div class="board" id="pboard">
@@ -1148,11 +1184,40 @@ var LEVELS = {
    ⚠ TUNED SO EVERY SEAT WINS WHAT IT DID PLAIN (`STYLES=0|1 sim:war`, 3,000 wars): stacking EVERY troop sank Vince to
    27%, none lifted him to 39%; guarding with EVERY troop won Wes 55% of wars of four. */
 var STYLES = {
-  openings: { edge: 0,  cap: 0,  open: 2, stack: 1, guard: 0 },
-  rush:     { edge: -1, cap: 0,  open: 0, stack: 2, guard: 0 },
-  dig:      { edge: 2,  cap: -1, open: 0, stack: 1, guard: 1 }
+  openings:   { edge: 0,  cap: 0,  open: 2, stack: 1, guard: 0, split: 0 },
+  rush:       { edge: -1, cap: 0,  open: 0, stack: 2, guard: 0, split: 0 },
+  dig:        { edge: 2,  cap: -1, open: 0, stack: 1, guard: 1, split: 0, few: { edge: 1, cap: 0, stack: 3 } },
+  cunning:    { edge: 0,  cap: 0,  open: 0, stack: 1, guard: 0, split: 2 },
+  relentless: { edge: 1,  cap: 1,  open: 0, stack: 1, guard: 0, split: 0 }
 };
-var STYLE_OF = { Maxwell: 'openings', Vince: 'rush', Wes: 'dig' };
+/* ⭐ SIX GENERALS TO PICK FROM (his 11-18: "You can select which generals you want to play against and they have
+   one-word-descriptions like 'aggressive' or 'strategic'. Think of like six of them"). The first picked commands Red,
+   the next Blue, the third Violet. ⚠ WHO, THEIR WORD AND THEIR LINES ARE HIS (placeholders). `style` is how they play
+   the map (STYLES) and how they think at the board (TEMPO):
+     cunning     the Puzzle Champ. A holding whose fall would leave another of its side's with no road to the rest
+                 (splitsOff) is worth `split` more to him.
+     relentless  the Seaboard Rep. An attack more a round (cap, never past ATTACK_CAP), each at a point more edge.
+     adapt       Auston. No table of her own: ADAPT_BY holdings behind the strongest other side she rushes, as far ahead
+                 she digs in, between she takes openings (adaptOf).
+   ⚠ MEASURED SO NOBODY IS A FREE WIN OR A WALL (`FOES=… MODES=solo|three|four npm run sim:war`, 2,000–3,000 a run,
+   11-18). One on one against a plain machine Green (a plain Red wins 54%), the six won 54 46 51 53 48 50% (Maxwell, Wes,
+   Vince, Auston, the Puzzle Champ, the Seaboard Rep); in wars of three and four every seat stays within noise (±3) of
+   what a plain general wins from it. ⚠ WES DIGS IN ONLY IN A WAR OF FOUR (`few`): one on one his war numbers won 17%
+   of campaigns, and a war of three 23–31% of a fair 33, because digging in pays only while two others bleed each other.
+   ⚠ The Seaboard Rep ignoring walls won +8 a seat in wars, and Auston turning one holding behind lost 5 (rushing is a
+   war's worst way). */
+var FOES = [
+  { who: 'Maxwell',      key: 'maxwell', word: 'Strategic',  style: 'openings' },
+  { who: 'Vince',        key: 'brother', word: 'Aggressive', style: 'rush' },
+  { who: 'Wes',          key: '',        word: 'Defensive',  style: 'dig' },
+  { who: 'Auston',       key: 'auston',  word: 'Adaptive',   style: 'adapt' },
+  { who: 'Puzzle Champ', key: '',        word: 'Cunning',    style: 'cunning' },
+  { who: 'Seaboard Rep', key: '',        word: 'Relentless', style: 'relentless' }
+];
+var STYLE_OF = {};
+FOES.forEach(function (f) { STYLE_OF[f.who] = f.style; });
+/* how far behind or ahead of the strongest other side, in holdings, Auston has to be before she turns */
+var ADAPT_BY = 3;
 
 var G = null;          // campaign state
 var B = null;          // battle state
@@ -1199,7 +1264,9 @@ function newCampaign(diff, mode, opts) {
         flash: -1, hot: null, q: [], log: freshLog(), habits: null, dogId: '', dog: -1, sniffed: false,
         lesson: '', teachAt: [], taught: {},
         gens: [], used: [], ordered: false, orderArm: '', hold: null, bar: null, sight: false, roads: false, sailed: false,
-        scen: sc ? sc.id : '', scenStart: sc ? start.own.slice() : null, scenTook: 0 };
+        scen: sc ? sc.id : '', scenStart: sc ? start.own.slice() : null, scenTook: 0,
+        /* who commands each machine's side, in seat order (his 11-18); a mode with no choice has the seats' own */
+        foes: opts.foes && opts.foes.length === sides.length - 1 ? opts.foes.slice() : seatFoes(mode) };
   drawCard();
   G.atks = ATTACK_CAP + cardAtks();
   G.toPlace = deployFor(G.side);
@@ -2131,7 +2198,8 @@ function keptShare(start, end, color, hand) {
 /* ── SCREENS ───────────────────────────────────────────────────────────────────── */
 function show(id) {
   /* ⚠ A SCREEN NOT ON THIS LIST NEVER SHOWS: show() only switches these (the Scenarios screen was missing, 11-16) */
-  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass','screen-orders','screen-war','screen-scen']
+  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result','screen-pass','screen-orders','screen-war','screen-scen',
+   'screen-foes']
     .forEach(function (s) { $(s).classList.toggle('on', s === id); });
 }
 function say(t) { $('map-say').innerHTML = t; }
@@ -2302,7 +2370,7 @@ function drawMap() {
     $('tw-' + s).classList.toggle('out', !alive(s));
   });
   $('tw-t').classList.toggle('out', multi() && !alive('t'));
-  $('l-mine').textContent = two ? 'Green' : 'Yours'; $('l-theirs').textContent = two ? 'Red' : RIVAL.who;
+  $('l-mine').textContent = two ? 'Green' : 'Yours'; $('l-theirs').textContent = two ? 'Red' : whoOf('t');
   $('screen-map').classList.toggle('red-turn', two && G.side === 't');
   $('t-chain').textContent = chainCount(G.own, G.side);
   $('t-chain').className = $('t-atk').className = G.side;
@@ -2483,8 +2551,10 @@ var RULE_SAY = {
   dark:    { tag: 'dark', chip: 'down the mines &middot; low light', say: 'Down the mines, the light comes and goes.' }
 };
 function ruleAt(id) { return LAND[id] && !(G && G.mode === 'first') ? RULES[LAND[id].nm] || '' : ''; }
-/* ⚑ 0.75 SINCE 11-17 (sim:clash RULE=endgame, the vanguard on the Flats too): 0.5 → 51% took · 0.75 → 46%, plain 50% */
-var EG_SCALE = 0.75;
+/* ⚑ 0.3 SINCE 11-18, WHEN THE FLATS WENT TO FIFTEEN EACH (his): at even clocks the attacker, who moves first, flags
+   first in a long race, and at 0.75 only 18% of attacks took the Flats (sim:clash RULE=endgame, 1,000 a run: 0.5 → 31%,
+   0.35 → 41%, 0.3 → 43%, 0.25 → 43%; plain ground 48%). Smaller armies race to a queen before the flag. */
+var EG_SCALE = 0.3;
 var EG_CAPS = { q: 0, r: 1, b: 1, n: 1, p: 6 };
 var EG_PUSH = 14;           // centipawns a rank for a pawn on the Flats, so the machine runs the race it is judged by
 function egBudget(v) { return Math.max(1, Math.round(v * EG_SCALE)); }
@@ -2552,7 +2622,7 @@ function musterBattle(from, to, playerAttacks) {
      defender's chair already followed with "no rook to bring". */
   var aMoved = applyAttackerPos(board, attWhite ? 'w' : 'b', aPos, rule);
   var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', dPos, rule);
-  var clocks = battleClocks(material(board, attWhite ? 'w' : 'b'), material(board, attWhite ? 'b' : 'w'));
+  var clocks = battleClocks(material(board, attWhite ? 'w' : 'b'), material(board, attWhite ? 'b' : 'w'), rule);
   return { from:from, to:to, playerAttacks:playerAttacks, aRanks:aRanks, dRanks:dRanks,
            aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos, aMat:aMat, dMat:dMat,
            aBud:aBud, dBud:dBud, board:board, dInfo:dInfo, aMoved:aMoved, attWhite:attWhite,
@@ -2589,6 +2659,7 @@ function beginBattle(from, to, playerAttacks) {
   $('v-mat').innerHTML = '&nbsp;'; $('v-mat').className = 'vline';
   $('v-pos').innerHTML = '&nbsp;'; $('v-pos').className = 'vline';
   $('preview').hidden = true;
+  $('odds').hidden = true;
   $('tobattle').disabled = true;
   /* ⚑ THE DICE SPIN HERE, on the screen that says what they bought (his 11-17: "the dice should spin on THIS screen for
      the reveal"). The sand table threw them first and this opened on them landed; it still throws the dice of a battle
@@ -2668,6 +2739,7 @@ function finishRoll() {
   paintDice($('def-pos'), p.dPosPool, keptIndex(p.dPosPool), true, true, true);
   matVerdict(); posVerdict();
   paintPreview();
+  paintOdds();
   $('preview').hidden = false;
   $('tobattle').disabled = false;
 }
@@ -2683,6 +2755,7 @@ function runRoll() {
             posVerdict();
             rollTimers.push(setTimeout(function () {
               paintPreview();
+              paintOdds();
               $('preview').hidden = false;
               $('tobattle').disabled = false;
             }, 260));
@@ -2770,6 +2843,33 @@ function boardCells(host) {
     h += '<i class="sq' + (((r + f) % 2) ? ' d' : '') + '" data-i="' + i + '"></i>';
   }
   host.innerHTML = h;
+}
+/* ⭐ THE ODDS (his 11-18): how often battles from this material gap, on this ground, went the attacker's way — the very
+   tables two machines' battles are decided by (CLASH, CLASHES: measured engine against engine, `npm run sim:clash`), so it
+   says how battles like this went, never how you will play it. ⚠ NEVER 0 OR 100: an upset is always possible.
+   ⚠ BETWEEN THE MIDDLES OF TWO MEASURED BINS, A STRAIGHT LINE: read bin by bin a +2 gap said 46% and a +3 said 88%, so the
+   bar jumped in cliffs while every point of material moves the real odds (the ends stay open, as the bins are). */
+function oddsOf(P) {
+  var T = CLASHES[P.rule] || CLASH, aw = P.attWhite, n = T.p.length;
+  var gap = material(P.board, aw ? 'w' : 'b') - material(P.board, aw ? 'b' : 'w');
+  var at = (gap - T.lo - (T.bin - 1) / 2) / T.bin, k = Math.floor(at);
+  var lo = T.p[Math.max(0, Math.min(n - 1, k))], hi = T.p[Math.max(0, Math.min(n - 1, k + 1))];
+  return Math.max(0.01, Math.min(0.99, lo + (hi - lo) * (at - k)));
+}
+function paintOdds() {
+  var p = PEND, two = G.mode === 'two', a = G.own[p.from], d = G.own[p.to];
+  var A = Math.round(oddsOf(p) * 100);
+  var an = two ? sideName(a) : p.playerAttacks ? 'You' : generalOf(a).who, dn = two ? sideName(d) : p.playerAttacks ? generalOf(d).who : 'You';
+  $('odds-a').textContent = an + ' ' + A + '%'; $('odds-a').style.color = sideColor(a);
+  $('odds-d').textContent = (100 - A) + '% ' + dn; $('odds-d').style.color = sideColor(d);
+  var bar = $('obar'), fill = $('odds-fill');
+  bar.style.setProperty('--a', sideColor(a)); bar.style.setProperty('--d', sideColor(d));
+  bar.setAttribute('role', 'img');
+  bar.setAttribute('aria-label', 'Chance to win: ' + an + ' ' + A + ' percent, ' + dn + ' ' + (100 - A) + ' percent');
+  fill.style.width = '50%';
+  $('odds').hidden = false;
+  void fill.offsetWidth;                       // laid out at even first, so the bar swings to the split
+  fill.style.width = A + '%';
 }
 function paintPreview() {
   var p = PEND;
@@ -2908,7 +3008,10 @@ var MOVE_DELAY = 1.0;
    ⚠ EACH SIDE'S FLAG STAYS ITS OWN LOSS, so nothing here pays a side for waiting (THE CLOCKS, above). CLOCK_MIN is the
    least a side gets, whole seconds. ⚠ ATT_EDGE AND THE CLASH TABLES WERE RE-MEASURED WITH IT, never carried over. */
 var CLOCK_MIN = 6;
-function battleClocks(am, dm) {
+/* ⚑ THE FLATS ARE FIFTEEN EACH (his 11-18: "Is it first to make a queen? Then time should be like 15 seconds for each
+   player, right?"): a race to a queen is a race, so the clock stays even there whatever the armies. */
+function battleClocks(am, dm, rule) {
+  if (rule === 'endgame') return { att: CLOCK_ATT, def: CLOCK_DEF };
   var pool = CLOCK_ATT + CLOCK_DEF, att = am + dm > 0 ? Math.round(pool * am / (am + dm)) : CLOCK_ATT;
   att = Math.max(CLOCK_MIN, Math.min(pool - CLOCK_MIN, att));
   return { att: att, def: pool - att };
@@ -3267,6 +3370,7 @@ function applyMove(m) {
     if (row === 0 || row === 7) m = autoPromo(B.S, m, p === 'P');
   }
   var mover = B.S.turn;
+  if (mover === 'w' && !B.two) B.yours = Math.max(0, B.turnStart - B.clk.w);
   B.S = bMake(B.S, m);
   syncIds(m);
   B.last = m; B.sel = -1; B.moves = []; B.dsel = '';
@@ -3303,9 +3407,50 @@ function autoPromo(S, m, white) {
    full speed could not flag and the battle could not end on time at all. The pace is what
    keeps both clocks meaningful. It is charged to the machine, as thinking time should be. */
 /* ⚠ both timers are tied to the battle that set them: one outliving it moved for a person in the next battle */
+/* ⭐ THE MACHINE THINKS LIKE A PERSON (his 11-18: "the opponent's move occurs too quickly and consistently. It should
+   be slightly random and anywhere from 0.5 seconds to 5 seconds. It could play into their designated playing style, as
+   well"). A move comes quick (q, seconds) or after a think (t), each general their own way; Auston answers at your
+   pace, as long as your last move took.
+   ⚠ IT IS ON THE MACHINE'S OWN CLOCK, so how OFTEN a think comes is solved from the level: a move costs on average what
+   the level's old fixed pace did (pace + ms, less the second given back), which is the price sim:marchland and
+   sim:clash put on a move. A slow general would flag and a fast one never run short, and the battles would no longer
+   be the ones measured. ⚠ IN TIME TROUBLE NOBODY STARES: never more than a third of what is left on the clock. */
+var TEMPO_MIN = 0.5, TEMPO_MAX = 5;
+var TEMPO = {
+  openings:   { q: [0.6, 1.4], t: [2, 4] },       // Maxwell: steady, and now and then he weighs it
+  rush:       { q: [0.5, 1.0], t: [1.5, 3.5] },   // Vince snaps them off, and his thinks are short
+  dig:        { q: [0.8, 1.4], t: [3, 5] },       // Wes: seldom, and long
+  cunning:    { q: [0.5, 1.4], t: [1, 5] },       // the Puzzle Champ: no telling
+  relentless: { q: [0.9, 1.5], t: [1.6, 2.8] }    // the Seaboard Rep: a beat that never stops
+};
+/* what a move between a and b costs the clock on average, past the second given back */
+function tempoCost(a, b) {
+  var lo = Math.max(a, MOVE_DELAY);
+  return b <= lo ? 0 : (b - lo) * ((b + lo) / 2 - MOVE_DELAY) / (b - a);
+}
+/* how often `way` thinks on `level`: the share that makes a move cost what the level's pace did */
+function thinkOdds(way, level) {
+  var L = LEVELS[level] || LEVELS.medium, T = TEMPO[way] || TEMPO.openings;
+  var pay = (L.pace + L.ms) / 1000 - MOVE_DELAY, cq = tempoCost(T.q[0], T.q[1]), ct = tempoCost(T.t[0], T.t[1]);
+  return Math.max(0, Math.min(1, (pay - cq) / (ct - cq)));
+}
+/* seconds before the machine's move: r is a draw of three uniforms (the page's Math.random; the probe's own) */
+function aiPause(way, level, left, yours, r) {
+  r = r || [Math.random(), Math.random(), Math.random()];
+  var s, T = TEMPO[way] || TEMPO.openings;
+  if (way === 'adapt' && yours != null) s = yours;
+  else {
+    if (way === 'adapt') T = TEMPO.openings;
+    var band = r[0] < thinkOdds(way === 'adapt' ? 'openings' : way, level) ? T.t : T.q;
+    s = band[0] + r[1] * (band[1] - band[0]);
+  }
+  return Math.max(TEMPO_MIN, Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, left / 3), s));
+}
 function scheduleAI() {
   var L = LEVELS[G.diff] || LEVELS.medium, battle = B;
-  setTimeout(function () { if (B === battle) aiMove(); }, L.pace);
+  var s = aiPause(styleOf(B.foeSide), G.diff, B.clk.b, B.yours);
+  /* the search runs inside the pause (up to L.ms), so the move lands when the pause is over */
+  setTimeout(function () { if (B === battle) aiMove(); }, Math.max(0, s * 1000 - L.ms));
 }
 function aiMove() {
   if (!B || B.over || B.two || B.S.turn !== 'b' || !B.running) return;
@@ -3708,7 +3853,7 @@ function noteTurn() {
 }
 /* ⚠ A CAMPAIGN GOES INTO HIS FILE ONCE, WHEN IT ENDS */
 function fileCampaign(won) {
-  if (!G || G.mode === 'two' || G.mode === 'first' || G.mode === 'scenario' || multi() || !G.log) return;
+  if (!G || G.mode === 'two' || G.mode === 'first' || G.mode === 'scenario' || multi() || !G.log || whoOf('t') !== RIVAL.who) return;
   var f = loadFile() || { v: 1, games: 0, won: 0, lost: 0, open: {}, keep: 0, thin: {}, turns: 0, forts: 0 };
   f.games++;
   if (won === true) f.won++; else if (won === false) f.lost++;
@@ -3758,12 +3903,24 @@ function lineFor(kind, data, who) {
 }
 /* ⭐ THE OTHER GENERALS' WORDS, a war of three or four: HIS, placeholders. A kind with no line is silence. */
 var GENERAL_LINES = {
-  Vince: { open: ['Three of us, one map.'], turn: ['My turn.'], declare: ['Here I come.'], took: ['{to} is mine now.'],
-           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'],
-           rush: ["Odds? I don't count them."] },
-  Wes:   { open: ['Everybody wants the middle.'], turn: ['My turn.'], declare: ['Here I come.'], took: ['{to} is mine now.'],
-           lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'],
-           dig: ['Not yet. I can wait.'] }
+  Vince: { open: ["Ten holdings. I'll take them fast."], war: ['{holdings} holdings. Try to keep up.'], turn: ['My turn.'], declare: ['Here I come.'],
+           took: ['{to} is mine now.'], lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'],
+           rush: ["Odds? I don't count them."], win: ['Too slow. Again?'], lose: ['Lucky. Rematch?'] },
+  Wes:   { open: ['Everybody wants the middle.'], war: ['Everybody wants the middle.'], turn: ['My turn.'], declare: ['Here I come.'],
+           took: ['{to} is mine now.'], lost: ['Keep {to}. For now.'], held: ['Not today.'], repelled: ['Fine. You keep it.'],
+           dig: ['Not yet. I can wait.'], win: ['Patience. Again?'], lose: ['You got through. Rematch?'] },
+  /* 11-18, three more to pick from */
+  Auston: { open: ['Show me how you play.'], war: ['{holdings} holdings. Show me how you play.'], turn: ['My turn.'],
+           declare: ['Here I come.'], took: ['{to} is mine now.'], lost: ['Keep {to}. For now.'], held: ['Not today.'],
+           repelled: ['Fine. You keep it.'], rush: ['Behind? Then I hurry.'], dig: ['Ahead. I can wait.'],
+           opening: ['{to} is cut off.'], win: ['I learned you. Again?'], lose: ['You learned me first. Rematch?'] },
+  'Puzzle Champ': { open: ['Every map is a puzzle.'], war: ['{holdings} holdings. Every map is a puzzle.'], turn: ['My turn.'],
+           declare: ['Here I come.'], took: ['{to} is mine now.'], lost: ['Keep {to}. For now.'], held: ['Not today.'],
+           repelled: ['Fine. You keep it.'], split: ['Take {to} and the rest falls apart.'], win: ['Solved. Again?'],
+           lose: ['I missed something. Rematch?'] },
+  'Seaboard Rep': { open: ['I never stop.'], war: ['{holdings} holdings. I never stop.'], turn: ['My turn.'],
+           declare: ['Here I come.'], took: ['{to} is mine now.'], lost: ['Keep {to}. For now.'], held: ['Not today.'],
+           repelled: ['Fine. You keep it.'], win: ['Again. Now.'], lose: ['Again. Now.'] }
 };
 /* a general's face and line on the map: side is whose (Red, Maxwell, when not said). ⚠ Never in two players */
 function speak(kind, data, side) {
@@ -3853,8 +4010,9 @@ function firstPlan() {
    and the armies mustered exactly as for a battle you play (musterBattle, the same draws), then one draw against what
    engine-against-engine battles from that material gap did (CLASH, `npm run sim:clash`). The survivors march in at the
    shares those battles kept.
-   ⚠ THE COLORS ARE THE SIDES', THE NAMES THE GENERALS': Maxwell commands Red in every mode. Blue and Violet are the
-   town's regulars, and WHO is HIS call (placeholders). The six new holdings' names are HIS too (town places, for now). */
+   ⚠ THE COLORS ARE THE SIDES', THE NAMES THE GENERALS': SIDES' who is the seat's own (Maxwell Red, Vince Blue, Wes
+   Violet), which every mode with no choice keeps (the Daily, the first campaign, scenarios, a save from before 11-18);
+   a campaign or a war you begin is against whoever you picked (G.foes, whoOf). The six new holdings' names are HIS. */
 var SIDES = {
   m: { nm: 'Green',  col: '#6bffb8', bg: '#123a2c', who: '',        key: '' },
   t: { nm: 'Red',    col: '#ff6e8a', bg: '#3a1420', who: 'Maxwell', key: 'maxwell' },
@@ -3911,10 +4069,25 @@ var CLASH = { lo: -12, bin: 3,
 var WAR_WIN = { three: 10, four: 10 };
 function sidesFor(mode) { return WAR_START[mode] ? WAR_START[mode].sides.slice() : ['m', 't']; }
 function multi() { return !!G && (G.mode === 'three' || G.mode === 'four'); }
-/* the general across from you on that side: Maxwell for Red, the regulars for the rest */
-function generalOf(side) { return SIDES[side] && SIDES[side].who ? SIDES[side] : SIDES.t; }
+/* the seats' own generals for a mode (Red's, Blue's, Violet's) */
+function seatFoes(mode) { return sidesFor(mode).slice(1).map(function (s) { return SIDES[s].who; }); }
+function foeOf(who) {
+  for (var i = 0; i < FOES.length; i++) if (FOES[i].who === who) return FOES[i];
+  return { who: who, key: '', word: '', style: '' };
+}
+/* who commands `side` in g (a campaign, or a war being played back): its foes in seat order, else the seat's own */
+function whoOf(side, g) {
+  g = g || G;
+  var sides = g && g.sides || sidesFor(g && g.mode || 'solo'), at = sides.indexOf(side) - 1, f = g && g.foes;
+  return f && at >= 0 && f[at] ? f[at] : SIDES[side] ? SIDES[side].who : SIDES.t.who;
+}
+/* the general across from you on that side: their name and face, in the side's colors */
+function generalOf(side) {
+  var s = SIDES[side] && side !== 'm' ? side : 't', f = foeOf(whoOf(s));
+  return { nm: SIDES[s].nm, col: SIDES[s].col, bg: SIDES[s].bg, who: f.who, key: f.key };
+}
 /* the general's way of playing the map (STYLES), '' for Green */
-function styleOf(side) { return side !== 'm' && SIDES[side] && STYLE_OF[SIDES[side].who] || ''; }
+function styleOf(side) { return side !== 'm' && SIDES[side] && STYLE_OF[whoOf(side)] || ''; }
 function alive(side) { for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) return true; return false; }
 /* the next machine to move after `side`, round the table; '' when it comes back to you */
 function nextSide(side) {
@@ -3927,12 +4100,13 @@ function nextSide(side) {
    the sea (47.9% before PC_EDGE took six points off the attacker), against 40% on plain ground — the defender's own
    terrain, by four points.
    ⚑ RE-MEASURED 11-17 (3,000 a rule; the vanguard, the castle that delivers and time following the armies, DR_EDGE 3,
-   PC_EDGE 0, EG_SCALE 0.75): the Flats 44.6%, the Island 47.2%, the sea 43.7%, plain ground 47.7%. */
+   PC_EDGE 0, EG_SCALE 0.75): the Flats 44.6%, the Island 47.2%, the sea 43.7%, plain ground 47.7%.
+   ⚑ THE FLATS RE-MEASURED 11-18 (3,000; his fifteen each, EG_SCALE 0.3): 43.0% took them, 39% by the attacker's queen. */
 var CLASHES = {
   endgame: { lo: -12, bin: 3,
-    p:  [0.00, 0.08, 0.10, 0.16, 0.43, 0.85, 0.91, 0.99, 1.00, 1.00, 1.00, 1.00],
-    ka: [1.00, 1.00, 1.00, 1.00, 0.72, 0.76, 0.83, 0.96, 0.96, 0.96, 0.96, 0.96],
-    kd: [0.96, 0.88, 0.83, 0.76, 0.66, 0.72, 0.84, 1.00, 1.00, 1.00, 1.00, 1.00] },
+    p:  [0.00, 0.00, 0.16, 0.26, 0.43, 0.67, 0.92, 0.92, 0.92, 0.92, 0.92, 0.92],
+    ka: [1.00, 1.00, 1.00, 1.00, 0.99, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00],
+    kd: [1.00, 1.00, 0.98, 0.93, 0.79, 0.80, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00] },
   drops: { lo: -12, bin: 3,
     p:  [0.05, 0.26, 0.29, 0.43, 0.63, 0.76, 0.83, 0.99, 0.99, 1.00, 1.00, 1.00],
     ka: [1.00, 1.00, 1.00, 0.99, 0.96, 0.94, 0.94, 0.96, 0.98, 1.00, 1.00, 1.00],
@@ -3997,7 +4171,7 @@ function assemblyNames() {
 /* who stands with you this campaign: the Assembly, less anyone across the table and anyone with no order */
 function musterGenerals(names) {
   if (!G || (G.mode !== 'solo' && !multi())) return [];
-  var across = G.sides.map(function (s) { return SIDES[s].who; });
+  var across = G.sides.map(function (s) { return whoOf(s); });
   return names.filter(function (n, i) { return GENERALS[n] && across.indexOf(n) < 0 && names.indexOf(n) === i; });
 }
 function orderOf(name) { return ORDERS[GENERALS[name]] || null; }
@@ -4098,7 +4272,7 @@ function paintOrdersDoor() {
 var BEST_KEY = 'pjcc.campaign.best.v1';
 var LEVEL_RANK = { easy: 1, medium: 2, hard: 3 };
 function warSnap() { return { own: G.own.slice(), ranks: G.ranks.slice() }; }
-function warBegin() { G.war = { mode: G.mode, diff: G.diff, start: warSnap(), turns: [] }; G.warEv = []; }
+function warBegin() { G.war = { mode: G.mode, diff: G.diff, foes: (G.foes || []).slice(), start: warSnap(), turns: [] }; G.warEv = []; }
 /* one battle: who marched from where to where, what it did to the ground, and its mate if it ended in one */
 function warNote(p, side, attackerWon, broke, mate) {
   if (!G.war) return;
@@ -4169,7 +4343,7 @@ var replay = null;
 function warFrames(w) {
   var f = [{ snap: w.start, ev: [], say: 'The opening.' }];
   w.turns.forEach(function (t) {
-    var who = t.s === 'm' && w.mode !== 'two' ? 'You' : w.mode === 'two' ? sideName(t.s) : generalOf(t.s).who;
+    var who = t.s === 'm' && w.mode !== 'two' ? 'You' : w.mode === 'two' ? sideName(t.s) : whoOf(t.s, w);
     var took = t.ev.filter(function (e) { return e.r === 'took'; }).map(function (e) { return LAND[e.to].nm; });
     var held = t.ev.filter(function (e) { return e.r === 'held'; }).length, broke = t.ev.filter(function (e) { return e.r === 'breach'; }).length;
     var parts = [];
@@ -4231,7 +4405,7 @@ function paintFrame() {
   drawWar($('framebox'), w.end || w.turns[w.turns.length - 1] || w.start, mine, true);
   useMap({ land: keep, edges: keepE });
   $('frame-say').textContent = 'Your best war · ' + (LEVELS[w.diff] ? LEVELS[w.diff].nm : '') +
-    ((w.sides || []).length > 2 ? ' · ' + (w.sides.length === 3 ? 'three players' : 'four players') : '') + ' · won in round ' + w.rounds;
+    ((w.sides || []).length > 2 ? ' · ' + (w.sides.length === 3 ? 'two opponents' : 'three opponents') : '') + ' · won in round ' + w.rounds;
 }
 
 /* ══ YOUR DOG MARCHES WITH YOU ════════════════════════════════════════════════════════
@@ -4311,11 +4485,14 @@ function srcScore(id, rk, side) {
 /* side: the color the machine plays, Red unless the sim hands Green to it */
 function rivalPlan(side) {
   side = side || 't';
-  var L = LEVELS[G.diff] || LEVELS.medium, St = STYLES[styleOf(side)] || STYLES.openings, plain = !styleOf(side);
+  var way = styleOf(side) === 'adapt' ? adaptOf(side) : styleOf(side);
+  var L = LEVELS[G.diff] || LEVELS.medium, St = STYLES[way] || STYLES.openings, plain = !way;
+  /* ⚠ A WAY MAY CHANGE WITH FEWER THAN FOUR SIDES (`few`, STYLES above): nobody else is bleeding while you wait */
+  if (St.few && G.sides.length < 4) St = Object.assign({}, St, St.few);
   var theirs = idsOf(side);
   if (!theirs.length) return { deploy: [], attacks: [], move: null };
   /* ⭐ ON HARD MAXWELL PLAYS AGAINST YOUR HABITS (his file): a campaign only, never a Daily, never Easy or Medium */
-  var H = side === 't' && G.mode === 'solo' && G.diff === 'hard' ? G.habits : null;
+  var H = side === 't' && G.mode === 'solo' && G.diff === 'hard' && whoOf('t') === RIVAL.who ? G.habits : null;
   var add = deployFor(side);
   var rk = G.ranks.slice();
   var front = theirs.filter(function (id) {
@@ -4349,7 +4526,7 @@ function rivalPlan(side) {
 
   /* ── the attacks, planned against the POST-deployment ranks ── */
   /* ⚠ GREEN, WHEN THE SIMS HAND IT TO THE MACHINE, PLAYS PLAIN: a style is a general's */
-  var edge = L.minEdge + (plain ? 0 : St.edge), opens = plain ? 0 : St.open, passed = 0;
+  var edge = L.minEdge + (plain ? 0 : St.edge), opens = plain ? 0 : St.open, splits = plain ? 0 : St.split, passed = 0;
   var cand = [], war = multi();
   theirs.forEach(function (from) {
     if (rk[from] < 2) return;
@@ -4360,6 +4537,8 @@ function rivalPlan(side) {
       if (H && H.thin === to && rk[to] <= 2) s += 2;                 // the holding you always leave thin
       var opening = opens > 0 && cutOff(to);
       if (opening) s += opens;                                       // his #5: Maxwell takes openings
+      var parts = splits > 0 && splitsOff(to);
+      if (parts) s += splits;                                        // the Puzzle Champ cuts a side apart
       /* ⚠ A SIEGE IS TWO ATTACKS OUT OF THREE, so a smart machine wants a point more edge
          before it starts one. Easy is not siege-aware on purpose: it throws one attack at a
          walled holding, breaks the walls and cannot follow up — a mistake you can punish. */
@@ -4368,7 +4547,7 @@ function rivalPlan(side) {
       if (s < edge) { if (s >= L.minEdge) passed++; return; }   // ⚠ Hard DECLINES a bad attack; a digger declines more
       /* ⚠ a war's even choice is a coin toss (k); a war of two keeps its order (k 0, and the sort is stable) */
       cand.push({ from:from, to:to, s:s, siege:siege, k: war ? rand() : 0, sea: !adj(from, to),
-                  how: s < L.minEdge ? 'rush' : opening ? 'opening' : '' });
+                  how: s < L.minEdge ? 'rush' : opening ? 'opening' : parts ? 'split' : '' });
     });
   });
   cand.sort(function (a, b) { return b.s - a.s || a.k - b.k; });
@@ -4406,6 +4585,19 @@ function rivalPlan(side) {
   var plan = { deploy: deploy, attacks: attacks, move: move };
   if (passed && !attacks.length) plan.dug = true;              // a digger passed up what the level would have taken
   return plan;
+}
+/* ⭐ the Puzzle Champ's eye (11-18): taking `to` would leave another of its side's holdings with no road to the rest */
+function splitsOff(to) {
+  var side = G.own[to];
+  return nbrs(to).some(function (j) {
+    return G.own[j] === side && !nbrs(j).some(function (k) { return k !== to && G.own[k] === side; });
+  });
+}
+/* ⭐ Auston's way (11-18): behind the strongest other side she rushes, ahead of it she digs in, level she takes openings */
+function adaptOf(side) {
+  var mine = idsOf(side).length, most = 0;
+  G.sides.forEach(function (s) { if (s !== side) most = Math.max(most, idsOf(s).length); });
+  return mine <= most - ADAPT_BY ? 'rush' : mine >= most + ADAPT_BY ? 'dig' : 'openings';
 }
 /* ⭐ an opening (his #5, Maxwell's eye): a holding with no road to one of its own side, so nothing can reinforce it */
 function cutOff(id) { return !nbrs(id).some(function (j) { return G.own[j] === G.own[id]; }); }
@@ -4460,10 +4652,13 @@ function fallen() {
   });
   return out;
 }
-/* one waiting beat at a time, so a tap can end the current wait instead of queueing another */
+/* one waiting beat at a time, so a tap can end the current wait instead of queueing another.
+   ⚠ A BEAT IS ITS CAMPAIGN'S (11-18): one still waiting when a new campaign began ran the old turn on, in the new one
+   (a machine's turn on your fresh map). Found by the browser check, whose war of four left a clash's beat behind. */
 function beat(ms, fn) {
+  var g = G;
   G.beatFn = fn;
-  G.beatT = setTimeout(function () { G.beatFn = null; fn(); }, G.hurry ? Math.min(ms, 140) : ms);
+  G.beatT = setTimeout(function () { if (G !== g) return; G.beatFn = null; fn(); }, G.hurry ? Math.min(ms, 140) : ms);
 }
 function hurry() {
   if (!G || G.phase !== 'theirs') return;
@@ -4611,8 +4806,8 @@ function campaignOver(won) {
   keepsakeLine(window.PJCC && PJCC.bankWar ? PJCC.bankWar(war) : []);
   /* ⭐ and the town hears of it (his #10): the front door's wire, the town's paper, Maxwell */
   if (war && window.PJCC && PJCC.noteWar) PJCC.noteWar(war);
-  var last = G.mode === 'solo' && won != null ? lineFor(won ? 'lose' : 'win') : '';
-  $('result-mx').textContent = last ? RIVAL.who + ': \u201c' + last + '\u201d' : '';
+  var last = G.mode === 'solo' && won != null ? lineFor(won ? 'lose' : 'win', null, whoOf('t')) : '';
+  $('result-mx').textContent = last ? whoOf('t') + ': \u201c' + last + '\u201d' : '';
   $('result-mx').hidden = !last;
   $('share').hidden = G.mode !== 'daily';
   if (G.mode === 'daily') {
@@ -4702,9 +4897,9 @@ function startMode(b, mode) {
   initAudio();
   var o = loadSave(mode);
   /* today's Daily and a two-player game pick up where they were; yesterday's Daily is simply replaced */
-  if (o && (mode === 'two' || mode === 'first' || WAR_START[mode] || (mode === 'daily' && o.day === dayKey()))) { resumeCampaign(o); return; }
-  /* a campaign in progress is not thrown away by one tap on Begin */
-  if (mode === 'solo' && o && !b.dataset.armed) {
+  if (o && (mode === 'two' || mode === 'first' || (mode === 'daily' && o.day === dayKey()))) { resumeCampaign(o); return; }
+  /* a campaign or a war in progress is not thrown away by one tap on Begin */
+  if ((mode === 'solo' || WAR_START[mode]) && o && !b.dataset.armed) {
     b.dataset.armed = '1'; b.textContent = 'Tap again to start over';
     setTimeout(function () { delete b.dataset.armed; paintHome(); }, 2500);
     return;
@@ -4713,7 +4908,8 @@ function startMode(b, mode) {
   var first = mode === 'first';
   if (mode !== 'two' && !first) { try { localStorage.setItem(LEVEL_KEY, chosenLevel); } catch (e) {} }
   useMap(mapFor(mode));
-  newCampaign(first ? 'easy' : chosenLevel, mode, first ? { fog: false, cards: false } : { fog: optFog, cards: optCards });
+  newCampaign(first ? 'easy' : chosenLevel, mode, first ? { fog: false, cards: false }
+    : { fog: optFog, cards: optCards, foes: mode === 'solo' || WAR_START[mode] ? picked : null });
   G.started = true;
   G.habits = mode === 'solo' ? habitsOf(observeFile(loadFile())) : null;
   if (mode !== 'two' && !first && optDog) { G.dogId = optDog; G.dog = dogStart(); }
@@ -4722,15 +4918,15 @@ function startMode(b, mode) {
   setPhase('deploy');
   say(deployLine());
   if (multi()) speak('war', { holdings: LAND.length, generals: G.sides.length - 1 });
-  else if (!first) openingWords();
+  else if (!first) { if (whoOf('t') === RIVAL.who) openingWords(); else speak('open'); }
   drawMap(); show('screen-map');
 }
-$('go').addEventListener('click', function () { startMode(this, 'solo'); });
+$('go').addEventListener('click', function () { startMode(this, foesMode()); });
 $('daily').addEventListener('click', function () { startMode(this, 'daily'); });
 $('two').addEventListener('click', function () { startMode(this, 'two'); });
 $('first').addEventListener('click', function () { startMode(this, 'first'); });
-$('three').addEventListener('click', function () { startMode(this, 'three'); });
-$('four').addEventListener('click', function () { startMode(this, 'four'); });
+$('opt-foes').addEventListener('click', function () { paintFoes(); show('screen-foes'); });
+$('foe-done').addEventListener('click', function () { paintHome(); show('screen-home'); });
 $('orders').addEventListener('click', function () { if (!G || G.busy) return; G.orderArm = ''; paintOrders(); show('screen-orders'); });
 /* the war, replayed: from the result screen (this war) and from the frame (your best) */
 $('watch').addEventListener('click', function () { if (G && G.war) playWar(G.war, 'result'); });
@@ -4859,7 +5055,7 @@ function saveCampaign() {
       fortDone:G.fortDone, q:G.q, pending:G.pending || null, log:G.log || null,
       dogId:G.dogId || '', dog:G.dog == null ? -1 : G.dog, sniffed:!!G.sniffed,
       gens:G.gens || [], used:G.used || [], ordered:!!G.ordered, hold:G.hold || null, bar:G.bar || null,
-      sight:!!G.sight, roads:!!G.roads, sailed:!!G.sailed, war:G.war || null, warEv:G.warEv || [] }));
+      sight:!!G.sight, roads:!!G.roads, sailed:!!G.sailed, war:G.war || null, warEv:G.warEv || [], foes:G.foes || [] }));
   } catch (e) {}
 }
 function loadSave(mode) {
@@ -4883,7 +5079,8 @@ function resumeCampaign(o) {
         lesson:'', teachAt:[], taught:{ taken: o.mode === 'first' && o.own[2] === 'm' },
         gens:Array.isArray(o.gens) ? o.gens : [], used:Array.isArray(o.used) ? o.used : [], ordered:!!o.ordered,
         orderArm:'', hold:o.hold || null, bar:o.bar || null, sight:!!o.sight, roads:!!o.roads, sailed:!!o.sailed,
-        war:o.war && o.war.start ? o.war : null, warEv:Array.isArray(o.warEv) ? o.warEv : [] };
+        war:o.war && o.war.start ? o.war : null, warEv:Array.isArray(o.warEv) ? o.warEv : [],
+        foes:Array.isArray(o.foes) && o.foes.length === sides.length - 1 ? o.foes : seatFoes(o.mode || 'solo') };
   var pend = o.pending, broke = false;
   if (pend) { broke = resolveLand(pend, !pend.playerAttacks); warNote(pend, G.own[pend.from], !pend.playerAttacks, broke, null); }
   if (campaignCheck()) return;
@@ -4904,29 +5101,73 @@ function resumeCampaign(o) {
   if (G.mode === 'two') showPass();
 }
 function paintHome() {
-  var o = loadSave('solo'), d = loadSave('daily'), t = loadSave('two'), r = $('resume'), g = $('go'), rec = loadDaily(), today = dayKey();
+  var fm = foesMode(), war = fm !== 'solo';
+  var o = loadSave(fm), d = loadSave('daily'), t = loadSave('two'), r = $('resume'), g = $('go'), rec = loadDaily(), today = dayKey();
   var best = rec && rec.day === today && rec.runs ? rec.runs[variantOf(chosenLevel, optFog, optCards, optDog)] : null;
   r.hidden = !o;
   if (o) {
     var held = o.own.filter(function (x) { return x === 'm'; }).length;
-    r.textContent = 'Continue · round ' + o.round + ' · ' + held + ' of ' + LAND.length + ' held';
+    r.textContent = 'Continue · round ' + o.round + ' · ' + held + ' of ' + o.own.length + ' held';
   }
   g.className = o ? 'btn ghost' : 'btn';
-  g.textContent = o ? 'Begin a new campaign' : 'Begin the campaign';
+  g.textContent = o ? 'Begin a new ' + (war ? 'war' : 'campaign') : 'Begin the ' + (war ? 'war' : 'campaign');
+  $('opt-foes').textContent = 'Number of opponents · ' + picked.length;
+  $('foes-note').textContent = 'Against ' + andList(picked) + (war ? ': a war of ' + (picked.length === 2 ? 'three' : 'four') + '.' : '.');
   /* ⚠ one line at 320px: "Daily 9/15 · best 5/10" wraps, so a score replaces the date */
   $('daily').textContent = d && d.day === today ? 'Daily · round ' + d.round
     : best ? 'Daily · best ' + best.best.held + '/' + LAND.length : 'Daily ' + dayLabel(today);
   $('two').textContent = t ? 'Two players · round ' + t.round : 'Two players';
-  ['three', 'four'].forEach(function (k) {
-    var w = loadSave(k);
-    $(k).textContent = (k === 'three' ? 'Three players' : 'Four players') + (w ? ' · round ' + w.round : '');
-  });
   var f = loadSave('first');
   $('first').textContent = f ? 'First campaign · round ' + f.round : 'First campaign';
   $('first').classList.toggle('new', !firstDone());
   paintFrame();
 }
-$('resume').addEventListener('click', function () { initAudio(); var o = loadSave('solo'); if (o) resumeCampaign(o); });
+$('resume').addEventListener('click', function () { initAudio(); var o = loadSave(foesMode()); if (o) resumeCampaign(o); });
+
+/* ── NUMBER OF OPPONENTS (his 11-18) ── who you pick, kept on this device like the level; one to three, in pick order */
+var FOES_KEY = 'pjcc.campaign.foes.v1';
+var picked = (function () {
+  try {
+    var a = JSON.parse(localStorage.getItem(FOES_KEY));
+    if (Array.isArray(a)) {
+      a = a.filter(function (w, i) { return STYLE_OF[w] && a.indexOf(w) === i; }).slice(0, 3);
+      if (a.length) return a;
+    }
+  } catch (e) {}
+  return ['Maxwell'];
+})();
+function foesMode() { return ['solo', 'three', 'four'][picked.length - 1]; }
+function andList(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+/* a tap picks a general or lets one go; never none, never more than three */
+function pickFoe(who) {
+  var at = picked.indexOf(who), say = '';
+  if (at >= 0) { if (picked.length > 1) picked.splice(at, 1); else say = 'Pick at least one.'; }
+  else if (picked.length < 3) picked.push(who);
+  else say = 'Three at most. Tap one to let them go.';
+  try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {}
+  paintFoes(say);
+}
+function paintFoes(say) {
+  var box = $('foe-list'), seats = sidesFor(foesMode()), n = picked.length;
+  box.innerHTML = '';
+  FOES.forEach(function (f) {
+    var at = picked.indexOf(f.who), side = at >= 0 ? seats[at + 1] : '', col = side ? SIDES[side].col : '';
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'foe' + (side ? ' on' : ''); b.setAttribute('data-who', f.who);
+    b.setAttribute('aria-pressed', String(!!side));
+    if (side) { b.style.borderColor = col; b.style.background = col + '14'; b.style.color = col; }
+    var cv = document.createElement('canvas'); cv.width = 48; cv.height = 54; cv.setAttribute('aria-hidden', 'true');
+    var t = document.createElement('span');
+    /* the seat on a line of its own: "Aggressive · Blue" wrapped at a phone's width and left its dot hanging */
+    t.innerHTML = '<b>' + f.who + '</b><small>' + f.word + '</small>' + (side ? '<small>' + SIDES[side].nm + '</small>' : '');
+    b.appendChild(cv); b.appendChild(t);
+    b.addEventListener('click', function () { pickFoe(f.who); });
+    box.appendChild(b);
+    if (window.PJCCBoard3D && PJCCBoard3D.portrait) PJCCBoard3D.portrait(cv, f.who, f.key);
+  });
+  $('foe-say').textContent = say || (n === 1 ? 'One opponent: a campaign of ten holdings.'
+    : n === 2 ? 'Two opponents: a war of three on fifteen holdings.' : 'Three opponents: a war of four on sixteen holdings.');
+}
 
 /* ── SOUND — synthesized, nothing to download ───────────────────────────────────── */
 var actx = null, master = null;

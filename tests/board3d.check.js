@@ -154,6 +154,13 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
   });
   const click = async (page, sq) => { const p = await page.evaluate((i) => T3.b3.pointOf(i), sq); await page.mouse.click(p[0], p[1]); };
   const SQ = (n) => (8 - +n[1]) * 8 + (n.charCodeAt(0) - 97);
+  /* ⚠ A CUT IS POLLED FOR, NEVER SAMPLED: it begins when the move's slide lands, 270–340 ms after the move on a busy machine
+     (measured 11-18), so a look at 240, 260 or 330 ms caught it some days and not others */
+  const cutOf = async (page, want) => {
+    let k = '';
+    for (let t = 0; t < 60 && k !== want; t++) { await sleep(25); k = await page.evaluate(() => T3.b3.cutKind()); }
+    return k;
+  };
   try {
     /* ── 2. up, over the board, every square where it is drawn, a real click plays ── */
     let page = await open();
@@ -220,8 +227,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
-    await sleep(260);
-    const chk = await page.evaluate(() => T3.b3.cutKind());
+    const chk = await cutOf(page, 'check');
     bad = await tapMap(page);
     await sleep(700);
     // the clock, read twice in the page while a cut is on (a mate's, long enough that no slow frame ends it between)
@@ -241,8 +247,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
-    await sleep(330);
-    const pre = await page.evaluate(() => T3.b3.cutKind());
+    const pre = await cutOf(page, 'check');
     await click(page, SQ('e8'));
     await sleep(100);
     const after = await page.evaluate(() => [T3.b3.cutKind(), T3.b3.b.key.split('|')[2]]);
@@ -252,8 +257,10 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate(() => T3.setFen('6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1'));
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
-    await sleep(240);
-    const m1 = await page.evaluate(() => [T3.b3.cutKind(), T3.b3.cardHeld()]);
+    /* ⚠ POLLED, NOT SAMPLED: the cut begins when the move's slide lands, 270–340 ms after the move on a busy machine
+       (measured 11-18; a look at 240 ms caught it about half the time). The card is held from its first frame. */
+    let m1 = ['', false];
+    for (let t = 0; t < 60 && m1[0] !== 'mate'; t++) { await sleep(25); m1 = await page.evaluate(() => [T3.b3.cutKind(), T3.b3.cardHeld()]); }
     await sleep(600);
     const m2 = await page.evaluate(() => [T3.b3.cutKind(), T3.b3.cardHeld()]);
     ok(m1[0] === 'mate' && m1[1] && m2[0] === 'mate' && !m2[1], 'a mate circles the king, and holds the game\'s card half a second at most  [' + m1 + ' then ' + m2 + ']');
@@ -292,8 +299,12 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
-    await sleep(260);
-    const fc = await page.evaluate(() => { const b = document.getElementById('board'); return [T3.b3.cutKind(), b.style.transform.slice(0, 7), b.style.clipPath.slice(0, 8)]; });
+    /* ⚠ POLLED, NOT SAMPLED, as the mate's above: on a busy machine a look at 260 ms came before the slide had landed */
+    let fc = ['', '', ''];
+    for (let t = 0; t < 60 && !(fc[0] === 'check' && fc[1] === 'matrix(' && fc[2] === 'polygon('); t++) {
+      await sleep(25);
+      fc = await page.evaluate(() => { const b = document.getElementById('board'); return [T3.b3.cutKind(), b.style.transform.slice(0, 7), b.style.clipPath.slice(0, 8)]; });
+    }
     ok(fc[0] === 'check' && fc[1] === 'matrix(' && fc[2] === 'polygon(', 'flat, a check\'s cut moves the board itself, clipped to its frame  ' + JSON.stringify(fc));
     await page.keyboard.press('v');
     await sleep(100);

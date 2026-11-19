@@ -64,9 +64,10 @@ function serve(block) {
     page.on('pageerror', (e) => errs.push(e.message));
     const url = `http://127.0.0.1:${srv.address().port}${GAME}`;
     await page.goto(url, { waitUntil: 'load' });
-    await page.evaluate(() => { localStorage.setItem('pjcc.campaign.cards', '0'); localStorage.setItem('pjcc.campaign.fog', '0'); localStorage.removeItem('pjcc.campaign.map.flat'); });
+    await page.evaluate(() => { localStorage.setItem('pjcc.campaign.cards', '0'); localStorage.setItem('pjcc.campaign.fog', '0'); localStorage.removeItem('pjcc.campaign.map.flat');
+      localStorage.setItem('pjcc.campaign.foes.v1', JSON.stringify(['Maxwell', 'Vince', 'Wes'])); });
     await page.reload({ waitUntil: 'load' });
-    await page.click('#four');
+    await page.click('#go');
     await page.waitForFunction(() => window.__mc && __mc.SAND && __mc.SAND.up(), { timeout: 30000 });
     await sleep(300);
     const up = await page.evaluate(() => ({ on: __mc.SAND.on(), sand: document.getElementById('mapbox').classList.contains('sand-on'),
@@ -150,7 +151,9 @@ function serve(block) {
     await p2.setViewport({ width: 375, height: 740 });
     p2.on('pageerror', (e) => errs.push(e.message));
     await p2.goto(`http://127.0.0.1:${srv.address().port}${GAME}`, { waitUntil: 'load' });
-    await p2.click('#four');
+    await p2.evaluate(() => localStorage.setItem('pjcc.campaign.foes.v1', JSON.stringify(['Maxwell', 'Vince', 'Wes'])));
+    await p2.reload({ waitUntil: 'load' });
+    await p2.click('#go');
     await sleep(1500);
     const none = await p2.evaluate(() => ({ up: __mc.SAND.up(), sand: document.getElementById('mapbox').classList.contains('sand-on'),
       btn: document.querySelector('.mapview').hidden, nodes: document.querySelectorAll('#mapbox .node').length }));
