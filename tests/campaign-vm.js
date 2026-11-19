@@ -43,7 +43,9 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   /* who you face, picked (11-18): the six, their ways at the map and their pace at the board */
   'FOES', 'seatFoes', 'foeOf', 'whoOf', 'splitsOff', 'adaptOf', 'TEMPO', 'TEMPO_MIN', 'TEMPO_MAX', 'tempoCost', 'thinkOdds', 'aiPause',
   /* the odds bar on the roll screen (11-18) */
-  'oddsOf'];
+  'oddsOf',
+  /* the roll, piece by piece, and how each side stands (11-18) */
+  'rollBoards', 'boardMoves', 'standOf', 'standColor', 'standDetail', 'STAND_WORDS', 'posScore'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');

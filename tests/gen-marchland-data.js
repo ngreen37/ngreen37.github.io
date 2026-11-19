@@ -86,7 +86,9 @@ function build() {
     /* 11-16, his #2: the scenarios, a start, a level and a checklist each */
     slice(src, 'var SCENARIOS = [',  'var STARS_KEY') +
     /* 11-18, his: how the machine thinks at the board (the six generals ride the LEVELS slice) */
-    slice(src, 'var TEMPO_MIN',      'function tempoCost');
+    slice(src, 'var TEMPO_MIN',      'function tempoCost') +
+    /* 11-18, his: how each side stands as its dice land, worded and colored */
+    slice(src, 'var STAND_WORDS',    'function posScore');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -183,6 +185,8 @@ function build() {
     }, {}),
     /* 11-16, his #5: each general's own way of playing the map, leaning on the level */
     styles: { of: G.STYLE_OF, ways: G.STYLES, adaptBy: G.ADAPT_BY },
+    /* 11-18, his: each side's line on the roll screen, POOR to STRONG, gray to green */
+    stand: { words: G.STAND_WORDS.slice(), from: G.STAND_FROM.slice(), to: G.STAND_TO.slice() },
     /* 11-18, his: the six you pick from (who, the face's key, the word, the way); the first commands Red */
     foes: G.FOES.map((f) => ({ who: f.who, key: f.key, word: f.word, style: f.style })),
     /* 11-16, his #2: scenarios with stars (a missing own/ranks/walls is the campaign's own start) */

@@ -28,7 +28,7 @@ window.__mc = {
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
   dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
-  get picked() { return picked; }, paintFoes: paintFoes, oddsOf: oddsOf,
+  get picked() { return picked; }, paintFoes: paintFoes, oddsOf: oddsOf, rollBoards: rollBoards, standOf: standOf, standColor: standColor,
   setPicked: function (a) { picked = a.slice(); try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {} paintHome(); },
   MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; }, campaignCheck: campaignCheck,
   get replay() { return replay; }, idsOf: idsOf, loadBest: loadBest, SAND: SAND, hurry: hurry,
@@ -625,14 +625,14 @@ function serve() {
         fill: Math.round($('odds-fill').getBoundingClientRect().width / $('obar').getBoundingClientRect().width * 100) });
       m.newCampaign('medium', 'solo'); m.G.started = false;
       m.beginBattle(5, 3, true);
-      out.rolling = $('odds').hidden;
+      out.rolling = !$('odds').classList.contains('on');
       m.finishRoll();
       await new Promise((r) => setTimeout(r, 900));
       out.att = read();
       m.G.busy = false; m.show('screen-map');
       m.G.ranks[3] = 6;
       m.beginBattle(3, 5, false);
-      out.again = $('odds').hidden;
+      out.again = !$('odds').classList.contains('on');
       m.finishRoll();
       await new Promise((r) => setTimeout(r, 900));
       out.def = read();
@@ -648,6 +648,49 @@ function serve() {
     ok(odds.again && odds.def.shown && /^Maxwell \d+%$/.test(odds.def.a) && /^\d+% You$/.test(odds.def.d) &&
        pct(odds.def.a) + pct(odds.def.d) === 100 && Math.abs(odds.def.fill - odds.def.want) <= 1 && odds.def.ca === RED && odds.def.cd === GREEN,
        '…hidden again while the next dice roll, and defending, the attacker is still the left  [' + odds.def.a + ' · ' + odds.def.d + ']');
+
+    /* ⭐ his 11-18: "after each dice roll, the pieces get put on the board. One side at a time" — a real roll, timed: the board
+       up from the start and still, the attacker's men after the first die, both after the second, the battle's board at the
+       end; each side's line under its name, settling from gray to its green */
+    await page.setViewport({ width: 360, height: 760 });
+    const steps = await E(async () => {
+      const m = __mc, $ = (id) => document.getElementById(id), out = { at: [] };
+      m.newCampaign('medium', 'solo'); m.G.started = false; m.G.ranks[5] = 7;
+      m.beginBattle(5, 3, true);
+      const P = m.PEND, aw = P.attWhite;
+      const look = () => {
+        const men = [...document.querySelectorAll('#pmen .pc:not(.leave)')];
+        return { top: Math.round($('pboard').getBoundingClientRect().top), n: men.length,
+          att: men.filter((e) => e.classList.contains(aw ? 'w' : 'b')).length, def: men.filter((e) => e.classList.contains(aw ? 'b' : 'w')).length,
+          astand: $('att-stand').textContent, dstand: $('def-stand').textContent, castled: !$('v-pos').classList.contains('pending'),
+          acol: getComputedStyle($('att-stand')).color };
+      };
+      out.at.push(look());
+      for (const ms of [900, 1700, 4300]) {
+        await new Promise((r) => setTimeout(r, ms - (out.waited || 0)));
+        out.waited = ms;
+        out.at.push(look());
+      }
+      out.want = { att: P.board.filter((pc) => pc && (pc >= 'A' && pc <= 'Z') === aw).length,
+        def: P.board.filter((pc) => pc && (pc >= 'A' && pc <= 'Z') !== aw).length,
+        alone: m.rollBoards(P)[0].filter(Boolean).length };
+      out.color = m.standColor((m.standOf(P, true, 'pos')).score);
+      out.board = [...document.querySelectorAll('#pmen .pc')].length === P.board.filter(Boolean).length;
+      m.G.busy = false; m.show('screen-map');
+      return out;
+    });
+    await page.setViewport({ width: 460, height: 760 });
+    const [s0, s1, s2, s3] = steps.at;
+    ok(s0.n === 0 && s1.att === steps.want.alone && s1.def === 0 && s2.def > 0 && s3.att === steps.want.att && s3.def === steps.want.def && steps.board,
+       '⭐ his 11-18: the board is up and empty as the dice start, the attacker\'s men go on after the first die, the defender\'s after the second, and the roll ends on the battle\'s board  [' +
+       steps.at.map((x) => x.att + '+' + x.def).join(' → ') + ']');
+    ok(s0.top === s1.top && s1.top === s2.top && s2.top === s3.top,
+       '…and nothing above the board moves it through the roll (the verdicts take their room from the first die)  [' + steps.at.map((x) => x.top).join(' ') + ']');
+    ok(s0.astand === '' && /^[A-Z]+ ARMY\d+ points$/.test(s1.astand) && /^[A-Z]+ POSITION\d+ points · /.test(s3.astand) && /^[A-Z]+ POSITION/.test(s3.dstand) &&
+       s3.acol === steps.color,
+       '…and each side\'s line under its name rates its rolls as they land, ending in its own green  [' + s1.astand + ' → ' + s3.astand + ' · ' + s3.dstand + ' · ' + s3.acol + ']');
+
+    ok(!s1.castled && !s2.castled && s3.castled, '…and the position verdict waits, unseen, for its own die  [' + steps.at.map((x) => x.castled).join(' ') + ']');
 
     /* ⚑ his 11-18, the defender's mate: #7 ROUTED! large and gold on the card, in either chair, and #2 its prisoners */
     const routed = await E(() => {

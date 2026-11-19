@@ -8565,6 +8565,54 @@ const server = http.createServer((req, res) => {
             ok(oddsOff.length === 0,
               '⭐ HIS 11-18 IN THE GAME  ("There should be a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is more clear who has the advantage"): once the dice land at Maxwell\'s table, the attacker\'s chance from the left in its color, the defender\'s from the right, off the page\'s measured odds, swinging from even',
               oddsOff.length ? 'off: ' + oddsOff.join(' · ') : 'the page\'s odds, at the table');
+            /* ⭐ HIS 11-18 (part 4): THE ROLL, PIECE BY PIECE, AND HOW EACH SIDE STANDS. The corpus holds the boards, the pairing and
+               the ratings to the page (rows rollb); this holds the screen and its timings to the page's. */
+            const mjS = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/data/marchland.json'), 'utf8'));
+            const crTest2 = fs.readFileSync(path.join(GD, 'tests/campaign_rules_test.gd'), 'utf8');
+            const rollOff = offOf({
+              'the page\'s boards, pairing and ratings': /static func roll_boards\(p: Dictionary\) -> Array:/.test(crT)
+                && /static func board_moves\(a: PackedStringArray, b: PackedStringArray\) -> Dictionary:/.test(crT)
+                && /static func stand_of\(p: Dictionary, att: bool, stage: String\) -> Dictionary:/.test(crT) && /static func pos_score\(/.test(crT)
+                && rd('campaign_book.gd').indexOf('const STAND := ' + JSON.stringify(mjS.stand)) >= 0,
+              'a side at a time, as each die lands': /if _roll == 1:\s*\n\t+_rb_to\(0\)\s*\n\t+_set_stand\(true, "mat", _rb\[0\]\)/.test(ctbT)
+                && /if _roll == 2:\s*\n\t+_verdict\[0\] = _mat_verdict\(\)\s*\n\t+_rb_to\(1\)\s*\n\t+_set_stand\(false, "mat", _rb\[1\]\)/.test(ctbT)
+                && /if _roll == 3:\s*\n\t+_rb_to\(2\)\s*\n\t+_set_stand\(true, "pos", _rb\[2\]\)/.test(ctbT)
+                && /_rb_to\(3, not natural\)/.test(fnGd(ctbT, '_finish_roll')) && /_rb = CampaignRules\.roll_boards\(pend\)/.test(fnGd(ctbT, '_begin_battle')),
+              'the board never moves: every line keeps its room from the first die': /\(_labels\["vmat"\] as Label\)\.visible = _roll >= 2/.test(fnGd(ctbT, '_roll_layout'))
+                && /\(_labels\["vpos"\] as Label\)\.visible = _roll >= 4/.test(fnGd(ctbT, '_roll_layout')) && /y \+= ODDS_H \* k \+ 8\.0 \* k/.test(fnGd(ctbT, '_roll_layout'))
+                && /\.vline\.pending \{ visibility: hidden; \}/.test(mlT) && /\.odds\.on \{ visibility: visible; \}/.test(mlT),
+              'its motion, the page\'s': /^const RB_SLIDE := 0\.38/m.test(ctbT) && /#pmen \.pc \{ transition-duration: \.38s; \}/.test(mlT)
+                && /^const RB_DROP := 0\.3\b/m.test(ctbT) && /animation: pdrop \.3s/.test(mlT) && /^const RB_STAGGER := 0\.04/m.test(ctbT) && /\(n \* 40\) \+ 'ms'/.test(mlT)
+                && /^const RB_FADE := 0\.26/m.test(ctbT) && /animation: pleave \.26s/.test(mlT)
+                && /^const STAND_SETTLE := 0\.9/m.test(ctbT) && /transition: color \.9s ease;/.test(mlT),
+              'held to the page': /rows\.rollb\.push\(/.test(coRows) && /for c in rows\.get\("rollb", \[\]\):/.test(crTest2),
+              'played': ['camproll', 'camprollphone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /campis:shown:0\+0;campmark;campuntil:roll:1:600;[^"]*campis:shownside:att;[^"]*campis:shownside:both;campsame;[^"]*campis:shownfinal:true;[^"]*campsame/.test(bcCase('camproll')),
+            });
+            ok(rollOff.length === 0,
+              '⭐ HIS 11-18 IN THE GAME  ("after each dice roll, the pieces get put on the board. One side at a time ... a progressively-green-text message ... for the attacker ... Do the same for the defender"): at Maxwell\'s table the board is up from the first die, each side\'s men go on as its dice land, and each side\'s line under its name settles from gray to green, the page\'s boards, ratings and timings',
+              rollOff.length ? 'off: ' + rollOff.join(' · ') : 'the page\'s roll, piece by piece, at the table');
+            /* ⭐ HIS 11-18: WHAT COMES TO YOU IN THE MEDITATION SPACE. His numbers, his words' file, the Journal's next step. */
+            const spT = rd('space.gd'), jrT2 = rd('journal.gd');
+            const medPath = path.join(GD, 'people/lines/meditation.txt');
+            const medT = fs.existsSync(medPath) ? fs.readFileSync(medPath, 'utf8').replace(/\r/g, '') : '';
+            const museOff = offOf({
+              'his numbers': /^const MUSE_GAPS := \[30\.0, 30\.0, 25\.0, 21\.0, 18\.0, 16\.0\]/m.test(spT) && /^const MUSE_JITTER := 2\.0/m.test(spT)
+                && /^const MUSE_LAST := 15\.0/m.test(spT) && /^const MUSE_LAST_JITTER := 4\.0/m.test(spT)
+                && /return float\(MUSE_GAPS\[n\]\) \+ \(r \* 2\.0 - 1\.0\) \* MUSE_JITTER/.test(fnGd(spT, 'muse_gap')),
+              'a calm thought, then an idea, in turn, his words in their own file': ['calm', 'next', 'assembly', 'campaign_first', 'campaign_stars', 'dogs']
+                .every((h) => new RegExp('^\\[' + h + '\\]\\s*\\n[^\\[#\\s]', 'm').test(medT)) && /if _muse_n % 2 == 1:/.test(fnGd(spT, '_muse_next'))
+                && /Lines\.list\("meditation", "calm"\)/.test(fnGd(spT, '_muse_next')),
+              'an idea is only ever true, the Journal\'s next step first': /var nx := TownJournal\._next_step\(\)/.test(fnGd(spT, 'ideas'))
+                && /static func _next_step\(\) -> String:/.test(jrT2) && /if have > 0 and have < all:/.test(fnGd(spT, 'ideas')),
+              'still under the Journal or a conversation, and still for reduced motion': /if _muse == null or _leaving or _in_cover\(\):/.test(fnGd(spT, '_muse_step'))
+                && /if TableFX\.calm\(\):/.test(fnGd(spT, '_muse_step')),
+              'played': /^[^#\n]*\bspacemuse\b/m.test(suiteT)
+                && /musegap:0:0\.5:30\.00;[^"]*musegap:6:0:11\.00;[^"]*musenow;museis:n:1;[^"]*musehas:When you land: ;musejournal;[^"]*journal;musehold/.test(bcCase('spacemuse')),
+            });
+            ok(museOff.length === 0,
+              '⭐ HIS 11-18 IN THE GAME  ("in the meditation space ... add positive messages after 30 seconds, then after 30 more seconds, then again after 25 more seconds, then again after 21 seconds ... until 15 seconds, then randomize the time delay by 4 seconds"): a calm thought and then an idea from the Journal, in turn, on his schedule, give or take 2 seconds and then 4',
+              museOff.length ? 'off: ' + museOff.join(' · ') : 'his schedule, his words, the Journal\'s ideas');
           }
         }
 

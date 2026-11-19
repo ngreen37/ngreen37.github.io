@@ -655,7 +655,7 @@ check('the roll screen says the extra die out loud, not in the fine print',
    the defender's half left the attacker's half satisfying the regex and the gate stayed
    green. "A or B" needs two checks or one path can rot unwatched. You read the same
    position from two chairs in this game; both of them have to say the right thing. */
-const verdictFn = slice('function posVerdict()', 'function boardCells');
+const verdictFn = slice('function posVerdict(', 'function boardCells');
 /* the two chairs are the two halves of posVerdict's top-level if/else. Split the sliced
    function rather than anchoring on a brace that occurs all over the file. */
 const chairSplit = verdictFn.indexOf('} else {');
@@ -673,7 +673,7 @@ check('DEFENDING, a castle is CASTLED! in yours',
 check('no castle phrase is typed for the die any more',
       !/three pawns'|no rook, no shield|TUCKS IN|FULL CASTLE/.test(verdictFn), 'the old words described the die, not the board');
 {
-  const cw = vm.runInNewContext(slice('var NUM = [', 'function posVerdict()') + ';({ castleWords: castleWords, firstFace: firstFace })',
+  const cw = vm.runInNewContext(slice('var NUM = [', 'function posVerdict(') + ';({ castleWords: castleWords, firstFace: firstFace })',
     { FACES: G.FACES, posSteps: G.posSteps });
   check('…and the castle words say what stands there',
         cw.castleWords({ rook: true, shield: 3 }, 'their') === 'their king, rook and three pawns' &&
@@ -1617,7 +1617,58 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     mono && edges && Math.abs(camp.oddsOf(P(1, 'endgame')) - camp.CLASHES.endgame.p[4]) < 1e-9 && camp.oddsOf(P(1, 'dark')) === camp.oddsOf(P(1)));
   check('…shown with the board on both roads (rolled out, or skipped), hidden while the dice roll',
     /paintPreview\(\);\s*\n\s*paintOdds\(\);\s*\n\s*\$\('preview'\)\.hidden = false;/.test(page) &&
-    (page.match(/paintOdds\(\);/g) || []).length === 2 && /\$\('preview'\)\.hidden = true;\s*\n\s*\$\('odds'\)\.hidden = true;/.test(page));
+    (page.match(/paintOdds\(\);/g) || []).length === 2 && /\$\('preview'\)\.hidden = false;\s*\n\s*\$\('odds'\)\.classList\.remove\('on'\);/.test(page));
+}
+
+/* ══ 24. THE ROLL, PIECE BY PIECE (his 11-18: "after each dice roll, the pieces get put on the board. One side at a time")
+   and HOW EACH SIDE STANDS ("a progressively-green-text message ... for the attacker ... Do the same for the defender") ══ */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
+  const play = (a, m, b) => { const y = a.slice(); m.moves.forEach(([f]) => { y[f] = ''; }); m.gone.forEach((g) => { y[g] = ''; });
+    m.moves.forEach(([f, t]) => { y[t] = a[f]; }); m.adds.forEach((t) => { y[t] = b[t]; }); return y; };
+  let n = 0, last = 0, battle = 0, alone = 0, both = 0, steps = 0, moved = 0, given = 0;
+  ['', 'endgame', 'drops', 'pieces'].forEach((rule) => {
+    for (let i = 0; i < 300; i++) {
+      camp.newCampaign('medium', 'solo', { fog: false, cards: false });
+      const G = camp.G, pairs = [];
+      for (let a = 0; a < 10; a++) camp.nbrs(a).forEach((b) => { if (rule ? camp.ruleAt(b) === rule : !camp.ruleAt(b)) pairs.push([a, b]); });
+      const [f, t] = pairs[i % pairs.length];
+      G.own[f] = 'm'; G.own[t] = 't'; G.ranks[f] = 2 + (i % 8); G.ranks[t] = 1 + (i % 9);
+      const P = camp.musterBattle(f, t, i % 2 === 0), st = camp.rollBoards(P), aw = P.attWhite;
+      n++;
+      if (st[3].join() === P.board.join()) last++;
+      const d = st[2].slice(); camp.applyDefenderPos(d, aw ? 'b' : 'w', P.dPos, P.rule);
+      if (d.join() === P.board.join()) battle++;
+      if (st[0].some(Boolean) && st[0].every((pc) => !pc || (pc >= 'A' && pc <= 'Z') === aw)) alone++;
+      if (st[0].every((pc, k) => !pc || st[1][k] === pc) && st[1].some((pc) => pc && (pc >= 'A' && pc <= 'Z') !== aw)) both++;
+      [[new Array(64).fill(''), st[0]], [st[0], st[1]], [st[1], st[2]], [st[2], st[3]]].forEach(([a, b]) => {
+        const m = camp.boardMoves(a, b);
+        if (play(a, m, b).join() === b.join()) steps++;
+        moved += m.moves.length; given += m.adds.length;
+      });
+    }
+  });
+  check('⭐ the roll puts the pieces on a side at a time: the attacker\'s army alone, then both, then each position, ending on the battle\'s very board',
+    last === n && battle === n && alone === n && both === n, n + ' musters on every ground · the last step is the battle\'s board ' + last + ' · rebuilt ' + battle);
+  check('…each step is the last one moved: every piece that moved slides from its own square (the nearest of its kind), the rest are given',
+    steps === n * 4 && moved > 0 && given > 0, steps + ' of ' + n * 4 + ' steps replay exactly · ' + moved + ' slides, ' + given + ' given');
+  /* how each side stands: its own dice, 0 to 1, the greener the better */
+  const P0 = { aMat: 1, dMat: camp.FACES, aPos: camp.FACES, dPos: 1, aMoved: 3, dInfo: { castled: false, chain: 0 }, rule: '' };
+  const a1 = camp.standOf(P0, true, 'mat'), a2 = camp.standOf(P0, true, 'pos'), d1 = camp.standOf(P0, false, 'mat'), d2 = camp.standOf(P0, false, 'pos');
+  const sea = camp.standOf(Object.assign({}, P0, { rule: 'pieces' }), true, 'pos');
+  const full = camp.standOf(Object.assign({}, P0, { dInfo: { castled: true, rook: true, shield: 3 } }), false, 'pos');
+  check('⭐ each side\'s line rates its rolls as they land, the army and then what its position die did on the board, POOR to STRONG; at sea the position counts for nothing',
+    a1.score === 0 && a1.word === 'POOR ARMY' && a2.score === 0.5 && a2.word === 'FAIR POSITION' && d1.score === 1 && d1.word === 'STRONG ARMY' &&
+    d2.score === 0.5 && d2.word === 'FAIR POSITION' && full.score === 1 && full.word === 'STRONG POSITION' && sea.score === 0 && sea.word === 'POOR POSITION',
+    [a1.word, a2.word, d1.word, d2.word + ' (nothing dug in)', full.word + ' (castled, rook, three)', sea.word + ' (at sea)'].join(' · '));
+  check('…its color runs from gray to green, the greener the better, and settles there from gray each time it changes',
+    camp.standColor(0) === 'rgb(154, 147, 179)' && camp.standColor(1) === 'rgb(107, 255, 184)' && camp.standColor(0.5) === 'rgb(131, 201, 182)' &&
+    /el\.style\.color = standColor\(0\);\s*\n\s*void el\.offsetWidth;\s*\n\s*el\.style\.color = standColor\(st\.score\);/.test(page));
+  check('…the board is up from the first die, and every verdict is written at the start, unseen, so nothing above the board moves it',
+    /matVerdict\(\); posVerdict\(true\);\s*\n\s*\$\('v-mat'\)\.classList\.add\('pending'\); \$\('v-pos'\)\.classList\.add\('pending'\);/.test(page) &&
+    /reveal\('v-mat'\);/.test(page) && /reveal\('v-pos'\);/.test(page) && /\.vline\.pending \{ visibility: hidden; \}/.test(page) &&
+    /\.dice \{ display: flex; gap: 5px; min-height: 44px;/.test(page));
 }
 
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */

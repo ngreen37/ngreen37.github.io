@@ -328,6 +328,12 @@
   .rlab { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 5px;
     font-weight: 700; }
   .rlab.att { color: var(--mine); } .rlab.def { color: var(--theirs); }
+  /* ⭐ HOW EACH SIDE STANDS (his 11-18): under its name, settling from gray to green, the greener the better */
+  .stand { min-height: 30px; margin: -2px 0 2px; color: rgb(154, 147, 179); transition: color .9s ease; }
+  @media (max-width: 359px) { .stand { min-height: 44px; } }
+  .stand b { display: block; font: 900 12px 'Trebuchet MS', sans-serif; letter-spacing: 1px; }
+  .stand i { display: block; font-style: normal; font-size: 11px; opacity: .85; }
+  @media (prefers-reduced-motion: reduce) { .stand { transition: none; } }
   /* two players, Red attacking: this screen colors by CHAIR (attacker = --mine), so the chairs swap colors */
   #screen-roll.swap { --mine: #ff6e8a; --theirs: #6bffb8; }
   /* the chain's payout, said where the extra die appears rather than in the fine print */
@@ -338,8 +344,9 @@
   .rowhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
   /* ⭐ THE ODDS (his 11-18): an eval bar between the two chairs, the attacker's color from the left; it swings from even */
-  .odds { margin: 0 0 4px; }
-  .olabs { display: flex; justify-content: space-between; gap: 8px; font: 800 12px 'Trebuchet MS', sans-serif; letter-spacing: .5px; margin-bottom: 4px; }
+  .odds { margin: 0 0 4px; visibility: hidden; }
+  .odds.on { visibility: visible; }
+  .olabs { display: flex; justify-content: space-between; gap: 8px; font: 800 12px/15px 'Trebuchet MS', sans-serif; letter-spacing: .5px; margin-bottom: 4px; min-height: 15px; }
   .obar { position: relative; height: 10px; border-radius: 999px; overflow: hidden; background: var(--d); }
   .obar i { position: absolute; left: 0; top: 0; bottom: 0; width: 50%; background: var(--a); transition: width .7s cubic-bezier(.2, .8, .2, 1); }
   .obar::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: rgba(13, 10, 26, .55); }
@@ -351,7 +358,8 @@
      needed. Padding rather than margin so the row's own min-height still governs, and on
      BOTH rows so material and position stay on the same rhythm — an even gap that is
      slightly generous beats two gaps that differ by ten pixels for a reason nobody can see. */
-  .dice { display: flex; gap: 5px; min-height: 38px; align-items: center; flex-wrap: wrap;
+  /* ⚠ 44, A ROW OF DICE'S OWN HEIGHT: the position row sat 6px short until its dice came, and the board under it moved */
+  .dice { display: flex; gap: 5px; min-height: 44px; align-items: center; flex-wrap: wrap;
     padding-top: 10px; }
   .die { width: 34px; height: 34px; border-radius: 8px;
     background: var(--band-2); color: var(--band-2-ink);
@@ -402,6 +410,10 @@
   /* THE VERDICT. Bolder and briefer, his request: one word, then one short clause. The
      arithmetic is still there for anyone who wants it — one tap on the line. */
   .vline { text-align: center; margin: 3px 0 2px; min-height: 34px; cursor: pointer; }
+  /* ⚠ A VERDICT TAKES ITS ROOM FROM THE FIRST DIE, WRITTEN BUT UNSEEN (.pending): the board is on screen through the whole
+     roll now (his 11-18), and a line that grew when its die landed pushed it down as its pieces went on (measured: 38px) */
+  .vline.pending { visibility: hidden; }
+  .vline.pending > b { animation: none; }
   /* ⚠ `> b`, NOT `b`. A bare `.vline b` also caught every <b> inside the fine print below and
      made each NUMBER its own block — "you / 27 / pts · them / 8" down the middle of the screen.
      Only the verdict word is a block; the numbers under it are inline. Caught by looking. */
@@ -623,7 +635,15 @@
   /* ⚠ THE BOARD IS 258px, ITS LINES ARE NOT (11-17): in the board's width the clocks made the tally two lines, and with
      CASTLED! above it that pushed it under the button on a 390×844 phone (measured: ends 762, button 740) */
   .preview { margin: 6px auto 0; width: 100%; padding-bottom: 26px; }
-  #pboard { max-width: 258px; margin: 0 auto; }
+  /* ⚠ 236, SO THE WHOLE BOARD CLEARS THE BUTTON on a 360×760 phone through the roll (at 258 its last rank was under it) */
+  #pboard { max-width: 236px; margin: 0 auto; }
+  /* ⭐ THE ROLL, PIECE BY PIECE (his 11-18): a side's pieces drop in when its die lands, and move when its position does */
+  #pmen .pc { transition-duration: .38s; }
+  #pmen .pc.drop { animation: pdrop .3s cubic-bezier(.2, .8, .2, 1) backwards; }
+  #pmen .pc.leave { animation: pleave .26s ease forwards; }
+  @keyframes pdrop { from { opacity: 0; translate: 0 -45%; scale: 1.35; } to { opacity: 1; translate: 0 0; scale: 1; } }
+  @keyframes pleave { to { opacity: 0; scale: .6; } }
+  @media (prefers-reduced-motion: reduce) { #pmen .pc.drop, #pmen .pc.leave { animation: none; } }
   .previewhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
   .ptally { text-align: center; font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
@@ -762,6 +782,8 @@
       <b>First campaign:</b> five holdings, one rule at a time, Maxwell showing you.<br>
       <b>Coach:</b> on Easy, the roll screen suggests a plan.<br>
       <b>Chance to win:</b> after the roll, a bar shows how battles like this one went, the attacker's share on the left.<br>
+      <b>The roll, piece by piece:</b> each side's pieces go on the board as its dice land, and a line under its name says
+      how good its rolls were, greener the better.<br>
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
       rounds; hold as much as you can. Scores compare at the same settings.<br>
       <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.<br>
@@ -861,6 +883,12 @@
       <div><p class="rlab att" id="att-label">You attack</p></div>
       <div><p class="rlab def" id="def-label">They defend</p></div>
     </div>
+    <!-- ⭐ HOW EACH SIDE STANDS (his 11-18: "a progressively-green-text message will appear (for the attacker) regarding
+         how good their position is. Do the same for the defender"): set as that side's dice land -->
+    <div class="rollrow">
+      <div><p class="stand" id="att-stand"></p></div>
+      <div><p class="stand" id="def-stand"></p></div>
+    </div>
     <p class="rowhead">Material</p>
     <div class="rollrow">
       <div><div class="dice" id="att-mat"></div></div>
@@ -875,13 +903,12 @@
     <p class="vline" id="v-pos">&nbsp;</p>
     <!-- ⭐ THE ODDS (his 11-18: "There should be a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is
          more clear who has the advantage"): how battles like this went, the attacker's share left, the defender's right -->
-    <div class="odds" id="odds" hidden>
+    <div class="odds" id="odds">
       <p class="rowhead">Chance to win</p>
       <div class="olabs"><span id="odds-a"></span><span id="odds-d"></span></div>
       <div class="obar" id="obar"><i id="odds-fill"></i></div>
     </div>
     <div class="preview" id="preview" hidden>
-      <p class="previewhead">The position</p>
       <div class="board" id="pboard">
         <div class="sqs" id="psqs"></div>
         <div class="men" id="pmen"></div>
@@ -2656,10 +2683,15 @@ function beginBattle(from, to, playerAttacks) {
                                                                    : 'walled &middot; a win breaks the walls') + '</em>' : '');
 
   ['att-mat','att-pos','def-mat','def-pos'].forEach(function (k) { $(k).innerHTML = ''; });
-  $('v-mat').innerHTML = '&nbsp;'; $('v-mat').className = 'vline';
-  $('v-pos').innerHTML = '&nbsp;'; $('v-pos').className = 'vline';
-  $('preview').hidden = true;
-  $('odds').hidden = true;
+  /* ⚠ WRITTEN NOW, UNSEEN (.pending), so each takes its room from the first die: reveal() shows it as its die lands */
+  matVerdict(); posVerdict(true);
+  $('v-mat').classList.add('pending'); $('v-pos').classList.add('pending');
+  /* ⭐ THE BOARD IS UP FROM THE FIRST DIE (his 11-18), empty: each side's pieces go on as its dice land */
+  boardCells($('psqs')); pvClear();
+  $('ptally').innerHTML = '&nbsp;'; $('coach').hidden = true;
+  $('att-stand').innerHTML = ''; $('def-stand').innerHTML = '';
+  $('preview').hidden = false;
+  $('odds').classList.remove('on');
   $('tobattle').disabled = true;
   /* ⚑ THE DICE SPIN HERE, on the screen that says what they bought (his 11-17: "the dice should spin on THIS screen for
      the reveal"). The sand table threw them first and this opened on them landed; it still throws the dice of a battle
@@ -2738,6 +2770,8 @@ function finishRoll() {
   paintDice($('att-pos'), p.aPosPool, keptIndex(p.aPosPool), false, true, true);
   paintDice($('def-pos'), p.dPosPool, keptIndex(p.dPosPool), true, true, true);
   matVerdict(); posVerdict();
+  pvTo(p.board, true);
+  paintStand(true, 'pos', p.board); paintStand(false, 'pos', p.board);
   paintPreview();
   paintOdds();
   $('preview').hidden = false;
@@ -2745,18 +2779,24 @@ function finishRoll() {
 }
 function runRoll() {
   clearRollTimers();
-  var p = PEND;
+  var p = PEND, steps = rollBoards(p);
   rollStep('att-mat', p.aMatPool, false, false, function () {
+    pvTo(steps[0]); paintStand(true, 'mat', steps[0]);
     rollStep('def-mat', p.dMatPool, true, false, function () {
-      matVerdict();
+      reveal('v-mat');
+      pvTo(steps[1]); paintStand(false, 'mat', steps[1]);
       rollTimers.push(setTimeout(function () {
         rollStep('att-pos', p.aPosPool, false, true, function () {
+          pvTo(steps[2]); paintStand(true, 'pos', steps[2]);
           rollStep('def-pos', p.dPosPool, true, true, function () {
-            posVerdict();
+            reveal('v-pos');
+            pvTo(steps[3]); paintStand(false, 'pos', steps[3]);
+            /* ⚠ the castle can clear a file: the attacker's numbers follow the board, its color stays where it settled */
+            var ai = $('att-stand').querySelector('i');
+            if (ai) ai.textContent = standDetail(p, true, 'pos', steps[3]);
             rollTimers.push(setTimeout(function () {
               paintPreview();
               paintOdds();
-              $('preview').hidden = false;
               $('tobattle').disabled = false;
             }, 260));
           });
@@ -2764,6 +2804,112 @@ function runRoll() {
       }, 320));
     });
   });
+}
+/* ⭐ THE ROLL, PIECE BY PIECE (his 11-18: "after each dice roll, the pieces get put on the board. One side at a time. This
+   will help the user see the consequences of the dice roll"): the four boards the muster passed through, rebuilt off what
+   it kept — buildBoard and the position dice draw nothing, so these are its very boards: the attacker's army alone, then
+   both, then the attacker's position (the vanguard), then the defender's (the castle): the battle's board. */
+function rollBoards(P) {
+  var aw = P.attWhite, aCol = aw ? 'w' : 'b';
+  var b0 = buildBoard(aw ? P.aArmy : P.dArmy, aw ? P.dArmy : P.aArmy), b1 = b0.slice();
+  applyAttackerPos(b1, aCol, P.aPos, P.rule);
+  var mine = b0.map(function (pc) { return pc && ((pc >= 'A' && pc <= 'Z') === (aCol === 'w')) ? pc : ''; });
+  return [mine, b0, b1, P.board.slice()];
+}
+/* how board a becomes board b: the moves (each new square paired with the nearest square of its kind that was given up,
+   ties to the lowest), the pieces given and the pieces taken off. ⚠ THE GAME PAIRS THE SAME WAY (CampaignRules.board_moves) */
+function boardMoves(a, b) {
+  var moves = [], adds = [], gone = [], from = {}, i, k;
+  for (i = 0; i < 64; i++) if (a[i] && a[i] !== b[i]) (from[a[i]] = from[a[i]] || []).push(i);
+  for (i = 0; i < 64; i++) {
+    if (!b[i] || a[i] === b[i]) continue;
+    var list = from[b[i]] || [], best = -1, bd = 99;
+    for (k = 0; k < list.length; k++) {
+      var d = Math.max(Math.abs(list[k] % 8 - i % 8), Math.abs(((list[k] / 8) | 0) - ((i / 8) | 0)));
+      if (d < bd) { bd = d; best = k; }
+    }
+    if (best >= 0) { moves.push([list[best], i]); list.splice(best, 1); } else adds.push(i);
+  }
+  Object.keys(from).forEach(function (pc) { from[pc].forEach(function (sq) { gone.push(sq); }); });
+  gone.sort(function (x, y) { return x - y; });
+  return { moves: moves, adds: adds, gone: gone };
+}
+/* ⭐ HOW EACH SIDE STANDS (his 11-18: "a progressively-green-text message will appear (for the attacker) regarding how good
+   their position is. Do the same for the defender"): 0 to 1 as that side's dice land — its material die, and then what its
+   position die DID on the board beside it (posScore). ⚠ THE BOARD'S, NOT THE DIE'S FACE: read off the face, a defender
+   with nothing dug in read "STRONG POSITION". ⚠ HOW GOOD A SIDE'S ROLLS WERE, NOT WHO WILL WIN: the odds bar says that. */
+var STAND_WORDS = ['POOR', 'WEAK', 'FAIR', 'GOOD', 'STRONG'];
+var STAND_FROM = [154, 147, 179], STAND_TO = [107, 255, 184];
+/* what the position die did, 0 to 1: the attacker's pawns up front (and one nearly through); the defender's castle (its
+   rook and shield beside it) or the pawns dug in. null at sea: nobody there has a pawn to push or dig in */
+function posScore(P, att) {
+  if (P.rule === 'pieces') return null;
+  if (att) return Math.min(1, (P.aMoved + (P.aMoved && posTop(P.aPos) ? 1 : 0)) / 3);
+  var d = P.dInfo;
+  if (d.castled) return Math.min(1, 0.6 + (d.rook ? 0.2 : 0) + 0.2 * Math.min(1, (d.shield || 0) / 3));
+  return Math.min(0.6, 0.2 * (d.chain || 0));
+}
+function standOf(P, att, stage) {
+  var mat = ((att ? P.aMat : P.dMat) - 1) / (FACES - 1), pos = stage === 'mat' ? null : posScore(P, att);
+  var score = pos == null ? mat : (mat + pos) / 2;
+  return { score: score, word: STAND_WORDS[Math.min(STAND_WORDS.length - 1, Math.floor(score * STAND_WORDS.length))] +
+    (stage === 'mat' ? ' ARMY' : ' POSITION') };
+}
+function standColor(score) {
+  return 'rgb(' + STAND_FROM.map(function (v, i) { return Math.round(v + (STAND_TO[i] - v) * score); }).join(', ') + ')';
+}
+/* what is on the board for that side, and what its position die did there */
+function standDetail(P, att, stage, board) {
+  var pts = material(board, att === P.attWhite ? 'w' : 'b') + ' points';
+  if (stage === 'mat') return pts;
+  if (att) return pts + ' · ' + (P.aMoved ? count(P.aMoved, 'pawn') + ' up' : P.rule === 'pieces' ? 'at sea' : 'no pawns up');
+  var d = P.dInfo;
+  return pts + ' · ' + (d.castled ? (d.rook ? 'castled, rook' : 'castled') : P.rule === 'pieces' ? 'at sea' :
+    d.chain ? count(d.chain, 'pawn') + ' dug in' : 'nothing dug in');
+}
+/* the line, gray first and then settling to its green (the "progressively") */
+function paintStand(att, stage, board) {
+  var p = PEND, st = standOf(p, att, stage), el = $(att ? 'att-stand' : 'def-stand');
+  el.innerHTML = '<b>' + st.word + '</b><i>' + standDetail(p, att, stage, board) + '</i>';
+  el.style.color = standColor(0);
+  void el.offsetWidth;
+  el.style.color = standColor(st.score);
+}
+/* the roll's board: the pieces on it by square, and the board they make */
+var PV = { els: {}, b: null };
+function pvClear() { $('pmen').innerHTML = ''; PV.els = {}; PV.b = new Array(64).fill(''); }
+function pieceEl(pc, sq) {
+  var el = document.createElement('b');
+  el.className = 'pc ' + (pc >= 'A' && pc <= 'Z' ? 'w' : 'b');
+  el.style.setProperty('--f', sq % 8); el.style.setProperty('--r', (sq / 8) | 0);
+  el.textContent = GLY[pc.toLowerCase()];
+  return el;
+}
+/* the roll's board to b: a piece that moved slides (its own transition), one given drops in, a side's in turn, and one
+   taken off fades. quick: all at once, as a skipped roll's (or another battle's) board */
+function pvTo(b, quick) {
+  if (!PV.b) pvClear();
+  if (quick) {
+    pvClear();
+    for (var q = 0; q < 64; q++) if (b[q]) { PV.els[q] = pieceEl(b[q], q); $('pmen').appendChild(PV.els[q]); }
+    PV.b = b.slice();
+    return;
+  }
+  var m = boardMoves(PV.b, b), els = PV.els, next = {}, i;
+  for (i = 0; i < 64; i++) if (PV.b[i] && PV.b[i] === b[i] && els[i]) next[i] = els[i];
+  m.moves.forEach(function (mv) {
+    var el = els[mv[0]];
+    if (!el) return;
+    el.style.setProperty('--f', mv[1] % 8); el.style.setProperty('--r', (mv[1] / 8) | 0);
+    next[mv[1]] = el;
+  });
+  m.gone.forEach(function (sq) { var el = els[sq]; if (el) { el.classList.add('leave'); setTimeout(function () { el.remove(); }, 300); } });
+  m.adds.forEach(function (sq, n) {
+    var el = pieceEl(b[sq], sq);
+    el.classList.add('drop'); el.style.animationDelay = (n * 40) + 'ms';
+    $('pmen').appendChild(el); next[sq] = el;
+  });
+  PV.els = next; PV.b = b.slice();
 }
 
 /* ── THE VERDICTS ──────────────────────────────────────────────────────────────────
@@ -2802,7 +2948,7 @@ function castleWords(d, whose) {
 }
 /* the first face that sends k pawns up front, so the fine print follows posSteps */
 function firstFace(k) { for (var d = 1; d <= FACES; d++) if (posSteps(d) >= k) return d; return FACES; }
-function posVerdict() {
+function posVerdict(quiet) {
   var p = PEND, word, clause, cls;
   var sea = p.rule === 'pieces', van = p.aMoved;
   var up = van ? count(van, 'pawn') + ' up front' + (posTop(p.aPos) ? ', one nearly through' : '') : '';
@@ -2830,7 +2976,15 @@ function posVerdict() {
   var el = $('v-pos');
   el.className = 'vline ' + cls;
   el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
-  if (cls === 'castled') sfx('castle');
+  if (cls === 'castled' && !quiet) sfx('castle');
+}
+/* a verdict written unseen at the start of the roll, shown as its die lands: CASTLED! slams in then, and is heard then */
+function reveal(id) {
+  var el = $(id), b = el.querySelector(':scope > b');
+  if (!el.classList.contains('pending')) return;
+  el.classList.remove('pending');
+  if (b) { b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; }
+  if (id === 'v-pos' && el.classList.contains('castled')) sfx('castle');
 }
 /* ── THE PREVIEW BOARD ─────────────────────────────────────────────────────────────
    The same 8x8 markup the battle uses, at a third the size — pieces scale off the board
@@ -2867,21 +3021,15 @@ function paintOdds() {
   bar.setAttribute('role', 'img');
   bar.setAttribute('aria-label', 'Chance to win: ' + an + ' ' + A + ' percent, ' + dn + ' ' + (100 - A) + ' percent');
   fill.style.width = '50%';
-  $('odds').hidden = false;
+  $('odds').classList.add('on');
   void fill.offsetWidth;                       // laid out at even first, so the bar swings to the split
   fill.style.width = A + '%';
 }
 function paintPreview() {
   var p = PEND;
   boardCells($('psqs'));
-  var mh = '';
-  for (var i = 0; i < 64; i++) {
-    var pc = p.board[i]; if (!pc) continue;
-    var w = (pc >= 'A' && pc <= 'Z');
-    mh += '<b class="pc ' + (w ? 'w' : 'b') + '" style="--f:' + (i % 8) + ';--r:' + ((i / 8) | 0) + '">' +
-          GLY[pc.toLowerCase()] + '</b>';
-  }
-  $('pmen').innerHTML = mh;
+  /* ⚠ THE ROLL HAS ALREADY PUT THE MEN THERE, piece by piece: only a board that is not the battle's is laid at once */
+  if (!PV.b || PV.b.join() !== p.board.join()) pvTo(p.board, true);
   var mw = material(p.board, 'w'), mb = material(p.board, 'b');
   $('coach').hidden = true;
   /* deferred: the search blocks the page for ~250ms, and rollTimers is cleared if the player moves on */

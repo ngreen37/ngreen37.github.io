@@ -1683,6 +1683,25 @@
     },
     "adaptBy": 3
   },
+  "stand": {
+    "words": [
+      "POOR",
+      "WEAK",
+      "FAIR",
+      "GOOD",
+      "STRONG"
+    ],
+    "from": [
+      154,
+      147,
+      179
+    ],
+    "to": [
+      107,
+      255,
+      184
+    ]
+  },
   "foes": [
     {
       "who": "Maxwell",
