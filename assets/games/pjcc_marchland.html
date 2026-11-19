@@ -151,8 +151,6 @@
   .levels button.on { border-color: var(--mine); color: var(--mine); background: rgba(107,255,184,.09); }
   .lvl-note { text-align: center; font-size: 11px; color: var(--ink-3); margin-top: 7px; min-height: 15px; }
   .levels.opts { margin-top: 8px; }
-  .modes { display: flex; gap: 7px; }
-  .modes .btn { flex: 1; min-width: 0; }
   #screen-pass { justify-content: safe center; gap: 6px; }
 
   /* ── THE MAP ── */
@@ -712,14 +710,13 @@
       <button id="opt-dog" aria-pressed="false">Dog · None</button>
     </div>
     <p class="lvl-note" id="dog-note"></p>
-    <!-- ⚠ ONE GROUP, AND CONTINUE IS FIRST: from the town the first one SHOWING is pressed (the game
-         layout's town-start script), and Begin over a saved campaign would start it again. -->
-    <button class="btn" id="resume" data-town-start="1" hidden>Continue the campaign</button>
-    <button class="btn" id="go" data-town-start="1">Begin the campaign</button>
-    <div class="modes">
-      <button class="btn ghost slim" id="daily">Daily</button>
-      <button class="btn ghost slim" id="two">Two players</button>
-    </div>
+    <!-- ⚠ ONE GROUP, AND THE SAVED GAME IS FIRST: from the town the first one SHOWING is pressed (the game
+         layout's town-start script), and Begin over a saved campaign would start it again.
+         ⚑ HIS 11-19: Play (a game of this many in progress, or a new one); Two players off the menu, the mode kept
+         (startMode('two')). -->
+    <button class="btn" id="resume" data-town-start="1" hidden>Play</button>
+    <button class="btn" id="go" data-town-start="1">Play</button>
+    <button class="btn ghost slim" id="daily">Daily</button>
     <button class="btn ghost slim" id="first">First campaign</button>
     <!-- ⭐ SCENARIOS (his #2, 11-16): short set pieces, one to three stars, your best kept -->
     <button class="btn ghost slim" id="scens">Scenarios</button>
@@ -786,7 +783,6 @@
       how good its rolls were, greener the better.<br>
       <b>Daily:</b> same start for everyone, and the same attack rolls the same dice. Three
       rounds; hold as much as you can. Scores compare at the same settings.<br>
-      <b>Two players:</b> pass the device between turns. The attacker plays from the bottom.<br>
       <b>Number of opponents:</b> pick one, two or three of six generals. One is a campaign; two or three is a war on a
       bigger map, and <b>holding ten</b> wins it. When two generals fight each other, it is decided at once, at the odds
       real battles measured.<br>
@@ -5071,10 +5067,9 @@ function startMode(b, mode) {
 }
 $('go').addEventListener('click', function () { startMode(this, foesMode()); });
 $('daily').addEventListener('click', function () { startMode(this, 'daily'); });
-$('two').addEventListener('click', function () { startMode(this, 'two'); });
 $('first').addEventListener('click', function () { startMode(this, 'first'); });
 $('opt-foes').addEventListener('click', function () { paintFoes(); show('screen-foes'); });
-$('foe-done').addEventListener('click', function () { paintHome(); show('screen-home'); });
+$('foe-done').addEventListener('click', function () { if (!picked.length) return; paintHome(); show('screen-home'); });
 $('orders').addEventListener('click', function () { if (!G || G.busy) return; G.orderArm = ''; paintOrders(); show('screen-orders'); });
 /* the war, replayed: from the result screen (this war) and from the frame (your best) */
 $('watch').addEventListener('click', function () { if (G && G.war) playWar(G.war, 'result'); });
@@ -5250,21 +5245,20 @@ function resumeCampaign(o) {
 }
 function paintHome() {
   var fm = foesMode(), war = fm !== 'solo';
-  var o = loadSave(fm), d = loadSave('daily'), t = loadSave('two'), r = $('resume'), g = $('go'), rec = loadDaily(), today = dayKey();
+  var o = loadSave(fm), d = loadSave('daily'), r = $('resume'), g = $('go'), rec = loadDaily(), today = dayKey();
   var best = rec && rec.day === today && rec.runs ? rec.runs[variantOf(chosenLevel, optFog, optCards, optDog)] : null;
   r.hidden = !o;
   if (o) {
     var held = o.own.filter(function (x) { return x === 'm'; }).length;
-    r.textContent = 'Continue · round ' + o.round + ' · ' + held + ' of ' + o.own.length + ' held';
+    r.textContent = 'Play · round ' + o.round + ' · ' + held + ' of ' + o.own.length + ' held';
   }
   g.className = o ? 'btn ghost' : 'btn';
-  g.textContent = o ? 'Begin a new ' + (war ? 'war' : 'campaign') : 'Begin the ' + (war ? 'war' : 'campaign');
+  g.textContent = o ? 'Begin a new ' + (war ? 'war' : 'campaign') : 'Play';
   $('opt-foes').textContent = 'Number of opponents · ' + picked.length;
   $('foes-note').textContent = 'Against ' + andList(picked) + (war ? ': a war of ' + (picked.length === 2 ? 'three' : 'four') + '.' : '.');
   /* ⚠ one line at 320px: "Daily 9/15 · best 5/10" wraps, so a score replaces the date */
   $('daily').textContent = d && d.day === today ? 'Daily · round ' + d.round
     : best ? 'Daily · best ' + best.best.held + '/' + LAND.length : 'Daily ' + dayLabel(today);
-  $('two').textContent = t ? 'Two players · round ' + t.round : 'Two players';
   var f = loadSave('first');
   $('first').textContent = f ? 'First campaign · round ' + f.round : 'First campaign';
   $('first').classList.toggle('new', !firstDone());
@@ -5284,15 +5278,16 @@ var picked = (function () {
   } catch (e) {}
   return ['Maxwell'];
 })();
-function foesMode() { return ['solo', 'three', 'four'][picked.length - 1]; }
+function foesMode() { return ['solo', 'three', 'four'][Math.max(0, picked.length - 1)]; }
 function andList(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
-/* a tap picks a general or lets one go; never none, never more than three */
+/* a tap picks a general or lets one go, the last one too (his 11-19: "You should be able to unselect Maxwell"); Done
+   waits for one. ⚠ None is never kept: a reload with nobody picked comes back to the last ones picked */
 function pickFoe(who) {
   var at = picked.indexOf(who), say = '';
-  if (at >= 0) { if (picked.length > 1) picked.splice(at, 1); else say = 'Pick at least one.'; }
+  if (at >= 0) picked.splice(at, 1);
   else if (picked.length < 3) picked.push(who);
   else say = 'Three at most. Tap one to let them go.';
-  try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {}
+  if (picked.length) { try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {} }
   paintFoes(say);
 }
 function paintFoes(say) {
@@ -5313,8 +5308,9 @@ function paintFoes(say) {
     box.appendChild(b);
     if (window.PJCCBoard3D && PJCCBoard3D.portrait) PJCCBoard3D.portrait(cv, f.who, f.key);
   });
-  $('foe-say').textContent = say || (n === 1 ? 'One opponent: a campaign of ten holdings.'
+  $('foe-say').textContent = say || (n === 0 ? 'Pick at least one.' : n === 1 ? 'One opponent: a campaign of ten holdings.'
     : n === 2 ? 'Two opponents: a war of three on fifteen holdings.' : 'Three opponents: a war of four on sixteen holdings.');
+  $('foe-done').disabled = !n;
 }
 
 /* ── SOUND — synthesized, nothing to download ───────────────────────────────────── */

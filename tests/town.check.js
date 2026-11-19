@@ -8542,7 +8542,7 @@ const server = http.createServer((req, res) => {
                 && /for c in rows\.get\("foe", \[\]\):/.test(crTest) && /for c in rows\.get\("fplan", \[\]\):/.test(crTest)
                 && /for c in rows\.get\("pause", \[\]\):/.test(crTest),
               'played': /^[^#\n]*\bcampfoes\b/m.test(suiteT)
-                && /camppress:foes;campis:screen:foes;campfoe:Vince;campfoe:Wes;campis:picked:Maxwell,Vince,Wes;campfoe:Auston;campis:picked:Maxwell,Vince,Wes;/.test(bcCase('campfoes'))
+                && /campfoe:Vince;campis:btnoff:foeback:false;campfoe:Wes;campfoe:Maxwell;campis:picked:Vince,Wes,Maxwell;campfoe:Auston;campis:picked:Vince,Wes,Maxwell;/.test(bcCase('campfoes'))
                 && /camppress:go;campis:mode:four;campis:foes:Wes,Auston,Puzzle Champ;/.test(bcCase('campfoes'))
                 && /seatis:Vince;tableis:_way:rush;tableis:_diff:medium;/.test(bcCase('campfoes')),
             });
@@ -8613,6 +8613,32 @@ const server = http.createServer((req, res) => {
             ok(museOff.length === 0,
               '⭐ HIS 11-18 IN THE GAME  ("in the meditation space ... add positive messages after 30 seconds, then after 30 more seconds, then again after 25 more seconds, then again after 21 seconds ... until 15 seconds, then randomize the time delay by 4 seconds"): a calm thought and then an idea from the Journal, in turn, on his schedule, give or take 2 seconds and then 4',
               museOff.length ? 'off: ' + museOff.join(' · ') : 'his schedule, his words, the Journal\'s ideas');
+            /* ⭐ HIS 11-19: PLAY, TWO PLAYERS OFF THE MENU, MAXWELL LET GO. The page and the table, held to each other. */
+            const bookT = rd('campaign_book.gd');
+            const playOff = offOf({
+              'Play, in the page\'s gold, and the pad lands on it': /"Play  ·  round %d  ·  %d of %d held"/.test(fnGd(ctbT, '_home_layout'))
+                && /else "Play"\)/.test(fnGd(ctbT, '_home_layout')) && /_primary\(_btns\["go"\], play == _btns\["go"\]/.test(fnGd(ctbT, '_home_layout'))
+                && /_focus = maxi\(0, _home_focus\(\)\.find\(_play_btn\(\)\)\)/.test(fnGd(ctbT, '_show'))
+                && /r\.textContent = 'Play · round '/.test(mlT) && /: 'Play';/.test(mlT),
+              'the pad\'s place lit once the buttons are placed': /var list := _home_focus\(\)\s*\n\tif _focus > 0 and _focus < list\.size\(\):/.test(fnGd(ctbT, '_home_layout'))
+                && !/focus\.find\(_btns\[/.test(fnGd(ctbT, '_home_layout')),
+              'Two players off the menu, the mode whole': !/_btn\("two"/.test(fnGd(ctbT, '_home_layout')) && !/"Two players/.test(ctbT) && !/"two"/.test(fnGd(ctbT, '_home_focus'))
+                && !/id="two"/.test(mlT) && !/<b>Two players:<\/b>/.test(mlT) && !/Two players:/.test(bookT)
+                && /if not o\.is_empty\(\) and \(m in \["two", "first"\]/.test(fnGd(ctbT, '_start_mode')),
+              'Maxwell can be let go; Done waits for one; none is never kept': /if at >= 0:\s*\n\t+_foes_pick\.remove_at\(at\)/.test(fnGd(ctbT, '_pick_foe'))
+                && /if not _foes_pick\.is_empty\(\):\s*\n\t+GameState\.campaign\.foes = _foes_pick\.duplicate\(\)/.test(fnGd(ctbT, '_pick_foe'))
+                && /\(_btns\["foeback"\] as Button\)\.disabled = p\.is_empty\(\)/.test(fnGd(ctbT, '_foes_layout'))
+                && /"foeback":\s*\n\t+if _foes_pick\.is_empty\(\):\s*\n\t+return/.test(fnGd(ctbT, '_press'))
+                && /if \(at >= 0\) picked\.splice\(at, 1\);/.test(mlT) && /if \(picked\.length\) \{ try \{ localStorage\.setItem\(FOES_KEY/.test(mlT)
+                && /\$\('foe-done'\)\.disabled = !n;/.test(mlT),
+              'played': /campfoe:Maxwell;campis:picked:;campis:label:foesay:Pick at least one\.;campis:btnoff:foeback:true;campis:kept:Maxwell;/.test(bcCase('campfoes'))
+                && /campis:btn:go:Play;campis:btn:two:;campis:homefocus:go;campis:gold:go:true;/.test(bcCase('campfoes'))
+                && /camphas:btn:resume:Play  ·  round 2  ·  ;campis:homefocus:resume;campis:gold:resume:true;campis:gold:go:false;/.test(bcCase('campaign'))
+                && /campis:btn:two:;campmode:two;campis:mode:two;/.test(bcCase('camptwo')),
+            });
+            ok(playOff.length === 0,
+              '⭐ HIS 11-19 IN THE GAME  ("The number of players on the bottom right should be removed, and there should be a PLAY button. You should be able to unselect Maxwell in the opponent select stage as well"): at Maxwell\'s table Play wears the page\'s gold and the pad lands on it, Two players is off the menu, and Maxwell alone can be let go while Done waits for somebody',
+              playOff.length ? 'off: ' + playOff.join(' · ') : 'the page\'s Play and opponents, at the table');
           }
         }
 

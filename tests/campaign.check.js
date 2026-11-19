@@ -27,7 +27,7 @@ window.__mc = {
   fogged: fogged, dailyStart: dailyStart, startYourTurn: startYourTurn, startBattle: startBattle, goLive: goLive,
   finishRoll: finishRoll, nbrs: nbrs, playCard: playCard, drawCard: drawCard, resetTurn: resetTurn, rivalPlan: rivalPlan,
   resumeCampaign: resumeCampaign, paintPreview: paintPreview, finish: finish, theirTurn: theirTurn,
-  dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome,
+  dogStart: dogStart, scout: scout, get SURVIVE() { return SURVIVE; }, paintHome: paintHome, startMode: startMode,
   get picked() { return picked; }, paintFoes: paintFoes, oddsOf: oddsOf, rollBoards: rollBoards, standOf: standOf, standColor: standColor,
   setPicked: function (a) { picked = a.slice(); try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {} paintHome(); },
   MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; }, campaignCheck: campaignCheck,
@@ -290,7 +290,7 @@ function serve() {
     const two = await E(() => {
       const m = __mc, $ = id => document.getElementById(id), G0 = () => m.G;
       localStorage.removeItem('pjcc.campaign.save.two.v1');
-      $('two').click(); const G = G0();
+      m.startMode(document.createElement('button'), 'two'); const G = G0();
       const out = { labels: $('l-mine').textContent + '/' + $('l-theirs').textContent, say: $('map-say').textContent };
       G.toPlace = 0; m.setPhase('fortify'); $('endturn').click();
       out.pass = { on: $('screen-pass').classList.contains('on'), who: $('pass-who').textContent, side: G.side, round: G.round, phase: G.phase };
@@ -771,21 +771,21 @@ function serve() {
     ok(/^Daily · round 1$/.test(slots.daily) && dailyBack.mode === 'daily' && dailyBack.own === dailyOn.own,
       "…and today's Daily picks up where it was  [" + slots.daily + ']');
 
-    await E(() => { __mc.show('screen-home'); document.getElementById('two').click(); });
+    await E(() => { __mc.show('screen-home'); __mc.startMode(document.createElement('button'), 'two'); });
     await E(() => { const G = __mc.G; G.toPlace = 0; __mc.setPhase('fortify'); document.getElementById('endturn').click(); });
     await page.reload({ waitUntil: 'load' });
     await page.waitForFunction(() => !!window.__mc);
-    const twoHome = await E(() => document.getElementById('two').textContent);
-    await page.click('#two');
+    const twoHome = await E(() => !document.getElementById('two') && !/Two players/.test(document.getElementById('screen-home').textContent));
+    await E(() => __mc.startMode(document.createElement('button'), 'two'));
     const twoBack = await E(() => ({ pass: document.getElementById('screen-pass').classList.contains('on'),
       map: document.getElementById('screen-map').classList.contains('on'), who: document.getElementById('pass-who').textContent, side: __mc.G.side }));
-    ok(/^Two players · round 1$/.test(twoHome) && twoBack.pass && !twoBack.map && /RED/.test(twoBack.who) && twoBack.side === 't',
-      'a two-player game continues behind the curtain, on the right side  [' + twoHome + ' → ' + twoBack.who + ']');
+    ok(twoHome && twoBack.pass && !twoBack.map && /RED/.test(twoBack.who) && twoBack.side === 't',
+      '⚑ his 11-19: Two players is off the menu; the mode is whole, and a game of it continues behind the curtain, on the right side  [' + twoBack.who + ']');
     const quit = await E(() => { const q = document.getElementById('pass-quit'); q.click();
       const armed = { label: q.textContent, save: !!localStorage.getItem('pjcc.campaign.save.two.v1') }; q.click();
       return { armed, save: localStorage.getItem('pjcc.campaign.save.two.v1'), home: document.getElementById('screen-home').classList.contains('on'),
-        label: document.getElementById('two').textContent, solo: !!localStorage.getItem('pjcc.campaign.save.v1') }; });
-    ok(/Tap again/.test(quit.armed.label) && quit.armed.save && quit.save === null && quit.home && quit.label === 'Two players' && quit.solo,
+        solo: !!localStorage.getItem('pjcc.campaign.save.v1') }; });
+    ok(/Tap again/.test(quit.armed.label) && quit.armed.save && quit.save === null && quit.home && quit.solo,
       'End this game asks twice, then clears only the two-player game  [' + quit.armed.label + ']');
 
     /* ══ 11-10: MAXWELL COMMANDS RED, YOUR DOG, AND WHAT A BATTLE LEAVES ══ */
@@ -816,7 +816,7 @@ function serve() {
     const twoMx = await E(() => {
       const $ = id => document.getElementById(id);
       localStorage.removeItem('pjcc.campaign.save.two.v1');
-      $('two').click();
+      __mc.startMode(document.createElement('button'), 'two');
       return { shown: !$('mx-speech').hidden, tally: $('l-theirs').textContent };
     });
     ok(!twoMx.shown && twoMx.tally === 'Red', 'two players face each other: no Maxwell on the map  [' + twoMx.tally + ']');
@@ -908,8 +908,10 @@ function serve() {
       card('Auston').click();
       out.full = $('foe-say').textContent + ' · ' + __mc.picked.length;
       card('Maxwell').click(); card('Vince').click(); card('Wes').click();
-      out.least = $('foe-say').textContent + ' · ' + __mc.picked.join();
-      card('Maxwell').click(); card('Vince').click();
+      out.least = $('foe-say').textContent + ' · ' + __mc.picked.length + ' · ' + ($('foe-done').disabled ? 'Done waits' : 'Done open');
+      $('foe-done').click();
+      out.stayed = $('screen-foes').classList.contains('on');
+      card('Wes').click(); card('Maxwell').click(); card('Vince').click();
       out.again = lit();
       $('foe-done').click();
       out.home = { on: $('screen-home').classList.contains('on'), label: $('opt-foes').textContent, note: $('foes-note').textContent,
@@ -936,12 +938,12 @@ function serve() {
        '⭐ his 11-18: the war doors are gone; Number of Opponents opens six generals, a face and a word each, the one picked wearing Red  [' + war.cards.join(' | ') + ']');
     ok(war.lit.join() === 'Maxwell:Strategic · Red,Vince:Aggressive · Blue,Wes:Defensive · Violet' && war.size === 'Three opponents: a war of four on sixteen holdings.',
        '…picked in order, they take Red, Blue and Violet, and the screen says what that makes  [' + war.lit.join(' · ') + ']');
-    ok(war.full === 'Three at most. Tap one to let them go. · 3' && war.least === 'Pick at least one. · Wes' &&
+    ok(war.full === 'Three at most. Tap one to let them go. · 3' && war.least === 'Pick at least one. · 0 · Done waits' && war.stayed &&
        war.again.join() === 'Maxwell:Strategic · Blue,Vince:Aggressive · Violet,Wes:Defensive · Red',
-       '…never more than three, never none, and the seats follow the order you pick  [' + war.full + ' · ' + war.least + ']');
+       '…never more than three; all let go, Done waits for one; and the seats follow the order you pick  [' + war.full + ' · ' + war.least + ']');
     ok(war.home.on && war.home.label === 'Number of opponents · 3' && war.home.note === 'Against Wes, Maxwell and Vince: a war of four.' &&
-       war.home.go === 'Begin the war' && war.home.resume,
-       '…Done goes home, which says how many and who, and Begin is for that war  [' + war.home.label + ' · ' + war.home.note + ']');
+       war.home.go === 'Play' && war.home.resume,
+       '…Done goes home, which says how many and who, and Play is for that war  [' + war.home.label + ' · ' + war.home.note + ']');
     ok(war.n === 16 && war.tally[0] === 'Vince 4' && war.tally[1] === 'Wes 4' && war.mine === '4/10' && war.colors.join() === '4,4',
        'a war of four is sixteen holdings, four a seat, every general counted, and yours counted toward ten  [' + war.tally.join(' · ') + ' · ' + war.mine + ']');
     ok(/16 holdings and 3 of us/.test(war.speech), 'Maxwell opens a war with its size  [' + war.speech + ']');
@@ -953,8 +955,40 @@ function serve() {
       __mc.paintHome();
       return { label: $('resume').hidden ? '' : $('resume').textContent, go: $('go').textContent, slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
     });
-    ok(/^Continue · round \d+ · \d+ of 16 held$/.test(back.label) && back.go === 'Begin a new war' && back.slot,
-       'a war of four keeps its own save, and Continue is for it while three are picked  [' + back.label + ' · ' + back.go + ']');
+    ok(/^Play · round \d+ · \d+ of 16 held$/.test(back.label) && back.go === 'Begin a new war' && back.slot,
+       'a war of four keeps its own save, and Play picks it up while three are picked  [' + back.label + ' · ' + back.go + ']');
+
+    /* ⭐ HIS 11-19: "there should be a PLAY button" · "The number of players on the bottom right should be removed" ·
+       "You should be able to unselect Maxwell in the opponent select stage" */
+    const play = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      ['pjcc.campaign.save.v1', 'pjcc.campaign.save.three.v1', 'pjcc.campaign.save.four.v1'].forEach(k => localStorage.removeItem(k));
+      __mc.setPicked(['Maxwell']); __mc.show('screen-home');
+      const shown = (el) => !!el && el.offsetParent !== null;
+      out.home = { go: $('go').textContent, gold: $('go').className === 'btn', two: !!$('two'), daily: shown($('daily')),
+                   words: /Two players/.test($('screen-home').textContent) || /Two players:/.test($('screen-how').textContent) };
+      $('opt-foes').click();
+      const card = w => document.querySelector('#foe-list .foe[data-who="' + w + '"]');
+      card('Maxwell').click();
+      out.none = { n: __mc.picked.length, lit: document.querySelectorAll('#foe-list .foe.on').length, say: $('foe-say').textContent,
+                   done: $('foe-done').disabled, kept: localStorage.getItem('pjcc.campaign.foes.v1') };
+      $('foe-done').click();
+      out.none.stayed = $('screen-foes').classList.contains('on');
+      card('Vince').click();
+      out.vince = { lit: [...document.querySelectorAll('#foe-list .foe.on')].map(b => b.getAttribute('data-who') + ':' + [...b.querySelectorAll('small')].map(x => x.textContent).join(' · ')).join(),
+                    done: $('foe-done').disabled };
+      $('foe-done').click();
+      out.back = { on: $('screen-home').classList.contains('on'), label: $('opt-foes').textContent, note: $('foes-note').textContent, go: $('go').textContent };
+      __mc.setPicked(['Maxwell']);
+      return out;
+    });
+    ok(play.home.go === 'Play' && play.home.gold && !play.home.two && play.home.daily && !play.home.words,
+       '⭐ his 11-19: the home\'s gold button says Play, and Two players is gone from it and from How it works  [' + play.home.go + ']');
+    ok(play.none.n === 0 && play.none.lit === 0 && play.none.say === 'Pick at least one.' && play.none.done && play.none.stayed && play.none.kept === '["Maxwell"]',
+       '⭐ his 11-19: Maxwell alone can be let go; with nobody picked Done waits, and nobody is never kept  [' + play.none.say + ' · kept ' + play.none.kept + ']');
+    ok(play.vince.lit === 'Vince:Aggressive · Red' && !play.vince.done && play.back.on && play.back.label === 'Number of opponents · 1' &&
+       play.back.note === 'Against Vince.' && play.back.go === 'Play',
+       '…Vince picked in his place takes Red, and Play is for one on one against him  [' + play.vince.lit + ' · ' + play.back.note + ']');
 
     /* ⚠ A BEAT IS ITS CAMPAIGN'S (11-18): a machine's turn still waiting when you begin anew never plays on in the new one */
     const stale = await E(async () => {
@@ -992,7 +1026,7 @@ function serve() {
       ['pjcc.campaign.save.three.v1', 'pjcc.campaign.save.v1'].forEach(k => localStorage.removeItem(k));
       return out;
     });
-    ok(picks.go === 'Begin the war' && picks.n === 15 && picks.foes === 'Auston,Puzzle Champ' && picks.red === 'Auston' &&
+    ok(picks.go === 'Play' && picks.n === 15 && picks.foes === 'Auston,Puzzle Champ' && picks.red === 'Auston' &&
        /^Puzzle Champ \d+$/.test(picks.blue) && picks.who === 'Auston' && picks.line === '15 holdings. Show me how you play.',
        '…a war of three against Auston and the Puzzle Champ: she commands Red and opens it, he holds Blue  [' + picks.red + ' · ' + picks.blue + ' · ' + picks.line + ']');
     ok(picks.solo.n === 10 && picks.solo.foes === 'Vince' && picks.solo.red === 'Vince' && picks.solo.who === 'Vince' &&
