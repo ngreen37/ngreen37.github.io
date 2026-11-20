@@ -21,8 +21,7 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   'wallsFor', 'fortReach', 'seeded', 'dailyStart', 'mulberry32', 'hashStr', 'poolFor', 'rollPool', 'bestOf',
   'matBudget', 'capsFor', 'muster', 'buildBoard', 'applyAttackerPos', 'applyDefenderPos', 'campaignCheck',
   'keptShare', 'troopsLine', 'RIVAL', 'MAXWELL_LINES', 'observeFile', 'habitsOf', 'lineFor', 'freshLog', 'noteAttack',
-  'noteTurn', 'fileCampaign', 'loadFile', 'DOGS', 'dogOf', 'perkOf', 'dogStart', 'dogAfter', 'sniffable', 'variantOf', 'fogged', 'LESSON_STEPS', 'FIRST_MAP', 'MAIN_MAP', 'FIRST_START', 'useMap', 'mapFor',
-  'firstPlan', 'teachNow',
+  'noteTurn', 'fileCampaign', 'loadFile', 'DOGS', 'dogOf', 'perkOf', 'dogStart', 'dogAfter', 'sniffable', 'variantOf', 'fogged', 'MAIN_MAP', 'useMap', 'mapFor',
   /* a war of three or four (11-10) */
   'SIDES', 'WAR3_MAP', 'WAR4_MAP', 'WAR_START', 'CLASH', 'clash', 'clashBin', 'sidesFor', 'nextSide', 'alive', 'generalOf',
   'GENERAL_LINES', 'multi', 'overFor',

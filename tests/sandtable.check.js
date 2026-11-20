@@ -138,6 +138,10 @@ function serve(block) {
     await p3.setViewport({ width: 375, height: 740, deviceScaleFactor: 1 });
     p3.on('pageerror', (e) => errs.push(e.message));
     await p3.goto(url, { waitUntil: 'load' });
+    /* the campaign's ten, from a clean slate: a war the page above left saved puts Play · round and its Reset there, not Play */
+    await p3.evaluate(() => { localStorage.setItem('pjcc.campaign.foes.v1', JSON.stringify(['Maxwell']));
+      ['pjcc.campaign.save.v1', 'pjcc.campaign.save.three.v1', 'pjcc.campaign.save.four.v1'].forEach((k) => localStorage.removeItem(k)); });
+    await p3.reload({ waitUntil: 'load' });
     await p3.click('#go');
     await p3.waitForFunction(() => window.__mc && __mc.SAND && __mc.SAND.up() && __mc.LAND().length === 10, { timeout: 30000 });
     await sleep(600);

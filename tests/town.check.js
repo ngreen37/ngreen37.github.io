@@ -8276,13 +8276,13 @@ const server = http.createServer((req, res) => {
                 && /"who": "" if two else str\(foe\["who"\]\)/.test(fnGd(ctbT, '_start_battle')) && /file_campaign\(g, won\)/.test(fnGd(ctbT, '_campaign_over'))
                 && /static func observe_file/.test(crT) && /CampaignRules\.line_for\(/.test(ctbT),
               'saved, one slot a mode': /const CampaignPart := preload\("res:\/\/core\/state\/state_campaign\.gd"\)/.test(gsC) && /"campaign": campaign\.to_save\(\)/.test(gsC)
-                && /campaign\.from_save\(/.test(gsC) && /const MODES := \["solo", "daily", "two", "first", "three", "four"\]/.test(cpT)
+                && /campaign\.from_save\(/.test(gsC) && /const MODES := \["solo", "daily", "two", "three", "four"\]/.test(cpT)
                 && /"campaign": \{"saves"/.test(cgT('tests/savefix.py')),
               'the Daily the site deals': dailyMatch,
-              'played': ['campaign', 'campfirst', 'campdaily', 'camptwo', 'campdefend', 'campring'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+              'played': ['campaign', 'campdaily', 'camptwo', 'campdefend', 'campring'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
                 && /SEQ="told;min:600;day:100;scene:res:\/\/rooms\/maxwell\.tscn;wait:40;useat:-250,90;wait:30;campis:screen:home/.test(bcCase('campring'))
                 && /camptap:3;wait:6;campis:screen:roll;camppress:tobattle;wait:4;camppress:tobattle;wait:30;seatis:Maxwell;campend:won-mate/.test(bcCase('campaign'))
-                && /campis:own:3:m;campis:ranks:3:5/.test(bcCase('campaign')) && /campuntil:screen:result:1800;gseq:campaign\.first_done=true/.test(bcCase('campfirst'))
+                && /campis:own:3:m;campis:ranks:3:5/.test(bcCase('campaign'))
                 && /campis:mxlen:0/.test(bcCase('camptwo')) && /campend:time-att;wait:6;tablebtn:close;wait:20;campuntil:phase:deploy:1800;campis:own:5:m/.test(bcCase('campdefend')),
             });
             ok(campOff.length === 0,
@@ -8337,7 +8337,6 @@ const server = http.createServer((req, res) => {
                 && /if rule == "pieces":\s*\n\t\tcaps\["p"\] = 0/.test(fnGd(crT, 'caps_on'))
                 && /a_bud = maxi\(1, a_bud - int\(B\.DR_EDGE\)\)/.test(fnGd(crT, 'muster_battle')) && /a_bud = maxi\(1, a_bud - int\(B\.PC_EDGE\)\)/.test(fnGd(crT, 'muster_battle'))
                 && /"AT SEA  ·  no pawns to push: pieces against pieces"/.test(fnGd(ctbT, '_pos_verdict'))
-                && /if str\(g\.get\("mode", ""\)\) == "first":\s*\n\t\treturn ""/.test(fnGd(crT, 'rule_at'))
                 && /var T: Dictionary = B\.CLASHES\.get\(str\(P\.rule\), B\.CLASH\)/.test(fnGd(crT, 'clash'))
                 && /CampaignDrops\.make\(S, m\)/.test(fnGd(caiT, 'negamax')) && /CampaignDrops\.drops_of\(S, true\)/.test(fnGd(caiT, 'ordered'))
                 && ['rules', 'rplay', 'rengine'].every((r) => coRows.indexOf('rows.' + r + '.push') >= 0),
@@ -8600,7 +8599,7 @@ const server = http.createServer((req, res) => {
               'his numbers': /^const MUSE_GAPS := \[30\.0, 30\.0, 25\.0, 21\.0, 18\.0, 16\.0\]/m.test(spT) && /^const MUSE_JITTER := 2\.0/m.test(spT)
                 && /^const MUSE_LAST := 15\.0/m.test(spT) && /^const MUSE_LAST_JITTER := 4\.0/m.test(spT)
                 && /return float\(MUSE_GAPS\[n\]\) \+ \(r \* 2\.0 - 1\.0\) \* MUSE_JITTER/.test(fnGd(spT, 'muse_gap')),
-              'a calm thought, then an idea, in turn, his words in their own file': ['calm', 'next', 'assembly', 'campaign_first', 'campaign_stars', 'dogs']
+              'a calm thought, then an idea, in turn, his words in their own file': ['calm', 'next', 'assembly', 'campaign_stars', 'dogs']
                 .every((h) => new RegExp('^\\[' + h + '\\]\\s*\\n[^\\[#\\s]', 'm').test(medT)) && /if _muse_n % 2 == 1:/.test(fnGd(spT, '_muse_next'))
                 && /Lines\.list\("meditation", "calm"\)/.test(fnGd(spT, '_muse_next')),
               'an idea is only ever true, the Journal\'s next step first': /var nx := TownJournal\._next_step\(\)/.test(fnGd(spT, 'ideas'))
@@ -8617,14 +8616,14 @@ const server = http.createServer((req, res) => {
             const bookT = rd('campaign_book.gd');
             const playOff = offOf({
               'Play, in the page\'s gold, and the pad lands on it': /"Play  ·  round %d  ·  %d of %d held"/.test(fnGd(ctbT, '_home_layout'))
-                && /else "Play"\)/.test(fnGd(ctbT, '_home_layout')) && /_primary\(_btns\["go"\], play == _btns\["go"\]/.test(fnGd(ctbT, '_home_layout'))
+                && /_btn\("go", "Tap again to start over" if _armed == "go" else "Play",/.test(fnGd(ctbT, '_home_layout')) && /_primary\(_btns\["go"\], play == _btns\["go"\]/.test(fnGd(ctbT, '_home_layout'))
                 && /_focus = maxi\(0, _home_focus\(\)\.find\(_play_btn\(\)\)\)/.test(fnGd(ctbT, '_show'))
-                && /r\.textContent = 'Play · round '/.test(mlT) && /: 'Play';/.test(mlT),
+                && /r\.textContent = 'Play · round '/.test(mlT) && /g\.textContent = 'Play';/.test(mlT),
               'the pad\'s place lit once the buttons are placed': /var list := _home_focus\(\)\s*\n\tif _focus > 0 and _focus < list\.size\(\):/.test(fnGd(ctbT, '_home_layout'))
                 && !/focus\.find\(_btns\[/.test(fnGd(ctbT, '_home_layout')),
               'Two players off the menu, the mode whole': !/_btn\("two"/.test(fnGd(ctbT, '_home_layout')) && !/"Two players/.test(ctbT) && !/"two"/.test(fnGd(ctbT, '_home_focus'))
                 && !/id="two"/.test(mlT) && !/<b>Two players:<\/b>/.test(mlT) && !/Two players:/.test(bookT)
-                && /if not o\.is_empty\(\) and \(m in \["two", "first"\]/.test(fnGd(ctbT, '_start_mode')),
+                && /if not o\.is_empty\(\) and \(m == "two" or \(m == "daily"/.test(fnGd(ctbT, '_start_mode')),
               'Maxwell can be let go; Done waits for one; none is never kept': /if at >= 0:\s*\n\t+_foes_pick\.remove_at\(at\)/.test(fnGd(ctbT, '_pick_foe'))
                 && /if not _foes_pick\.is_empty\(\):\s*\n\t+GameState\.campaign\.foes = _foes_pick\.duplicate\(\)/.test(fnGd(ctbT, '_pick_foe'))
                 && /\(_btns\["foeback"\] as Button\)\.disabled = p\.is_empty\(\)/.test(fnGd(ctbT, '_foes_layout'))
@@ -8639,6 +8638,37 @@ const server = http.createServer((req, res) => {
             ok(playOff.length === 0,
               '⭐ HIS 11-19 IN THE GAME  ("The number of players on the bottom right should be removed, and there should be a PLAY button. You should be able to unselect Maxwell in the opponent select stage as well"): at Maxwell\'s table Play wears the page\'s gold and the pad lands on it, Two players is off the menu, and Maxwell alone can be let go while Done waits for somebody',
               playOff.length ? 'off: ' + playOff.join(' · ') : 'the page\'s Play and opponents, at the table');
+            /* ⭐ HIS 11-19 (part 2): THE FIRST CAMPAIGN GONE, RESIGN ON THE MAP, THE MENU'S RESETS, THE HOW CUT */
+            const spT3 = rd('space.gd'), medT3 = fs.readFileSync(path.join(GD, 'people/lines/meditation.txt'), 'utf8');
+            const bookT3 = rd('campaign_book.gd');
+            const part2Off = offOf({
+              'the first campaign gone, at the table and everywhere it reached': !/mode == "first"|^\t\t"first":\s*$|_teach|first_plan|first_done|B\.FIRST|teach_/m.test(ctbT)
+                && !/first_plan|B\.FIRST|mode == "first"|use_mode\("first"/.test(crT) && !/first_done/.test(cpT) && !/const FIRST :=|teach_/.test(bookT3)
+                && !/campaign_first/.test(spT3 + medT3) && !/\bcampfirst\b/.test(suiteT) && !/First campaign/.test(bookT3)
+                && !/id="first"|FIRST_MAP|teachNow|firstPlan/.test(mlT),
+              'Resign on the map, your own turn, asked twice; R and Y too': /if g\.phase != "theirs":\s*\n\t\trow\.append\(\["resign", \("Sure\?" if _armed == "resign" else "Resign"\)/.test(fnGd(ctbT, '_map_layout'))
+                && /"resign":\s*\n\t+if str\(R\.g\.get\("phase", ""\)\) == "theirs" or not bool\(R\.g\.get\("started", false\)\):\s*\n\t+return\s*\n\t+if _armed != "resign":/.test(fnGd(ctbT, '_press'))
+                && /elif \(k != null and k\.keycode == KEY_R\) or Pad\.hit\(event, Pad\.TOP\):\s*\n\t+_press\("resign"\)/.test(fnGd(ctbT, '_take'))
+                && /_campaign_over\(null if mode == "daily" else \(str\(R\.g\.side\) != "m" if mode == "two" else false\)\)/.test(fnGd(ctbT, '_resign'))
+                && /if mode == "daily" and quit:\s*\n\t\tv = "DAILY %s  ·  RESIGNED" % str\(g\.day\)\s*\n\t\trs = "Nothing filed: your best today stands\."/.test(fnGd(ctbT, '_campaign_over'))
+                && /\$\('map-resign'\)\.hidden = p === 'theirs';/.test(mlT) && /campaignOver\(G\.mode === 'daily' \? null : G\.mode === 'two' \? G\.side !== 'm' : false\);/.test(mlT),
+              'the resets, beside what they clear, only when there is something to clear': /_btn\("rgame", "Sure\?" if _armed == "rgame" else "Reset", Vector2\(x \+ w - rw, y\)/.test(fnGd(ctbT, '_home_layout'))
+                && /if on_d:\s*\n\t\t_btn\("rdaily",/.test(fnGd(ctbT, '_home_layout')) && /if games > 0:/.test(fnGd(ctbT, '_home_layout')) && /if not _opts_usual\(\):/.test(fnGd(ctbT, '_home_layout'))
+                && /"rgame":\s*\n\t+GameState\.campaign\.drop\(_foes_mode\(\)\)\s*\n\t+"rdaily":\s*\n\t+GameState\.campaign\.drop\("daily"\)\s*\n\t+"rfile":\s*\n\t+GameState\.campaign\.file = \{\}/.test(fnGd(ctbT, '_reset'))
+                && /return level == "medium" and GameState\.campaign\.fog and GameState\.campaign\.cards and GameState\.campaign\.dog == "" and/.test(fnGd(ctbT, '_opts_usual'))
+                && /\$\('reset-game'\)\.hidden = !o;/.test(mlT) && /\$\('reset-daily'\)\.hidden = !\(d && d\.day === today\);/.test(mlT) && /\$\('opts-row'\)\.hidden = optsUsual\(\);/.test(mlT),
+              'the How, cut, and the game\'s is the page\'s': /<b>Replay<\/b> every war\./.test(mlT) && /Replay every war\./.test(bookT3) && !/The roll, piece by piece/.test(bookT3),
+              'played': ['campresign', 'campresets', 'campresetsphone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /camppress:resign;campis:btn:resign:Sure\?;campis:screen:map;campis:saved:solo:true;[^"]*camppress:resign;campis:screen:result;campis:label:verdict:THE CAMPAIGN IS LOST;campis:label:rsay:You resigned in round 1\.;campis:saved:solo:false;campis:file:lost:1;/.test(bcCase('campresign'))
+                && /campset:phase:theirs;campis:btn:resign:;/.test(bcCase('campresign')) && /key:r:6;campis:btn:resign:Sure\?;key:r:6;campis:screen:result;/.test(bcCase('campresign'))
+                && /joy:y;camphas:btn:resign:Sure\?;joy:y;campis:screen:result;camphas:label:verdict:RESIGNED;/.test(bcCase('campresign'))
+                && /campis:btn:rgame:Reset;campis:btn:rdaily:Reset;campis:btn:rfile:Reset;campis:btn:ropts:Reset;[^"]*campis:homefits:true;/.test(bcCase('campresets'))
+                && /camppress:rgame;campis:btn:rgame:Sure\?;campis:saved:solo:true;camppress:rgame;campis:saved:solo:false;/.test(bcCase('campresets'))
+                && /campis:homefits:true/.test(bcCase('campresetsphone')),
+            });
+            ok(part2Off.length === 0,
+              '⭐ HIS 11-19 (PART 2) IN THE GAME  ("Take out First Campaign completely ... Make sure there is a way to resign the game on the map screen, and applicable resets on the menu screen"): no first campaign anywhere it reached; Resign in the map\'s row on your own turn, asked twice (R, Y); a Reset to the right of a game in progress, today\'s Daily, Maxwell\'s file and the options, each only when there is something to reset',
+              part2Off.length ? 'off: ' + part2Off.join(' · ') : 'the page\'s Resign and resets, at the table');
           }
         }
 

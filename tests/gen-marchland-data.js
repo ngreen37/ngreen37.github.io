@@ -59,13 +59,10 @@ function build() {
     slice(src, 'var CLOCK_ATT',    '/* THE REVEAL BEAT') +
     /* 11-17: the vanguard's two ranks (the clock's share and its floor ride the slice above) */
     slice(src, 'var LINE_RANK',    'var FILES_OUT') +
-    /* 11-10: what a result is worth, Maxwell and his words, the dogs, and the first campaign — data a port reads, so
-       his words and the small map are typed once */
+    /* 11-10: what a result is worth, Maxwell and his words, and the dogs — data a port reads, so his words are typed once */
     slice(src, 'var SURVIVE',      '/* the share of its points') +
     slice(src, 'var RIVAL',        'var FILE_KEY') +
     slice(src, 'var DOGS',         'var DOG_KEY') +
-    slice(src, 'var FIRST_MAP',    'var FIRST_DONE') +
-    slice(src, 'var LESSON_STEPS', 'function mapFor') +
     /* the rest a port reads rather than retypes: the cards, the Daily's length, the engine's values, where the muster
        stands each piece, and the battle's beats */
     slice(src, 'var CARDS = {',      'function drawCard') +
@@ -173,9 +170,6 @@ function build() {
       orders: Object.keys(G.ORDERS).reduce((o, k) => { o[k] = { name: G.ORDERS[k].nm, text: G.ORDERS[k].txt, at: !!G.ORDERS[k].at }; return o; }, {}),
       who: G.GENERALS, says: G.GENERAL_SAY
     },
-    first: { holdings: G.FIRST_MAP.land.map((L) => ({ id: L.id, name: L.nm, x: L.x, y: L.y })),
-             edges: G.FIRST_MAP.edges.map((e) => [e[0], e[1]]), start: { owner: G.FIRST_START.own.slice(),
-             ranks: G.FIRST_START.ranks.slice(), walls: G.FIRST_START.walls.slice() }, lessons: G.LESSON_STEPS.slice() },
     levels: Object.keys(G.LEVELS).reduce((o, k) => {
       const L = G.LEVELS[k];
       o[k] = { name: L.nm, depth: L.depth, thinkMs: L.ms, slip: L.slip, slipCp: L.slipCp,

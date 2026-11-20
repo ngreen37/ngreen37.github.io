@@ -739,12 +739,13 @@ function serve() {
     await page.reload({ waitUntil: 'load' });
     await page.waitForFunction(() => !!window.__mc);
     const homeState = await E(() => ({ shown: !document.getElementById('resume').hidden, text: document.getElementById('resume').textContent,
-      go: document.getElementById('go').className }));
-    ok(homeState.shown && /round 1/.test(homeState.text) && /ghost/.test(homeState.go), 'the home screen offers to continue it  [' + homeState.text + ']');
-    await page.click('#go');
-    const armed = await E(() => ({ text: document.getElementById('go').textContent, map: document.getElementById('screen-map').classList.contains('on'),
+      go: document.getElementById('go').hidden, reset: !document.getElementById('reset-game').hidden }));
+    ok(homeState.shown && /^Play · round 1/.test(homeState.text) && homeState.go && homeState.reset,
+      'the home screen offers to continue it, with its Reset beside it  [' + homeState.text + ']');
+    await page.click('#reset-game');
+    const armed = await E(() => ({ text: document.getElementById('reset-game').textContent, map: document.getElementById('screen-map').classList.contains('on'),
       save: !!localStorage.getItem('pjcc.campaign.save.v1') }));
-    ok(/Tap again/.test(armed.text) && !armed.map && armed.save, 'one tap on Begin does not throw a campaign in progress away  [' + armed.text + ']');
+    ok(armed.text === 'Sure?' && !armed.map && armed.save, 'one tap on Reset does not throw a campaign in progress away  [' + armed.text + ']');
     await page.click('#resume');
     const resumed = await E(() => ({ map: document.getElementById('screen-map').classList.contains('on'), from: __mc.G.ranks[5], phase: __mc.G.phase, atks: __mc.G.atks }));
     ok(resumed.map && resumed.from === 1 && (resumed.phase === 'attack' || resumed.phase === 'fortify'),
@@ -860,33 +861,10 @@ function serve() {
     });
     ok(ring.his && !ring.mine, "Maxwell's dice wear red when he attacks, yours green when you do  [" + JSON.stringify(ring) + ']');
 
-    /* ══ 11-10: A FIRST CAMPAIGN THAT TEACHES ══ */
-    const first = await E(() => {
-      const $ = id => document.getElementById(id), out = {}, teach = () => [...document.querySelectorAll('.node.teach')].map(n => +n.dataset.id).sort().join();
-      ['pjcc.campaign.first.done.v1', 'pjcc.campaign.save.first.v1', 'pjcc.campaign.save.v1', 'pjcc.campaign.dog.v1'].forEach(k => localStorage.removeItem(k));
-      __mc.paintHome();
-      out.door = $('first').classList.contains('new');
-      $('first').click();
-      out.nodes = document.querySelectorAll('#mapbox .node').length;
-      out.deploy = { shown: !$('mx-speech').hidden, line: $('mx-line').textContent, teach: teach(), place: __mc.G.toPlace };
-      __mc.tapLand(3);
-      out.attack = { phase: __mc.G.phase, line: $('mx-line').textContent, teach: teach() };
-      __mc.campaignOver(true);
-      out.done = { flag: localStorage.getItem('pjcc.campaign.first.done.v1'), verdict: $('verdict').textContent, mx: $('result-mx').textContent };
-      $('cont').click();
-      out.home = { on: $('screen-home').classList.contains('on'), door: $('first').classList.contains('new') };
-      $('go').click();
-      out.solo = document.querySelectorAll('#mapbox .node').length;
-      return out;
-    });
-    ok(first.door, 'a new player sees the first campaign\'s door lit');
-    ok(first.nodes === 5 && first.deploy.shown && /tap one of your holdings/.test(first.deploy.line) && first.deploy.teach === '3,4' && first.deploy.place === 1,
-       'the first campaign is five holdings, and Maxwell points at where your troop goes  [' + first.deploy.teach + ' · ' + first.deploy.line + ']');
-    ok(first.attack.phase === 'attack' && /Tap Chess City, then Checker Town/.test(first.attack.line) && first.attack.teach === '2,3',
-       '…placed, he points at the first attack  [' + first.attack.teach + ']');
-    ok(first.done.flag === '1' && /FIRST CAMPAIGN IS YOURS/.test(first.done.verdict) && /^Maxwell: “/.test(first.done.mx),
-       'winning it marks it done, and he sends you to a real one  [' + first.done.mx + ']');
-    ok(first.home.on && !first.home.door && first.solo === 10, '…and the ten come back for the real campaign  [' + first.solo + ' holdings]');
+    /* ⚑ HIS 11-19: "Take out First Campaign completely" */
+    const gone = await E(() => ({ door: !!document.getElementById('first'),
+      words: /First campaign/i.test(document.getElementById('screen-home').textContent + document.getElementById('screen-how').textContent) }));
+    ok(!gone.door && !gone.words, '⚑ his 11-19: the first campaign is gone, from the menu and from How it works');
 
     /* ══ 11-10: A WAR OF THREE OR FOUR (his #10), begun from NUMBER OF OPPONENTS (his 11-18) ══ on the flat map: the sand
        table has its own check */
@@ -953,10 +931,11 @@ function serve() {
     const back = await E(() => {
       const $ = id => document.getElementById(id);
       __mc.paintHome();
-      return { label: $('resume').hidden ? '' : $('resume').textContent, go: $('go').textContent, slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
+      return { label: $('resume').hidden ? '' : $('resume').textContent, go: $('go').hidden, reset: !$('reset-game').hidden,
+               slot: !!localStorage.getItem('pjcc.campaign.save.four.v1') };
     });
-    ok(/^Play · round \d+ · \d+ of 16 held$/.test(back.label) && back.go === 'Begin a new war' && back.slot,
-       'a war of four keeps its own save, and Play picks it up while three are picked  [' + back.label + ' · ' + back.go + ']');
+    ok(/^Play · round \d+ · \d+ of 16 held$/.test(back.label) && back.go && back.reset && back.slot,
+       'a war of four keeps its own save, and Play picks it up while three are picked, its Reset beside it  [' + back.label + ']');
 
     /* ⭐ HIS 11-19: "there should be a PLAY button" · "The number of players on the bottom right should be removed" ·
        "You should be able to unselect Maxwell in the opponent select stage" */
@@ -989,6 +968,91 @@ function serve() {
     ok(play.vince.lit === 'Vince:Aggressive · Red' && !play.vince.done && play.back.on && play.back.label === 'Number of opponents · 1' &&
        play.back.note === 'Against Vince.' && play.back.go === 'Play',
        '…Vince picked in his place takes Red, and Play is for one on one against him  [' + play.vince.lit + ' · ' + play.back.note + ']');
+
+    /* ⭐ HIS 11-19: "Make sure there is a way to resign the game on the map screen" */
+    const res = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      ['pjcc.campaign.save.v1', 'pjcc.campaign.file.v1', 'pjcc.campaign.save.daily.v1'].forEach(k => localStorage.removeItem(k));
+      __mc.setPicked(['Maxwell']); __mc.show('screen-home');
+      $('go').click();
+      const b = $('map-resign');
+      out.shown = !b.hidden && b.offsetParent !== null;
+      b.click();
+      out.armed = b.textContent + '|' + $('screen-map').classList.contains('on') + '|' + !!localStorage.getItem('pjcc.campaign.save.v1');
+      b.click();
+      const f = JSON.parse(localStorage.getItem('pjcc.campaign.file.v1') || 'null');
+      out.over = { result: $('screen-result').classList.contains('on'), verdict: $('verdict').textContent, say: $('result-say').textContent,
+                   save: !!localStorage.getItem('pjcc.campaign.save.v1'), lost: f ? f.lost : -1 };
+      $('cont').click();
+      $('go').click();
+      __mc.setPhase('theirs');
+      out.theirs = $('map-resign').hidden;
+      __mc.setPhase('deploy');
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      const rec = localStorage.getItem('pjcc.campaign.daily.v2');
+      __mc.show('screen-home'); $('daily').click();
+      $('map-resign').click(); $('map-resign').click();
+      out.daily = { verdict: $('verdict').textContent, say: $('result-say').textContent, filed: localStorage.getItem('pjcc.campaign.daily.v2') !== rec,
+                    share: $('share').hidden, save: !!localStorage.getItem('pjcc.campaign.save.daily.v1') };
+      $('cont').click();
+      return out;
+    });
+    ok(res.shown && res.armed === 'Sure?|true|true' && res.over.result && res.over.verdict === 'THE CAMPAIGN IS LOST' &&
+       res.over.say === 'You resigned in round 1.' && !res.over.save && res.over.lost === 1,
+       '⭐ his 11-19: Resign on the map asks twice, then the campaign is lost where it stands, filed in Maxwell\'s book  [' + res.armed + ' → ' + res.over.say + ']');
+    ok(res.theirs, '…on your own turn only: their turn has no Resign');
+    ok(/^DAILY \d+\/\d+ · RESIGNED$/.test(res.daily.verdict) && res.daily.say === 'Nothing filed: your best today stands.' && !res.daily.filed &&
+       res.daily.share && !res.daily.save, '…a Daily resigned files nothing and offers nothing to copy  [' + res.daily.verdict + ']');
+
+    /* ⭐ HIS 11-19: "applicable resets on the menu screen" — "a little button to the right of each", each asked twice */
+    const rz = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      const shown = (id) => !$(id).hidden && $(id).offsetParent !== null;
+      const setTo = (id, label) => { for (let i = 0; i < 8 && $(id).textContent !== label; i++) $(id).click(); };
+      const KEYS = ['pjcc.campaign.level', 'pjcc.campaign.fog', 'pjcc.campaign.cards', 'pjcc.campaign.dog.v1', 'pjcc.campaign.foes.v1'];
+      const was = { fog: $('opt-fog').textContent, cards: $('opt-cards').textContent, dog: $('opt-dog').textContent,
+                    lvl: document.querySelector('#levels .on').getAttribute('data-lvl'), foes: __mc.picked.slice(), keys: KEYS.map(k => localStorage.getItem(k)) };
+      ['pjcc.campaign.save.v1', 'pjcc.campaign.save.daily.v1', 'pjcc.campaign.file.v1'].forEach(k => localStorage.removeItem(k));
+      __mc.show('screen-home');
+      setTo('opt-fog', 'Fog of War · On'); setTo('opt-cards', 'Event Cards · On'); setTo('opt-dog', 'Dog · None');
+      $('levels').querySelector('[data-lvl="medium"]').click(); __mc.setPicked(['Maxwell']);
+      out.none = ['reset-game', 'reset-daily', 'file-row', 'opts-row'].filter(shown).join();
+      $('go').click(); __mc.show('screen-home'); __mc.paintHome();
+      const p = $('resume').getBoundingClientRect(), r = $('reset-game').getBoundingClientRect();
+      out.game = { reset: shown('reset-game'), play: $('resume').textContent, go: shown('go'), right: r.left >= p.right && Math.abs(r.top - p.top) < 2 };
+      $('reset-game').click();
+      out.game.armed = $('reset-game').textContent + '|' + !!localStorage.getItem('pjcc.campaign.save.v1');
+      $('reset-game').click();
+      out.game.after = !!localStorage.getItem('pjcc.campaign.save.v1') + '|' + shown('reset-game') + '|' + shown('go') + ':' + $('go').textContent;
+      $('daily').click(); __mc.show('screen-home'); __mc.paintHome();
+      out.daily = { reset: shown('reset-daily'), right: $('reset-daily').getBoundingClientRect().left >= $('daily').getBoundingClientRect().right };
+      $('reset-daily').click(); $('reset-daily').click();
+      out.daily.after = !!localStorage.getItem('pjcc.campaign.save.daily.v1') + '|' + shown('reset-daily') + '|' + /^Daily(?! · round)/.test($('daily').textContent);
+      localStorage.setItem('pjcc.campaign.file.v1', JSON.stringify({ v: 1, games: 3, won: 1, lost: 2, open: {}, keep: 0, thin: {}, turns: 9, forts: 2 }));
+      __mc.paintHome();
+      out.file = { row: shown('file-row'), say: $('file-say').textContent };
+      $('reset-file').click(); $('reset-file').click();
+      out.file.after = localStorage.getItem('pjcc.campaign.file.v1') + '|' + shown('file-row');
+      $('levels').querySelector('[data-lvl="hard"]').click(); $('opt-fog').click(); $('opt-dog').click(); __mc.setPicked(['Vince', 'Wes']);
+      out.opts = { row: shown('opts-row') };
+      $('reset-opts').click(); $('reset-opts').click();
+      out.opts.after = [shown('opts-row'), document.querySelector('#levels .on').getAttribute('data-lvl'), $('opt-fog').textContent, $('opt-cards').textContent,
+        $('opt-dog').textContent, $('opt-foes').textContent, KEYS.map(k => localStorage.getItem(k)).join('|')].join(' / ');
+      /* the options as they were, for the checks after this one */
+      setTo('opt-fog', was.fog); setTo('opt-cards', was.cards); setTo('opt-dog', was.dog);
+      $('levels').querySelector('[data-lvl="' + was.lvl + '"]').click(); __mc.setPicked(was.foes);
+      KEYS.forEach((k, i) => { if (was.keys[i] == null) localStorage.removeItem(k); else localStorage.setItem(k, was.keys[i]); });
+      return out;
+    });
+    ok(rz.none === '', '⭐ his 11-19: nothing to reset, no Reset shown  [' + (rz.none || 'none') + ']');
+    ok(rz.game.reset && /^Play · round 1 · 5 of 10 held$/.test(rz.game.play) && !rz.game.go && rz.game.right && rz.game.armed === 'Sure?|true' &&
+       rz.game.after === 'false|false|true:Play',
+       '…a game in progress: Reset to the right of Play, asked twice, and Play begins anew  [' + rz.game.armed + ' → ' + rz.game.after + ']');
+    ok(rz.daily.reset && rz.daily.right && rz.daily.after === 'false|false|true', '…today\'s Daily in progress: its Reset to the right of it  [' + rz.daily.after + ']');
+    ok(rz.file.row && rz.file.say === 'Maxwell’s file on you · 3 campaigns' && rz.file.after === 'null|false',
+       '…Maxwell\'s file on you, forgotten  [' + rz.file.say + ']');
+    ok(rz.opts.row && rz.opts.after === 'false / medium / Fog of War · On / Event Cards · On / Dog · None / Number of opponents · 1 / medium|1|1||["Maxwell"]',
+       '…and the options back to Medium, fog and cards on, no dog, Maxwell  [' + rz.opts.after + ']');
 
     /* ⚠ A BEAT IS ITS CAMPAIGN'S (11-18): a machine's turn still waiting when you begin anew never plays on in the new one */
     const stale = await E(async () => {

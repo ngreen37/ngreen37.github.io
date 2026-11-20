@@ -513,14 +513,15 @@ const howScreen = slice('<section class="screen" id="screen-how">', '</section>'
    the only thing these six checks are for: they are what makes a trim safe to make.
    ⭐ AND THE 7-BAND CLAUSE GREW RATHER THAN SHRANK, because the RULE changed the same day —
    a 7 now brings a pawn with the king, so the screen has to say so. */
+/* ⚑ RE-ANCHORED AGAIN, 11-19 (his: "For each item in the How It Works explanation, cut the words by 66-90%"): each item
+   kept a tenth to a third of its words, and these hold what is left of each rule */
 check('the how-it-works screen states BOTH castling bands',
-      /<b>7 or better<\/b> castles your king behind a pawn/.test(howScreen.replace(/\s+/g, ' ')) &&
-      /<b>an 8<\/b> brings his rook around and three pawns with him/.test(howScreen.replace(/\s+/g, ' ')),
+      /defending, <b>7<\/b> castles, <b>8<\/b> brings the rook/.test(howScreen.replace(/\s+/g, ' ')),
       'the page and the rule agree, on both halves of it — re-checked when the die shrank');
-check('…and the attacker\'s vanguard, given when the muster bought none',
-      /your pawns start halfway up the board/.test(howScreen.replace(/\s+/g, ' ')) && /given if you bought none/.test(howScreen.replace(/\s+/g, ' ')));
+check('…and the attacker\'s vanguard',
+      /The position die<\/b> pushes attacking pawns/.test(howScreen.replace(/\s+/g, ' ')));
 check('…and that time follows the armies',
-      /shared by material:<\/b> the bigger army gets more time/.test(howScreen.replace(/\s+/g, ' ')));
+      /Thirty seconds, split by material\.<\/b>/.test(howScreen.replace(/\s+/g, ' ')));
 /* ⚠ \s+ BETWEEN THE WORDS, NOT A LITERAL SPACE. This copy is hand-wrapped HTML, so any
    trim that re-flows a line puts a newline and six spaces in the middle of a phrase — and
    three of these checks went red on the 2026-08-25 trim for exactly that, reporting missing
@@ -532,22 +533,31 @@ check('…and that time follows the armies',
    explaining that the rename happened. Same trap the header describes from the other
    direction (a check PASSING on a comment); this is one FAILING on one. */
 const flat = howScreen.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\s+/g, ' ');
+{
+  const items = flat.slice(flat.indexOf('<p class="sub"'), flat.indexOf('</p>')).replace(/<p[^>]*>/, '').split(/<br\s*\/?>/)
+    .map((x) => x.replace(/<[^>]+>/g, ' ').trim()).filter(Boolean);
+  const words = (t) => t.replace(/[♜?]/g, ' ').split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length;
+  const long = items.filter((t) => words(t) > 14);
+  check('⭐ his 11-19: "Way Less is Way More" — the how-it-works screen keeps every item to a line',
+        items.length >= 20 && long.length === 0 && items.reduce((n, t) => n + words(t), 0) <= 200,
+        long.join(' | ') || items.length + ' items, ' + items.reduce((n, t) => n + words(t), 0) + ' words');
+}
 /* ⛑ "ranks" → "troops" ON SCREEN, 2026-08-25. The identifier is untouched, which is why
    every check LABEL in this file still says ranks and only the copy regexes moved. */
 check('…and it explains that troops are dice',
-      /keep the best/i.test(flat) && /one die per two troops/i.test(flat));
+      /A die per two troops;<\/b> best counts\./.test(flat));
 check('…and the word "rank" is gone from the player-facing screen',
       !/\brank(s)?\b/i.test(flat),
       'a rank is a ROW in chess, and pjcc-profile.js already owns RANKS for the credit ladder');
 check('…and that your own flag is your own loss',
-      /Run your own clock out and you lose/i.test(flat),
+      /out of time loses/i.test(flat),
       'the rule that replaced "either flag goes to the defender"');
 check('…and what a chain is',
-      /chained/i.test(flat) && /extra die/i.test(flat));
+      /Two friendly neighbors:<\/b> \+1 die defending\./.test(flat));
 check('…and that you only get three attacks',
       /three attacks a round/i.test(flat), 'his 2026-08-25 rule, stated on the screen');
 check('…and that what is left on the board marches in',
-      /What's left marches in/.test(flat) && /troops follow your pieces/.test(flat) && /keeps its share/.test(flat),
+      /Survivors march in,<\/b> by the share of points kept\./.test(flat),
       'his 2026-11-10 pick, stated on the screen');
 
 /* ══ 8b. HIS VOCABULARY, 2026-08-25 ═════════════════════════════════════════════════
@@ -611,8 +621,7 @@ check('the roll screen says the extra die out loud, not in the fine print',
   check('…and the two of them border each other', G.ADJ[w[0]].indexOf(w[1]) >= 0,
         'so the first siege either side can lay is on the other side\'s keep');
   check('the how-it-works screen states both halves of the rule',
-        /breaks the walls/i.test(flat) && /win again the same turn/i.test(flat) &&
-        /a troop a round/i.test(flat),
+        /Walls:<\/b> two wins a turn\. Held: \+1 troop\./.test(flat),
         'two wins to take it, a troop a round to hold it');
   check('a walled holding is marked on the map, and says so when it cannot be seen in color',
         /if \(walled\(L\.id\)\) cls \+= ' walls'/.test(slice('function drawMap()', 'function tapLand')) &&
@@ -879,12 +888,10 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   for (const m of src.matchAll(/(?:speak|lineFor)\((?:[^()]*\?\s*)?'(\w+)'(?:\s*:\s*'(\w+)')?/g)) {
     [m[1], m[2]].forEach((k) => { if (k && !/_$/.test(k)) said.add(k); });
   }
-  /* the first campaign speaks 'teach_' + a step: every step has words too */
-  camp.LESSON_STEPS.forEach((s) => said.add('teach_' + s));
   for (const m of src.matchAll(/k:'(\w+)'/g)) said.add(m[1]);
   ['open', 'record', 'habit_open', 'habit_keep', 'habit_thin', 'habit_nofort', 'win', 'lose'].forEach((k) => said.add(k));
   const mute = [...said].filter((k) => !LINES[k] || !LINES[k].length);
-  check('…and every kind he can say has words', mute.length === 0 && said.size >= 16, mute.join(', ') || said.size + ' kinds');
+  check('…and every kind he can say has words', mute.length === 0 && said.size >= 15, mute.join(', ') || said.size + ' kinds');
   const obs = camp.observeFile({ v: 1, games: 3, won: 1, lost: 2, open: { 5: 3 }, keep: 2, thin: {}, turns: 12, forts: 6 });
   check('what he has noticed comes first, and his record with you last',
         obs[0].kind === 'habit_open' && obs[0].data.from === 'Chess City' && obs.some((o) => o.kind === 'habit_keep') &&
@@ -968,37 +975,16 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   check('two players bring no dogs', G2.ranks[5] === 1 && !G2.troops.fetched);
 }
 
-/* == 14. A FIRST CAMPAIGN THAT TEACHES (his 11-10, #5) =============================
-   Five holdings, Maxwell teaching one rule at a time, on the same rules: the map is swapped, nothing re-implemented. */
+/* == 14. THE FIRST CAMPAIGN IS GONE (his 11-19: "Take out First Campaign completely") ===================== */
 {
   const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
-  const F = camp.FIRST_MAP, S0 = camp.FIRST_START;
-  camp.useMap(F);
-  const reach = new Set([0]), stack2 = [0];
-  while (stack2.length) { const n = stack2.pop(); camp.nbrs(n).forEach((j) => { if (!reach.has(j)) { reach.add(j); stack2.push(j); } }); }
-  const own0 = S0.own.slice(), took = S0.own.slice(); took[2] = 'm';
-  check('⭐ the first campaign is five holdings, all joined, his keep walled',
-        F.land.length === 5 && reach.size === 5 && S0.walls.join() === '0' && own0.filter((o) => o === 'm').length === 2,
-        F.land.map((L) => L.nm).join(', '));
-  check('…its first battle has no chain in it, and the holding it takes is chained: the lesson the map is built for',
-        !camp.chained(own0, 2) && camp.chained(took, 2), 'Checker Town ' + camp.nbrs(2).map((j) => F.land[j].nm).join(' · '));
-  camp.newCampaign('easy', 'first', { fog: false, cards: false });
-  const G3 = camp.G;
-  G3.own[2] = 'm'; G3.ranks[2] = 4;
-  const r1 = camp.firstPlan();
-  G3.round = 2;
-  const r2 = camp.firstPlan();
-  check('he attacks once, in its first round, on the chained holding, and after that he holds',
-        r1.attacks.length === 1 && r1.attacks[0].from === 0 && r1.attacks[0].to === 2 && r2.attacks.length === 0 &&
-        r1.deploy.every((id) => id === 0), JSON.stringify(r1));
-  G3.log.first = [3, 2];
-  delete camp.store['pjcc.campaign.file.v1'];
-  camp.fileCampaign(true);
-  check('the first campaign never goes into his file', !camp.store['pjcc.campaign.file.v1']);
-  camp.useMap(camp.MAIN_MAP);
-  check('…and the ten come back after it, borders and all',
-        camp.nbrs(3).slice().sort().join() === '0,1,2,5,6' && camp.mapFor('solo') === camp.MAIN_MAP,
-        'Checker Town ' + camp.nbrs(3).slice().sort().join(','));
+  const J = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/data/marchland.json'), 'utf8'));
+  const code = src.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const left = ['id="first"', 'FIRST_MAP', 'FIRST_START', 'FIRST_DONE', 'LESSON_STEPS', 'teachNow', 'firstPlan', "'first'", 'teach_']
+    .filter((w) => code.indexOf(w) >= 0);
+  check('⚑ his 11-19: the first campaign is gone — no door, no map, no lessons, no lines, nothing in the shared data',
+        left.length === 0 && !Object.keys(camp.MAXWELL_LINES).some((k) => /^teach_/.test(k)) && J.first === undefined &&
+        camp.mapFor('first') === camp.MAIN_MAP, left.join(' · ') || 'gone');
 }
 
 /* == 15. A WAR OF THREE OR FOUR (his 11-10, #10) ===================================
@@ -1096,7 +1082,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   camp.useMap(camp.WAR4_MAP); camp.newCampaign('medium', 'four', { fog: true, cards: false });
   const four = camp.musterGenerals(names);
   camp.useMap(camp.MAIN_MAP);
-  const none = ['daily', 'two', 'first'].map((m) => { if (m === 'first') camp.useMap(camp.FIRST_MAP); camp.newCampaign('easy', m, {}); const n = camp.musterGenerals(names).length; camp.useMap(camp.MAIN_MAP); return n; });
+  const none = ['daily', 'two'].map((m) => { camp.newCampaign('easy', m, {}); return camp.musterGenerals(names).length; });
   check('⭐ your generals: the Assembly, less anyone across the table, anyone with no order, and nobody twice',
         solo.join() === 'Matsu,Michael,Vince,Robert,Murphy,Kedar' && four.join() === 'Matsu,Michael,Robert,Murphy,Kedar' &&
         none.every((n) => n === 0), solo.join() + ' / ' + four.join());
@@ -1194,12 +1180,10 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const empty = () => new Array(64).fill('');
   const rulesOn = (mode) => { camp.newCampaign('medium', mode, { fog: false, cards: false });
     return camp.LAND.map((L, i) => (camp.ruleAt(i) ? L.nm + ':' + camp.ruleAt(i) : '')).filter(Boolean).sort().join(); };
-  const solo = rulesOn('solo'), three = rulesOn('three'), four = rulesOn('four'), first = rulesOn('first');
+  const solo = rulesOn('solo'), three = rulesOn('three'), four = rulesOn('four');
   camp.useMap(camp.mapFor('solo'));
   check('⭐ Shogi Island drops, Endgame Flats fight an endgame, Sea-Board at sea and the Sand Mines in the dark, on the map of ten and on both war maps (keyed by name)',
         solo === 'Endgame Flats:endgame,Sand Mines:dark,Sea-Board:pieces,Shogi Island:drops' && three === solo && four === solo, [solo, three, four].join(' | '));
-  check('…and the first campaign teaches the plain rules: nothing on its map, though the Sand Mines are on it', first === '' &&
-        camp.FIRST_MAP.land.some((L) => L.nm === 'Sand Mines'), first);
   const keepCaps = { q: 1, r: 2, b: 2, n: 2, p: 8 };
   check('⭐ the Sand Mines\' dark is the picture\'s alone (his: "more decorative than functional"): the plain muster and the plain odds',
         camp.capsOn('dark', Object.assign({}, keepCaps)).p === 8 && camp.capsOn('dark', Object.assign({}, keepCaps)).q === 1 &&
@@ -1314,8 +1298,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
         ['drops', 'endgame', 'pieces'].every((r) => odds(r, 1) === true && odds(r, 0) === false && camp.CLASHES[r].p.length === 12));
   const how = slice('<section class="screen" id="screen-how">', '</section>');
   check('…and the page says so: the how-to, the roll screen\'s chip, the map\'s tag and the battle\'s first line',
-        /Endgame Flats, Shogi Island and Sea-Board<\/b> fight their own chess/.test(how) && /the first pawn to make a queen wins/.test(how) &&
-        /no pawns, only pieces/.test(how) &&
+        /<b>Own chess:<\/b> the Flats, first queen wins; Shogi Island, drops; Sea-Board, no pawns\./.test(how.replace(/\s+/g, ' ')) &&
         /RULE_SAY\[PEND\.rule\]\.chip/.test(slice('function beginBattle(', 'function sandThrow(')) &&
         /<span class="rtag">/.test(slice('function drawMap(', 'function tapLand(')) && /RULE_SAY\[B\.rule\]\.say/.test(slice('function startBattle(', 'function loneKing(')));
 }
@@ -1352,9 +1335,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   check('…the machine crosses when it is worth it, never twice in a turn, and never into walls it cannot follow up',
     crossings > 50 && twice === 0 && halfSiege === 0, crossings + ' of ' + plans + ' plans cross · twice ' + twice + ' · into walls ' + halfSiege);
   camp.useMap(camp.mapFor('three')); const w3 = camp.LANES.length;
-  camp.useMap(camp.mapFor('first')); const f1 = camp.LANES.length;
   camp.useMap(camp.MAIN_MAP);
-  check('…the campaign\'s map only: a war and the first campaign keep their roads', w3 === 0 && f1 === 0 && camp.LANES.length === 1);
+  check('…the campaign\'s map only: a war keeps its roads', w3 === 0 && camp.LANES.length === 1);
   const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
   check('…the save carries the spent crossing, and a turn opens the water again',
     /sailed:!!G\.sailed/.test(page) && /sailed:!!o\.sailed/.test(page) && /G\.sailed = false;/.test(slice('function resetTurn(', 'function passTurn(')));
@@ -1417,7 +1399,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   check('…said where his way shows: the turn line when he digs in, the declare when he comes for you',
     /k: plan\.dug && hasLine\('dig', generalOf\(side\)\.who\) \? 'dig' : 'turn'/.test(page) &&
     /s\.how && hasLine\(s\.how, generalOf\(who\)\.who\) \? s\.how : 'declare'/.test(page) &&
-    /Maxwell goes for holdings cut off from the rest, Vince rushes, Wes\s+digs in/.test(page));
+    /<b>Each general<\/b> has a style and a pace\./.test(page));
 }
 
 /* ══ 21. SCENARIOS WITH STARS (his 11-16, #2) ══ set pieces, the same for everyone, a checklist read at the end */

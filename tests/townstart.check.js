@@ -143,8 +143,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     ok(file.replace(/^pjcc_|\.html$/g, '') + ': a room with no title screen marks nothing', !/data-town-start/.test(src));
   }
   const camp = fs.readFileSync(path.join(ROOT, 'assets', 'games', 'pjcc_marchland.html'), 'utf8');
+  /* the group is the attribute's VALUE, not the markup round it (11-19: a Reset sits between them, his) */
+  const marks = [...camp.matchAll(/<button[^>]*data-town-start="([^"]*)"[^>]*>/g)].map((m) => (/id="([^"]+)"/.exec(m[0]) || [])[1] + ':' + m[1]);
   ok('⚠ Campaign: Continue and Begin are ONE group, Continue first',
-     /id="resume" data-town-start="1" hidden>[\s\S]{0,80}id="go" data-town-start="1">/.test(camp));
+     marks.join() === 'resume:1,go:1', marks.join());
   await b.close();
 
   /* ── AND IT IS HEARD ──────────────────────────────────────────────────────────────────────
