@@ -2802,7 +2802,10 @@ function boardMoves(a, b) {
    position die DID on the board beside it (posScore). ⚠ THE BOARD'S, NOT THE DIE'S FACE: read off the face, a defender
    with nothing dug in read "STRONG POSITION". ⚠ HOW GOOD A SIDE'S ROLLS WERE, NOT WHO WILL WIN: the odds bar says that. */
 var STAND_WORDS = ['POOR', 'WEAK', 'FAIR', 'GOOD', 'STRONG'];
-var STAND_FROM = [154, 147, 179], STAND_TO = [107, 255, 184];
+/* ⭐ A COLOR A WORD (his 11-20: "keep Good Position in green, put Fair in yellow, etc."): red, orange, yellow, the green
+   it had, and a brighter green; each line settles into its color from gray */
+var STAND_FROM = [154, 147, 179], STAND_COLS = [[255, 107, 94], [255, 157, 77], [255, 214, 106], [107, 255, 184], [61, 255, 122]];
+function standBand(score) { return Math.min(STAND_WORDS.length - 1, Math.floor(score * STAND_WORDS.length)); }
 /* what the position die did, 0 to 1: the attacker's pawns up front (and one nearly through); the defender's castle (its
    rook and shield beside it) or the pawns dug in. null at sea: nobody there has a pawn to push or dig in */
 function posScore(P, att) {
@@ -2815,12 +2818,10 @@ function posScore(P, att) {
 function standOf(P, att, stage) {
   var mat = ((att ? P.aMat : P.dMat) - 1) / (FACES - 1), pos = stage === 'mat' ? null : posScore(P, att);
   var score = pos == null ? mat : (mat + pos) / 2;
-  return { score: score, word: STAND_WORDS[Math.min(STAND_WORDS.length - 1, Math.floor(score * STAND_WORDS.length))] +
+  return { score: score, word: STAND_WORDS[standBand(score)] +
     (stage === 'mat' ? ' ARMY' : ' POSITION') };
 }
-function standColor(score) {
-  return 'rgb(' + STAND_FROM.map(function (v, i) { return Math.round(v + (STAND_TO[i] - v) * score); }).join(', ') + ')';
-}
+function standColor(score) { return 'rgb(' + STAND_COLS[standBand(score)].join(', ') + ')'; }
 /* what is on the board for that side, and what its position die did there */
 function standDetail(P, att, stage, board) {
   var pts = material(board, att === P.attWhite ? 'w' : 'b') + ' points';
@@ -2830,11 +2831,11 @@ function standDetail(P, att, stage, board) {
   return pts + ' · ' + (d.castled ? (d.rook ? 'castled, rook' : 'castled') : P.rule === 'pieces' ? 'at sea' :
     d.chain ? count(d.chain, 'pawn') + ' dug in' : 'nothing dug in');
 }
-/* the line, gray first and then settling to its green (the "progressively") */
+/* the line, gray first and then settling into its word's color (the "progressively") */
 function paintStand(att, stage, board) {
   var p = PEND, st = standOf(p, att, stage), el = $(att ? 'att-stand' : 'def-stand');
   el.innerHTML = '<b>' + st.word + '</b><i>' + standDetail(p, att, stage, board) + '</i>';
-  el.style.color = standColor(0);
+  el.style.color = 'rgb(' + STAND_FROM.join(', ') + ')';
   void el.offsetWidth;
   el.style.color = standColor(st.score);
 }

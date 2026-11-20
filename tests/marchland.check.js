@@ -1644,9 +1644,12 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     a1.score === 0 && a1.word === 'POOR ARMY' && a2.score === 0.5 && a2.word === 'FAIR POSITION' && d1.score === 1 && d1.word === 'STRONG ARMY' &&
     d2.score === 0.5 && d2.word === 'FAIR POSITION' && full.score === 1 && full.word === 'STRONG POSITION' && sea.score === 0 && sea.word === 'POOR POSITION',
     [a1.word, a2.word, d1.word, d2.word + ' (nothing dug in)', full.word + ' (castled, rook, three)', sea.word + ' (at sea)'].join(' · '));
-  check('…its color runs from gray to green, the greener the better, and settles there from gray each time it changes',
-    camp.standColor(0) === 'rgb(154, 147, 179)' && camp.standColor(1) === 'rgb(107, 255, 184)' && camp.standColor(0.5) === 'rgb(131, 201, 182)' &&
-    /el\.style\.color = standColor\(0\);\s*\n\s*void el\.offsetWidth;\s*\n\s*el\.style\.color = standColor\(st\.score\);/.test(page));
+  const cols = [0, 0.3, 0.5, 0.7, 1].map((x) => camp.standColor(x));
+  check('⭐ his 11-20 ("keep Good Position in green, put Fair in yellow, etc."): a color a word, POOR red, WEAK orange, FAIR yellow, GOOD green, STRONG a brighter green, settling there from gray each time it changes',
+    cols.join(' | ') === 'rgb(255, 107, 94) | rgb(255, 157, 77) | rgb(255, 214, 106) | rgb(107, 255, 184) | rgb(61, 255, 122)' &&
+    camp.standColor(0.79) === camp.standColor(0.6) && camp.standColor(0.8) !== camp.standColor(0.79) &&
+    /el\.style\.color = 'rgb\(' \+ STAND_FROM\.join\(', '\) \+ '\)';\s*\n\s*void el\.offsetWidth;\s*\n\s*el\.style\.color = standColor\(st\.score\);/.test(page),
+    cols.join(' | '));
   check('…the board is up from the first die, and every verdict is written at the start, unseen, so nothing above the board moves it',
     /matVerdict\(\); posVerdict\(true\);\s*\n\s*\$\('v-mat'\)\.classList\.add\('pending'\); \$\('v-pos'\)\.classList\.add\('pending'\);/.test(page) &&
     /reveal\('v-mat'\);/.test(page) && /reveal\('v-pos'\);/.test(page) && /\.vline\.pending \{ visibility: hidden; \}/.test(page) &&

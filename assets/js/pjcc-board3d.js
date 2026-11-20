@@ -36,12 +36,12 @@
   var TOPPLE = 0.32;               // seconds a taken piece takes to fall
   var SLIDE = 0.16;                // seconds a move takes to cross the board
   var CARD_AFTER = 0.5;            // a mate's cut holds the game's card this long, and no longer
-  // zoom: the flat board's; push: the 3D camera's. ⚠ A CAPTURE'S CLOSE-UP IS HALF WHAT IT WAS (his 11-11: "scaled down by
-  // 50% across all platforms and games. It is too intense."): 1.30 → 1.15 flat, 1.625 → 1.3125 in 3D
+  // zoom: the flat board's; push: the 3D camera's. ⚠ HALVED TWICE: a capture's on 11-11 (his "scaled down by 50% across all
+  // platforms and games. It is too intense."), and every close-up on 11-20 (his "way too strong: scale it back by 50%")
   var CUTS = {
-    capture: { secs: 0.40, zoom: 1.15, push: 1.3125, turn: 0.0, circle: 0.0 },
-    check: { secs: 0.45, zoom: 1.22, push: 1.525, turn: 0.0, circle: 0.0 },
-    mate: { secs: 1.60, zoom: 1.40, push: 1.75, turn: 0.06, circle: 0.35 },
+    capture: { secs: 0.40, zoom: 1.075, push: 1.15625, turn: 0.0, circle: 0.0 },
+    check: { secs: 0.45, zoom: 1.11, push: 1.2625, turn: 0.0, circle: 0.0 },
+    mate: { secs: 1.60, zoom: 1.20, push: 1.375, turn: 0.06, circle: 0.35 },
   };
   var TALL = { K: 1.43, Q: 1.30, B: 1.34, N: 1.278, R: 0.86, P: 0.97 };
   // ⭐ P IS HIS PAWN THAT BOWS IN DEFEAT (his 11-18), rigged, for both sides in his two materials, as the May set is

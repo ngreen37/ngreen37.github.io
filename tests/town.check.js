@@ -7715,8 +7715,9 @@ const server = http.createServer((req, res) => {
                && /func rest_camera\(\) -> void:\s*\n\t_fit\(\)\s*\n\t_pose\(_aim, 0\.0, _dist\)/.test(b3T)
                && /<= EDGE:/.test(b3F('_fit')) && /pts\.append\(Vector3\(x \* 0\.8, TALLEST, -3\.5 \* SQ\)\)/.test(b3F('_fit'))
                && /_pose\(aim, orbit \* a, _dist \/ lerpf\(1\.0, push, a\)\)/.test(b3F('cam_cut'))
-               /* ⚠ a capture's close-up halved (his 11-11, "too intense"): the flat board's and the 3D camera's */
-               && /"capture": \{ "secs": 0\.40, "zoom": 1\.15, "push": 1\.3125,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
+               /* ⚠ a capture's close-up halved (his 11-11, "too intense"), and every close-up halved again (his 11-20): the flat
+                  board's and the 3D camera's (the 11-20 block holds all three) */
+               && /"capture": \{ "secs": 0\.40, "zoom": 1\.075, "push": 1\.15625,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
                /* …and a dog's walk-in 25% slower (his 11-11): a ply's slide and its pause, 0.48 → 0.60 */
                && /const WALK_SECS := 0\.44\n/.test(ctT) && /const SLIDE := 0\.16 /.test(ctT)
                && /minf\(_ray_post\(o, d, world\(v\), 0\.33 \* SIZE, h \* 0\.55\), _ray_post\(o, d, world\(v\), 0\.2 \* SIZE, h\)\)/.test(b3F('square_at'))
@@ -8669,6 +8670,24 @@ const server = http.createServer((req, res) => {
             ok(part2Off.length === 0,
               '⭐ HIS 11-19 (PART 2) IN THE GAME  ("Take out First Campaign completely ... Make sure there is a way to resign the game on the map screen, and applicable resets on the menu screen"): no first campaign anywhere it reached; Resign in the map\'s row on your own turn, asked twice (R, Y); a Reset to the right of a game in progress, today\'s Daily, Maxwell\'s file and the options, each only when there is something to reset',
               part2Off.length ? 'off: ' + part2Off.join(' · ') : 'the page\'s Resign and resets, at the table');
+            /* ⭐ HIS 11-20: A COLOR A WORD ON THE ROLL ("keep Good Position in green, put Fair in yellow, etc."), AND THE
+               CLOSE-UPS HALVED ("the zoom-in effect is way too strong: scale it back by 50%") */
+            const mjC = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/data/marchland.json'), 'utf8'));
+            const ctT20 = rd('chess_table.gd'), b3js = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-board3d.js'), 'utf8');
+            const cutsOf = (src, q) => ['capture', 'check', 'mate'].map((k) => {
+              const m = new RegExp(q + k + q + ': \\{ ' + q + 'secs' + q + ': [\\d.]+, ' + q + 'zoom' + q + ': ([\\d.]+), ' + q + 'push' + q + ': ([\\d.]+),').exec(src);
+              return m ? Number(m[1]) + '/' + Number(m[2]) : '?'; }).join(' ');
+            const c20Off = offOf({
+              'the page\'s five colors, one a word': JSON.stringify(mjC.stand.cols) === '[[255,107,94],[255,157,77],[255,214,106],[107,255,184],[61,255,122]]'
+                && rd('campaign_book.gd').indexOf('const STAND := ' + JSON.stringify(mjC.stand)) >= 0
+                && /var c: Array = B\.STAND\["cols"\]\[CampaignRules\.stand_band\(float\(st\.score\)\)\]/.test(fnGd(ctbT, '_stand_col'))
+                && /return mini\(n - 1, int\(floor\(score \* n\)\)\)/.test(fnGd(crT, 'stand_band')) && /B\.STAND\["words"\]\[stand_band\(score\)\]/.test(fnGd(crT, 'stand_of')),
+              'every close-up half as far, the page\'s and the table\'s alike': cutsOf(ctT20, '"') === '1.075/1.15625 1.11/1.2625 1.2/1.375'
+                && cutsOf(b3js, '') === cutsOf(ctT20, '"'),
+            });
+            ok(c20Off.length === 0,
+              '⭐ HIS 11-20 IN THE GAME  ("keep Good Position in green, put Fair in yellow, etc." · "the zoom-in effect is way too strong: scale it back by 50%"): each side\'s line on the roll in its word\'s color, the page\'s five; every close-up at the table half as far as it came, as on the site',
+              c20Off.length ? 'off: ' + c20Off.join(' · ') : cutsOf(ctT20, '"'));
           }
         }
 

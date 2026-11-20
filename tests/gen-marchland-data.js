@@ -180,7 +180,7 @@ function build() {
     /* 11-16, his #5: each general's own way of playing the map, leaning on the level */
     styles: { of: G.STYLE_OF, ways: G.STYLES, adaptBy: G.ADAPT_BY },
     /* 11-18, his: each side's line on the roll screen, POOR to STRONG, gray to green */
-    stand: { words: G.STAND_WORDS.slice(), from: G.STAND_FROM.slice(), to: G.STAND_TO.slice() },
+    stand: { words: G.STAND_WORDS.slice(), from: G.STAND_FROM.slice(), cols: G.STAND_COLS.map((c) => c.slice()) },
     /* 11-18, his: the six you pick from (who, the face's key, the word, the way); the first commands Red */
     foes: G.FOES.map((f) => ({ who: f.who, key: f.key, word: f.word, style: f.style })),
     /* 11-16, his #2: scenarios with stars (a missing own/ranks/walls is the campaign's own start) */
