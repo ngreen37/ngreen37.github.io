@@ -513,15 +513,10 @@ const howScreen = slice('<section class="screen" id="screen-how">', '</section>'
    the only thing these six checks are for: they are what makes a trim safe to make.
    ⭐ AND THE 7-BAND CLAUSE GREW RATHER THAN SHRANK, because the RULE changed the same day —
    a 7 now brings a pawn with the king, so the screen has to say so. */
-/* ⚑ RE-ANCHORED AGAIN, 11-19 (his: "For each item in the How It Works explanation, cut the words by 66-90%"): each item
-   kept a tenth to a third of its words, and these hold what is left of each rule */
-check('the how-it-works screen states BOTH castling bands',
-      /defending, <b>7<\/b> castles, <b>8<\/b> brings the rook/.test(howScreen.replace(/\s+/g, ' ')),
-      'the page and the rule agree, on both halves of it — re-checked when the die shrank');
-check('…and the attacker\'s vanguard',
-      /The position die<\/b> pushes attacking pawns/.test(howScreen.replace(/\s+/g, ' ')));
-check('…and that time follows the armies',
-      /Thirty seconds, split by material\.<\/b>/.test(howScreen.replace(/\s+/g, ' ')));
+/* ⚑ RE-ANCHORED AGAIN, 11-19 (his: "cut the words by 66-90%"), and CUT TO FIVE LINES 11-23 (his: "Pare down the How-To
+   significantly again - let the user figure most of it out themselves"). The castle bands, the vanguard, the clocks' share,
+   the chain, what marches in, the walls and the three places' own chess are no longer on this screen: each is its own
+   rule's check further down, and the roll screen and the map say them as they happen. */
 /* ⚠ \s+ BETWEEN THE WORDS, NOT A LITERAL SPACE. This copy is hand-wrapped HTML, so any
    trim that re-flows a line puts a newline and six spaces in the middle of a phrase — and
    three of these checks went red on the 2026-08-25 trim for exactly that, reporting missing
@@ -538,27 +533,24 @@ const flat = howScreen.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\s+/g, ' ');
     .map((x) => x.replace(/<[^>]+>/g, ' ').trim()).filter(Boolean);
   const words = (t) => t.replace(/[♜?]/g, ' ').split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length;
   const long = items.filter((t) => words(t) > 14);
-  check('⭐ his 11-19: "Way Less is Way More" — the how-it-works screen keeps every item to a line',
-        items.length >= 20 && long.length === 0 && items.reduce((n, t) => n + words(t), 0) <= 200,
+  check('⭐ his 11-23: "let the user figure most of it out themselves" — how it works is five lines: the goal, the round, the dice and the board, the clock, fog',
+        items.length === 5 && long.length === 0 && items.reduce((n, t) => n + words(t), 0) <= 60 &&
+        /^1\. Take every holding\./.test(items[0]) && /attack up to three times/.test(items[1]) && /Dice buy both armies;\s+a game of chess decides each battle/.test(items[2]),
         long.join(' | ') || items.length + ' items, ' + items.reduce((n, t) => n + words(t), 0) + ' words');
 }
 /* ⛑ "ranks" → "troops" ON SCREEN, 2026-08-25. The identifier is untouched, which is why
    every check LABEL in this file still says ranks and only the copy regexes moved. */
-check('…and it explains that troops are dice',
-      /A die per two troops;<\/b> best counts\./.test(flat));
 check('…and the word "rank" is gone from the player-facing screen',
       !/\brank(s)?\b/i.test(flat),
       'a rank is a ROW in chess, and pjcc-profile.js already owns RANKS for the credit ladder');
 check('…and that your own flag is your own loss',
-      /out of time loses/i.test(flat),
+      /Run out of time<\/b> and you lose the battle\./.test(flat),
       'the rule that replaced "either flag goes to the defender"');
-check('…and what a chain is',
-      /Two friendly neighbors:<\/b> \+1 die defending\./.test(flat));
 check('…and that you only get three attacks',
-      /three attacks a round/i.test(flat), 'his 2026-08-25 rule, stated on the screen');
-check('…and that what is left on the board marches in',
-      /Survivors march in,<\/b> by the share of points kept\./.test(flat),
-      'his 2026-11-10 pick, stated on the screen');
+      /attack up to three times/i.test(flat), 'his 2026-08-25 rule, stated on the screen');
+check('⭐ his 11-23 ("Make it more clear what Fog of War means"): what fog hides, on this screen and under its button on the home',
+      /<b>5\. Fog of War:<\/b> you see enemy troops only where they border your holdings\./.test(flat) &&
+      /\$\('fog-note'\)\.textContent = optFog \? 'Fog hides enemy troops beyond your borders\.' : 'No fog: every army is in view\.';/.test(slice('function paintOpts()', '$(\'opt-dog\').addEventListener')));
 
 /* ══ 8b. HIS VOCABULARY, 2026-08-25 ═════════════════════════════════════════════════
    "change Levy phase to deployment phase… change March phase to attack phase, and night
@@ -620,9 +612,6 @@ check('the roll screen says the extra die out loud, not in the fine print',
         w.map((id) => G.LAND[id].nm + ' (' + own[id] + ')').join(' · '));
   check('…and the two of them border each other', G.ADJ[w[0]].indexOf(w[1]) >= 0,
         'so the first siege either side can lay is on the other side\'s keep');
-  check('the how-it-works screen states both halves of the rule',
-        /Walls:<\/b> two wins a turn\. Held: \+1 troop\./.test(flat),
-        'two wins to take it, a troop a round to hold it');
   check('a walled holding is marked on the map, and says so when it cannot be seen in color',
         /if \(walled\(L\.id\)\) cls \+= ' walls'/.test(slice('function drawMap()', 'function tapLand')) &&
         /', walls down' : ', walled'/.test(slice('function drawMap()', 'function tapLand')) &&
@@ -665,20 +654,20 @@ check('the roll screen says the extra die out loud, not in the fine print',
    green. "A or B" needs two checks or one path can rot unwatched. You read the same
    position from two chairs in this game; both of them have to say the right thing. */
 const verdictFn = slice('function posVerdict(', 'function boardCells');
-/* the two chairs are the two halves of posVerdict's top-level if/else. Split the sliced
-   function rather than anchoring on a brace that occurs all over the file. */
-const chairSplit = verdictFn.indexOf('} else {');
-const attChair = verdictFn.slice(0, chairSplit);
-const defChair = verdictFn.slice(chairSplit);
-check('posVerdict really does have two chairs to check', chairSplit > 0 && defChair.length > 200,
-      'attacker half ' + attChair.length + ' chars, defender half ' + defChair.length);
-/* ⚑ 11-17: CASTLED! in either chair, and the castle's words read off dInfo (his "it says they get three pawns but they
-   don't have them pictured") — never a phrase typed for the die */
-check('ATTACKING, a castle is CASTLED! in their words, read off the board',
-      /if \(p\.dInfo\.castled\)\s*\{ word = 'CASTLED!'; clause = castleWords\(p\.dInfo, 'their'\)/.test(attChair),
+/* ⚑ 11-23 (his: "make the dice effects like Castle! Stay on the defender's side of the screen"): not two CHAIRS any more but
+   two SIDES, each under its own dice. Split the sliced function at the defender's side's own comment. */
+const sideSplit = verdictFn.indexOf("/* the defender's side");
+const attChair = verdictFn.slice(0, sideSplit);
+const defChair = verdictFn.slice(sideSplit);
+check('posVerdict really does have two sides to check', sideSplit > 0 && defChair.length > 200,
+      'attacker side ' + attChair.length + ' chars, defender side ' + defChair.length);
+/* ⚑ 11-17: CASTLED! large, read off dInfo (his "it says they get three pawns but they don't have them pictured"); 11-23: the
+   DEFENDER'S, on the defender's side, whoever sits there */
+check('⭐ his 11-23: a castle is CASTLED! on the defender\'s side, read off the board, and never on the attacker\'s',
+      /if \(p\.dInfo\.castled\)\s*d = \['CASTLED!', castleWords\(p\.dInfo, ''\), 'castled'\];/.test(defChair) && !/CASTLED/.test(attChair) &&
+      /\[\['v-pos-a', a, ''\], \['v-pos-d', d, maths/.test(verdictFn) &&
+      /<div><p class="vline" id="v-pos-a">&nbsp;<\/p><\/div>\s*<div><p class="vline" id="v-pos-d">&nbsp;<\/p><\/div>/.test(src),
       'dInfo.castled, not posCastles(dPos)');
-check('DEFENDING, a castle is CASTLED! in yours',
-      /if \(p\.dInfo\.castled\)\s*\{ word = 'CASTLED!'; clause = castleWords\(p\.dInfo, 'your'\)/.test(defChair));
 check('no castle phrase is typed for the die any more',
       !/three pawns'|no rook, no shield|TUCKS IN|FULL CASTLE/.test(verdictFn), 'the old words described the die, not the board');
 {
@@ -688,12 +677,13 @@ check('no castle phrase is typed for the die any more',
         cw.castleWords({ rook: true, shield: 3 }, 'their') === 'their king, rook and three pawns' &&
         cw.castleWords({ rook: false, shield: 1 }, 'your') === 'your king and one pawn' &&
         cw.castleWords({ rook: true, shield: 0 }, 'their') === 'their king and rook' &&
-        cw.castleWords({ rook: false, shield: 0 }, 'your') === 'your king alone',
+        cw.castleWords({ rook: false, shield: 0 }, 'your') === 'your king alone' &&
+        cw.castleWords({ rook: true, shield: 3 }, '') === 'king, rook and three pawns',
         cw.castleWords({ rook: false, shield: 1 }, 'your'));
   check('…and the fine print\'s faces follow posSteps', cw.firstFace(1) === 3 && cw.firstFace(2) === 5 && cw.firstFace(3) === 7);
 }
-check('CASTLED! is large and gold, and still under reduced motion',
-      /\.vline\.castled > b \{ font-size: 30px;[^}]*color: #ffd66a/.test(src) &&
+check('CASTLED! is large and gold (24px in its half of the row), and still under reduced motion',
+      /\.vline\.castled > b \{ font-size: 30px;[^}]*color: #ffd66a/.test(src) && /\.rollrow \.vline\.castled > b \{ font-size: 24px;/.test(src) &&
       /\.die\.roll, \.die\.kept, \.die\.kept::after, \.die\.castle::before, \.vline\.castled > b,/.test(src));
 
 /* ══ 9b. THE VERDICT REPORTS THE BOARD, NOT THE DIE ═════════════════════════════════
@@ -1230,7 +1220,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
         seaPawns === 0 && seaPlain === 0 && seaPieces > 200, 'pawns ' + seaPawns + ', attacking pieces ' + seaPieces);
   check('…and the roll screen says so, in both chairs, instead of mourning pawns that were never mustered',
         (slice('function posVerdict(', 'function boardCells(').match(/AT SEA/g) || []).length === 2 &&
-        /'no pawns at sea'/.test(slice('function posVerdict(', 'function boardCells(')));
+        /'pieces against pieces'/.test(slice('function posVerdict(', 'function boardCells(')));
 
   /* a take, and the drop it buys */
   let b = empty(); b[at('e1')] = 'K'; b[at('d1')] = 'R'; b[at('e8')] = 'k'; b[at('d4')] = 'n';
@@ -1296,9 +1286,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   };
   check('⭐ two machines on a rule\'s ground are decided at that rule\'s measured odds',
         ['drops', 'endgame', 'pieces'].every((r) => odds(r, 1) === true && odds(r, 0) === false && camp.CLASHES[r].p.length === 12));
-  const how = slice('<section class="screen" id="screen-how">', '</section>');
-  check('…and the page says so: the how-to, the roll screen\'s chip, the map\'s tag and the battle\'s first line',
-        /<b>Own chess:<\/b> the Flats, first queen wins; Shogi Island, drops; Sea-Board, no pawns\./.test(how.replace(/\s+/g, ' ')) &&
+  check('…and the page says so as it happens: the roll screen\'s chip, the map\'s tag and the battle\'s first line',
         /RULE_SAY\[PEND\.rule\]\.chip/.test(slice('function beginBattle(', 'function sandThrow(')) &&
         /<span class="rtag">/.test(slice('function drawMap(', 'function tapLand(')) && /RULE_SAY\[B\.rule\]\.say/.test(slice('function startBattle(', 'function loneKing(')));
 }
@@ -1398,8 +1386,7 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
   const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8');
   check('…said where his way shows: the turn line when he digs in, the declare when he comes for you',
     /k: plan\.dug && hasLine\('dig', generalOf\(side\)\.who\) \? 'dig' : 'turn'/.test(page) &&
-    /s\.how && hasLine\(s\.how, generalOf\(who\)\.who\) \? s\.how : 'declare'/.test(page) &&
-    /<b>Each general<\/b> has a style and a pace\./.test(page));
+    /s\.how && hasLine\(s\.how, generalOf\(who\)\.who\) \? s\.how : 'declare'/.test(page));
 }
 
 /* ══ 21. SCENARIOS WITH STARS (his 11-16, #2) ══ set pieces, the same for everyone, a checklist read at the end */
@@ -1651,8 +1638,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     /el\.style\.color = 'rgb\(' \+ STAND_FROM\.join\(', '\) \+ '\)';\s*\n\s*void el\.offsetWidth;\s*\n\s*el\.style\.color = standColor\(st\.score\);/.test(page),
     cols.join(' | '));
   check('…the board is up from the first die, and every verdict is written at the start, unseen, so nothing above the board moves it',
-    /matVerdict\(\); posVerdict\(true\);\s*\n\s*\$\('v-mat'\)\.classList\.add\('pending'\); \$\('v-pos'\)\.classList\.add\('pending'\);/.test(page) &&
-    /reveal\('v-mat'\);/.test(page) && /reveal\('v-pos'\);/.test(page) && /\.vline\.pending \{ visibility: hidden; \}/.test(page) &&
+    /matVerdict\(\); posVerdict\(true\);\s*\n\s*\['v-mat', 'v-pos-a', 'v-pos-d'\]\.forEach\(function \(id\) \{ \$\(id\)\.classList\.add\('pending'\); \}\);/.test(page) &&
+    /reveal\('v-mat'\);/.test(page) && /reveal\('v-pos-a'\);/.test(page) && /reveal\('v-pos-d'\);/.test(page) && /\.vline\.pending \{ visibility: hidden; \}/.test(page) &&
     /\.dice \{ display: flex; gap: 5px; min-height: 44px;/.test(page));
 }
 

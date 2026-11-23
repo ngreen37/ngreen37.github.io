@@ -89,7 +89,7 @@ function serve() {
 
     /* ── the arithmetic line follows the die ── */
     const maths = await E(() => { __mc.PEND = { playerAttacks: false, dArmy: ['r'], aMoved: 0, aPos: 3, dPos: 8, dInfo: { chain: 0 } };
-      __mc.posVerdict(); return document.querySelector('#v-pos .maths').textContent; });
+      __mc.posVerdict(); return document.querySelector('#v-pos-d .maths').textContent; });
     ok(/3, 5 and 7 send one, two and three pawns up front; 7\+ castles behind a pawn, 8 brings the rook and three/.test(maths),
       'the "numbers" line states the d8 thresholds  [' + maths.split('—')[1] + ']');
 
@@ -604,15 +604,17 @@ function serve() {
       await new Promise((r) => setTimeout(r, 900));
       $('screen-roll').scrollTop = 1e6;
       await new Promise((r) => setTimeout(r, 60));
-      const t = $('ptally').getBoundingClientRect(), b = $('tobattle').getBoundingClientRect(), w = $('v-pos').querySelector('b');
+      const t = $('ptally').getBoundingClientRect(), b = $('tobattle').getBoundingClientRect(), w = $('v-pos-d').querySelector('b');
+      const wb = w.getBoundingClientRect(), dd = $('def-pos').getBoundingClientRect(), ad = $('att-pos').getBoundingClientRect();
       const out = { word: w.textContent, size: parseFloat(getComputedStyle(w).fontSize), color: getComputedStyle(w).color,
+        side: wb.left >= ad.right && wb.right <= dd.right + 1 && wb.left >= dd.left - 1, aword: $('v-pos-a').querySelector('b').textContent,
         lines: Math.round(t.height / 14), bottom: Math.round(t.bottom), button: Math.round(b.top), tally: $('ptally').textContent };
       m.G.busy = false; m.show('screen-map');
       return out;
     });
     await page.setViewport({ width: 460, height: 760 });
-    ok(fit.word === 'CASTLED!' && fit.size >= 28 && fit.color === 'rgb(255, 214, 106)',
-      'a castle lights CASTLED! large and gold  [' + fit.size + 'px ' + fit.color + ']');
+    ok(fit.word === 'CASTLED!' && fit.size >= 22 && fit.color === 'rgb(255, 214, 106)' && fit.side && /^PAWNS UP 3$/.test(fit.aword),
+      '⭐ his 11-23: a castle lights CASTLED! large and gold on the defender\'s side, under the defender\'s dice; the attacker\'s pawns under its own  [' + fit.size + 'px ' + fit.color + ' · ' + fit.aword + ']');
     ok(fit.lines === 1 && fit.bottom <= fit.button && /time \d+s to \d+s/.test(fit.tally),
       '…and on a 390×844 phone the tally with its clocks is one line and scrolls clear of the button, on the longest clause  [' + fit.lines + ' line, ends ' + fit.bottom + ' · button ' + fit.button + ' · ' + fit.tally + ']');
 
@@ -662,7 +664,7 @@ function serve() {
         const men = [...document.querySelectorAll('#pmen .pc:not(.leave)')];
         return { top: Math.round($('pboard').getBoundingClientRect().top), n: men.length,
           att: men.filter((e) => e.classList.contains(aw ? 'w' : 'b')).length, def: men.filter((e) => e.classList.contains(aw ? 'b' : 'w')).length,
-          astand: $('att-stand').textContent, dstand: $('def-stand').textContent, castled: !$('v-pos').classList.contains('pending'),
+          astand: $('att-stand').textContent, dstand: $('def-stand').textContent, castled: !$('v-pos-d').classList.contains('pending'),
           acol: getComputedStyle($('att-stand')).color };
       };
       out.at.push(look());

@@ -7717,7 +7717,7 @@ const server = http.createServer((req, res) => {
                && /_pose\(aim, orbit \* a, _dist \/ lerpf\(1\.0, push, a\)\)/.test(b3F('cam_cut'))
                /* ⚠ a capture's close-up halved (his 11-11, "too intense"), and every close-up halved again (his 11-20): the flat
                   board's and the 3D camera's (the 11-20 block holds all three) */
-               && /"capture": \{ "secs": 0\.40, "zoom": 1\.075, "push": 1\.15625,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
+               && /"capture": \{ "secs": 0\.40, "zoom": 1\.0375, "push": 1\.078125,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
                /* …and a dog's walk-in 25% slower (his 11-11): a ply's slide and its pause, 0.48 → 0.60 */
                && /const WALK_SECS := 0\.44\n/.test(ctT) && /const SLIDE := 0\.16 /.test(ctT)
                && /minf\(_ray_post\(o, d, world\(v\), 0\.33 \* SIZE, h \* 0\.55\), _ray_post\(o, d, world\(v\), 0\.2 \* SIZE, h\)\)/.test(b3F('square_at'))
@@ -8337,7 +8337,7 @@ const server = http.createServer((req, res) => {
                 && /var rule := rule_at\(to\)/.test(fnGd(crT, 'muster_battle')) && /var a_caps := caps_on\(rule, caps_for\(/.test(fnGd(crT, 'muster_battle'))
                 && /if rule == "pieces":\s*\n\t\tcaps\["p"\] = 0/.test(fnGd(crT, 'caps_on'))
                 && /a_bud = maxi\(1, a_bud - int\(B\.DR_EDGE\)\)/.test(fnGd(crT, 'muster_battle')) && /a_bud = maxi\(1, a_bud - int\(B\.PC_EDGE\)\)/.test(fnGd(crT, 'muster_battle'))
-                && /"AT SEA  ·  no pawns to push: pieces against pieces"/.test(fnGd(ctbT, '_pos_verdict'))
+                && /"AT SEA  ·  pieces against pieces"/.test(fnGd(ctbT, '_pos_verdict'))
                 && /var T: Dictionary = B\.CLASHES\.get\(str\(P\.rule\), B\.CLASH\)/.test(fnGd(crT, 'clash'))
                 && /CampaignDrops\.make\(S, m\)/.test(fnGd(caiT, 'negamax')) && /CampaignDrops\.drops_of\(S, true\)/.test(fnGd(caiT, 'ordered'))
                 && ['rules', 'rplay', 'rengine'].every((r) => coRows.indexOf('rows.' + r + '.push') >= 0),
@@ -8457,17 +8457,18 @@ const server = http.createServer((req, res) => {
                 && /clear_file\(b, side, g_sq\)/.test(fnGd(crT, 'apply_defender_pos')) && !/push_pawns/.test(crT) && !/flats/.test(fnGd(ctbT, '_pos_verdict'))
                 && /clocks: P\.clocks/.test(coRows) && /"clocks": P\.clocks \}/.test(fs.readFileSync(path.join(GD, 'tests/campaign_rules_test.gd'), 'utf8'))
                 && /rows\.pos\.push\(/.test(coRows),
-              'the words are the board\'s, CASTLED! large and gold': /if bool\(p\.d_info\.castled\):\s*\n\t+return CASTLED \+ SEP \+ _castle_words\(p\.d_info, "their"\)/.test(fnGd(ctbT, '_pos_verdict'))
-                && /return CASTLED \+ SEP \+ _castle_words\(p\.d_info, "your"\)/.test(fnGd(ctbT, '_pos_verdict'))
+              'the words are the board\'s, CASTLED! large and gold, the defender\'s (his 11-23)': /if bool\(p\.d_info\.castled\):\s*\n\t+return CASTLED \+ SEP \+ _castle_words\(p\.d_info, ""\)/.test(fnGd(ctbT, '_pos_verdict'))
+                && /_castled_at = Vector2\(dx \+ half \* 0\.5, y \+ _castled_px \* 0\.65\)/.test(fnGd(ctbT, '_roll_layout'))
                 && !/three pawns"|TUCKS IN|FULL CASTLE/.test(fnGd(ctbT, '_pos_verdict'))
                 && /_art\.draw_string\(bf, at, CASTLED, HORIZONTAL_ALIGNMENT_LEFT, -1, bs, GOLD/.test(fnGd(ctbT, '_paint_roll'))
-                && /var bs := int\(CASTLED_PX \* _k \* sc\)/.test(fnGd(ctbT, '_paint_roll')) && /^const CASTLED_PX := 30\.0/m.test(ctbT),
+                && /var bs := int\(_castled_px \* sc\)/.test(fnGd(ctbT, '_paint_roll')) && /^const CASTLED_PX := 24\.0/m.test(ctbT)
+                && /\.rollrow \.vline\.castled > b \{ font-size: 24px;/.test(mlT),
               'the dice spin on the roll screen': /_art\.draw_set_transform\(rect\.get_center\(\)[^\n]*turn \* TAU \* 2\.0/.test(fnGd(ctbT, '_paint_roll'))
                 && /^const ROLL_BEAT := 0\.64/m.test(ctbT) && !/randi\(\)/.test(fnGd(ctbT, '_paint_roll')),
               'the battle runs on the clocks the armies bought': /"clocks": p\.clocks,/.test(fnGd(ctbT, '_start_battle'))
                 && /var att_s := float\(ck\.get\("att", CB\.CLOCK_ATT\)\)/.test(fnGd(cbT, '_start'))
                 && /time %ds to %ds/.test(fnGd(ctbT, '_roll_layout')),
-              'played': /^[^#\n]*\bcampcastled\b/m.test(suiteT) && /campremuster:castled;[^"]*campuntil:roll:5:900;campis:castled:true;[^"]*camphas:pos:CASTLED!;camphas:tally:time ;camppress:tobattle;[^"]*battleis:bought:true/.test(bcCase('campcastled')),
+              'played': /^[^#\n]*\bcampcastled\b/m.test(suiteT) && /campremuster:castled;[^"]*campuntil:roll:5:900;campis:castled:true;[^"]*camphas:pos:\| CASTLED!;campis:posside:def;camphas:tally:time ;camppress:tobattle;[^"]*battleis:bought:true/.test(bcCase('campcastled')),
             });
             ok(diceOff.length === 0,
               '⭐ HIS 11-17 IN THE GAME  ("the dice don\'t seem important enough"): a 7 or better always castles and an 8 brings the rook and three pawns, the attacker\'s pawns start halfway up with a vanguard the die gives, thirty seconds shared by the armies, the dice spinning on the roll screen and CASTLED! lit in large gold letters',
@@ -8579,7 +8580,8 @@ const server = http.createServer((req, res) => {
                 && /if _roll == 3:\s*\n\t+_rb_to\(2\)\s*\n\t+_set_stand\(true, "pos", _rb\[2\]\)/.test(ctbT)
                 && /_rb_to\(3, not natural\)/.test(fnGd(ctbT, '_finish_roll')) && /_rb = CampaignRules\.roll_boards\(pend\)/.test(fnGd(ctbT, '_begin_battle')),
               'the board never moves: every line keeps its room from the first die': /\(_labels\["vmat"\] as Label\)\.visible = _roll >= 2/.test(fnGd(ctbT, '_roll_layout'))
-                && /\(_labels\["vpos"\] as Label\)\.visible = _roll >= 4/.test(fnGd(ctbT, '_roll_layout')) && /y \+= ODDS_H \* k \+ 8\.0 \* k/.test(fnGd(ctbT, '_roll_layout'))
+                && /\(_labels\["vposa"\] as Label\)\.visible = _roll >= 3/.test(fnGd(ctbT, '_roll_layout'))
+                && /\(_labels\["vposd"\] as Label\)\.visible = _roll >= 4/.test(fnGd(ctbT, '_roll_layout')) && /y \+= ODDS_H \* k \+ 8\.0 \* k/.test(fnGd(ctbT, '_roll_layout'))
                 && /\.vline\.pending \{ visibility: hidden; \}/.test(mlT) && /\.odds\.on \{ visibility: visible; \}/.test(mlT),
               'its motion, the page\'s': /^const RB_SLIDE := 0\.38/m.test(ctbT) && /#pmen \.pc \{ transition-duration: \.38s; \}/.test(mlT)
                 && /^const RB_DROP := 0\.3\b/m.test(ctbT) && /animation: pdrop \.3s/.test(mlT) && /^const RB_STAGGER := 0\.04/m.test(ctbT) && /\(n \* 40\) \+ 'ms'/.test(mlT)
@@ -8658,7 +8660,9 @@ const server = http.createServer((req, res) => {
                 && /"rgame":\s*\n\t+GameState\.campaign\.drop\(_foes_mode\(\)\)\s*\n\t+"rdaily":\s*\n\t+GameState\.campaign\.drop\("daily"\)\s*\n\t+"rfile":\s*\n\t+GameState\.campaign\.file = \{\}/.test(fnGd(ctbT, '_reset'))
                 && /return level == "medium" and GameState\.campaign\.fog and GameState\.campaign\.cards and GameState\.campaign\.dog == "" and/.test(fnGd(ctbT, '_opts_usual'))
                 && /\$\('reset-game'\)\.hidden = !o;/.test(mlT) && /\$\('reset-daily'\)\.hidden = !\(d && d\.day === today\);/.test(mlT) && /\$\('opts-row'\)\.hidden = optsUsual\(\);/.test(mlT),
-              'the How, cut, and the game\'s is the page\'s': /<b>Replay<\/b> every war\./.test(mlT) && /Replay every war\./.test(bookT3) && !/The roll, piece by piece/.test(bookT3),
+              'the How, cut to five lines (his 11-23), and the game\'s is the page\'s': /<b>5\. Fog of War:<\/b> you see enemy troops only where they border your holdings\./.test(mlT)
+                && /const HOW := "1\. Take every holding\.\\n2\. Your round: deploy, attack up to three times, fortify\.\\n3\. Dice buy both armies; a game of chess decides each battle\.\\n4\. Run out of time and you lose the battle\.\\n5\. Fog of War: you see enemy troops only where they border your holdings\."/.test(bookT3)
+                && /"fognote", "Fog hides enemy troops beyond your borders\." if GameState\.campaign\.fog else "No fog: every army is in view\."/.test(fnGd(ctbT, '_home_layout')),
               'played': ['campresign', 'campresets', 'campresetsphone'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
                 && /camppress:resign;campis:btn:resign:Sure\?;campis:screen:map;campis:saved:solo:true;[^"]*camppress:resign;campis:screen:result;campis:label:verdict:THE CAMPAIGN IS LOST;campis:label:rsay:You resigned in round 1\.;campis:saved:solo:false;campis:file:lost:1;/.test(bcCase('campresign'))
                 && /campset:phase:theirs;campis:btn:resign:;/.test(bcCase('campresign')) && /key:r:6;campis:btn:resign:Sure\?;key:r:6;campis:screen:result;/.test(bcCase('campresign'))
@@ -8682,12 +8686,25 @@ const server = http.createServer((req, res) => {
                 && rd('campaign_book.gd').indexOf('const STAND := ' + JSON.stringify(mjC.stand)) >= 0
                 && /var c: Array = B\.STAND\["cols"\]\[CampaignRules\.stand_band\(float\(st\.score\)\)\]/.test(fnGd(ctbT, '_stand_col'))
                 && /return mini\(n - 1, int\(floor\(score \* n\)\)\)/.test(fnGd(crT, 'stand_band')) && /B\.STAND\["words"\]\[stand_band\(score\)\]/.test(fnGd(crT, 'stand_of')),
-              'every close-up half as far, the page\'s and the table\'s alike': cutsOf(ctT20, '"') === '1.075/1.15625 1.11/1.2625 1.2/1.375'
+              'every close-up half as far, and half again (11-23), the page\'s and the table\'s alike': cutsOf(ctT20, '"') === '1.0375/1.078125 1.055/1.13125 1.1/1.1875'
                 && cutsOf(b3js, '') === cutsOf(ctT20, '"'),
             });
             ok(c20Off.length === 0,
               '⭐ HIS 11-20 IN THE GAME  ("keep Good Position in green, put Fair in yellow, etc." · "the zoom-in effect is way too strong: scale it back by 50%"): each side\'s line on the roll in its word\'s color, the page\'s five; every close-up at the table half as far as it came, as on the site',
               c20Off.length ? 'off: ' + c20Off.join(' · ') : cutsOf(ctT20, '"'));
+            /* ⭐ HIS 11-23: THE MAP GETS ITS HEIGHT, AND EACH SIDE'S DICE KEEP THEIR OWN WORDS */
+            const map23Off = offOf({
+              'a wide window gives the map its height, the words and buttons in a column beside it': /var wide := s\.x > s\.y \* 1\.2/.test(fnGd(ctbT, '_map_layout'))
+                && /_box = Rect2\(x0, \(s\.y - mw \* aspect\) \* 0\.5, mw, mw \* aspect\)/.test(fnGd(ctbT, '_map_layout'))
+                && /_btn\("endturn", label, Vector2\(tx, s\.y - m - bh\)/.test(fnGd(ctbT, '_map_layout')) && /clampf\(_box\.size\.x \* \(0\.05 if R\.land\.size\(\) > 10 else 0\.06\), 12\.0, 30\.0 \* _k\)/.test(fnGd(ctbT, '_node_r')),
+              'each side\'s position under its own dice, the page\'s': /func _pos_verdict\(att: bool\) -> String:/.test(ctbT) && /var dx := x \+ half \+ 12\.0 \* k/.test(fnGd(ctbT, '_roll_layout'))
+                && /\[\['v-pos-a', a, ''\], \['v-pos-d', d, maths/.test(mlT),
+              'played': /^[^#\n]*\bcampmapwide\b/m.test(suiteT) && /campopen;camppress:go;wait:10;campis:maptall:9;[^\n]*campis:maptall:9;shot:camp_map_wide_four/.test(bcCase('campmapwide'))
+                && /camphas:pos:\| CASTLED!;campis:posside:def;/.test(bcCase('campcastled')),
+            });
+            ok(map23Off.length === 0,
+              '⭐ HIS 11-23 IN THE GAME  ("Space out the territories clearer" · "make the dice effects like Castle! Stay on the defender\'s side of the screen"): at Maxwell\'s table a wide window gives the map nine tenths of its height with the words beside it, its holdings no bigger, so further apart; each side\'s position under its own dice, CASTLED! over the defender\'s',
+              map23Off.length ? 'off: ' + map23Off.join(' · ') : 'the map tall, the castle on its side');
           }
         }
 

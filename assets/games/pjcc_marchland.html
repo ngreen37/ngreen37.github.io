@@ -430,6 +430,8 @@
     animation: castled .7s cubic-bezier(.2,1.4,.4,1) both, castglow 1.6s ease-in-out .7s 2; }
   /* the material line above still says its "numbers"; this one is tapped the same way, and the phone needs the line */
   .vline.castled .tap { display: none; }
+  /* …in half the width now, on the defender's side (his 11-23): sized to fit a 320px phone's half */
+  .rollrow .vline.castled > b { font-size: 24px; letter-spacing: 2px; }
   @keyframes castled { 0% { transform: scale(2.4); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
   @keyframes castglow { 50% { text-shadow: 0 0 30px rgba(255,214,106,1), 0 0 6px #fff3c4; } }
   /* THE ARITHMETIC IS ONE TAP AWAY, not gone and not always on. Briefer was the request; the
@@ -705,6 +707,7 @@
       <button id="opt-fog" class="on" aria-pressed="true">Fog of War · On</button>
       <button id="opt-cards" class="on" aria-pressed="true">Event Cards · On</button>
     </div>
+    <p class="lvl-note" id="fog-note"></p>
     <!-- ⭐ NUMBER OF OPPONENTS (his 11-18: "put number of players on a second screen and call it number of opponents"):
          who you face is picked on its own screen and kept; Continue and Begin below are for that many -->
     <div class="levels opts">
@@ -742,36 +745,15 @@
 
   <!-- ══ HOW ════════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-how">
-    <!-- ⚑ HIS 11-19: "For each item in the How It Works explanation, cut the words by 66-90%. Way Less is Way More."
-         Every item kept 10-34% of its words. marchland.check pins the rules that are left. -->
+    <!-- ⚑ HIS 11-23: "Pare down the How-To significantly again - let the user figure most of it out themselves." Five lines:
+         the goal, the round, what the dice and the board each decide, the clock, and what fog hides. -->
     <h2>How it works</h2>
     <p class="sub" style="text-align:left;line-height:1.7">
-      <b>1. Your round:</b> deploy, attack, fortify.<br>
-      <b>2. Three attacks a round.</b><br>
-      <b>3. A die per two troops;</b> best counts.<br>
-      <b>4. Two friendly neighbors:</b> +1 die defending.<br>
-      <b>5. Material die</b> buys your army at chess value.<br>
-      <b>6. The position die</b> pushes attacking pawns; defending, <b>7</b> castles, <b>8</b> brings the rook.<br>
-      <b>7. Thirty seconds, split by material.</b> Mate wins; out of time loses; draws hold.<br>
-      <b>8. Survivors march in,</b> by the share of points kept.<br>
-      <b>9. ♜ Walls:</b> two wins a turn. Held: +1 troop.<br>
-      <b>10. Take every holding.</b><br>
-      <b>11. Fog:</b> scouting a <b>?</b> costs an attack.<br>
-      <b>12. Event cards</b> bend rules.<br>
-      <br>
-      <b>Hard:</b> Maxwell counters you.<br>
-      <b>Dogs:</b> Argus scouts; Milo saves a troop.<br>
-      <b>Coach</b> on Easy.<br>
-      <b>Odds bar</b> after each roll.<br>
-      <b>Roll lines:</b> greener is better.<br>
-      <b>Daily:</b> everyone's same start and dice, three rounds.<br>
-      <b>Opponents:</b> one to three; a war ends at ten holdings.<br>
-      <b>Each general</b> has a style and a pace.<br>
-      <b>Your Assembly</b> gives orders, one a round.<br>
-      <b>Own chess:</b> the Flats, first queen wins; Shogi Island, drops; Sea-Board, no pawns.<br>
-      <b>Sea lane:</b> one strike a round.<br>
-      <b>Scenarios:</b> set pieces, one to three stars.<br>
-      <b>Replay</b> every war.
+      <b>1. Take every holding.</b><br>
+      <b>2. Your round:</b> deploy, attack up to three times, fortify.<br>
+      <b>3. Dice buy both armies;</b> a game of chess decides each battle.<br>
+      <b>4. Run out of time</b> and you lose the battle.<br>
+      <b>5. Fog of War:</b> you see enemy troops only where they border your holdings.
     </p>
     <button class="btn ghost" id="back">Back</button>
   </section>
@@ -867,7 +849,12 @@
       <div><div class="dice" id="att-pos"></div></div>
       <div><div class="dice" id="def-pos"></div></div>
     </div>
-    <p class="vline" id="v-pos">&nbsp;</p>
+    <!-- ⭐ EACH SIDE'S POSITION UNDER ITS OWN DICE (his 11-23: "make the dice effects like Castle! Stay on the defender's side of
+         the screen so it reads better"): the attacker's pawns on the left, the defender's castle or chain on the right -->
+    <div class="rollrow">
+      <div><p class="vline" id="v-pos-a">&nbsp;</p></div>
+      <div><p class="vline" id="v-pos-d">&nbsp;</p></div>
+    </div>
     <!-- ⭐ THE ODDS (his 11-18: "There should be a chance-to-succeed bar, like an eval bar, after the dice is rolled so it is
          more clear who has the advantage"): how battles like this went, the attacker's share left, the defender's right -->
     <div class="odds" id="odds">
@@ -2648,7 +2635,7 @@ function beginBattle(from, to, playerAttacks) {
   ['att-mat','att-pos','def-mat','def-pos'].forEach(function (k) { $(k).innerHTML = ''; });
   /* ⚠ WRITTEN NOW, UNSEEN (.pending), so each takes its room from the first die: reveal() shows it as its die lands */
   matVerdict(); posVerdict(true);
-  $('v-mat').classList.add('pending'); $('v-pos').classList.add('pending');
+  ['v-mat', 'v-pos-a', 'v-pos-d'].forEach(function (id) { $(id).classList.add('pending'); });
   /* ⭐ THE BOARD IS UP FROM THE FIRST DIE (his 11-18), empty: each side's pieces go on as its dice land */
   boardCells($('psqs')); pvClear();
   $('ptally').innerHTML = '&nbsp;'; $('coach').hidden = true;
@@ -2750,9 +2737,10 @@ function runRoll() {
       pvTo(steps[1]); paintStand(false, 'mat', steps[1]);
       rollTimers.push(setTimeout(function () {
         rollStep('att-pos', p.aPosPool, false, true, function () {
+          reveal('v-pos-a');
           pvTo(steps[2]); paintStand(true, 'pos', steps[2]);
           rollStep('def-pos', p.dPosPool, true, true, function () {
-            reveal('v-pos');
+            reveal('v-pos-d');
             pvTo(steps[3]); paintStand(false, 'pos', steps[3]);
             /* ⚠ the castle can clear a file: the attacker's numbers follow the board, its color stays where it settled */
             var ai = $('att-stand').querySelector('i');
@@ -2905,42 +2893,40 @@ function matVerdict() {
 var NUM = ['no', 'one', 'two', 'three'];
 function count(n, what) { return (NUM[n] || n) + ' ' + what + (n === 1 ? '' : 's'); }
 function castleWords(d, whose) {
-  var parts = [whose + ' king'];
+  var parts = [whose ? whose + ' king' : 'king'];
   if (d.rook) parts.push('rook');
   if (d.shield) parts.push(count(d.shield, 'pawn'));
   return parts.length === 1 ? parts[0] + ' alone' : parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
 }
 /* the first face that sends k pawns up front, so the fine print follows posSteps */
 function firstFace(k) { for (var d = 1; d <= FACES; d++) if (posSteps(d) >= k) return d; return FACES; }
+/* ⭐ EACH SIDE'S POSITION UNDER ITS OWN DICE (his 11-23: "make the dice effects like Castle! Stay on the defender's side of the
+   screen so it reads better"): what the attacker's position die did, on the left; what the defender's did, on the right,
+   CASTLED! among them. ⚑ THE WORDS ARE THE BOARD'S (his 11-17): every count is what the muster built, never the die. */
 function posVerdict(quiet) {
-  var p = PEND, word, clause, cls;
-  var sea = p.rule === 'pieces', van = p.aMoved;
-  var up = van ? count(van, 'pawn') + ' up front' + (posTop(p.aPos) ? ', one nearly through' : '') : '';
-  if (p.playerAttacks) {
-    var yours = up ? 'yours: ' + up : sea ? 'no pawns at sea' : 'no pawn of yours up front';
-    if (p.dInfo.castled)          { word = 'CASTLED!'; clause = castleWords(p.dInfo, 'their') + ' · ' + yours; cls = 'castled'; }
-    else if (van && posTop(p.aPos)) { word = 'PAWNS UP ' + van; clause = 'space, and one is nearly through'; cls = 'hot'; }
-    else if (van >= 2)            { word = 'PAWNS UP ' + van; clause = 'you have room to work'; cls = 'good'; }
-    else if (van === 1)           { word = 'ONE PAWN UP'; clause = 'not much, but it is something'; cls = 'flat'; }
-    else if (sea)                 { word = 'AT SEA'; clause = 'no pawns to push: pieces against pieces'; cls = 'flat'; }
-    else                          { word = 'NOTHING GAINED'; clause = 'no pawn of yours up front'; cls = 'bad'; }
-  } else {
-    var theirs = up ? ' · theirs: ' + up : '';
-    if (p.dInfo.castled)           { word = 'CASTLED!'; clause = castleWords(p.dInfo, 'your') + theirs; cls = 'castled'; }
-    else if (sea)                  { word = 'AT SEA'; clause = 'no pawns to dig in: pieces against pieces'; cls = 'flat'; }
-    /* ⚠ SAME RULE ON THIS CHAIR: `dInfo.chain` is how many pawns really dug in, never posSteps() again */
-    else if (p.dInfo.chain)        { word = 'A CHAIN HOLDS'; clause = count(p.dInfo.chain, 'pawn') + ' dug in and guarded' + theirs; cls = 'flat'; }
-    else if (posSteps(p.dPos))     { word = 'NO PAWNS TO DIG IN'; clause = 'the muster bought pieces, not a shield' + theirs; cls = 'bad'; }
-    else                           { word = 'FLAT LINE'; clause = 'nobody dug in — your king is loose' + theirs; cls = 'bad'; }
-  }
+  var p = PEND, sea = p.rule === 'pieces', van = p.aMoved, a, d;
+  /* the attacker's side: the pawns that really stand up front (aMoved) */
+  if (van && posTop(p.aPos)) a = ['PAWNS UP ' + van, 'one is nearly through', 'hot'];
+  else if (van >= 2)         a = ['PAWNS UP ' + van, 'room to work', 'good'];
+  else if (van === 1)        a = ['ONE PAWN UP', 'not much, but something', 'flat'];
+  else if (sea)              a = ['AT SEA', 'pieces against pieces', 'flat'];
+  else                       a = ['NO PAWNS UP', 'nothing pushed up front', 'bad'];
+  /* the defender's side: the castle or the chain that really stands (dInfo; ⚠ dInfo.chain, never posSteps() again) */
+  if (p.dInfo.castled)       d = ['CASTLED!', castleWords(p.dInfo, ''), 'castled'];
+  else if (sea)              d = ['AT SEA', 'pieces against pieces', 'flat'];
+  else if (p.dInfo.chain)    d = ['A CHAIN HOLDS', count(p.dInfo.chain, 'pawn') + ' dug in', 'flat'];
+  else if (posSteps(p.dPos)) d = ['NO PAWNS TO DIG IN', 'pieces, not a shield', 'bad'];
+  else                       d = ['FLAT LINE', 'the king is loose', 'bad'];
   /* derived, never typed: this read "16+ … 18+" for three weeks after the die became a d8 */
   var maths = '<span class="maths">attacker <b>' + p.aPos + '</b> · defender <b>' + p.dPos + '</b>' +
     ' &mdash; ' + firstFace(1) + ', ' + firstFace(2) + ' and ' + firstFace(3) + ' send one, two and three pawns up front; ' +
     POS_CASTLE + '+ castles behind a pawn, ' + POS_TOP + (POS_TOP < FACES ? '+' : '') + ' brings the rook and three</span>';
-  var el = $('v-pos');
-  el.className = 'vline ' + cls;
-  el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
-  if (cls === 'castled' && !quiet) sfx('castle');
+  [['v-pos-a', a, ''], ['v-pos-d', d, maths + '<span class="tap">numbers</span>']].forEach(function (x) {
+    var el = $(x[0]);
+    el.className = 'vline ' + x[1][2];
+    el.innerHTML = '<b>' + x[1][0] + '</b><i>' + x[1][1] + '</i>' + x[2];
+  });
+  if (d[2] === 'castled' && !quiet) sfx('castle');
 }
 /* a verdict written unseen at the start of the roll, shown as its die lands: CASTLED! slams in then, and is heard then */
 function reveal(id) {
@@ -2948,7 +2934,7 @@ function reveal(id) {
   if (!el.classList.contains('pending')) return;
   el.classList.remove('pending');
   if (b) { b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; }
-  if (id === 'v-pos' && el.classList.contains('castled')) sfx('castle');
+  if (id === 'v-pos-d' && el.classList.contains('castled')) sfx('castle');
 }
 /* ── THE PREVIEW BOARD ─────────────────────────────────────────────────────────────
    The same 8x8 markup the battle uses, at a third the size — pieces scale off the board
@@ -4923,6 +4909,8 @@ function paintOpts() {
     b.classList.toggle('on', o[1]); b.setAttribute('aria-pressed', String(o[1]));
     b.textContent = o[2] + ' · ' + (o[1] ? 'On' : 'Off');
   });
+  /* ⭐ WHAT FOG DOES, SAID WHERE IT IS CHOSEN (his 11-23: "Make it more clear what Fog of War means") */
+  $('fog-note').textContent = optFog ? 'Fog hides enemy troops beyond your borders.' : 'No fog: every army is in view.';
   var d = dogOf(optDog);
   $('opt-dog').classList.toggle('on', !!d); $('opt-dog').setAttribute('aria-pressed', String(!!d));
   $('opt-dog').textContent = 'Dog · ' + (d ? d.name : 'None');
