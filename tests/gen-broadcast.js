@@ -75,12 +75,16 @@ function tag(pgn, t) {
 
 const POINTS = { '1-0': [1, 0], '0-1': [0, 1], '1/2-1/2': [0.5, 0.5] };
 
+/* ⚠ THE GAME'S NUMBER IS THE ROUND'S, BEFORE ANY BOARD: 2026's broadcast tags them "1.1", "2.1" (2024's "1", "2"), and read
+   as a number Game 7 was "7.1", so --game 7 found nothing (found in the 11-22 test run) */
+function gameNo(pgn) { return parseInt(tag(pgn, 'Round'), 10) || 0; }
+
 /* ⭐ THE SCORE COMES OFF THE GAMES THEMSELVES, never typed in: sum every finished game before
    this one, by player name. */
 function scoreBefore(games, n) {
   const s = {};
   games.forEach((g) => {
-    const r = parseFloat(tag(g, 'Round'));
+    const r = gameNo(g);
     const p = POINTS[tag(g, 'Result')];
     if (!p || !(r < n)) return;
     s[tag(g, 'White')] = (s[tag(g, 'White')] || 0) + p[0];
@@ -91,13 +95,13 @@ function scoreBefore(games, n) {
 
 function pick(games, n) {
   if (n) {
-    const g = games.find((x) => parseFloat(tag(x, 'Round')) === n);
+    const g = games.find((x) => gameNo(x) === n);
     if (!g) throw new Error('no game ' + n + ' in the broadcast yet');
     return g;
   }
   const done = games.filter((x) => POINTS[tag(x, 'Result')]);
   if (!done.length) throw new Error('no finished game in the broadcast yet');
-  return done.sort((a, b) => parseFloat(tag(a, 'Round')) - parseFloat(tag(b, 'Round')))[done.length - 1];
+  return done.sort((a, b) => gameNo(a) - gameNo(b))[done.length - 1];
 }
 
 function slug(s) {
@@ -106,7 +110,7 @@ function slug(s) {
 
 async function prepare(games, pgn, match, log) {
   const t0 = Date.now();
-  const n = parseFloat(tag(pgn, 'Round')) || 0;
+  const n = gameNo(pgn);
   let game = G.convert(pgn);
   if (!game.graded_by) {
     game = await G.gradeWithEngine(game, ENGINE_MS, (i, t) => { if (i % 20 === 0) log('    … ' + i + ' / ' + t); });
@@ -235,4 +239,4 @@ async function main() {
 
 /* ⚠ EXIT BY HAND: a Stockfish that graded a game keeps the process alive after the last line. */
 if (require.main === module) main().then(() => process.exit(0), (e) => { console.error('FAILED — ' + e.message); process.exit(1); });
-module.exports = { splitGames, scoreBefore, pick, tag, tourFrom, slug };
+module.exports = { splitGames, scoreBefore, pick, tag, tourFrom, slug, gameNo };

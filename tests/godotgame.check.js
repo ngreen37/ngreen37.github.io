@@ -142,6 +142,13 @@ ok(/game\.marks = by === 'broadcast evals'/.test(src),
 const b3 = W.scoreBefore(WC, 3);
 eq(b3['Gukesh D'] + '-' + b3['Ding, Liren'], '0.5-1.5', 'the score before Game 3 is summed from Games 1 and 2');
 eq(W.tag(W.pick(WC, null), 'Round'), '14', 'with no game named, the latest finished one');
+/* ⚠ 2026'S BROADCAST TAGS ITS ROUNDS "1.1", "2.1" (round.board): the same games, as that feed writes them */
+{
+  const WC26 = WC.map((g) => g.replace(/\[Round "(\d+)"\]/, '[Round "$1.1"]'));
+  const b26 = W.scoreBefore(WC26, 3);
+  eq([W.gameNo(WC26[0]), W.tag(W.pick(WC26, 7), 'Round'), W.tag(W.pick(WC26, null), 'Round'), b26['Gukesh D'] + '-' + b26['Ding, Liren']].join(' '),
+    '1 7.1 14.1 0.5-1.5', '⚠ a round tagged "7.1" is Game 7: --game 7 finds it, the latest is 14, the score before Game 3 is the same');
+}
 const bsrc = fs.readFileSync(path.join(__dirname, 'gen-broadcast.js'), 'utf8');
 ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\n]*game\.event/.test(bsrc),
   '⚠ the card never prints the PGN\'s Event, which carries the sponsor\'s name');
