@@ -2,7 +2,7 @@
 layout: post
 title: Ep. 30 - It's still Dame Time?
 date: 2026-11-16
-tags: []
+tags: [Basketball, Checker Town, Progress]
 ---
 ### Listening to: Pennywise - Alien
 <iframe src="https://open.spotify.com/embed/track/3Xd3IXnA2rmyVawJL9tPVm" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
