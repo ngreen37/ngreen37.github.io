@@ -148,6 +148,11 @@ eq(W.tag(W.pick(WC, null), 'Round'), '14', 'with no game named, the latest finis
   const b26 = W.scoreBefore(WC26, 3);
   eq([W.gameNo(WC26[0]), W.tag(W.pick(WC26, 7), 'Round'), W.tag(W.pick(WC26, null), 'Round'), b26['Gukesh D'] + '-' + b26['Ding, Liren']].join(' '),
     '1 7.1 14.1 0.5-1.5', '⚠ a round tagged "7.1" is Game 7: --game 7 finds it, the latest is 14, the score before Game 3 is the same');
+  /* ⚠ …AND WRITES ITS TIME CONTROL FOR PEOPLE. 2024 Game 1 runs past move 40, so the bonus and the increment are both in it. */
+  const a = G.convert(WC[0].replace(/\[TimeControl "[^"]*"\]/, '[TimeControl "120\'/40m + 30\'/end, 30/move from move 41"]'));
+  const b = G.convert(WC[0]);
+  eq(a.time_control + ' ' + a.moves.map((m) => m.spent).join(','), b.time_control + ' ' + b.moves.map((m) => m.spent).join(','),
+    '⚠ 2026\'s "120\'/40m + 30\'/end, 30/move from move 41" is 2024\'s 40/7200:1800+30: clocks open at two hours, every move\'s time the same');
 }
 const bsrc = fs.readFileSync(path.join(__dirname, 'gen-broadcast.js'), 'utf8');
 ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\n]*game\.event/.test(bsrc),

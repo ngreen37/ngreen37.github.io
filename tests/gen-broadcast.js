@@ -12,8 +12,9 @@
        npm run wc -- --rehearse [--render]                         every game, timed
        npm run wc -- --pgn file.pgn                                offline: a saved PGN instead
 
-   Fetch → grade → the board's data/game.json → (with --render) Godot records the square and
-   the vertical cut, ffmpeg stitches them, and a voice file in the folder is laid under both.
+   Fetch → grade → the board's data/game.json → (with --render) Godot records the square, the
+   vertical (a YouTube Short) and the wide (16:9, a regular video) cut, ffmpeg stitches them, and
+   a voice file in the folder is laid under each.
    ══════════════════════════════════════════════════════════════════════════════════════ */
 'use strict';
 
@@ -146,7 +147,7 @@ function half(x) { return Math.floor(x) + (x % 1 ? '½' : ''); }
 function record(layout, dir, log) {
   const t0 = Date.now();
   fs.mkdirSync(dir, { recursive: true });
-  const r = spawnSync(GODOT, ['--path', BOARD, '--resolution', layout === 'vertical' ? '540x960' : '720x720',
+  const r = spawnSync(GODOT, ['--path', BOARD, '--resolution', { vertical: '540x960', wide: '960x540' }[layout] || '720x720',
     '--', '--capture', '--layout=' + layout, '--out=' + dir.replace(/\\/g, '/')],
     { encoding: 'utf8', timeout: 30 * 60 * 1000 });
   const said = (r.stdout || '') + (r.stderr || '');
@@ -188,7 +189,7 @@ async function one(games, pgn, match, o, log) {
   if (o.render) {
     const dir = path.join(o.out || VIDEOS, slug(game.white_short + '-vs-' + game.black_short + '-game-' + m.game));
     const voice = voiceIn(dir);
-    for (const layout of ['square', 'vertical']) {
+    for (const layout of ['square', 'vertical', 'wide']) {
       const r = record(layout, path.join(dir, layout), log);
       times[layout] = r.seconds;
       times[layout + '_mp4'] = stitch(path.join(dir, layout), path.join(dir, 'game-' + m.game + '-' + layout + '.mp4'), voice);

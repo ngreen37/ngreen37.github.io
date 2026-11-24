@@ -196,7 +196,7 @@ function convert(pgnText) {
   /* the position after a mate has no eval to report, and does not need one */
   const last = moves[moves.length - 1];
   if (last && last.mate && last.eval === null) last.eval = last.side === 'w' ? 1500 : -1500;
-  spentOf(moves, parsed.tags.TimeControl);
+  spentOf(moves, standardTC(parsed.tags.TimeControl));
   Object.defineProperty(moves, '_line', { value: { fens: fens, line: line }, enumerable: false });
 
   return finish({
@@ -220,9 +220,19 @@ function convert(pgnText) {
     endFEN: C.toFEN(state),
     white_short: shortName(parsed.tags.White || 'White'),
     black_short: shortName(parsed.tags.Black || 'Black'),
-    time_control: parsed.tags.TimeControl || '',
+    time_control: standardTC(parsed.tags.TimeControl),
     moves:  moves
   });
+}
+
+/* ⚠ 2026'S BROADCAST WRITES THE CONTROL FOR PEOPLE: "120'/40m + 30'/end, 30/move from move 41" is 2024's
+   PGN "40/7200:1800+30". Read raw, the 120 was SECONDS and every clock opened at "2:00" (Game 1, 11-24). */
+function standardTC(tc) {
+  tc = String(tc || '').trim();
+  const m = /^(\d+)'\s*\/\s*(\d+)\s*m(?:oves)?\b/i.exec(tc);
+  if (!m) return tc;
+  const more = /\+\s*(\d+)'\s*\/\s*end/i.exec(tc), inc = /(\d+)\s*\/\s*move/i.exec(tc);
+  return m[2] + '/' + (+m[1] * 60) + (more ? ':' + (+more[1] * 60) : '') + (inc ? '+' + inc[1] : '');
 }
 
 /* Seconds each move took: the mover's clock before, minus after, plus whatever the control added.
