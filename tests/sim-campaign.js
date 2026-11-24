@@ -2,6 +2,7 @@
  * sim-campaign.js — whole campaigns, machine against machine, on the page's own rules.
  *   npm run sim:campaign
  *   env: N=60 (campaigns per rule) WORKERS=6 RULES=off,win,both GREEN=medium RED=medium CARDS=1 WALLS=1 SEA=1
+ *        CLOCK_MIN=6 EASY_CLOCK=2 (the page's own when unset)
  *        ENGINE_MS=15 SEC_PER_MOVE=1.7 MAX_ROUNDS=60
  *
  * sim:marchland measures ONE battle: how often an attack fails. Nothing measured a CAMPAIGN — how long one runs, how
@@ -38,6 +39,8 @@ function worker(rule, count) {
   if (env('STYLES', '1') === '0') camp.setStyleOf({});   // his #5: STYLES=0 plays Maxwell plain
   const EFF = Math.max(0.15, SEC_PER_MOVE - camp.MOVE_DELAY);
   if (env('EDGE', '') !== '') camp.setAttEdge(+env('EDGE', ''));
+  if (env('CLOCK_MIN', '') !== '') camp.setClockMin(+env('CLOCK_MIN', ''));
+  if (env('EASY_CLOCK', '') !== '') camp.setEasyClock(+env('EASY_CLOCK', ''));
 
   function fight(from, to) {
     const P = camp.musterBattle(from, to, true);              // the attacker is White, as the page builds it
@@ -183,7 +186,7 @@ if (process.env.SIM_WORKER) {
   (async () => {
     console.log(`=== CHESSWILD: CAMPAIGN — WHOLE CAMPAIGNS, MACHINE AGAINST MACHINE ===`);
     console.log(`  Green ${GREEN} · Red ${RED} · cards ${CARDS ? 'on' : 'off'} · walls ${WALLS ? 'on' : 'off'} · sea lane ${SEA ? 'on' : 'off'} · engine ${ENGINE_MS}ms · ` +
-                `${SEC_PER_MOVE}s a move · ${N} campaigns a rule on ${WORKERS} workers`);
+                `${SEC_PER_MOVE}s a move · ${N} campaigns a rule on ${WORKERS} workers` + (env('CLOCK_MIN', '') ? ` · clock floor ${env('CLOCK_MIN', '')}s` : '') + (env('EASY_CLOCK', '') ? ` · Easy's clock ×${env('EASY_CLOCK', '')}` : ''));
     for (const rule of RULES) {
       const t0 = Date.now();
       const rs = await runRule(rule);

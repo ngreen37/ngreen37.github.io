@@ -187,6 +187,7 @@
     "clockAtt": 15,
     "clockDef": 15,
     "clockMin": 6,
+    "easyClock": 2,
     "lineRank": 4,
     "vanRank": 5,
     "moveDelay": 1,
@@ -199,6 +200,48 @@
     },
     "survive": "win"
   },
+  "tips": [
+    [
+      "march",
+      "Taken: your troops march in by the share of points your pieces kept."
+    ],
+    [
+      "short",
+      "A short campaign: when its rounds run out, the most holdings wins, then the most troops."
+    ],
+    [
+      "card",
+      "A round card bends this round’s rules for every side."
+    ],
+    [
+      "fog",
+      "A ? hides their troops. Tap it twice to scout: it costs an attack."
+    ],
+    [
+      "walls",
+      "Walls: one win breaks them, a second that turn takes the holding. Held: +1 troop a round."
+    ],
+    [
+      "chain",
+      "A double ring is chained: two of yours beside it, so it defends with an extra die."
+    ],
+    [
+      "endgame",
+      "Endgame Flats fights an endgame: the first pawn to make a queen wins."
+    ],
+    [
+      "drops",
+      "Shogi Island fights with drops: a piece you take is yours to put back."
+    ],
+    [
+      "pieces",
+      "Sea-Board fights at sea: no pawns, only pieces."
+    ],
+    [
+      "sea",
+      "The dashed line is a sea lane: one crossing a round."
+    ]
+  ],
   "rival": {
     "who": "Maxwell",
     "key": "maxwell",
@@ -329,6 +372,7 @@
     "desert"
   ],
   "dailyRounds": 3,
+  "shortRounds": 8,
   "engine": {
     "ev": {
       "p": 100,
@@ -1463,7 +1507,7 @@
       "slip": 0.25,
       "slipCp": 260,
       "paceMs": 1100,
-      "note": "Makes mistakes you can see and punish.",
+      "note": "Makes mistakes you can see and punish. Battles run on twice the clock.",
       "minEdge": 2,
       "maxAttacks": 1,
       "smart": false,
@@ -1633,21 +1677,53 @@
       "style": "relentless"
     }
   ],
+  "story": {
+    "ground": {
+      "open": "Long Park. Take it, and we will see if you are worth my time.",
+      "won": "Fine. You can take a park.",
+      "lost": "Not even the park."
+    },
+    "blitz": {
+      "open": "Checker Town, and quickly. I do not wait.",
+      "won": "Fast enough. For now.",
+      "lost": "Too slow."
+    },
+    "flats": {
+      "open": "The Flats fight their own way: the first pawn to a queen wins. Take them.",
+      "won": "You can count. Good.",
+      "lost": "A race, and you walked."
+    },
+    "across": {
+      "open": "Sea-Board is across the water. No pawns out there.",
+      "won": "So you can swim.",
+      "lost": "The water kept it."
+    },
+    "last-stand": {
+      "open": "My turn. Hold your keep if you can.",
+      "won": "You held. I noticed.",
+      "lost": "Your keep is mine."
+    },
+    "storm": {
+      "open": "Sand Mines. My keep. Come and take it.",
+      "won": "Well played. I will remember this.",
+      "lost": "Walls are walls."
+    }
+  },
   "scenarios": [
     {
-      "id": "last-stand",
-      "name": "Last Stand",
-      "kind": "hold",
-      "at": 2,
-      "rounds": 6,
-      "level": "medium",
-      "goal": "Hold Gauntlet Keep to the end of round 6.",
+      "id": "ground",
+      "name": "First Ground",
+      "kind": "take",
+      "at": 6,
+      "rounds": 3,
+      "level": "easy",
+      "goal": "Take Long Park and hold it to the end of round 3.",
       "stars": [
-        "Hold Gauntlet Keep",
-        "Hold Chess City too",
-        "Lose nothing"
+        "Hold Long Park",
+        "Lose none of yours",
+        "Take it in round 1"
       ],
-      "also": 5,
+      "fast": 1,
       "own": [
         "t",
         "t",
@@ -1657,20 +1733,20 @@
         "m",
         "t",
         "m",
-        "t",
-        "t"
+        "m",
+        "m"
       ],
       "ranks": [
-        4,
         3,
-        5,
+        3,
+        3,
         4,
         2,
-        3,
-        3,
+        4,
+        6,
         2,
         3,
-        2
+        3
       ],
       "walls": [
         2,
@@ -1691,6 +1767,49 @@
         "Take it in round 1"
       ],
       "fast": 1
+    },
+    {
+      "id": "flats",
+      "name": "The Flats",
+      "kind": "take",
+      "at": 8,
+      "rounds": 4,
+      "level": "medium",
+      "goal": "Take Endgame Flats and hold it to the end of round 4.",
+      "stars": [
+        "Hold Endgame Flats",
+        "Lose none of yours",
+        "Take it by round 2"
+      ],
+      "fast": 2,
+      "own": [
+        "t",
+        "t",
+        "m",
+        "t",
+        "t",
+        "m",
+        "m",
+        "t",
+        "t",
+        "m"
+      ],
+      "ranks": [
+        3,
+        3,
+        3,
+        4,
+        3,
+        4,
+        3,
+        3,
+        4,
+        3
+      ],
+      "walls": [
+        2,
+        0
+      ]
     },
     {
       "id": "across",
@@ -1729,6 +1848,49 @@
         5,
         3,
         3
+      ],
+      "walls": [
+        2,
+        0
+      ]
+    },
+    {
+      "id": "last-stand",
+      "name": "Last Stand",
+      "kind": "hold",
+      "at": 2,
+      "rounds": 6,
+      "level": "medium",
+      "goal": "Hold Gauntlet Keep to the end of round 6.",
+      "stars": [
+        "Hold Gauntlet Keep",
+        "Hold Chess City too",
+        "Lose nothing"
+      ],
+      "also": 5,
+      "own": [
+        "t",
+        "t",
+        "m",
+        "t",
+        "t",
+        "m",
+        "t",
+        "m",
+        "t",
+        "t"
+      ],
+      "ranks": [
+        4,
+        3,
+        5,
+        4,
+        2,
+        3,
+        3,
+        2,
+        3,
+        2
       ],
       "walls": [
         2,

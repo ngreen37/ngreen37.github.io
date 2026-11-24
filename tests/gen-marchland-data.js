@@ -85,7 +85,9 @@ function build() {
     /* 11-18, his: how the machine thinks at the board (the six generals ride the LEVELS slice) */
     slice(src, 'var TEMPO_MIN',      'function tempoCost') +
     /* 11-18, his: how each side stands as its dice land, worded and colored */
-    slice(src, 'var STAND_WORDS',    'function posScore');
+    slice(src, 'var STAND_WORDS',    'function posScore') +
+    /* 11-23, his #2 of the ten: the tips said once */
+    slice(src, 'var TIPS = [',       'var TIPS_KEY');
   const G = { Math, Array };
   vm.createContext(G);
   vm.runInContext(code, G);
@@ -126,17 +128,21 @@ function build() {
       /* 11-17, the dice matter more: the least a side's clock gets once time follows the armies, and the ranks the
          attacker's pawns stand on (its line, and the vanguard the position die sends) */
       clockMin: G.CLOCK_MIN,
+      easyClock: G.EASY_CLOCK,       // 11-23, his #9: an Easy battle runs on this many times the clock
       lineRank: G.LINE_RANK,
       vanRank: G.VAN_RANK,
       moveDelay: G.MOVE_DELAY,
       pieceValues: G.VAL,
       survive: G.SURVIVE             // what's left on the board marches in: 'win' = the side that won the ground keeps a share
     },
+    /* 11-23, his #2: [id, words] in the order they are weighed, each said once */
+    tips: G.TIPS.map((t) => [t[0], t[1]]),
     rival: { who: G.RIVAL.who, key: G.RIVAL.key, lines: G.MAXWELL_LINES },
     dogs: G.DOGS.map((d) => ({ id: d.id, name: d.name, perk: d.perk, says: G.DOG_SAY[d.perk] })),
     cards: Object.keys(G.CARDS).reduce((o, k) => { o[k] = { name: G.CARDS[k].nm, text: G.CARDS[k].txt }; return o; }, {}),
     deck: G.DECK.slice(),
     dailyRounds: G.DAILY_ROUNDS,
+    shortRounds: G.SHORT_ROUNDS,   // 11-23, his #4: a campaign or a war that ends after this many rounds
     engine: { ev: G.EV, mateScore: G.MATE_SCORE },
     placement: { wBack: G.W_BACK.slice(), wPawn: G.W_PAWN.slice(), bBack: G.B_BACK.slice(), bPawn: G.B_PAWN.slice() },
     battle: { revealMs: G.REVEAL_MS, mercyMs: G.MERCY_MS, mercyPly: G.MERCY_PLY, mercyOdds: G.MERCY_ODDS,
@@ -183,6 +189,8 @@ function build() {
     stand: { words: G.STAND_WORDS.slice(), from: G.STAND_FROM.slice(), cols: G.STAND_COLS.map((c) => c.slice()) },
     /* 11-18, his: the six you pick from (who, the face's key, the word, the way); the first commands Red */
     foes: G.FOES.map((f) => ({ who: f.who, key: f.key, word: f.word, style: f.style })),
+    /* 11-23, his #8: Maxwell's story, his words before each chapter and after it (the chapters are the scenarios, in order) */
+    story: G.STORY_SAY,
     /* 11-16, his #2: scenarios with stars (a missing own/ranks/walls is the campaign's own start) */
     scenarios: G.SCENARIOS.map((s) => Object.assign({ id: s.id, name: s.nm, kind: s.kind, at: s.at, rounds: s.rounds, level: s.level,
       goal: s.goal, stars: s.stars.slice() }, s.also != null ? { also: s.also } : {}, s.fast != null ? { fast: s.fast } : {},

@@ -40,6 +40,8 @@
     "sim:campaign": "node tests/sim-campaign.js",
     "sim:clash": "node tests/sim-clash.js",
     "sim:war": "node tests/sim-war.js",
+    "sim:scen": "node tests/sim-scen.js",
+    "sim:scen": "node tests/sim-scen.js",
     "sim:bots": "node tests/sim-bots.js",
     "sim:skyrun": "node tests/sim-skyrun.js",
     "soak:puzzles": "node tests/puzzle-soak.js",

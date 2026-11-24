@@ -1663,7 +1663,8 @@
   var WAR_SLUG = 'campaign-war';
   var WAR_KEEPS = [null, ['avatar', 'ea-banner'], ['title', 'general'], ['avatar', 'ea-medal']];
   function warHonor(w) {
-    if (!w || w.won !== true || ['solo', 'three', 'four'].indexOf(w.mode) === -1) return 0;
+    /* ⚠ a short campaign (w.limit, his #4 of 11-23) was decided on the count, not carried through: no keepsake */
+    if (!w || w.won !== true || w.limit || ['solo', 'three', 'four'].indexOf(w.mode) === -1) return 0;
     if (w.diff !== 'hard') return 1;
     return (w.sides || []).length >= 4 ? 3 : 2;
   }

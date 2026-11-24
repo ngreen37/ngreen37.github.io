@@ -8431,7 +8431,7 @@ const server = http.createServer((req, res) => {
             /* ⭐ HIS #2 (11-16, "Scenarios with stars"): the page's set pieces at Maxwell's table. The corpus holds each dealt
                start and every checklist to the page (scen rows); this holds the run, the stars kept and their glyphs. */
             const scenOff = offOf({
-              'the rules, the page\'s': /^const SCENARIOS := \[\{"id":"last-stand"/m.test(rd('campaign_book.gd')) && coRows.indexOf('rows.scen.push') >= 0
+              'the rules, the page\'s': /^const SCENARIOS := \[\{"id":"ground"/m.test(rd('campaign_book.gd')) && coRows.indexOf('rows.scen.push') >= 0
                 && /if str\(sc\["kind"\]\) == "take" and str\(g\.own\[at\]\) == "m" and int\(g\.get\("scen_took", 0\)\) == 0:/.test(fnGd(crT, 'scen_over'))
                 && /"fog": sc\.is_empty\(\) and bool\(opts\.get\("fog", true\)\)/.test(fnGd(crT, 'new_campaign')),
               'the table runs one to its last round, and keeps your best': /if mode == "scenario":\s*\n\t+var o: Variant = R\.scen_over\(false\)/.test(fnGd(ctbT, '_check_over'))
@@ -8515,21 +8515,21 @@ const server = http.createServer((req, res) => {
                 && mjFoes.foes.length === 6 && mjFoes.foes.map((f) => f.word).join() === 'Strategic,Aggressive,Defensive,Adaptive,Cunning,Relentless',
               'whoever you pick commands, seat by seat': /func who_of\(side: String, w: Dictionary = \{\}\) -> String:/.test(crT)
                 && /var f := foe_of\(who_of\(s\)\)/.test(fnGd(crT, 'general_of')) && /across\.append\(who_of\(str\(s\)\)\)/.test(fnGd(crT, 'muster_generals'))
-                && /else seat_foes\(mode\) \}/.test(fnGd(crT, 'new_campaign')) && /"foes": \(g\.get\("foes", \[\]\) as Array\)\.duplicate\(\)/.test(fnGd(crT, 'war_begin'))
+                && /else seat_foes\(mode\),/.test(fnGd(crT, 'new_campaign')) && /"foes": \(g\.get\("foes", \[\]\) as Array\)\.duplicate\(\)/.test(fnGd(crT, 'war_begin'))
                 && !/CampaignRules\.general_of\(/.test(ctbT) && /R\.who_of\(str\(t\.s\), w\)/.test(fnGd(ctbT, '_war_frames')),
               'each their own way at the map': /var way := adapt_of\(side\) if style_of\(side\) == "adapt" else style_of\(side\)/.test(fnGd(crT, 'rival_plan'))
                 && /if St\.has\("few"\) and \(g\.sides as Array\)\.size\(\) < 4:/.test(fnGd(crT, 'rival_plan'))
                 && /var parts: bool = splits > 0 and splits_off\(to\)/.test(fnGd(crT, 'rival_plan'))
                 && /who_of\("t"\) == str\(B\.RIVAL\["who"\]\)/.test(fnGd(crT, 'rival_plan'))
                 && /return "rush" if mine <= most - int\(B\.ADAPT_BY\)/.test(fnGd(crT, 'adapt_of')),
-              'the Flats fifteen each': /if rule == "endgame":\s*\n\t+return \{ "att": int\(B\.CLOCK_ATT\), "def": int\(B\.CLOCK_DEF\) \}/.test(fnGd(crT, 'battle_clocks'))
-                && /var clocks := battle_clocks\(material\(board, "w" if att_white else "b"\), material\(board, "b" if att_white else "w"\), rule\)/.test(fnGd(crT, 'muster_battle')),
+              'the Flats fifteen each': /if rule == "endgame":\s*\n\t+return \{ "att": int\(B\.CLOCK_ATT\) \* k, "def": int\(B\.CLOCK_DEF\) \* k \}/.test(fnGd(crT, 'battle_clocks'))
+                && /var clocks := battle_clocks\(material\(board, "w" if att_white else "b"\), material\(board, "b" if att_white else "w"\), rule, clock_scale\(\)\)/.test(fnGd(crT, 'muster_battle')),
               'a person\'s pace at the board': /static func ai_pause\(way: String, level: String, left: float, yours: float, r: Array\) -> float:/.test(crT)
                 && /_hold_ms = 1000\.0 \* CampaignRules\.ai_pause\(_way, _diff, float\(left\[S\.turn\]\) \/ 1000\.0, _yours,/.test(fnGd(cbT, '_their_turn'))
                 && /var budget := mini\(int\(L\.get\("paceMs", 1500\)\), int\(_hold_ms\)\)/.test(fnGd(cbT, '_their_turn'))
                 && /_yours = maxf\(0\.0, \(float\(_turn_start\[mover\]\) - float\(left\[mover\]\)\) \/ 1000\.0\)/.test(fnGd(cbT, '_apply'))
                 && /"way": R\.style_of\(dfd if p\.player_attacks else att\), "diff": str\(R\.g\.diff\),/.test(fnGd(ctbT, '_start_battle')),
-              'their own screen, and Begin is for that many': /enum \{ HOME, HOW, MAP, ROLL, RESULT, PASS, ORDERS, WAR, SCEN, FOES \}/.test(ctbT)
+              'their own screen, and Begin is for that many': /enum \{ HOME, HOW, MAP, ROLL, RESULT, PASS, ORDERS, WAR, SCEN, FOES, CHAPTER \}/.test(ctbT)
                 && /"Number of opponents  ·  %d" % p\.size\(\)/.test(fnGd(ctbT, '_home_layout')) && /_start_mode\(_foes_mode\(\)\)/.test(fnGd(ctbT, '_press'))
                 && /var o := GameState\.campaign\.saved\(_foes_mode\(\)\)/.test(fnGd(ctbT, '_press'))
                 && !/"Three players"|"Four players"/.test(ctbT) && /"Three at most\. Tap one to let them go\."/.test(fnGd(ctbT, '_pick_foe'))
@@ -8618,7 +8618,7 @@ const server = http.createServer((req, res) => {
             /* ⭐ HIS 11-19: PLAY, TWO PLAYERS OFF THE MENU, MAXWELL LET GO. The page and the table, held to each other. */
             const bookT = rd('campaign_book.gd');
             const playOff = offOf({
-              'Play, in the page\'s gold, and the pad lands on it': /"Play  ·  round %d  ·  %d of %d held"/.test(fnGd(ctbT, '_home_layout'))
+              'Play, in the page\'s gold, and the pad lands on it': /"Play  ·  round %d%s  ·  %d of %d held"/.test(fnGd(ctbT, '_home_layout'))
                 && /_btn\("go", "Tap again to start over" if _armed == "go" else "Play",/.test(fnGd(ctbT, '_home_layout')) && /_primary\(_btns\["go"\], play == _btns\["go"\]/.test(fnGd(ctbT, '_home_layout'))
                 && /_focus = maxi\(0, _home_focus\(\)\.find\(_play_btn\(\)\)\)/.test(fnGd(ctbT, '_show'))
                 && /r\.textContent = 'Play · round '/.test(mlT) && /g\.textContent = 'Play';/.test(mlT),
@@ -8705,6 +8705,71 @@ const server = http.createServer((req, res) => {
             ok(map23Off.length === 0,
               '⭐ HIS 11-23 IN THE GAME  ("Space out the territories clearer" · "make the dice effects like Castle! Stay on the defender\'s side of the screen"): at Maxwell\'s table a wide window gives the map nine tenths of its height with the words beside it, its holdings no bigger, so further apart; each side\'s position under its own dice, CASTLED! over the defender\'s',
               map23Off.length ? 'off: ' + map23Off.join(' · ') : 'the map tall, the castle on its side');
+            /* ⭐ HIS 11-23 PICKS OF THE TEN ("For campaign, let's do number 2, 3, 4, and 7"): a rule said the first time it
+               matters, once; Length · 8 rounds; the roll's bed, the drum, the fanfare — each the page's, at Maxwell's table */
+            const mj23 = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/data/marchland.json'), 'utf8'));
+            const auT = rd('town_audio.gd'), book23 = rd('campaign_book.gd');
+            const ten23Off = offOf({
+              '#2 the page\'s tips, word for word and in its order': mj23.tips.length >= 10 && book23.indexOf('const TIPS := ' + JSON.stringify(mj23.tips)) >= 0
+                && /var TIPS = \[\n  \['march', /.test(mlT),
+              '#2 said at each of your phases and back from a battle you attacked, filed once a machine': /R\.g\.phase = p\n\t_tip_moment\(\)/.test(fnGd(ctbT, '_set_phase'))
+                && /_tip_hold = true[\s\S]*?_tip_hold = false\n\t\t_tip_moment\(\(R\.g\.get\("troops", \{\}\) as Dictionary\)\.has\("march"\)\)/.test(fnGd(ctbT, '_continue_on'))
+                && /if not GameState\.campaign\.tips\.has\(id\) and _tip_fits\(id, str\(g\.side\), took == true\):/.test(fnGd(ctbT, '_tip_moment'))
+                && /"tips": tips \}/.test(cpT) && /"tipsagain":\n\t\t\tGameState\.campaign\.tips = \[\]/.test(fnGd(ctbT, '_press')),
+              '#4 Length · 8 rounds, the page\'s count': mj23.shortRounds === 8 && /const SHORT_ROUNDS := 8/.test(book23)
+                && /if int\(R\.g\.get\("limit", 0\)\) > 0 and int\(R\.g\.round\) >= int\(R\.g\.limit\):\n\t\t_campaign_over\(R\.short_won\(\)\)/.test(fnGd(ctbT, '_start_your_turn'))
+                && /rs = R\.short_say\(\) if time_up else/.test(fnGd(ctbT, '_campaign_over'))
+                && /or int\(w\.get\("limit", 0\)\) > 0:/.test(fnGd(crT, 'better_war')) && /"limit": int\(w\.get\("limit", 0\)\) \}/.test(fnGd(cpT, 'bank_war'))
+                && /_btn\("len", "Length  ·  "/.test(fnGd(ctbT, '_home_layout')) && /<button id="opt-len" aria-pressed="false">Length · Full<\/button>/.test(mlT),
+              '#7 the roll\'s bed in with the roll and out when it settles, the screen goes or the table shuts': /au\.under\(true\)\n\t\tau\.table\("roll"\)/.test(fnGd(ctbT, '_begin_battle'))
+                && /au\.under\(false\)/.test(fnGd(ctbT, '_finish_roll')) && /if s != ROLL:[\s\S]*?au\.under\(false\)/.test(fnGd(ctbT, '_show'))
+                && /au\.under\(false\)/.test(fnGd(ctbT, '_shut')) && /_under\.stop\(\)/.test(fnGd(auT, '_on_sound_changed')),
+              '#7 the page\'s tick, lock and castle on the roll, the drum as the clock starts, the fanfare for a holding taken': /au\.table\("castle"\)/.test(fnGd(ctbT, '_finish_roll'))
+                && /au\.table\("drum"\)/.test(fnGd(cbT, '_go_live')) && /if bool\(_card\.get\("took", false\)\):\n\t+au\.table\("fanfare"\)/.test(fnGd(cbT, '_battle_over'))
+                && /"took": attacker_won and not broke and bool\(p\.player_attacks\)/.test(ctbT)
+                && /else if \(k === 'drum'\) \{ thump\(t, 1\); thump\(t \+ 0\.3, 0\.7\); \}/.test(mlT) && /for nt in \[\[523\.0, 0\.0, 0\.11, 1\.0\], \[523\.0, 0\.13, 0\.11, 1\.0\], \[784\.0, 0\.26, 0\.6, 1\.0\], \[659\.0, 0\.26, 0\.6, 0\.6\]\]:/.test(auT)
+                && /brass\(523, t, 0\.11, 1\); brass\(523, t \+ 0\.13, 0\.11, 1\); brass\(784, t \+ 0\.26, 0\.6, 1\); brass\(659, t \+ 0\.26, 0\.6, 0\.6\);/.test(mlT)
+                && /var BED_HZ = \[\[73\.6, 'sine', 1\], \[78, 'sine', 0\.7\], \[147\.2, 'triangle', 0\.3\]\];/.test(mlT)
+                && /const UNDER_HZ := \[\[73\.6, 1\.0, 0\.0\], \[78\.0, 0\.7, 0\.0\], \[147\.2, 0\.3, 1\.0\]\]/.test(auT),
+              'played': ['camptips', 'campshort', 'campsound'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
+                && /camppress:go;campis:screen:map;campis:tip:card;[^"]*campphase:attack;campis:tip:fog;campphase:attack;campis:tip:fog;[^"]*camppress:tipsagain;campis:tipsseen:;/.test(bcCase('camptips'))
+                && /camppress:len;campis:btn:len:Length  ·  8 rounds;[^"]*campcall:_start_your_turn;campis:screen:result;campis:verdict:THE CAMPAIGN IS YOURS;camphas:rsay:Round 8 was the last;camphas:rsay:you hold 6 of 10, Maxwell 4\.;campis:best:none;/.test(bcCase('campshort'))
+                && /campis:under:true;campis:sound:roll;[^"]*campis:under:false;[^"]*campis:sound:drum;campend:won-mate;wait:6;campis:sound:fanfare;/.test(bcCase('campsound')),
+            });
+            ok(ten23Off.length === 0,
+              '⭐ HIS 11-23 PICKS IN THE GAME  ("For campaign, let\'s do number 2, 3, 4, and 7"): at Maxwell\'s table each rule says itself once, the page\'s words, and How says them again; Length · 8 rounds ends on the count; the roll has its bed, ticks and castle, a battle its drum, a holding taken its fanfare',
+              ten23Off.length ? 'off: ' + ten23Off.join(' · ') : 'tips, length and sound, the page\'s');
+            /* ⭐ HIS 11-23, "Then do 8, 9, and 10": #8 MAXWELL'S STORY — the set pieces are its chapters, in order, his word
+               before each and after it, and the next chapter from the result */
+            const storyOff = offOf({
+              'the page\'s six chapters in its order, and his words for each': mj23.scenarios.map((x) => x.id).join() === 'ground,blitz,flats,across,last-stand,storm'
+                && Object.keys(mj23.story).join() === 'ground,blitz,flats,across,last-stand,storm' && book23.indexOf('const STORY := ' + JSON.stringify(mj23.story)) >= 0
+                && /var STORY_SAY = \{/.test(mlT),
+              'a chapter opens its own page, Begin plays it': /"sc0", "sc1", "sc2", "sc3", "sc4", "sc5":\n\t\t\t_chapter = int\(id\.substr\(2\)\)\n\t\t\t_show\(CHAPTER\)/.test(fnGd(ctbT, '_press'))
+                && /"chgo":\n\t\t\t_start_scenario\(_chapter\)/.test(fnGd(ctbT, '_press')) && /b\.addEventListener\('click', function \(\) \{ openChapter\(sc\.id\); \}\);/.test(mlT)
+                && /\$\('ch-go'\)\.addEventListener\('click', function \(\) \{ startScenario\(chapterId\); \}\);/.test(mlT),
+              'his word after it, and the next chapter after a star (this one again without)': /mx = str\(\(B\.STORY\.get\(str\(sc\["id"\]\), \{\}\) as Dictionary\)\.get\("won" if n > 0 else "lost", ""\)\)/.test(fnGd(ctbT, '_campaign_over'))
+                && /_next_ch = \(_chapter \+ 1 if _chapter \+ 1 < B\.SCENARIOS\.size\(\) else -1\) if n > 0 else _chapter/.test(fnGd(ctbT, '_campaign_over'))
+                && /\$\('next-ch'\)\.dataset\.id = n \? \(next \? next\.id : ''\) : sc\.id;/.test(mlT),
+              'played': /^[^#\n]*\bcampstory\b/m.test(suiteT)
+                && /camppress:sc0;campis:screen:chapter;campis:label:chnum:CHAPTER 1 OF 6;[^"]*camppress:chgo;campis:screen:map;campis:mode:scenario;[^"]*campis:verdict:FIRST GROUND  ★★☆;camphas:label:rmx:Fine\. You can take a park\.;camphas:btn:nextch:Blitz;[^"]*camppress:nextch;campis:screen:chapter;campis:label:chnum:CHAPTER 2 OF 6;/.test(bcCase('campstory')),
+            });
+            ok(storyOff.length === 0,
+              '⭐ HIS #8 IN THE GAME  ("Then do 8, 9, and 10"): at Maxwell\'s table the set pieces are his story, six chapters in the page\'s order, each opening on his face and his word, and the result says his word after it and opens the next chapter',
+              storyOff.length ? 'off: ' + storyOff.join(' · ') : 'six chapters, his words between them');
+            /* ⭐ #9 EASY'S GENTLER CLOCK: every number of a battle's clocks times EASY_CLOCK on Easy, the page's and the port's alike */
+            const easyOff = offOf({
+              'the page\'s factor, in the book': mj23.balance.easyClock === 2 && /const EASY_CLOCK := 2\n/.test(book23)
+                && /function clockScale\(\) \{ return G && G\.diff === 'easy' \? EASY_CLOCK : 1; \}/.test(mlT),
+              'the port shares it out the page\'s way': /static func battle_clocks\(am: int, dm: int, rule := "", k := 1\) -> Dictionary:/.test(crT)
+                && /att = maxi\(int\(B\.CLOCK_MIN\) \* k, mini\(pool - int\(B\.CLOCK_MIN\) \* k, att\)\)/.test(fnGd(crT, 'battle_clocks'))
+                && /rule, clock_scale\(\)\)/.test(fnGd(crT, 'muster_battle')) && /return B\.EASY_CLOCK if str\(g\.get\("diff", ""\)\) == "easy" else 1/.test(fnGd(crT, 'clock_scale')),
+              'the corpus deals Easy\'s battles too': /const k = i % 4 === 3 \? camp\.EASY_CLOCK : 1;/.test(gdTxt('tests/campaign_corpus.js'))
+                && /str\(c\.rule\), int\(c\.get\("k", 1\)\)\)/.test(gdTxt('tests/campaign_rules_test.gd')),
+            });
+            ok(easyOff.length === 0,
+              '⭐ HIS #9 IN THE GAME  ("Then do 8, 9, and 10"): an Easy battle at Maxwell\'s table runs on twice the clock, shared out by the armies the page\'s way',
+              easyOff.length ? 'off: ' + easyOff.join(' · ') : 'Easy ×' + mj23.balance.easyClock);
           }
         }
 

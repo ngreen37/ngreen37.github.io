@@ -740,7 +740,7 @@ check('DEFENDING, the chain counts pawns that really dug in',
         [[3, 30], [9, 9], [27, 2], [1, 1]].every((x) => { const c = G.battleClocks(x[0], x[1]); return c.att + c.def === G.CLOCK_ATT + G.CLOCK_DEF; }));
   check('the battle runs on the clocks the muster bought',
         /clk: \{ w: attWhite \? p\.clocks\.att : p\.clocks\.def, b: attWhite \? p\.clocks\.def : p\.clocks\.att \}/.test(src) &&
-        /var clocks = battleClocks\(material\(board, attWhite \? 'w' : 'b'\), material\(board, attWhite \? 'b' : 'w'\), rule\);/.test(src));
+        /var clocks = battleClocks\(material\(board, attWhite \? 'w' : 'b'\), material\(board, attWhite \? 'b' : 'w'\), rule, clockScale\(\)\);/.test(src));
   /* ⚑ his 11-18: "Is it first to make a queen? Then time should be like 15 seconds for each player, right?" */
   const eg = (a, d) => { const c = G.battleClocks(a, d, 'endgame'); return c.att + '/' + c.def; };
   check('⭐ the Flats are fifteen each, whatever the armies (a race to a queen is a race)',
@@ -1400,8 +1400,8 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
       JSON.stringify(G.own) === JSON.stringify(sc.own || camp.START_OWN) && JSON.stringify(G.scenStart) === JSON.stringify(G.own) &&
       G.scenStart !== G.own && G.scenTook === 0;
   });
-  check('⭐ four scenarios, each dealt as written: its own map, its own level, no fog and no cards whatever the options say',
-    camp.SCENARIOS.length === 4 && dealt.every(Boolean), camp.SCENARIOS.map((s) => s.nm).join(' · '));
+  check('⭐ six scenarios (his story\'s chapters, 11-23), each dealt as written: its own map, its own level, no fog and no cards whatever the options say',
+    camp.SCENARIOS.length === 6 && dealt.every(Boolean), camp.SCENARIOS.map((s) => s.nm).join(' · '));
   const ls = camp.scenOf('last-stand'), bz = camp.scenOf('blitz'), st0 = ls.own.slice();
   const lost = (o, i, to) => { const x = o.slice(); x[i] = to; return x; };
   check('…a stand: the keep held is one star, Chess City too is two, losing nothing is three; the keep lost is none',
@@ -1641,6 +1641,122 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     /matVerdict\(\); posVerdict\(true\);\s*\n\s*\['v-mat', 'v-pos-a', 'v-pos-d'\]\.forEach\(function \(id\) \{ \$\(id\)\.classList\.add\('pending'\); \}\);/.test(page) &&
     /reveal\('v-mat'\);/.test(page) && /reveal\('v-pos-a'\);/.test(page) && /reveal\('v-pos-d'\);/.test(page) && /\.vline\.pending \{ visibility: hidden; \}/.test(page) &&
     /\.dice \{ display: flex; gap: 5px; min-height: 44px;/.test(page));
+}
+
+/* ══ 25. HIS 11-23 PICKS: #2 TIPS SAID ONCE · #3 THE RALLY · #4 THE SHORT CAMPAIGN · #7 THE ROLL'S BED, THE DRUM, THE FANFARE ══ */
+{
+  const camp = require(path.join(ROOT, 'tests/campaign-vm.js')).load();
+  const page = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_marchland.html'), 'utf8').replace(/\r\n/g, '\n');
+  /* a function's own text, so a check can never pass on a comment elsewhere */
+  const body = (name) => { const a = page.indexOf('function ' + name + '('); return a < 0 ? '' : page.slice(a, page.indexOf('\n}\n', a) + 2); };
+  const ids = camp.TIPS.map((t) => t[0]);
+  check('⭐ #2 TIPS: one line each (18 words at most), none twice, none a stand-in',
+    ids.length === new Set(ids).size && camp.TIPS.every((t) => t[1].split(/\s+/).length <= 18 && !/TBD/.test(t[1])) && ids.length === 10,
+    ids.length + ' tips · longest ' + Math.max.apply(null, camp.TIPS.map((t) => t[1].split(/\s+/).length)) + ' words');
+  /* each tip fits a state built for it, and not its opposite */
+  const fits = {}, unfit = {};
+  const fresh = (o) => { camp.newCampaign('medium', 'solo', Object.assign({ fog: true, cards: false }, o || {})); const G = camp.G; G.phase = 'attack'; return G; };
+  let G = fresh();
+  fits.march = camp.tipFits('march', 'm', true); unfit.march = camp.tipFits('march', 'm', false);
+  G.limit = 8; fits.short = camp.tipFits('short', 'm', false); G.limit = 0; unfit.short = camp.tipFits('short', 'm', false);
+  G = fresh({ cards: true }); G.phase = 'deploy'; fits.card = camp.tipFits('card', 'm', false); G.card = null; unfit.card = camp.tipFits('card', 'm', false);
+  G = fresh(); G.own = G.own.map(() => 't'); G.own[2] = 'm'; fits.fog = camp.tipFits('fog', 'm', false);
+  G.fog = false; unfit.fog = camp.tipFits('fog', 'm', false);
+  G = fresh(); fits.walls = camp.tipFits('walls', 'm', false); G.walls = []; unfit.walls = camp.tipFits('walls', 'm', false);
+  G = fresh(); G.own = G.own.map(() => 't'); G.own[2] = 'm'; unfit.chain = camp.tipFits('chain', 'm', false);
+  camp.nbrs(2).slice(0, 2).forEach((j) => { G.own[j] = 'm'; }); fits.chain = camp.tipFits('chain', 'm', false);
+  G = fresh(); G.own = G.own.map(() => 'm'); G.own[7] = 't'; fits.sea = camp.tipFits('sea', 'm', false);
+  G.own = G.own.map(() => 'm'); unfit.sea = camp.tipFits('sea', 'm', false);
+  ['endgame', 'drops', 'pieces'].forEach((r) => {
+    const at = camp.LAND.findIndex((L) => camp.ruleAt(L.id) === r);
+    G = fresh(); G.own = G.own.map(() => 't'); G.own[camp.fronts(at)[0]] = 'm'; fits[r] = camp.tipFits(r, 'm', false);
+    G.own[at] = 'm'; unfit[r] = camp.tipFits(r, 'm', false);
+  });
+  const allFit = ids.every((id) => fits[id] === true && unfit[id] === false);
+  check('…each says itself only when it applies: its holding on your front, its walls on the map, the card dealt, the battle won',
+    allFit, ids.map((id) => id + ' ' + (fits[id] ? 'y' : 'n') + (unfit[id] ? 'Y' : 'n')).join(' · '));
+  /* said once a device: the moment files it, the same moment again says nothing new, a new campaign does not say it again */
+  camp.newCampaign('medium', 'solo', { fog: true, cards: true });
+  camp.G.phase = 'deploy'; camp.tipMoment();
+  const first = camp.tipOn, seen1 = camp.tipsSeen().slice();
+  camp.tipMoment(); const same = camp.tipOn;
+  camp.newCampaign('medium', 'solo', { fog: true, cards: true }); camp.G.phase = 'deploy'; camp.tipMoment();
+  const again = camp.tipOn;
+  camp.G.phase = 'theirs'; camp.tipMoment();
+  check('⭐ …said once a device: filed as it shows, the same moment says no more, the next campaign moves on, their turn says none',
+    first === 'card' && seen1.indexOf('card') >= 0 && same === 'card' && again !== 'card' && camp.tipOn === '',
+    'first ' + first + ' · again ' + (again || 'none') + ' · their turn ' + (camp.tipOn || 'none'));
+  check('…a battle you attacked is its own moment, and the phase set on the way back spends nothing unseen (tipHold)',
+    /tipHold = true;[\s\S]*?setPhase\('fortify'\)[\s\S]*?tipHold = false;\s*\n\s*tipMoment\(!!\(G\.troops && G\.troops\.march != null\)\);/.test(body('continueOn')) &&
+    /tipMoment\(\);\n\}$/.test(body('setPhase')));
+  check('…How it works can say them all again (for whoever plays next on this device)',
+    /\$\('tips-again'\)\.addEventListener\('click', function \(\) \{ try \{ localStorage\.removeItem\(TIPS_KEY\); \}/.test(page) &&
+    /<button class="btn ghost slim" id="tips-again" hidden>Show the tips again<\/button>/.test(page));
+
+  /* #3 comebacks: measured, and the rules left as they are — no catch-up lever in the page or the data */
+  check('⭐ #3 COMEBACKS: measured and left as they are; no rally, no underdog\'s die, the deployment and the dice as they were',
+    !/rallyFor|RALLY_BY|underdog\(|UNDER_BY/.test(page) && /⚑ COMEBACKS, MEASURED AND LEFT AS THEY ARE/.test(page) &&
+    /return Math\.max\(1, Math\.floor\(n \/ 3\)\) \+ wallsFor\(side\) \+ \(G\.card === 'reinforce' \? 2 : 0\);/.test(body('deployFor')));
+
+  /* #4 the short campaign */
+  camp.newCampaign('medium', 'solo', { limit: camp.SHORT_ROUNDS }); const l1 = camp.G.limit;
+  camp.newCampaign('medium', 'daily', { limit: camp.SHORT_ROUNDS }); const l2 = camp.G.limit;
+  camp.newCampaign('medium', 'scenario', { scen: 'blitz', limit: camp.SHORT_ROUNDS }); const l3 = camp.G.limit;
+  camp.useMap(camp.mapFor('three')); camp.newCampaign('medium', 'three', { limit: camp.SHORT_ROUNDS }); const l4 = camp.G.limit; camp.useMap(camp.MAIN_MAP);
+  check('⭐ #4 THE SHORT CAMPAIGN: a campaign or a war keeps the length it began with; the Daily and a scenario keep their own',
+    camp.SHORT_ROUNDS === 8 && l1 === 8 && l4 === 8 && l2 === 0 && l3 === 0, [l1, l2, l3, l4].join(' · '));
+  camp.newCampaign('medium', 'solo', { fog: false, cards: false, limit: 8 }); G = camp.G; G.round = 8;
+  G.own = ['m', 'm', 'm', 'm', 'm', 'm', 't', 't', 't', 't']; G.ranks = G.ranks.map(() => 2);
+  const w1 = camp.shortWon(), s1 = camp.shortSay();
+  G.own = ['m', 'm', 'm', 'm', 'm', 't', 't', 't', 't', 't']; G.ranks = [3, 3, 3, 3, 3, 2, 2, 2, 2, 2];
+  const w2 = camp.shortWon(), s2 = camp.shortSay();
+  G.ranks = G.ranks.map(() => 2); const w3 = camp.shortWon(), s3 = camp.shortSay();
+  check('…when its rounds run out the most holdings wins, the troops break a tie, and a dead heat is drawn; each said',
+    w1 === true && s1 === 'Round 8 was the last: you hold 6 of 10, Maxwell 4.' &&
+    w2 === true && s2 === 'Round 8 was the last: 5 holdings each, so the troops decide: yours 15, Maxwell\u2019s 10.' &&
+    w3 === null && s3 === 'Round 8 was the last: 5 holdings each and 10 troops each.', [s1, s2, s3].join(' | '));
+  check('…its last round is read where the Daily\'s is, and its end says the count; a short war is never framed nor a keepsake',
+    /if \(G\.limit && G\.round >= G\.limit\) \{ campaignOver\(shortWon\(\)\); return; \}/.test(body('startYourTurn')) &&
+    /var timeUp = G\.limit > 0 && !G\.resigned && !overFor\(\);/.test(body('campaignOver')) &&
+    (body('campaignOver').match(/timeUp \? shortSay\(\)/g) || []).length === 2 &&
+    /if \(G\.limit\) G\.war\.limit = G\.limit;/.test(body('warEnd')) && /w\.won !== true \|\| w\.limit\)/.test(body('betterWar')) &&
+    /w\.won !== true \|\| w\.limit \|\|/.test(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8')));
+
+  /* #8 Maxwell's story: the chapters in order, his words for each, every chapter a fair fight to its goal */
+  check('⭐ #8 MAXWELL\'S STORY: six chapters, the four set pieces with their ids (their stars stand) and two new, his words before and after each',
+    camp.SCENARIOS.map((x) => x.id).join() === 'ground,blitz,flats,across,last-stand,storm'
+    && camp.SCENARIOS.every((x) => page.indexOf("  '" + x.id + "': ") >= 0)
+    && /'ground':\s+\{ open: '[^']+', won: '[^']+', lost: '[^']+' \}/.test(page) && /'storm':\s+\{ open: '[^']+', won: '[^']+', lost: '[^']+' \}/.test(page),
+    camp.SCENARIOS.map((x) => x.nm).join(' · '));
+  const flats = camp.scenOf('flats'), opener = camp.scenOf('ground');
+  check('…First Ground takes Long Park on Easy; The Flats starts with Maxwell on Endgame Flats and you on three of its roads',
+    opener.at === 6 && opener.level === 'easy' && camp.LAND[opener.at].nm === 'Long Park' &&
+    flats.own[flats.at] === 't' && camp.LAND[flats.at].nm === 'Endgame Flats' && camp.ruleAt(flats.at) === 'endgame' &&
+    camp.nbrs(flats.at).filter((j) => flats.own[j] === 'm').length === 3);
+
+  /* #9 Easy's gentler clock, by what a muster buys */
+  const clockOf = (diff) => {
+    camp.newCampaign(diff, 'solo', { fog: false, cards: false });
+    const g = camp.G; g.ranks[5] = 6; g.ranks[3] = 4;
+    const P = camp.musterBattle(5, 3, true);
+    return P.clocks.att + P.clocks.def;
+  };
+  const easyPool = clockOf('easy'), mediumPool = clockOf('medium'), hardPool = clockOf('hard');
+  check('⭐ #9 EASY\'S GENTLER CLOCK: an Easy battle buys twice the thirty seconds (shared the same way, the Flats thirty each); Medium and Hard the thirty',
+    camp.EASY_CLOCK === 2 && easyPool === 60 && mediumPool === 30 && hardPool === 30 &&
+    JSON.stringify(camp.battleClocks(28, 12, '', 2)) === '{"att":42,"def":18}' && JSON.stringify(camp.battleClocks(5, 5, 'endgame', 2)) === '{"att":30,"def":30}' &&
+    /Battles run on twice the clock\./.test(camp.LEVELS.easy.note),
+    'Easy ' + easyPool + ' s · Medium ' + mediumPool + ' · Hard ' + hardPool);
+
+  /* #7 the sound: the bed under the roll, the drum, the fanfare */
+  check('⭐ #7 THE ROLL HAS A BED UNDER IT: in as the roll begins, out when it settles, and never past the roll screen',
+    /show\('screen-roll'\);\n\s*initAudio\(\); bedOn\(\);\n\s*runRoll\(\);/.test(body('beginBattle')) &&
+    /clearRollTimers\(\);\n\s*bedOff\(\);/.test(body('finishRoll')) && /if \(id !== 'screen-roll'\) bedOff\(\);/.test(body('show')));
+  check('…a drum as the battle\'s clock starts, and a fanfare when your attack takes the holding (walls only broken: the plain win)',
+    /B\.running = true;\n\s*sfx\('drum'\);/.test(body('goLive')) &&
+    /sfx\(attackerWon && !breach && p\.playerAttacks \? 'fanfare'/.test(page) &&
+    /else if \(k === 'drum'\) \{ thump\(t, 1\); thump\(t \+ 0\.3, 0\.7\); \}/.test(body('sfx')) &&
+    /else if \(k === 'fanfare'\) \{ brass\(523/.test(body('sfx')));
 }
 
 /* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */

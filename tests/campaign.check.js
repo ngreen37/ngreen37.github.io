@@ -32,6 +32,7 @@ window.__mc = {
   setPicked: function (a) { picked = a.slice(); try { localStorage.setItem(FOES_KEY, JSON.stringify(picked)); } catch (e) {} paintHome(); },
   MAXWELL_LINES: MAXWELL_LINES, LAND: function () { return LAND; }, campaignCheck: campaignCheck,
   get replay() { return replay; }, idsOf: idsOf, loadBest: loadBest, SAND: SAND, hurry: hurry,
+  get tipOn() { return tipOn; }, tipMoment: tipMoment, TIPS: TIPS, get optLen() { return optLen; }, get BED() { return BED; }, bedOn: bedOn,
   reboard: function (fen) { B.S = C.parseFEN(fen); B.turnStart = B.clk[B.S.turn]; seedMen(); paint(); updateClock(); },
   setB: function (fen, playerAttacks) {
     PEND = { from: 5, to: 3, playerAttacks: playerAttacks, aRanks: 4, dRanks: 3, attWhite: true,
@@ -1239,6 +1240,9 @@ function serve() {
       $('scens').click();
       out.on = $('screen-scen').classList.contains('on'); out.rows = rows();
       document.querySelector('#scen-list .scen[data-id="blitz"]').click();
+      out.page = $('screen-chapter').classList.contains('on') && $('ch-num').textContent === 'Chapter 2 of 6' && $('ch-name').textContent === 'Blitz'
+        && /^Checker Town, and quickly/.test($('ch-line').textContent);
+      $('ch-go').click();
       const G = __mc.G;
       out.map = $('screen-map').classList.contains('on') && G.mode === 'scenario' && G.scen === 'blitz' && !G.fog;
       out.round = $('t-round').textContent; out.say = $('map-say').textContent;
@@ -1247,22 +1251,28 @@ function serve() {
       G.round = 3; G.busy = false; __mc.startYourTurn();
       out.result = $('screen-result').classList.contains('on'); out.verdict = $('verdict').textContent; out.rs = $('result-say').textContent;
       out.kept = localStorage.getItem('pjcc.campaign.stars.v1');
+      out.mx = $('result-mx').hidden ? '' : $('result-mx').textContent; out.next = $('next-ch').hidden ? '' : $('next-ch').textContent;
+      $('next-ch').click(); out.nextPage = $('screen-chapter').classList.contains('on') && $('ch-num').textContent === 'Chapter 3 of 6';
       $('cont').click(); $('scens').click(); out.rows2 = rows();
       /* a stand lost: no star, and your best is untouched */
-      document.querySelector('#scen-list .scen[data-id="last-stand"]').click();
+      document.querySelector('#scen-list .scen[data-id="last-stand"]').click(); $('ch-go').click();
       __mc.G.own[2] = 't'; __mc.campaignCheck();
-      out.lost = { verdict: $('verdict').textContent, rs: $('result-say').textContent, kept: localStorage.getItem('pjcc.campaign.stars.v1') };
+      out.lost = { verdict: $('verdict').textContent, rs: $('result-say').textContent, kept: localStorage.getItem('pjcc.campaign.stars.v1'),
+                   mx: $('result-mx').textContent, again: $('next-ch').hidden ? '' : $('next-ch').textContent };
       $('cont').click(); $('scens').click();
       return out;
     });
     await page.screenshot({ path: path.join(require('os').tmpdir(), 'campaign-scenarios.png') });
-    ok(sc1.on && sc1.rows.join() === 'last-stand ☆☆☆,blitz ☆☆☆,across ☆☆☆,storm ☆☆☆',
-       '⭐ Scenarios opens a list of four, no stars yet  [' + sc1.rows.join(' · ') + ']');
+    ok(sc1.on && sc1.rows.join() === 'ground ☆☆☆,blitz ☆☆☆,flats ☆☆☆,across ☆☆☆,last-stand ☆☆☆,storm ☆☆☆',
+       '⭐ Scenarios opens Maxwell\'s story, six chapters in order, no stars yet  [' + sc1.rows.join(' · ') + ']');
     ok(sc1.map && sc1.round === '1 of 3' && /^Blitz: Take Checker Town and hold it to the end of round 3./.test(sc1.say),
        '…Blitz opens on its own map with its goal, counting its rounds  [' + sc1.round + ' · ' + sc1.say.slice(0, 60) + '…]');
     ok(sc1.goesOn && sc1.result && sc1.verdict === 'BLITZ  ★★★' && /★ Hold Checker Town · ★ Lose none of yours · ★ Take it in round 1/.test(sc1.rs),
        '…taken in round 1 and held to the end of round 3, nothing lost: three stars, each named  [' + sc1.verdict + ' · ' + sc1.rs + ']');
     ok(JSON.parse(sc1.kept || '{}').blitz === 3 && sc1.rows2[1] === 'blitz ★★★', '…kept as your best, and the list shows it');
+    ok(sc1.page && sc1.mx === 'Maxwell: \u201cFast enough. For now.\u201d' && sc1.next === 'Chapter 3: The Flats' && sc1.nextPage
+       && sc1.lost.mx === 'Maxwell: \u201cYour keep is mine.\u201d' && sc1.lost.again === 'Try again',
+       '⭐ #8 each chapter opens on Maxwell\'s word, ends on another, and goes on to the next (or again, without a star)  [' + sc1.mx + ' · ' + sc1.next + ']');
     ok(sc1.lost.verdict === 'LAST STAND  ☆☆☆' && /Gauntlet Keep fell./.test(sc1.lost.rs) && JSON.parse(sc1.lost.kept || '{}')['last-stand'] === undefined,
        '…a stand whose keep falls ends there with no star, and keeps nothing  [' + sc1.lost.rs + ']');
     ok(rep.on && rep.frames >= 2 && rep.first === 'The opening.' && rep.last.step === rep.frames + ' of ' + rep.frames && rep.last.btn === 'Done' && rep.backTo,
@@ -1270,6 +1280,61 @@ function serve() {
     ok(rep.frame.shown && /^Your best war · Medium · won in round \d+$/.test(rep.frame.say) && rep.again && rep.home,
        'the home screen frames your best war, and it plays back from there  [' + rep.frame.say + ']');
     await E(() => { ['pjcc.town.v1', 'pjcc.campaign.best.v1', 'pjcc.campaign.map.flat'].forEach(k => localStorage.removeItem(k)); });
+
+    /* ══ HIS 11-23 PICKS: #2 the tips said once, #4 the short campaign, #7 the roll's bed (the rally is marchland.check's) ══ */
+    await E(() => { localStorage.setItem('pjcc.campaign.cards', '1'); localStorage.setItem('pjcc.campaign.len', '0'); localStorage.setItem('pjcc.campaign.foes.v1', JSON.stringify(['Maxwell'])); });
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction(() => !!window.__mc);
+    const tp = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      localStorage.removeItem('pjcc.campaign.tips.v1'); localStorage.removeItem('pjcc.campaign.save.v1'); __mc.paintHome();
+      $('go').click();
+      out.tip = $('map-tip').hidden ? '' : $('map-tip').textContent; out.on = __mc.tipOn;
+      out.seen = JSON.parse(localStorage.getItem('pjcc.campaign.tips.v1') || '[]');
+      __mc.setPhase('attack'); out.tip2 = $('map-tip').hidden ? '' : $('map-tip').textContent;
+      __mc.setPhase('attack'); out.tip3 = $('map-tip').hidden ? '' : $('map-tip').textContent;
+      $('map-resign').click(); $('map-resign').click(); $('cont').click();
+      localStorage.removeItem('pjcc.campaign.save.v1'); __mc.paintHome();
+      $('go').click(); out.after = $('map-tip').hidden ? '' : $('map-tip').textContent;
+      $('map-resign').click(); $('map-resign').click(); $('cont').click();
+      $('how').click(); out.again = !$('tips-again').hidden; $('tips-again').click();
+      out.cleared = localStorage.getItem('pjcc.campaign.tips.v1') === null && $('tips-again').hidden; $('back').click();
+      return out;
+    });
+    const tipWords = await E(() => __mc.TIPS.map(t => t[1]));
+    ok(tp.on === 'card' && tp.tip === 'Tip' + tipWords[2] && tp.seen.indexOf('card') >= 0,
+       '⭐ #2 a new campaign says its first tip over the map, once: the round card  [' + tp.tip + ']');
+    ok(tp.tip2 && tp.tip2 !== tp.tip && tp.tip3 === tp.tip2 && tp.after !== tp.tip,
+       '…the next phase says the next one, the same phase again says no more, and the next campaign never repeats one  [' + tp.tip2 + ']');
+    ok(tp.again && tp.cleared, '…How it works offers them again, and one tap clears them');
+    const sh = await E(() => {
+      const $ = id => document.getElementById(id), out = {};
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('opt-len').click(); out.btn = $('opt-len').textContent; out.opts = !$('opts-row').hidden;
+      $('go').click(); out.round = $('t-round').textContent;
+      __mc.show('screen-home'); __mc.paintHome(); out.resume = $('resume').textContent; __mc.show('screen-map');
+      const G = __mc.G; G.own = ['m', 'm', 'm', 'm', 'm', 'm', 't', 't', 't', 't']; G.round = 8; G.busy = false;
+      __mc.startYourTurn();
+      out.result = $('screen-result').classList.contains('on'); out.verdict = $('verdict').textContent; out.rs = $('result-say').textContent;
+      out.best = localStorage.getItem('pjcc.campaign.best.v1');
+      $('cont').click(); $('opt-len').click(); out.back = $('opt-len').textContent;
+      return out;
+    });
+    ok(sh.btn === 'Length · 8 rounds' && sh.opts && sh.round === '1 of 8' && /^Play · round 1 of 8 · /.test(sh.resume),
+       '⭐ #4 Length · 8 rounds: the map counts them and Play says how far in  [' + sh.round + ' · ' + sh.resume + ']');
+    ok(sh.result && sh.verdict === 'THE CAMPAIGN IS YOURS' && sh.rs === 'Round 8 was the last: you hold 6 of 10, Maxwell 4.' && sh.best === null &&
+       sh.back === 'Length · Full', '…after its eighth round the most holdings win it, said so, framed nowhere  [' + sh.rs + ']');
+    const bd = await E(() => new Promise((res) => {
+      const $ = id => document.getElementById(id);
+      localStorage.removeItem('pjcc.campaign.save.v1'); $('go').click();
+      const G = __mc.G; G.phase = 'attack';
+      const from = G.own.indexOf('m'), to = __mc.nbrs(from).find(j => G.own[j] === 't');
+      G.ranks[from] = 6; __mc.beginBattle(from, to, true);
+      const during = !!__mc.BED;
+      __mc.finishRoll();
+      res({ during: during, after: !!__mc.BED, sounds: __mc.sounds.slice(-6) });
+    }));
+    ok(bd.during && !bd.after, '⭐ #7 the bed plays under the roll and stops when it settles');
   } catch (e) {
     FAIL++; console.log('  ✗ FAIL  harness threw: ' + e.message);
   } finally {

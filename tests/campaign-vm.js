@@ -44,7 +44,9 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   /* the odds bar on the roll screen (11-18) */
   'oddsOf',
   /* the roll, piece by piece, and how each side stands (11-18) */
-  'rollBoards', 'boardMoves', 'standOf', 'standColor', 'standDetail', 'STAND_WORDS', 'posScore'];
+  'rollBoards', 'boardMoves', 'standOf', 'standColor', 'standDetail', 'STAND_WORDS', 'posScore',
+  /* the short campaign, Easy's clock and the tips said once (11-23, his #4, #9, #2) */
+  'clockScale', 'EASY_CLOCK', 'shortWon', 'shortSay', 'troopsOf', 'SHORT_ROUNDS', 'TIPS', 'TIPS_KEY', 'tipFits', 'tipsSeen', 'tipMoment'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');
@@ -64,6 +66,8 @@ function gameScript() {
     'setSea: function (v) { SEA = v; }, get SEA() { return SEA; }, ' +
     'setStyleOf: function (v) { STYLE_OF = v; }, get STYLE_OF() { return STYLE_OF; }, ' +
     'setAdaptBy: function (v) { ADAPT_BY = v; }, get ADAPT_BY() { return ADAPT_BY; }, ' +
+    'get tipOn() { return tipOn; }, ' +
+    'setClockMin: function (v) { CLOCK_MIN = v; }, setEasyClock: function (v) { EASY_CLOCK = v; }, ' +
     LIVE.map((k) => 'get ' + k + '() { return ' + k + '; }').join(', ') + ', ' +
     EXPOSE.map((k) => k + ': ' + k).join(', ') + ' };\n';
   return src.slice(0, at) + hook + src.slice(at);
