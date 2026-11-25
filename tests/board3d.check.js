@@ -51,12 +51,18 @@ if (b3gd && ctgd) {
     if (!(a > 0 && a === b)) off.push('TALL.' + L);
   }
   ok(off.length === 0, 'every number is the game\'s: the tilt, the lens, the fit, the cuts, the card\'s half second, his pieces\' heights  [' + (off.join(' ') || 'all equal') + ']');
-  /* ⭐ P is his pawn that bows in defeat (his 11-18), one rigged file for both sides */
-  const glbOff = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => {
+  /* ⭐ each is one file for both sides: his pawn that bows in defeat (11-18), his bishop and knight (11-24) */
+  const glbOff = ['P', 'B', 'N', 'K', 'Q', 'R'].filter((c) => {
     const a = path.join(ROOT, 'assets/models/pieces3d', c + '.glb'), b = path.join(GAME, 'pieces3d', c + '.glb');
     return !fs.existsSync(a) || !fs.existsSync(b) || !fs.readFileSync(a).equals(fs.readFileSync(b));
   });
-  ok(glbOff.length === 0, 'his seven pieces are the game\'s own, byte for byte (npm run gen:pieces3d)  [' + (glbOff.join(' ') || 'all seven') + ']');
+  ok(glbOff.length === 0, 'his six pieces are the game\'s own, byte for byte (npm run gen:pieces3d)  [' + (glbOff.join(' ') || 'all six') + ']');
+  /* ⚠ THE TWO MATERIALS EVERY PIECE WEARS (his September bishops'): the lens's LIGHT and DARK are the game's, digit for digit */
+  const linJs = (n) => ((new RegExp('var ' + n + ' = \\[([^\\]]*)\\];').exec(SRC) || [])[1] || '').split(',').map(Number);
+  const linGd = (n) => ((new RegExp('const ' + n + ' := Color\\(([^)]*)\\)').exec(b3gd) || [])[1] || '').split(',').map(Number);
+  const skinOff = ['LIGHT', 'DARK'].filter((n) => !(linJs(n).length === 3 && linJs(n).every((v, i) => v > 0 && v === linGd(n)[i])));
+  ok(skinOff.length === 0 && /new T\.Color\(c\[0\], c\[1\], c\[2\]\), roughness: 0\.5, metalness: 0, side: 2/.test(SRC),
+     'every piece wears the game\'s two materials, linear, double-sided, roughness 0.5  [' + (skinOff.join(' ') || 'LIGHT DARK') + ']');
   const pawn = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d/P.glb'));
   const pj = JSON.parse(pawn.slice(20, 20 + pawn.readUInt32LE(12)).toString());
   ok((pj.skins || []).length === 1 && (pj.animations || []).length === 1 && pj.animations[0].channels.length > 0,

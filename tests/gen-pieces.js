@@ -1,10 +1,14 @@
 /* gen-pieces.js — Blender piece saves → the Tournament Board's art.  Run:  npm run gen:pieces
- * For each row in PIECES, takes the highest-numbered save (wp_0.2 beats wp_0.1) from
- * PIECE_DIR (default ~/Desktop/Personal/Blender/Pieces) and renders a 512x512 RGBA PNG
+ * For each row in PIECES, takes the highest-numbered save and renders a 512x512 RGBA PNG
  * through headless Blender, into the Godot project's pieces/ folder and the private mirror.
+ * ⭐ HIS LAPTOP FILE FIRST (his 11-24: bishop2, knight3, and the latest pawn): the newest
+ * ~/Desktop/Blender_Laptop/<piece><N>.blend is that piece for BOTH sides, rendered twice in
+ * the 3D board's two materials (LIVERY), as Checker Town's gen_pieces3d.js makes it. Else his
+ * September <side><letter>_N.blend in PIECE_DIR (default ~/Desktop/Personal/Blender/Pieces;
+ * wp_0.2 beats wp_0.1), in its own material.
  * A row with no .blend yet is a note, not a failure — board_view.gd draws a lettered disc
  * for anything missing and names it in a warning, so a half-finished set is a working board.
- * Overrides: PIECE_DIR=…  BLENDER=path/to/blender.exe  CHESSWILD_BOARD=…  ELEV=15 */
+ * Overrides: PIECE_DIR=…  LAPTOP_DIR=…  BLENDER=path/to/blender.exe  CHESSWILD_BOARD=…  ELEV=15 */
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -15,6 +19,17 @@ const { execFileSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const PIECE_DIR = process.env.PIECE_DIR
   || path.join(os.homedir(), 'Desktop', 'Personal', 'Blender', 'Pieces');
+const LAPTOP = process.env.LAPTOP_DIR || path.join(os.homedir(), 'Desktop', 'Blender_Laptop');
+const WORD = { K: 'king', Q: 'queen', B: 'bishop', N: 'knight', R: 'rook', P: 'pawn' };
+// ⚠ his knight looks along Blender +Y, straight at this camera: head-on it is a slab with
+// notches, a rook. Turned, it shows its profile facing left, as a printed diagram's does.
+const TURN = { N: 90 };
+// Checker Town's Board3D.LIGHT and DARK (his September bishops' materials), linear as
+// Blender holds them — test:board3d holds all three copies equal.
+const LIVERY = {
+  w: [0.8000229597091675, 0.7936021089553833, 0.45607203245162964],
+  b: [0.010219833813607693, 0.0032667412888258696, 0.0024057396221905947],
+};
 
 const BOARD = process.env.CHESSWILD_BOARD || 'C:/Users/Nate/Documents/chesswild-board';
 const MIRROR = path.join(ROOT, 'private/docs/godot/tournament_board');
@@ -64,9 +79,11 @@ function findBlender() {
 // ⚠⚠ THE VERSION IS DOTTED, NOT DECIMAL — the same trap gen-models.js documents, where
 // parseFloat read 0.10 as smaller than 0.9 and his newest Nate save silently never shipped.
 // It bites harder here: the set on disk already mixes schemes (wp_0.1 is [0,1], bp_01 is
-// [1]), so the picked version is printed on every line rather than assumed.
-function newestSave(name) {
-  const re = new RegExp('^' + name + '(?:_(\\d+(?:\\.\\d+)*))?\\.blend$', 'i');
+// [1]), so the picked version is printed on every line rather than assumed. The laptop's
+// names have no underscore (bishop2), hence `_?`.
+function newestSave(name, dir = PIECE_DIR) {
+  if (!fs.existsSync(dir)) return null;
+  const re = new RegExp('^' + name + '(?:_?(\\d+(?:\\.\\d+)*))?\\.blend$', 'i');
   const ver = (v) => (v || '0').split('.').map(Number);
   const cmp = (a, b) => {
     for (let i = 0; i < Math.max(a.length, b.length); i++) {
@@ -75,11 +92,11 @@ function newestSave(name) {
     }
     return 0;
   };
-  const hits = fs.readdirSync(PIECE_DIR)
+  const hits = fs.readdirSync(dir)
     .map(f => ({ f, m: f.match(re) })).filter(x => x.m)
-    .map(x => ({ f: x.f, v: ver(x.m[1]), t: fs.statSync(path.join(PIECE_DIR, x.f)).mtimeMs }))
+    .map(x => ({ f: x.f, v: ver(x.m[1]), t: fs.statSync(path.join(dir, x.f)).mtimeMs }))
     .sort((a, b) => cmp(a.v, b.v) || b.t - a.t);
-  return hits.length ? { file: path.join(PIECE_DIR, hits[0].f), v: hits[0].v.join('.') } : null;
+  return hits.length ? { file: path.join(dir, hits[0].f), v: hits[0].v.join('.') } : null;
 }
 
 // ⚠⚠ 512px OF PIECE INTO A 91px SQUARE, AND GODOT IMPORTS PNGS WITHOUT MIPMAPS. Plain
@@ -177,11 +194,14 @@ let done = 0, failed = 0;
 const waiting = [];
 for (const p of PIECES) {
   if (only.length && !only.includes(p.out.toLowerCase())) continue;
-  const src = newestSave(p.src);
+  const L = p.out[1];
+  const lap = newestSave(WORD[L], LAPTOP);
+  const src = lap || newestSave(p.src);
   if (!src) { waiting.push(p.out); continue; }
   const png = path.join(stage, p.out + '.png');
+  const dress = lap ? [String(TURN[L] || 0), LIVERY[p.out[0]].concat(0.5).join(',')] : [];
   const log = execFileSync(blender, ['-b', src.file, '--factory-startup', '--python',
-    path.join(__dirname, 'blender-piece.py'), '--', png, String(p.h), ELEV],
+    path.join(__dirname, 'blender-piece.py'), '--', png, String(p.h), ELEV, ...dress],
     { encoding: 'utf8' });
   // ⚠ a failed render still exits 0 — Blender prints the traceback and says nothing else
   const ok = (log.match(/^PIECE_OK .*$/m) || [''])[0];
@@ -193,7 +213,7 @@ for (const p of PIECES) {
   }
   if (clip) console.error(`  ⚠ ${p.out} is cropped by the frame — ${clip.slice(11)}`);
   const kb = (fs.statSync(png).size / 1024).toFixed(1);
-  console.log(`✓ ${path.basename(src.file)} (v${src.v}) → ${p.out}.png ${kb} KB  `
+  console.log(`✓ ${path.basename(src.file)} (v${src.v}${lap ? ', in ' + (p.out[0] === 'w' ? 'LIGHT' : 'DARK') : ''}) → ${p.out}.png ${kb} KB  `
     + `${ok.split(' ').slice(2).join(' ')}\n    ${place(png, p.out)}`);
   done++;
 }
@@ -204,7 +224,7 @@ for (const p of PIECES) {
 // invalidate the copy, so it is the run that checks it. [[audit-numbers-can-be-wrong]]
 function checkPieceArt() {
   if (!fs.existsSync(TOWN)) return 0;
-  const gd = path.join(TOWN, 'piece_art.gd');
+  const gd = path.join(TOWN, 'art', 'piece_art.gd');   // ⚠ in art/ since the town's folders-by-feature move (10-16)
   if (!fs.existsSync(gd)) {
     console.error(`✗ no piece_art.gd in ${TOWN} — the Assembly stands its pieces on these numbers`);
     return 1;
@@ -235,7 +255,7 @@ failed += checkPieceArt();
 
 if (waiting.length) {
   console.log(`\n· not modeled yet, drawing lettered discs: ${waiting.join(' ')}`);
-  console.log(`  name them ${waiting[0].toLowerCase()}_0.1.blend … in ${PIECE_DIR}`);
+  console.log(`  name them ${WORD[waiting[0][1]]}1.blend … in ${LAPTOP}`);
 }
 console.log(`\n${done}/${PIECES.length} rendered at ${ELEV}° elevation.`);
 process.exit(failed ? 1 : 0);

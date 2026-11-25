@@ -1,17 +1,21 @@
 # Run by tests/gen-pieces.js inside headless Blender:
-#   blender -b X.blend --factory-startup --python this -- out.png HEIGHT ELEV
+#   blender -b X.blend --factory-startup --python this -- out.png HEIGHT ELEV [TURN LIVERY]
 #
 # One piece, rendered onto the shared 512x512 canvas the Tournament Board expects.
+# TURN: degrees about the vertical. LIVERY: "r,g,b,roughness" (linear), every surface worn in
+# it — one laptop model rendered as either side.
 
 import sys
 import math
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Matrix
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 OUT = argv[0]
 HEIGHT = float(argv[1])        # this piece's height in canon units (King = 1.43)
 ELEV = math.radians(float(argv[2]))
+TURN = math.radians(float(argv[3])) if len(argv) > 3 else 0.0
+LIVERY = [float(x) for x in argv[4].split(",")] if len(argv) > 4 else None
 
 # ⚠⚠ THE CAMERA IS A CONSTANT AND THE MODEL IS WHAT MOVES. board_view.gd fits the LONGEST
 # side of each texture to the square, so twelve PNGs cropped to twelve bounding boxes come
@@ -30,10 +34,36 @@ if palette is not None:
         bpy.data.objects.remove(ob, do_unlink=True)
 
 scene = bpy.context.scene
+# ⚠ the three suns below are the only light: a lamp left in his scene brightens that one piece
+for o in list(scene.objects):
+    if o.type == 'LIGHT':
+        bpy.data.objects.remove(o, do_unlink=True)
+# ⚠ a rigged piece stands in its REST pose, or a save left mid-bow draws a bowing pawn
+for o in scene.objects:
+    if o.type == 'ARMATURE':
+        o.data.pose_position = 'REST'
+bpy.context.view_layer.update()
 meshes = [o for o in scene.objects if o.type == 'MESH' and not o.hide_render]
 if not meshes:
     print("PIECE_FAIL no renderable mesh")
     sys.exit(0)
+
+if LIVERY:
+    mat = bpy.data.materials.new("Livery")
+    if mat.node_tree is None:      # Blender 4; 5 always has one, and warns when use_nodes is set
+        mat.use_nodes = True
+    bsdf = next((n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None) if mat.node_tree else None
+    if bsdf is None:
+        print("PIECE_FAIL no Principled BSDF to dress the piece in")
+        sys.exit(0)
+    bsdf.inputs["Base Color"].default_value = (LIVERY[0], LIVERY[1], LIVERY[2], 1.0)
+    bsdf.inputs["Roughness"].default_value = LIVERY[3]
+    bsdf.inputs["Metallic"].default_value = 0.0
+    for o in meshes:
+        if not o.material_slots:
+            o.data.materials.append(mat)
+        for s in o.material_slots:
+            s.material = mat
 
 lo = Vector((1e9, 1e9, 1e9))
 hi = Vector((-1e9, -1e9, -1e9))
@@ -60,8 +90,11 @@ for o in list(scene.objects):
         o.parent = root
         o.matrix_parent_inverse = root.matrix_world.inverted()
 root.scale = (k, k, k)
+root.rotation_euler = (0.0, 0.0, TURN)
 mid = (lo + hi) * 0.5
-root.location = (-mid.x * k, -mid.y * k, -lo.z * k)
+# ⚠ the centering turns with the piece, or a turned piece stands off its square
+off = Matrix.Rotation(TURN, 3, 'Z') @ Vector((mid.x * k, mid.y * k, 0.0))
+root.location = (-off.x, -off.y, -lo.z * k)
 bpy.context.view_layer.update()
 
 cam_data = bpy.data.cameras.new("PieceCam")
@@ -115,6 +148,9 @@ except Exception:
 # ⚠⚠ A PIECE TALLER THAN THE FRAME IS CROPPED, NOT REPORTED. Cycles renders a decapitated
 # king perfectly happily and writes a valid PNG. Measure the corners in camera space instead
 # of trusting that ORTHO was generous enough when the twelfth piece arrives.
+# ⚠ update first: the new camera's matrix_world is identity until then, and this measured
+# the piece's footprint instead of its height — a king of any size passed
+bpy.context.view_layer.update()
 inv = cam.matrix_world.inverted()
 half = ORTHO * 0.5
 worst = 0.0

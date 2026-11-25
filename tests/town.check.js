@@ -7707,7 +7707,7 @@ const server = http.createServer((req, res) => {
               const b = +((new RegExp('"' + L + '": ([\\d.]+)').exec(b3F('tall')) || [])[1]);
               return !(g > 0 && Math.abs(g - b) < 0.0015);
             });
-            const glbOff = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'].filter((c) => !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb'))
+            const glbOff = ['P', 'B', 'N', 'K', 'Q', 'R'].filter((c) => !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb'))
               || !fs.existsSync(path.join(GD, 'pieces3d', c + '.glb.import')));
             const tapT = (/\n\t{3}"tapmap":[\s\S]*?(?=\n\t{3}"|\n\S)/.exec(gdTxt('tests/probe.gd')) || [''])[0];
             ok(/^class_name Board3D\nextends SubViewportContainer/.test(b3T) && /_vp\.own_world_3d = true/.test(b3T)
@@ -7747,8 +7747,8 @@ const server = http.createServer((req, res) => {
                && /tablemove:e4d5;wait:4;num:ChessTable:_b3\._falling:>0;/.test(bcCase('table3d'))
                && /key:v;num:ChessTable:_b3\.visible:=0;gseq:board_flat=true;tapmap;/.test(bcCase('table3d'))
                && new RegExp('^[^#\\n]*\\btable3d\\b', 'm').test(suiteT),
-              '⭐⭐ THE TILTED 3D BOARD  (his 11-04: "then tilted 3d chess board"): every table\'s board in 3D at a tilt, in his own Blender pieces (his pawns and bishops; the May set\'s king, queen, rook and knight in his two materials), the table\'s woods under a lamp with real shadows, fitted to its frame whatever its shape; a move arcs, a capture knocks the taken piece aside, the cuts move its camera and a ring rides it with its piece; a press is the piece or the square under it, as drawn; "Board: Flat" (V, a pad\'s R) is a device preference (probed: all 64 squares pressed where they are drawn, at rest, in a cut and flat; a check\'s ring held on the king through the cut)',
-              tallOff.length || glbOff.length ? 'off: ' + tallOff.concat(glbOff).join(' ') : 'eight models, at the canon heights');
+              '⭐⭐ THE TILTED 3D BOARD  (his 11-04: "then tilted 3d chess board"): every table\'s board in 3D at a tilt, in his own Blender pieces (his pawn, bishop and knight; the May set\'s king, queen and rook; each one model for both sides, in the board\'s two materials), the table\'s woods under a lamp with real shadows, fitted to its frame whatever its shape; a move arcs, a capture knocks the taken piece aside, the cuts move its camera and a ring rides it with its piece; a press is the piece or the square under it, as drawn; "Board: Flat" (V, a pad\'s R) is a device preference (probed: all 64 squares pressed where they are drawn, at rest, in a cut and flat; a check\'s ring held on the king through the cut)',
+              tallOff.length || glbOff.length ? 'off: ' + tallOff.concat(glbOff).join(' ') : 'six models, at the canon heights');
             /* ⭐ PUSH IN WHEN YOU SIT, AND THE OPPONENT ACROSS (his 11-05, #1 of the view ideas) */
             const tpT = rd('table_push.gd');
             const tpF = (n) => fnGd(tpT, n);
@@ -8483,7 +8483,12 @@ const server = http.createServer((req, res) => {
               'his pawn, rigged, bowing': (pawnJ.skins || []).length === 1 && (pawnJ.animations || []).length === 1
                 && fs.existsSync(pawnGlb + '.import') && !fs.existsSync(path.join(GD, 'pieces3d', 'wP.glb'))
                 && /const LAPTOP = process\.env\.LAPTOP_DIR \|\| 'C:\/Users\/Nate\/Desktop\/Blender_Laptop';/.test(gp3)
-                && /const pawn = newestSave\('pawn', LAPTOP\);/.test(gp3) && /turn: PAWN_TURN/.test(gp3),
+                && /laptop\[L\] = newestSave\(WORD\[L\], LAPTOP\);/.test(gp3) && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
+              /* ⭐ HIS 11-24: his bishop and knight, made as his pawn is, one file for both sides in the board's two materials */
+              'his bishop and knight, one each for both sides': ['B', 'N'].every((L) => fs.existsSync(path.join(GD, 'pieces3d', L + '.glb.import')))
+                && !['wB', 'bB', 'wN', 'bN'].some((c) => fs.existsSync(path.join(GD, 'pieces3d', c + '.glb')))
+                && /const WORD = \{ K: 'king', Q: 'queen', B: 'bishop', N: 'knight', R: 'rook', P: 'pawn' \};/.test(gp3)
+                && /var m := _flat_mat\(\(LIGHT if color == "w" else DARK\)\.linear_to_srgb\(\), 0\.5\)\s*\n\t\tm\.cull_mode = BaseMaterial3D\.CULL_DISABLED/.test(fnGd(b3Txt, '_skin')),
               'the board bows the side that lost': /func bow\(color: String, calm := false\) -> void:/.test(b3Txt)
                 && /ap\.play\(ap\.get_animation_list\(\)\[0\]\)/.test(fnGd(b3Txt, 'bow')) && /ap\.stop\(\)/.test(fnGd(b3Txt, 'unbow'))
                 && /_bow_t -= dt/.test(fnGd(b3Txt, 'step'))

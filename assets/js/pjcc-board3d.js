@@ -44,8 +44,13 @@
     mate: { secs: 1.60, zoom: 1.10, push: 1.1875, turn: 0.06, circle: 0.35 },
   };
   var TALL = { K: 1.43, Q: 1.30, B: 1.34, N: 1.278, R: 0.86, P: 0.97 };
-  // ⭐ P IS HIS PAWN THAT BOWS IN DEFEAT (his 11-18), rigged, for both sides in his two materials, as the May set is
-  var CODES = ['P', 'wB', 'bB', 'K', 'Q', 'R', 'N'];
+  // ⭐ EACH MODEL IS ONE PIECE FOR BOTH SIDES, worn in LIGHT or DARK: his pawn that bows in defeat (11-18), his bishop and
+  // knight (11-24), the May set for the rest
+  var CODES = ['P', 'B', 'N', 'K', 'Q', 'R'];
+  // the game's Board3D.LIGHT and DARK (his September bishops' materials), ⚠ LINEAR as glTF holds them: new Color(r, g, b)
+  // keeps them linear, a hex would be read as sRGB
+  var LIGHT = [0.8000229597091675, 0.7936021089553833, 0.45607203245162964];
+  var DARK = [0.010219833813607693, 0.0032667412888258696, 0.0024057396221905947];
   var KEY = 'pjcc.board.flat';
 
   // ── WHOEVER SITS ACROSS, THE ROOM'S LIGHT, AND THEIR ANSWER TO YOUR MOVE (his 11-05 view ideas #1, #4, #5; of the
@@ -388,7 +393,7 @@
     this.keyL = key;
     this.root = new T.Group(); sc.add(this.root);
     this.marks = new T.Group(); sc.add(this.marks);
-    this.skins = { w: skin(M, 'w', T), b: skin(M, 'b', T) };
+    this.skins = { w: skin('w', T), b: skin('b', T) };
     var self = this;
     if (!opts.into) {
       cv.style.cssText = 'position:absolute;z-index:2;touch-action:manipulation;cursor:pointer;';
@@ -401,15 +406,10 @@
   };
   var AMB = 1.3, KEYI = 2.1, FILLI = 0.35;
 
-  function skin(M, side, T) {
-    var m = null;
-    ['B', 'P'].some(function (L) {
-      var g = M[side + L];
-      if (!g) return false;
-      g.traverse(function (n) { if (!m && n.isMesh && n.material) m = n.material; });
-      return !!m;
-    });
-    return m || new T.MeshStandardMaterial({ color: side === 'w' ? 0xe8e2b4 : 0x2a1f1c, roughness: 0.5 });
+  // as the glTF loader made the bishops' material: double-sided (2), roughness 0.5
+  function skin(side, T) {
+    var c = side === 'w' ? LIGHT : DARK;
+    return new T.MeshStandardMaterial({ color: new T.Color(c[0], c[1], c[2]), roughness: 0.5, metalness: 0, side: 2 });
   }
 
   P.view = function (i) { var c = i % 8, r = (i / 8) | 0; return this.flip ? [7 - c, 7 - r] : [c, r]; };
@@ -465,7 +465,7 @@
     this.touch();
   };
 
-  // A piece as a node standing on its square: his model, or the May set's in his material.
+  // A piece as a node standing on its square, in its side's material (a side's own model, wB, would keep its own).
   P.make = function (c) {
     var M = this.M, white = c.charAt(0) === 'w';
     var his = !!M[c], src = M[c] || M[c.charAt(1)];
