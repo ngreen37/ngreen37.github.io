@@ -193,15 +193,20 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
     '⚠⚠ …and no line says how a real player FELT');
 
   /* ══ his Game 2 notes, 2026-11-25 ══ the mechanism, never the wording */
-  const boothN = booth.replace(/\r\n/g, '\n'), castN0 = cast.replace(/\r\n/g, '\n');
+  const boothN = booth.replace(/\r\n/g, '\n'), castN0 = cast.replace(/\r\n/g, '\n'), mainN0 = main.replace(/\r\n/g, '\n');
   const guardAt = boothN.indexOf('\tif ply >= moves.size() - 1:\n\t\treturn {}');
   ok(guardAt > 0 && boothN.indexOf('_say("draw" + tail') < guardAt && boothN.indexOf('_say("castle"') < guardAt
      && guardAt < boothN.indexOf('_say("pace"') && guardAt < boothN.indexOf('_say("quiet"'),
     '⚠ nothing optional on the move before the last: Game 2\'s 20.Bg3 line was up 1.4 s before the result replaced it',
     'the result and the news still speak there');
-  ok(/"castle": \["JUST IN", "[^"]+", "[^"]+"\]/.test(boothN)
-     && /row\[1 \+ posmod\(int\(f\.get\("n", 1\)\) - 1, row\.size\(\) - 1\)\]/.test(boothN),
-    '⭐ a kind with two wordings takes turns, one per game, so a video never repeats the last one\'s line');
+  const sayCalls = boothN.match(/_say\(/g) || [], toldCalls = boothN.match(/return _say\([^()]+, f, told\)/g) || [];
+  ok(/for i in range\(1, row\.size\(\)\):\n\t\tvar t: String = row\[i\]\n\t\tif told\.has\("t:" \+ t\):\n\t\t\tcontinue\n\t\ttold\["t:" \+ t\] = true/.test(boothN)
+     && /for t in game\.get\("said_before", \[\]\):\n\t\ttold\["t:" \+ str\(t\)\] = true/.test(boothN)
+     && toldCalls.length === sayCalls.length - 1,
+    '⭐ no wording twice in the match (his 11-25, "let\'s not repeat lines from game 1"): the first wording no earlier video and no earlier line said, else silence');
+  ok(/_game\["said_before"\] = _said_before\(\)\n\tcast\.load_game\(_game\)/.test(mainN0)
+     && /var wiped := _clear_frames\(dir\)\n\t_record_said\(\)/.test(mainN0) && /all\[str\(n\)\] = used/.test(mainN0),
+    '…the ledger (data/said.json) is read before a game is planned and written only by a recording, one entry per game');
   ok(/var limit := base \* n \/ 120/.test(boothN) && /took >= 0 and took < _base\(game\)/.test(boothN)
      && /var m := s \/ 60 \+ 1/.test(boothN) && /var h := s \/ 3600 \+ 1/.test(boothN),
     '⚠ "playing fast" and a quick game are measured against the time control, and "in under …" rounds UP',
@@ -213,7 +218,6 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
      && /var said: Dictionary = _desk\.get\(ply, \{\}\)/.test(castN0) && /var said: Dictionary = _desk\.get\(0, \{\}\)/.test(castN0)
      && !/Booth\.observe\(/.test(castN0),
     '⭐ the desk plans the whole game before the first move (his lines, what is new, its own) and the ticker plays the plan');
-  const mainN0 = main.replace(/\r\n/g, '\n');
   ok(/var need := Broadcast\.read_secs\(/.test(mainN0) && /if b >= 2 and gap < need:\n\t\t\t_holds\[b - 2\] \+= need - gap/.test(mainN0)
      && /clampf\(0\.6 \+ 0\.3 \* float\(text\.split\(" ", false\)\.size\(\)\), 2\.0, LINE_SECS\)/.test(castN0),
     '⭐ every line is read before the next replaces it: the board waits (his Game 2 lines sat one move apart)');
