@@ -167,12 +167,30 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   const main = fs.readFileSync(path.join(TB, 'main.gd'), 'utf8');
   const lines = /const LINES := \{([\s\S]*?)\n\}/.exec(booth);
   const slots = lines ? [...lines[1].matchAll(/\{([a-z]+)\}/g)].map((m) => m[1]) : [];
-  const allowed = ['w', 'o', 'san', 'min', 'clock', 'n', 'moves', 'sq'];
+  const allowed = ['w', 'o', 'san', 'min', 'clock', 'n', 'moves', 'sq', 'time'];
   ok(lines && slots.every((s) => allowed.indexOf(s) >= 0),
     '⚠⚠ the desk\'s templates have slots for facts only — no slot a state of mind could go in',
     slots.filter((s) => allowed.indexOf(s) < 0).join(' '));
   ok(lines && !/nerv|rattl|panic|feel|confiden|upset|angry|tired|pressure|scared|shak|emotion|stress/i.test(lines[1]),
     '⚠⚠ …and no line says how a real player FELT');
+
+  /* ══ his Game 2 notes, 2026-11-25 ══ the mechanism, never the wording */
+  const boothN = booth.replace(/\r\n/g, '\n'), castN0 = cast.replace(/\r\n/g, '\n');
+  const guardAt = boothN.indexOf('\tif ply >= moves.size() - 1:\n\t\treturn {}');
+  ok(guardAt > 0 && boothN.indexOf('_say("draw" + tail') < guardAt && boothN.indexOf('_say("castle"') < guardAt
+     && guardAt < boothN.indexOf('_say("pace"') && guardAt < boothN.indexOf('_say("quiet"'),
+    '⚠ nothing optional on the move before the last: Game 2\'s 20.Bg3 line was up 1.4 s before the result replaced it',
+    'the result and the news still speak there');
+  ok(/"castle": \["JUST IN", "[^"]+", "[^"]+"\]/.test(boothN)
+     && /row\[1 \+ posmod\(int\(f\.get\("n", 1\)\) - 1, row\.size\(\) - 1\)\]/.test(boothN),
+    '⭐ a kind with two wordings takes turns, one per game, so a video never repeats the last one\'s line');
+  ok(/var limit := base \* n \/ 120/.test(boothN) && /took >= 0 and took < _base\(game\)/.test(boothN)
+     && /var m := s \/ 60 \+ 1/.test(boothN) && /var h := s \/ 3600 \+ 1/.test(boothN),
+    '⚠ "playing fast" and a quick game are measured against the time control, and "in under …" rounds UP',
+    'by moves alone, 2024\'s Game 11 was "29 moves in under 4 hours"; 5 min 32 s is "under 6 minutes"');
+  ok(/_text\(f, "MATCH SCORE"/.test(castN0) && /roll = clampf\(\(_card_t - MORPH_AT\) \/ MORPH_SECS, 0\.0, 1\.0\)/.test(castN0)
+     && /\t_card_t \+= dt\n/.test(castN0) && /_card = kind\n\t_card_t = 0\.0/.test(castN0),
+    '⭐ both cards say MATCH SCORE, and the end card rolls the old score into the new on the recorder\'s clock');
   ok(/var graded := bool\(game\.get\("marks", false\)\)/.test(booth)
     && /MARK\.has\(cls\) and bool\(game\.get\("marks", false\)\)/.test(cast),
     'the desk and the board both stay quiet about grades the broadcast did not give');
