@@ -175,11 +175,52 @@ function voiceIn(dir) {
   return null;
 }
 
+/* ⭐ HIS OWN LINES FOR THIS VIDEO (his 11-25), in desk.txt beside the voice file, one to a line:
+       new: The knight is now on our board, and the bishop looks better.
+       9. Bxe5: Re-takes with the bishop? Does Gukesh have a plan?
+       9... Bd7: [DEVELOPING] Sindarov is blitzing out his moves with confidence.
+   "new:" is what changed on our board since the last video (his running theme); a [TAG] picks the box.
+   ⚠⚠ A LINE NAMES ITS MOVE, AND IT MUST BE THE GAME'S MOVE, or nothing renders: one ply off, a line questions the
+   wrong player. */
+const DESK_TAGS = ['BREAKING', 'DEVELOPING', 'JUST IN', 'LIVE'];
+function deskIn(dir, game, log) {
+  const f = path.join(dir, 'desk.txt');
+  if (!fs.existsSync(f)) { log('  (no desk.txt — his lines for this video go in ' + f + ')'); return {}; }
+  const out = { lines: [] }, bad = [], taken = {};
+  const tagged = (t, dflt) => { const m = /^\[([A-Z ]+)\]\s*(.+)$/.exec(t); return m ? { tag: m[1], text: m[2].trim() } : { tag: dflt, text: t }; };
+  const plain = (san) => String(san).replace(/0/g, 'O').replace(/[+#!?]+$/, '');
+  fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((raw, i) => {
+    const s = raw.trim(), at = 'line ' + (i + 1) + ': ';
+    if (!s || s[0] === '#') return;
+    let m = /^new\s*:\s*(.+)$/i.exec(s), say;
+    if (m) say = tagged(m[1].trim(), 'JUST IN');
+    else {
+      m = /^(\d+)\s*(\.\.\.|\.)\s*([^\s:]+)\s*:\s*(.+)$/.exec(s);
+      if (!m) { bad.push(at + 'neither "new: …" nor "9. Bxe5: …" — ' + s); return; }
+      const ply = (+m[1] - 1) * 2 + (m[2] === '.' ? 1 : 2), mv = game.moves[ply - 1];
+      if (!mv || plain(mv.san) !== plain(m[3])) {
+        bad.push(at + m[1] + m[2] + ' ' + m[3] + ', but the game has ' + (mv ? m[1] + m[2] + ' ' + mv.san : 'no such move'));
+        return;
+      }
+      if (taken[ply]) { bad.push(at + 'a second line on ' + m[1] + m[2] + ' ' + mv.san); return; }
+      taken[ply] = true;
+      say = Object.assign({ ply }, tagged(m[4].trim(), 'LIVE'));
+    }
+    if (DESK_TAGS.indexOf(say.tag) < 0) { bad.push(at + '[' + say.tag + '] is not one of ' + DESK_TAGS.join(', ')); return; }
+    if (say.ply) out.lines.push(say); else out.new = { tag: say.tag, text: say.text };
+  });
+  if (bad.length) throw new Error('desk.txt (' + f + ') has ' + bad.length + ' line(s) that would land wrong:\n    ' + bad.join('\n    '));
+  log('  desk.txt: ' + (out.new ? 'what is new on our board, and ' : '') + out.lines.length + ' line(s) of his, each on its move');
+  return out;
+}
+
 async function one(games, pgn, match, o, log) {
   const t0 = Date.now();
   const { game, seconds } = await prepare(games, pgn, match, log);
-  const file = writeGame(game);
   const m = game.match;
+  const dir = path.join(o.out || VIDEOS, slug(game.white_short + '-vs-' + game.black_short + '-game-' + m.game));
+  game.desk = deskIn(dir, game, log);
+  const file = writeGame(game);
   log('  Game ' + m.game + ': ' + game.white_short + ' – ' + game.black_short + '  ' + game.result
     + '   (score before ' + half(m.before[0]) + '–' + half(m.before[1]) + ', after ' + half(m.after[0]) + '–' + half(m.after[1]) + ')');
   log('  ' + game.moves.length + ' plies · graded by ' + game.graded_by + ' · biggest swing at ply ' + game.swing_ply
@@ -187,7 +228,6 @@ async function one(games, pgn, match, o, log) {
   log('  → ' + file);
   const times = { prepare: seconds };
   if (o.render) {
-    const dir = path.join(o.out || VIDEOS, slug(game.white_short + '-vs-' + game.black_short + '-game-' + m.game));
     const voice = voiceIn(dir);
     for (const layout of ['square', 'vertical', 'wide']) {
       const r = record(layout, path.join(dir, layout), log);
@@ -240,4 +280,4 @@ async function main() {
 
 /* ⚠ EXIT BY HAND: a Stockfish that graded a game keeps the process alive after the last line. */
 if (require.main === module) main().then(() => process.exit(0), (e) => { console.error('FAILED — ' + e.message); process.exit(1); });
-module.exports = { splitGames, scoreBefore, pick, tag, tourFrom, slug, gameNo };
+module.exports = { splitGames, scoreBefore, pick, tag, tourFrom, slug, gameNo, deskIn };

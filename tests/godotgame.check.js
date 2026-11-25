@@ -158,6 +158,24 @@ const bsrc = fs.readFileSync(path.join(__dirname, 'gen-broadcast.js'), 'utf8');
 ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\n]*game\.event/.test(bsrc),
   '⚠ the card never prints the PGN\'s Event, which carries the sponsor\'s name');
 
+/* ⭐ HIS OWN LINES (desk.txt beside the voice file, his 11-25): each lands on the move it names, or nothing renders */
+{
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'desk-'));
+  const w9 = g1.moves.find((m) => m.move === 9 && m.side === 'w'), b9 = g1.moves.find((m) => m.move === 9 && m.side === 'b');
+  const write = (s) => fs.writeFileSync(path.join(dir, 'desk.txt'), s);
+  const tryDesk = () => { try { return W.deskIn(dir, g1, () => {}); } catch (e) { return { error: e.message }; } };
+  eq(JSON.stringify(tryDesk()), '{}', 'no desk.txt, no lines of his');
+  write('# a note\nnew: New on our board.\n9. ' + w9.san + ': A question?\n9...' + b9.san + ': [DEVELOPING] An answer.\n');
+  eq(JSON.stringify(tryDesk()), JSON.stringify({ lines: [{ ply: 17, tag: 'LIVE', text: 'A question?' },
+    { ply: 18, tag: 'DEVELOPING', text: 'An answer.' }], new: { tag: 'JUST IN', text: 'New on our board.' } }),
+    '⭐ his lines land on the moves they name ("9." is ply 17, "9..." ply 18); "new:" is what changed on our board');
+  write('9. ' + g1.moves[0].san + ': on a move the game did not play\n');
+  ok(/would land wrong/.test(tryDesk().error || ''), '⚠⚠ a line naming a move the game did not play stops the render: one ply off, it questions the wrong player');
+  write('9. ' + w9.san + ': [OPINION] a box the ticker does not have\n');
+  ok(/would land wrong/.test(tryDesk().error || ''), '…and so does a box the ticker does not have');
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
 /* the board side — read out of the mirror, which is what a rebuild restores */
 const TB = path.join(__dirname, '..', 'private', 'docs', 'godot', 'tournament_board');
 if (fs.existsSync(path.join(TB, 'booth.gd'))) {
@@ -191,6 +209,14 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(/_text\(f, "MATCH SCORE"/.test(castN0) && /roll = clampf\(\(_card_t - MORPH_AT\) \/ MORPH_SECS, 0\.0, 1\.0\)/.test(castN0)
      && /\t_card_t \+= dt\n/.test(castN0) && /_card = kind\n\t_card_t = 0\.0/.test(castN0),
     '⭐ both cards say MATCH SCORE, and the end card rolls the old score into the new on the recorder\'s clock');
+  ok(/static func schedule\(game: Dictionary\) -> Dictionary:/.test(boothN) && /_desk = Booth\.schedule\(g\)/.test(castN0)
+     && /var said: Dictionary = _desk\.get\(ply, \{\}\)/.test(castN0) && /var said: Dictionary = _desk\.get\(0, \{\}\)/.test(castN0)
+     && !/Booth\.observe\(/.test(castN0),
+    '⭐ the desk plans the whole game before the first move (his lines, what is new, its own) and the ticker plays the plan');
+  const mainN0 = main.replace(/\r\n/g, '\n');
+  ok(/var need := Broadcast\.read_secs\(/.test(mainN0) && /if b >= 2 and gap < need:\n\t\t\t_holds\[b - 2\] \+= need - gap/.test(mainN0)
+     && /clampf\(0\.6 \+ 0\.3 \* float\(text\.split\(" ", false\)\.size\(\)\), 2\.0, LINE_SECS\)/.test(castN0),
+    '⭐ every line is read before the next replaces it: the board waits (his Game 2 lines sat one move apart)');
   ok(/var graded := bool\(game\.get\("marks", false\)\)/.test(booth)
     && /MARK\.has\(cls\) and bool\(game\.get\("marks", false\)\)/.test(cast),
     'the desk and the board both stay quiet about grades the broadcast did not give');
