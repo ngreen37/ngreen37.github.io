@@ -81,9 +81,11 @@ function findBlender() {
 // It bites harder here: the set on disk already mixes schemes (wp_0.1 is [0,1], bp_01 is
 // [1]), so the picked version is printed on every line rather than assumed. The laptop's
 // names have no underscore (bishop2), hence `_?`.
-function newestSave(name, dir = PIECE_DIR) {
+// ⚠ `numbered`: the laptop's files ship only with a number — his Queen.blend (11-24, a bare
+// cylinder he had just started) matched without one, as gen_pieces3d.js found first.
+function newestSave(name, dir = PIECE_DIR, numbered = false) {
   if (!fs.existsSync(dir)) return null;
-  const re = new RegExp('^' + name + '(?:_?(\\d+(?:\\.\\d+)*))?\\.blend$', 'i');
+  const re = new RegExp('^' + name + (numbered ? '_?(\\d+(?:\\.\\d+)*)' : '(?:_?(\\d+(?:\\.\\d+)*))?') + '\\.blend$', 'i');
   const ver = (v) => (v || '0').split('.').map(Number);
   const cmp = (a, b) => {
     for (let i = 0; i < Math.max(a.length, b.length); i++) {
@@ -195,7 +197,7 @@ const waiting = [];
 for (const p of PIECES) {
   if (only.length && !only.includes(p.out.toLowerCase())) continue;
   const L = p.out[1];
-  const lap = newestSave(WORD[L], LAPTOP);
+  const lap = newestSave(WORD[L], LAPTOP, true);
   const src = lap || newestSave(p.src);
   if (!src) { waiting.push(p.out); continue; }
   const png = path.join(stage, p.out + '.png');

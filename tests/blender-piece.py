@@ -25,6 +25,12 @@ ORTHO = 1.66           # visible span in canon units: a 1.43 king fills ~86% of 
 AIM_Z = 0.74           # frame center, so feet sit near the bottom edge with a little air
 PX = 512
 SAMPLES = 96
+# ⭐ HIS 11-24 ("the smooth with half of the faces looks just fine"): every piece is prepared as Checker Town's
+# tests/blender_glb.py prepares its 3D twin, so the YouTube board and the 3D boards show one shape. test:board3d
+# holds these three equal to the game's.
+SMOOTH_ANGLE = 30.0    # degrees: an edge sharper than this stays a crisp rim
+BUDGET = 6500          # triangles
+FLOOR = 0.5            # never cut below half
 
 # ⚠ The palette cubes are a tool, not the model — same trap as blender-export.py. Here they
 # would not just ride along, they would stand in frame next to the piece.
@@ -64,6 +70,30 @@ if LIVERY:
             o.data.materials.append(mat)
         for s in o.material_slots:
             s.material = mat
+
+
+def count_tris():
+    n = 0
+    dg = bpy.context.evaluated_depsgraph_get()
+    for o in meshes:
+        m = o.evaluated_get(dg).to_mesh()
+        m.calc_loop_triangles()
+        n += len(m.loop_triangles)
+        o.evaluated_get(dg).to_mesh_clear()
+    return n
+
+
+modeled = count_tris()
+ratio = min(1.0, max(FLOOR, BUDGET / modeled)) if modeled else 1.0
+for o in meshes:
+    o.data.shade_smooth()
+    o.data.set_sharp_from_angle(angle=math.radians(SMOOTH_ANGLE))
+    if ratio < 1.0:
+        o.modifiers.new("Budget", 'DECIMATE').ratio = ratio
+        if any(md.type == 'ARMATURE' for md in o.modifiers):
+            with bpy.context.temp_override(object=o, active_object=o):
+                bpy.ops.object.modifier_move_to_index(modifier="Budget", index=0)
+bpy.context.view_layer.update()
 
 lo = Vector((1e9, 1e9, 1e9))
 hi = Vector((-1e9, -1e9, -1e9))
@@ -162,5 +192,5 @@ if worst > half:
     print("PIECE_CLIP needs ortho %.3f, frame is %.3f" % (worst * 2.0, ORTHO))
 
 bpy.ops.render.render(write_still=True)
-print("PIECE_OK %s height=%.3f from=%.3f scale=%.4f fill=%.0f%%"
-      % (OUT, HEIGHT, raw, k, (worst * 2.0 / ORTHO) * 100.0))
+print("PIECE_OK %s height=%.3f from=%.3f scale=%.4f fill=%.0f%% tris=%d of %d"
+      % (OUT, HEIGHT, raw, k, (worst * 2.0 / ORTHO) * 100.0, count_tris(), modeled))

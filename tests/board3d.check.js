@@ -63,6 +63,21 @@ if (b3gd && ctgd) {
   const skinOff = ['LIGHT', 'DARK'].filter((n) => !(linJs(n).length === 3 && linJs(n).every((v, i) => v > 0 && v === linGd(n)[i])));
   ok(skinOff.length === 0 && /new T\.Color\(c\[0\], c\[1\], c\[2\]\), roughness: 0\.5, metalness: 0, side: 2/.test(SRC),
      'every piece wears the game\'s two materials, linear, double-sided, roughness 0.5  [' + (skinOff.join(' ') || 'LIGHT DARK') + ']');
+  /* ⭐ HIS 11-24 ("the smooth with half of the faces looks just fine"): every piece ships smooth, with no texture
+     coordinates and under the budget; the YouTube board's render prepares it with the same three numbers */
+  const py2d = fs.readFileSync(path.join(ROOT, 'tests/blender-piece.py'), 'utf8'), py3d = gd('tests/blender_glb.py');
+  const pyn = (src, n) => +((new RegExp('^' + n + ' = ([\\d.]+)', 'm').exec(src) || [])[1]);
+  const budget = pyn(py3d, 'BUDGET');
+  const heavy = ['SMOOTH_ANGLE', 'BUDGET', 'FLOOR'].filter((n) => !(pyn(py2d, n) > 0 && pyn(py2d, n) === pyn(py3d, n)))
+    .concat(['P', 'B', 'N', 'K', 'Q', 'R'].filter((c) => {
+      const b = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d', c + '.glb'));
+      const j = JSON.parse(b.slice(20, 20 + b.readUInt32LE(12)).toString());
+      let t = 0, uv = false;
+      for (const m of j.meshes) for (const p of m.primitives) { t += j.accessors[p.indices].count / 3; uv = uv || p.attributes.TEXCOORD_0 != null; }
+      return uv || !(t <= budget);
+    }));
+  ok(heavy.length === 0 && /export_texcoords=False/.test(py3d) && /shade_smooth\(\)/.test(py2d) && /shade_smooth\(\)/.test(py3d),
+     '⭐ every piece ships smooth, with no texture coordinates and at most ' + budget + ' triangles, the YouTube board\'s alike  [' + (heavy.join(' ') || 'all six') + ']');
   const pawn = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d/P.glb'));
   const pj = JSON.parse(pawn.slice(20, 20 + pawn.readUInt32LE(12)).toString());
   ok((pj.skins || []).length === 1 && (pj.animations || []).length === 1 && pj.animations[0].channels.length > 0,

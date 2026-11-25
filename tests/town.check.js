@@ -8483,7 +8483,7 @@ const server = http.createServer((req, res) => {
               'his pawn, rigged, bowing': (pawnJ.skins || []).length === 1 && (pawnJ.animations || []).length === 1
                 && fs.existsSync(pawnGlb + '.import') && !fs.existsSync(path.join(GD, 'pieces3d', 'wP.glb'))
                 && /const LAPTOP = process\.env\.LAPTOP_DIR \|\| 'C:\/Users\/Nate\/Desktop\/Blender_Laptop';/.test(gp3)
-                && /laptop\[L\] = newestSave\(WORD\[L\], LAPTOP\);/.test(gp3) && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
+                && /laptop\[L\] = newestSave\(WORD\[L\], LAPTOP, true\);/.test(gp3) && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
               /* ⭐ HIS 11-24: his bishop and knight, made as his pawn is, one file for both sides in the board's two materials */
               'his bishop and knight, one each for both sides': ['B', 'N'].every((L) => fs.existsSync(path.join(GD, 'pieces3d', L + '.glb.import')))
                 && !['wB', 'bB', 'wN', 'bN'].some((c) => fs.existsSync(path.join(GD, 'pieces3d', c + '.glb')))
