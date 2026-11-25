@@ -1,9 +1,9 @@
 /* gen-pieces.js — Blender piece saves → the Tournament Board's art.  Run:  npm run gen:pieces
  * For each row in PIECES, takes the highest-numbered save and renders a 512x512 RGBA PNG
  * through headless Blender, into the Godot project's pieces/ folder and the private mirror.
- * ⭐ HIS LAPTOP FILE FIRST (his 11-24: bishop2, knight3, and the latest pawn): the newest
- * ~/Desktop/Blender_Laptop/<piece><N>.blend is that piece for BOTH sides, rendered twice in
- * the 3D board's two materials (LIVERY), as Checker Town's gen_pieces3d.js makes it. Else his
+ * ⭐ HIS APPROVED LAPTOP FILE FIRST (his 11-24: bishop2, knight3, and the latest pawn): the save
+ * named in APPROVED, from ~/Desktop/Blender_Laptop, is that piece for BOTH sides, rendered twice
+ * in the 3D board's two materials (LIVERY), as Checker Town's gen_pieces3d.js makes it. Else his
  * September <side><letter>_N.blend in PIECE_DIR (default ~/Desktop/Personal/Blender/Pieces;
  * wp_0.2 beats wp_0.1), in its own material.
  * A row with no .blend yet is a note, not a failure — board_view.gd draws a lettered disc
@@ -21,6 +21,10 @@ const PIECE_DIR = process.env.PIECE_DIR
   || path.join(os.homedir(), 'Desktop', 'Personal', 'Blender', 'Pieces');
 const LAPTOP = process.env.LAPTOP_DIR || path.join(os.homedir(), 'Desktop', 'Blender_Laptop');
 const WORD = { K: 'king', Q: 'queen', B: 'bishop', N: 'knight', R: 'rook', P: 'pawn' };
+// ⛑⛑ A LAPTOP SAVE SHIPS ONLY ONCE HE HAS OKED IT, BY NAME (his 11-25: "I made a queen but don't
+// add it yet"). His numbers count iterations: Queen1, Queen2 and King1 sat numbered, unfinished.
+// Checker Town's tests/gen_pieces3d.js keeps the same list; test:board3d holds them equal.
+const APPROVED = { P: 'pawn4', B: 'bishop2', N: 'knight3' };
 // ⚠ his knight looks along Blender +Y, straight at this camera: head-on it is a slab with
 // notches, a rook. Turned, it shows its profile facing left, as a printed diagram's does.
 const TURN = { N: 90 };
@@ -79,13 +83,10 @@ function findBlender() {
 // ⚠⚠ THE VERSION IS DOTTED, NOT DECIMAL — the same trap gen-models.js documents, where
 // parseFloat read 0.10 as smaller than 0.9 and his newest Nate save silently never shipped.
 // It bites harder here: the set on disk already mixes schemes (wp_0.1 is [0,1], bp_01 is
-// [1]), so the picked version is printed on every line rather than assumed. The laptop's
-// names have no underscore (bishop2), hence `_?`.
-// ⚠ `numbered`: the laptop's files ship only with a number — his Queen.blend (11-24, a bare
-// cylinder he had just started) matched without one, as gen_pieces3d.js found first.
-function newestSave(name, dir = PIECE_DIR, numbered = false) {
+// [1]), so the picked version is printed on every line rather than assumed.
+function newestSave(name, dir = PIECE_DIR) {
   if (!fs.existsSync(dir)) return null;
-  const re = new RegExp('^' + name + (numbered ? '_?(\\d+(?:\\.\\d+)*)' : '(?:_?(\\d+(?:\\.\\d+)*))?') + '\\.blend$', 'i');
+  const re = new RegExp('^' + name + '(?:_?(\\d+(?:\\.\\d+)*))?\\.blend$', 'i');
   const ver = (v) => (v || '0').split('.').map(Number);
   const cmp = (a, b) => {
     for (let i = 0; i < Math.max(a.length, b.length); i++) {
@@ -199,10 +200,17 @@ const only = process.argv.slice(2).map(s => s.toLowerCase());
 
 let done = 0, failed = 0;
 const waiting = [];
+// his saves not yet OKed: named, never rendered
+const held = fs.existsSync(LAPTOP) ? fs.readdirSync(LAPTOP).filter((f) =>
+  new RegExp('^(' + Object.values(WORD).join('|') + ')_?\\d+(\\.\\d+)*\\.blend$', 'i').test(f)
+  && !Object.values(APPROVED).some((a) => a.toLowerCase() + '.blend' === f.toLowerCase())) : [];
+if (held.length) console.log('· waiting for his OK (APPROVED), not rendered: ' + held.join(' '));
 for (const p of PIECES) {
   if (only.length && !only.includes(p.out.toLowerCase())) continue;
   const L = p.out[1];
-  const lap = newestSave(WORD[L], LAPTOP, true);
+  const okd = APPROVED[L] ? path.join(LAPTOP, APPROVED[L] + '.blend') : null;
+  if (okd && !fs.existsSync(okd)) { console.error(`✗ ${APPROVED[L]}.blend is approved but not in ${LAPTOP}`); failed++; continue; }
+  const lap = okd ? { file: okd, v: (APPROVED[L].match(/\d+(?:\.\d+)*$/) || ['0'])[0] } : null;
   const src = lap || newestSave(p.src);
   if (!src) { waiting.push(p.out); continue; }
   const png = path.join(stage, p.out + '.png');
@@ -261,8 +269,8 @@ function checkPieceArt() {
 failed += checkPieceArt();
 
 if (waiting.length) {
-  console.log(`\n· not modeled yet, drawing lettered discs: ${waiting.join(' ')}`);
-  console.log(`  name them ${WORD[waiting[0][1]]}1.blend … in ${LAPTOP}`);
+  console.log(`\n· not approved yet, drawing lettered discs: ${waiting.join(' ')}`);
+  console.log(`  a save in ${LAPTOP} ships once it is named in APPROVED (here and in Checker Town's gen_pieces3d.js)`);
 }
 console.log(`\n${done}/${PIECES.length} rendered at ${ELEV}° elevation.`);
 process.exit(failed ? 1 : 0);

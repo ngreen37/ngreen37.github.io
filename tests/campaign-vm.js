@@ -46,7 +46,7 @@ const EXPOSE = ['LEVELS', 'START_OWN', 'START_RANKS', 'START_WALLS', 'ATTACK_CAP
   /* the roll, piece by piece, and how each side stands (11-18) */
   'rollBoards', 'boardMoves', 'standOf', 'standColor', 'standDetail', 'STAND_WORDS', 'posScore',
   /* the short campaign, Easy's clock and the tips said once (11-23, his #4, #9, #2) */
-  'clockScale', 'EASY_CLOCK', 'shortWon', 'shortSay', 'troopsOf', 'SHORT_ROUNDS', 'TIPS', 'TIPS_KEY', 'tipFits', 'tipsSeen', 'tipMoment'];
+  'clockScale', 'EASY_CLOCK', 'shortWon', 'shortSay', 'troopsOf', 'LENGTHS', 'TIPS', 'TIPS_KEY', 'tipFits', 'tipsSeen', 'tipMoment'];
 
 function gameScript() {
   const html = fs.readFileSync(PAGE, 'utf8').replace(/\r\n/g, '\n');

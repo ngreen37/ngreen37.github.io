@@ -1699,12 +1699,21 @@ check('the delay is a BRONSTEIN credit, capped at what the clock read when the m
     /return Math\.max\(1, Math\.floor\(n \/ 3\)\) \+ wallsFor\(side\) \+ \(G\.card === 'reinforce' \? 2 : 0\);/.test(body('deployFor')));
 
   /* #4 the short campaign */
-  camp.newCampaign('medium', 'solo', { limit: camp.SHORT_ROUNDS }); const l1 = camp.G.limit;
-  camp.newCampaign('medium', 'daily', { limit: camp.SHORT_ROUNDS }); const l2 = camp.G.limit;
-  camp.newCampaign('medium', 'scenario', { scen: 'blitz', limit: camp.SHORT_ROUNDS }); const l3 = camp.G.limit;
-  camp.useMap(camp.mapFor('three')); camp.newCampaign('medium', 'three', { limit: camp.SHORT_ROUNDS }); const l4 = camp.G.limit; camp.useMap(camp.MAIN_MAP);
-  check('⭐ #4 THE SHORT CAMPAIGN: a campaign or a war keeps the length it began with; the Daily and a scenario keep their own',
-    camp.SHORT_ROUNDS === 8 && l1 === 8 && l4 === 8 && l2 === 0 && l3 === 0, [l1, l2, l3, l4].join(' · '));
+  camp.newCampaign('medium', 'solo', { limit: 8 }); const l1 = camp.G.limit;
+  camp.newCampaign('medium', 'daily', { limit: 8 }); const l2 = camp.G.limit;
+  camp.newCampaign('medium', 'scenario', { scen: 'blitz', limit: 8 }); const l3 = camp.G.limit;
+  camp.useMap(camp.mapFor('three')); camp.newCampaign('medium', 'three', { limit: 8 }); const l4 = camp.G.limit; camp.useMap(camp.MAIN_MAP);
+  camp.newCampaign('medium', 'solo', { limit: 4 }); const l5 = camp.G.limit;
+  check('⭐ #4 THE SHORT CAMPAIGN: a campaign or a war keeps the length it began with — Full, 8 rounds, or 4 (his 11-25) — the Daily and a scenario keep their own',
+    JSON.stringify(camp.LENGTHS) === '[0,8,4]' && l1 === 8 && l4 === 8 && l5 === 4 && l2 === 0 && l3 === 0, [l1, l2, l3, l4, l5].join(' · '));
+  /* ⭐ his 11-25 ("offer a 4 round campaign as well"): Length steps Full → 8 → 4 → Full, and a 4-round campaign ends when its 4th round does */
+  camp.newCampaign('medium', 'solo', { fog: false, cards: false, limit: 4 }); G = camp.G; G.round = 4;
+  G.own = ['m', 'm', 'm', 'm', 'm', 'm', 't', 't', 't', 't']; G.ranks = G.ranks.map(() => 2);
+  const steps = [0, 8, 4].map((v) => camp.LENGTHS[(camp.LENGTHS.indexOf(v) + 1) % camp.LENGTHS.length]).join(' ');
+  check('…Length steps Full → 8 rounds → 4 rounds → Full, and a 4-round campaign is decided at its 4th round the way an 8-round one is',
+    steps === '8 4 0' && /optLen = LENGTHS\[\(LENGTHS\.indexOf\(optLen\) \+ 1\) % LENGTHS\.length\];/.test(page)
+    && /if \(G\.limit && G\.round >= G\.limit\) \{ campaignOver\(shortWon\(\)\); return; \}/.test(page) && camp.shortWon() === true,
+    steps + ' · ' + camp.shortSay());
   camp.newCampaign('medium', 'solo', { fog: false, cards: false, limit: 8 }); G = camp.G; G.round = 8;
   G.own = ['m', 'm', 'm', 'm', 'm', 'm', 't', 't', 't', 't']; G.ranks = G.ranks.map(() => 2);
   const w1 = camp.shortWon(), s1 = camp.shortSay();

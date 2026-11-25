@@ -142,7 +142,7 @@ function build() {
     cards: Object.keys(G.CARDS).reduce((o, k) => { o[k] = { name: G.CARDS[k].nm, text: G.CARDS[k].txt }; return o; }, {}),
     deck: G.DECK.slice(),
     dailyRounds: G.DAILY_ROUNDS,
-    shortRounds: G.SHORT_ROUNDS,   // 11-23, his #4: a campaign or a war that ends after this many rounds
+    lengths: G.LENGTHS,   // his #4 (11-23: 8 rounds) and 11-25 (4 as well): Length steps through these, 0 is Full
     engine: { ev: G.EV, mateScore: G.MATE_SCORE },
     placement: { wBack: G.W_BACK.slice(), wPawn: G.W_PAWN.slice(), bBack: G.B_BACK.slice(), bPawn: G.B_PAWN.slice() },
     battle: { revealMs: G.REVEAL_MS, mercyMs: G.MERCY_MS, mercyPly: G.MERCY_PLY, mercyOdds: G.MERCY_ODDS,

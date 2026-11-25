@@ -1484,9 +1484,10 @@ function startScenario(id) {
 
 /* ── THE DAILY ── same start, and the same attack rolls the same dice, for everyone */
 var DAILY_ROUNDS = 3, DAILY_KEY = 'pjcc.campaign.daily.v2';
-/* ⭐ THE SHORT CAMPAIGN (his #4 of the 11-23 ten): a campaign or a war that ends after this many rounds, the Daily's way —
-   the most holdings, then the most troops. It frames nothing and opens no keepsake: those are for a war carried through */
-var SHORT_ROUNDS = 8;
+/* ⭐ THE SHORT CAMPAIGN (his #4 of the 11-23 ten, and 4 rounds as well on 11-25): a campaign or a war that ends after this
+   many rounds, the Daily's way — the most holdings, then the most troops. It frames nothing and opens no keepsake: those
+   are for a war carried through. Length steps through these in order; 0 is Full. */
+var LENGTHS = [0, 8, 4];
 /* a Daily score only compares at the same settings, so records are filed under them */
 function variantOf(diff, fog, cards, dog) { return diff + (fog ? '' : '-nofog') + (cards ? '' : '-nocards') + (dog ? '-' + dog : ''); }
 function variantLabel() { return LEVELS[G.diff].nm + (G.fog ? '' : ' · no fog') + (G.cards ? '' : ' · no cards') + (G.dogId ? ' · with ' + dogOf(G.dogId).name : ''); }
@@ -5088,7 +5089,7 @@ $('opt-dog').addEventListener('click', function () {
   paintOpts(); paintHome();
 });
 $('opt-len').addEventListener('click', function () {
-  optLen = optLen ? 0 : SHORT_ROUNDS;
+  optLen = LENGTHS[(LENGTHS.indexOf(optLen) + 1) % LENGTHS.length];
   try { localStorage.setItem(LEN_KEY, String(optLen)); } catch (e) {}
   paintOpts(); paintHome();
 });
@@ -5529,7 +5530,8 @@ document.addEventListener('keydown', function (e) {
 (function () {
   try { optFog = localStorage.getItem(FOG_KEY) !== '0'; optCards = localStorage.getItem(CARDS_KEY) !== '0'; } catch (e) {}
   try { optDog = dogOf(localStorage.getItem(DOG_KEY)) ? localStorage.getItem(DOG_KEY) : ''; } catch (e) {}
-  try { optLen = +localStorage.getItem(LEN_KEY) > 0 ? SHORT_ROUNDS : 0; } catch (e) {}
+  // ⚠ a length saved before the list (any positive number then meant 8) still opens as 8
+  try { var lv0 = +localStorage.getItem(LEN_KEY); optLen = LENGTHS.indexOf(lv0) >= 0 ? lv0 : (lv0 > 0 ? LENGTHS[1] : 0); } catch (e) {}
   paintOpts();
   try { var lv = localStorage.getItem(LEVEL_KEY); if (LEVELS[lv]) { var btn = $('levels').querySelector('[data-lvl="' + lv + '"]'); if (btn) btn.click(); } } catch (e) {}
 })();

@@ -8483,7 +8483,10 @@ const server = http.createServer((req, res) => {
               'his pawn, rigged, bowing': (pawnJ.skins || []).length === 1 && (pawnJ.animations || []).length === 1
                 && fs.existsSync(pawnGlb + '.import') && !fs.existsSync(path.join(GD, 'pieces3d', 'wP.glb'))
                 && /const LAPTOP = process\.env\.LAPTOP_DIR \|\| 'C:\/Users\/Nate\/Desktop\/Blender_Laptop';/.test(gp3)
-                && /laptop\[L\] = newestSave\(WORD\[L\], LAPTOP, true\);/.test(gp3) && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
+                /* ⛑ his saves ship only once he OKs them, by name (11-25: "I made a queen but don't add it yet") */
+                && /const APPROVED = \{ P: 'pawn4', B: 'bishop2', N: 'knight3' \};/.test(gp3)
+                && /const f = APPROVED\[L\] \? path\.join\(LAPTOP, APPROVED\[L\] \+ '\.blend'\) : null;/.test(gp3)
+                && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
               /* ⭐ HIS 11-24: his bishop and knight, made as his pawn is, one file for both sides in the board's two materials */
               'his bishop and knight, one each for both sides': ['B', 'N'].every((L) => fs.existsSync(path.join(GD, 'pieces3d', L + '.glb.import')))
                 && !['wB', 'bB', 'wN', 'bN'].some((c) => fs.existsSync(path.join(GD, 'pieces3d', c + '.glb')))
@@ -8735,7 +8738,9 @@ const server = http.createServer((req, res) => {
                 && /_tip_hold = true[\s\S]*?_tip_hold = false\n\t\t_tip_moment\(\(R\.g\.get\("troops", \{\}\) as Dictionary\)\.has\("march"\)\)/.test(fnGd(ctbT, '_continue_on'))
                 && /if not GameState\.campaign\.tips\.has\(id\) and _tip_fits\(id, str\(g\.side\), took == true\):/.test(fnGd(ctbT, '_tip_moment'))
                 && /"tips": tips \}/.test(cpT) && /"tipsagain":\n\t\t\tGameState\.campaign\.tips = \[\]/.test(fnGd(ctbT, '_press')),
-              '#4 Length · 8 rounds, the page\'s count': mj23.shortRounds === 8 && /const SHORT_ROUNDS := 8/.test(book23)
+              /* ⭐ and 4 rounds as well (his 11-25: "offer a 4 round campaign as well"): Length steps Full → 8 → 4 → Full */
+              '#4 Length · 8 rounds or 4, the page\'s list': JSON.stringify(mj23.lengths) === '[0,8,4]' && /const LENGTHS := \[0,8,4\]/.test(book23)
+                && /var ls: Array = B\.LENGTHS\n\t+GameState\.campaign\.length = int\(ls\[\(ls\.find\(GameState\.campaign\.length\) \+ 1\) % ls\.size\(\)\]\)/.test(ctbT)
                 && /if int\(R\.g\.get\("limit", 0\)\) > 0 and int\(R\.g\.round\) >= int\(R\.g\.limit\):\n\t\t_campaign_over\(R\.short_won\(\)\)/.test(fnGd(ctbT, '_start_your_turn'))
                 && /rs = R\.short_say\(\) if time_up else/.test(fnGd(ctbT, '_campaign_over'))
                 && /or int\(w\.get\("limit", 0\)\) > 0:/.test(fnGd(crT, 'better_war')) && /"limit": int\(w\.get\("limit", 0\)\) \}/.test(fnGd(cpT, 'bank_war'))
@@ -8752,7 +8757,7 @@ const server = http.createServer((req, res) => {
                 && /const UNDER_HZ := \[\[73\.6, 1\.0, 0\.0\], \[78\.0, 0\.7, 0\.0\], \[147\.2, 0\.3, 1\.0\]\]/.test(auT),
               'played': ['camptips', 'campshort', 'campsound'].every((c) => new RegExp('^[^#\\n]*\\b' + c + '\\b', 'm').test(suiteT))
                 && /camppress:go;campis:screen:map;campis:tip:card;[^"]*campphase:attack;campis:tip:fog;campphase:attack;campis:tip:fog;[^"]*camppress:tipsagain;campis:tipsseen:;/.test(bcCase('camptips'))
-                && /camppress:len;campis:btn:len:Length  ·  8 rounds;[^"]*campcall:_start_your_turn;campis:screen:result;campis:verdict:THE CAMPAIGN IS YOURS;camphas:rsay:Round 8 was the last;camphas:rsay:you hold 6 of 10, Maxwell 4\.;campis:best:none;/.test(bcCase('campshort'))
+                && /camppress:len;campis:btn:len:Length  ·  8 rounds;[^"]*campcall:_start_your_turn;campis:screen:result;campis:verdict:THE CAMPAIGN IS YOURS;camphas:rsay:Round 8 was the last;camphas:rsay:you hold 6 of 10, Maxwell 4\.;campis:best:none;[^"]*campis:btn:len:Length  ·  4 rounds;camppress:go;campis:limit:4;[^"]*camphas:rsay:Round 4 was the last;[^"]*campis:btn:len:Length  ·  Full"/.test(bcCase('campshort'))
                 && /campis:under:true;campis:sound:roll;[^"]*campis:under:false;[^"]*campis:sound:drum;campend:won-mate;wait:6;campis:sound:fanfare;/.test(bcCase('campsound')),
             });
             ok(ten23Off.length === 0,

@@ -1317,13 +1317,24 @@ function serve() {
       __mc.startYourTurn();
       out.result = $('screen-result').classList.contains('on'); out.verdict = $('verdict').textContent; out.rs = $('result-say').textContent;
       out.best = localStorage.getItem('pjcc.campaign.best.v1');
+      /* ⭐ his 11-25 ("offer a 4 round campaign as well"): the next press is 4 rounds, played the same way, then Full */
+      $('cont').click(); $('opt-len').click(); out.four = $('opt-len').textContent;
+      localStorage.removeItem('pjcc.campaign.save.v1');
+      $('go').click(); out.round4 = $('t-round').textContent;
+      const G4 = __mc.G; G4.own = ['m', 'm', 'm', 'm', 'm', 'm', 't', 't', 't', 't']; G4.round = 4; G4.busy = false;
+      __mc.startYourTurn();
+      out.rs4 = $('result-say').textContent;
       $('cont').click(); $('opt-len').click(); out.back = $('opt-len').textContent;
       return out;
     });
     ok(sh.btn === 'Length · 8 rounds' && sh.opts && sh.round === '1 of 8' && /^Play · round 1 of 8 · /.test(sh.resume),
        '⭐ #4 Length · 8 rounds: the map counts them and Play says how far in  [' + sh.round + ' · ' + sh.resume + ']');
-    ok(sh.result && sh.verdict === 'THE CAMPAIGN IS YOURS' && sh.rs === 'Round 8 was the last: you hold 6 of 10, Maxwell 4.' && sh.best === null &&
-       sh.back === 'Length · Full', '…after its eighth round the most holdings win it, said so, framed nowhere  [' + sh.rs + ']');
+    ok(sh.result && sh.verdict === 'THE CAMPAIGN IS YOURS' && sh.rs === 'Round 8 was the last: you hold 6 of 10, Maxwell 4.' && sh.best === null,
+       '…after its eighth round the most holdings win it, said so, framed nowhere  [' + sh.rs + ']');
+    ok(sh.four === 'Length · 4 rounds' && sh.round4 === '1 of 4' && sh.rs4 === 'Round 4 was the last: you hold 6 of 10, Maxwell 4.' &&
+       sh.back === 'Length · Full',
+       '⭐ his 11-25: Length goes on to 4 rounds, the map counts 4, its 4th round decides it, and one more press is Full  [' +
+       [sh.four, sh.round4, sh.rs4, sh.back].join(' · ') + ']');
     const bd = await E(() => new Promise((res) => {
       const $ = id => document.getElementById(id);
       localStorage.removeItem('pjcc.campaign.save.v1'); $('go').click();

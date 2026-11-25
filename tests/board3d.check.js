@@ -79,6 +79,12 @@ if (b3gd && ctgd) {
       for (const m of j.meshes) for (const p of m.primitives) { t += j.accessors[p.indices].count / 3; uv = uv || p.attributes.TEXCOORD_0 != null; }
       return uv || !(t <= budget);
     }));
+  /* ⛑ HIS OK FIRST (11-25: "I made a queen but don't add it yet"): the YouTube board and the 3D boards ship the same
+     approved saves, and nothing else of his laptop's */
+  const appr = (src) => ((/const APPROVED = \{([^}]*)\};/.exec(src) || [])[1] || '').replace(/\s/g, '');
+  const gp2 = fs.readFileSync(path.join(ROOT, 'tests/gen-pieces.js'), 'utf8'), gp3d = gd('tests/gen_pieces3d.js');
+  ok(appr(gp2) !== '' && appr(gp2) === appr(gp3d),
+     '⛑ his laptop saves ship only once he OKs them by name, the YouTube board and the 3D boards alike  [' + (appr(gp2) || 'no list') + ']');
   ok(heavy.length === 0 && /export_texcoords=False/.test(py3d) && /shade_smooth\(\)/.test(py2d) && /shade_smooth\(\)/.test(py3d),
      '⭐ every piece ships smooth, with no texture coordinates and at most ' + budget + ' triangles, the YouTube board\'s alike  [' + (heavy.join(' ') || 'all six') + ']');
   const pawn = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d/P.glb'));
@@ -236,6 +242,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await sleep(700);
     /* ── 4. en passant: the pawn taken is knocked where it stood ── */
     await page.evaluate(() => T3.setFen('4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(100);
     await page.evaluate(() => T3.moveUci('e5d6'));
     /* ⚠ WAITED FOR, NOT SLEPT (11-18): the lens syncs on its next frame, and with his heavier pawn under software GL one
@@ -249,6 +256,9 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await sleep(800);
     /* ── 5. a check: the push in on the king, the clock standing still, every square pressed where drawn ── */
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
+    /* ⚠ THE CAPTURE'S RULE, MISSING HERE UNTIL 11-25: twice on a loaded machine the lens had not drawn the new position when
+       Ra8+ came, read it as a whole new board rather than a move, and cut nothing ("[; mate …]") */
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
     const chk = await cutOf(page, 'check');
@@ -269,12 +279,18 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     // a press in the cut (its hold, the camera in close) lands where the finger is, and ends the cut
     await sleep(700);
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(100);
+    /* ⚠ HELD LONG ENOUGH TO PRESS (11-25): a check's cut lasts 0.45 s and holds its push for 0.16, and on a loaded machine
+       the two round trips between reading e8's point and clicking it outlasted it — the click met the board at rest
+       ("[check → "", sel -1]"). Three seconds for this press alone, then the room's own length again. */
+    const secs0 = await page.evaluate(() => { const s = PJCCBoard3D.CUTS.check.secs; PJCCBoard3D.CUTS.check.secs = 3; return s; });
     await page.evaluate(() => T3.moveUci('a1a8'));
     const pre = await cutOf(page, 'check');
     await click(page, SQ('e8'));
     await sleep(100);
     const after = await page.evaluate(() => [T3.b3.cutKind(), T3.b3.b.key.split('|')[2]]);
+    await page.evaluate((s) => { PJCCBoard3D.CUTS.check.secs = s; }, secs0);
     ok(pre === 'check' && after[0] === '' && after[1] === String(SQ('e8')),
       'a press in a cut is the square under the finger, and ends the cut  [' + pre + ' → "' + after[0] + '", sel ' + after[1] + ']');
     /* ── 6. a mate: the slow circle, the card held half a second at most ── */

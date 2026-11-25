@@ -372,7 +372,11 @@
     "desert"
   ],
   "dailyRounds": 3,
-  "shortRounds": 8,
+  "lengths": [
+    0,
+    8,
+    4
+  ],
   "engine": {
     "ev": {
       "p": 100,
