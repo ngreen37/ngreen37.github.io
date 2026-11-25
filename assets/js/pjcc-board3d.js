@@ -36,12 +36,13 @@
   var TOPPLE = 0.32;               // seconds a taken piece takes to fall
   var SLIDE = 0.16;                // seconds a move takes to cross the board
   var CARD_AFTER = 0.5;            // a mate's cut holds the game's card this long, and no longer
-  // zoom: the flat board's; push: the 3D camera's. ⚠ HALVED THREE TIMES, HIS EACH TIME: a capture's on 11-11 ("It is too
-  // intense."), every close-up on 11-20 ("way too strong: scale it back by 50%") and again on 11-23 ("an additional 50%")
+  // zoom: the flat board's; push: the 3D camera's. ⚠ CUT FOUR TIMES, HIS EACH TIME: a capture's on 11-11 ("It is too
+  // intense."), every close-up on 11-20 ("way too strong: scale it back by 50%"), on 11-23 ("an additional 50%") and on
+  // 11-24 ("another 33%", from the Campaign)
   var CUTS = {
-    capture: { secs: 0.40, zoom: 1.0375, push: 1.078125, turn: 0.0, circle: 0.0 },
-    check: { secs: 0.45, zoom: 1.055, push: 1.13125, turn: 0.0, circle: 0.0 },
-    mate: { secs: 1.60, zoom: 1.10, push: 1.1875, turn: 0.06, circle: 0.35 },
+    capture: { secs: 0.40, zoom: 1.025125, push: 1.05234375, turn: 0.0, circle: 0.0 },
+    check: { secs: 0.45, zoom: 1.03685, push: 1.0879375, turn: 0.0, circle: 0.0 },
+    mate: { secs: 1.60, zoom: 1.067, push: 1.125625, turn: 0.06, circle: 0.35 },
   };
   var TALL = { K: 1.43, Q: 1.30, B: 1.34, N: 1.278, R: 0.86, P: 0.97 };
   // ⭐ EACH MODEL IS ONE PIECE FOR BOTH SIDES, worn in LIGHT or DARK: his pawn that bows in defeat (11-18), his bishop and

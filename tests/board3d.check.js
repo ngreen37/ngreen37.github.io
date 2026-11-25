@@ -36,14 +36,15 @@ if (b3gd && ctgd) {
     const b = (new RegExp('"' + k + '": \\{ "secs": ([\\d.]+), "zoom": ([\\d.]+), "push": ([\\d.]+), "turn": ([\\d.]+), "circle": ([\\d.]+) \\}').exec(ctgd) || []).slice(1).map(Number);
     if (a.length !== 5 || a.join() !== b.join()) off.push('CUTS.' + k);
   }
-  /* ⚠ HALVED THREE TIMES, HIS EACH TIME: a capture's close-up on 11-11, every close-up on 11-20, and every one again on 11-23
-     ("cut the zoom-in effect again by an additional 50%"): how far each comes in past 1, flat and in 3D */
+  /* ⚠ CUT FOUR TIMES, HIS EACH TIME: a capture's close-up on 11-11, every close-up on 11-20, again on 11-23 ("cut the
+     zoom-in effect again by an additional 50%") and on 11-24 ("cut the zoom-in effect in campaign another 33%"): how far
+     each comes in past 1, flat and in 3D */
   {
     const cut = (k) => (new RegExp(k + ': \\{ secs: [\\d.]+, zoom: ([\\d.]+), push: ([\\d.]+),').exec(SRC) || []).slice(1).map(Number);
     const cap = cut('capture'), chk = cut('check'), mt = cut('mate');
-    ok(cap.join() === '1.0375,1.078125' && chk.join() === '1.055,1.13125' && mt.join() === '1.1,1.1875' &&
+    ok(cap.join() === '1.025125,1.05234375' && chk.join() === '1.03685,1.0879375' && mt.join() === '1.067,1.125625' &&
        /this\.dist \/ \(1 \+ \(push - 1\) \* a\)/.test(SRC) && /en\.c\.push\)/.test(SRC),
-       '⭐ his 11-23: every close-up comes in half as far as on 11-20, a quarter of that before it, flat and in 3D  [' + [cap, chk, mt].map((c) => c.join(' / ')).join(' · ') + ']');
+       '⭐ his 11-24: every close-up comes in a third less far than on 11-23, flat and in 3D  [' + [cap, chk, mt].map((c) => c.join(' / ')).join(' · ') + ']');
   }
   for (const L of ['K', 'Q', 'B', 'N', 'R', 'P']) {
     const a = +((new RegExp('\\b' + L + ': ([\\d.]+)').exec((/var TALL = \{([^}]*)\}/.exec(SRC) || [])[1] || '') || [])[1]);

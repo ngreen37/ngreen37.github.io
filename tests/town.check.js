@@ -7717,7 +7717,7 @@ const server = http.createServer((req, res) => {
                && /_pose\(aim, orbit \* a, _dist \/ lerpf\(1\.0, push, a\)\)/.test(b3F('cam_cut'))
                /* ⚠ a capture's close-up halved (his 11-11, "too intense"), and every close-up halved again (his 11-20): the flat
                   board's and the 3D camera's (the 11-20 block holds all three) */
-               && /"capture": \{ "secs": 0\.40, "zoom": 1\.0375, "push": 1\.078125,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
+               && /"capture": \{ "secs": 0\.40, "zoom": 1\.025125, "push": 1\.05234375,/.test(ctT) && /float\(c\["push"\]\)\)/.test(ctF('_apply_cam'))
                /* …and a dog's walk-in 25% slower (his 11-11): a ply's slide and its pause, 0.48 → 0.60 */
                && /const WALK_SECS := 0\.44\n/.test(ctT) && /const SLIDE := 0\.16 /.test(ctT)
                && /minf\(_ray_post\(o, d, world\(v\), 0\.33 \* SIZE, h \* 0\.55\), _ray_post\(o, d, world\(v\), 0\.2 \* SIZE, h\)\)/.test(b3F('square_at'))
@@ -8691,7 +8691,7 @@ const server = http.createServer((req, res) => {
                 && rd('campaign_book.gd').indexOf('const STAND := ' + JSON.stringify(mjC.stand)) >= 0
                 && /var c: Array = B\.STAND\["cols"\]\[CampaignRules\.stand_band\(float\(st\.score\)\)\]/.test(fnGd(ctbT, '_stand_col'))
                 && /return mini\(n - 1, int\(floor\(score \* n\)\)\)/.test(fnGd(crT, 'stand_band')) && /B\.STAND\["words"\]\[stand_band\(score\)\]/.test(fnGd(crT, 'stand_of')),
-              'every close-up half as far, and half again (11-23), the page\'s and the table\'s alike': cutsOf(ctT20, '"') === '1.0375/1.078125 1.055/1.13125 1.1/1.1875'
+              'every close-up half as far, half again (11-23) and a third less (11-24), the page\'s and the table\'s alike': cutsOf(ctT20, '"') === '1.025125/1.05234375 1.03685/1.0879375 1.067/1.125625'
                 && cutsOf(b3js, '') === cutsOf(ctT20, '"'),
             });
             ok(c20Off.length === 0,
