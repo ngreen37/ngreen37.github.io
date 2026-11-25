@@ -4354,8 +4354,8 @@ const server = http.createServer((req, res) => {
            && /solid = false/.test(ch) && /aim = -1\.0/.test(ch) && /scene_path = "res:\/\/rooms\/home\.tscn"/.test(tw)
            && fs.existsSync(GDF('home.tscn')) && fs.existsSync(GDF('checker.glb')),
           '⭐ Nate\'s home is HIS checker, nothing added outside, and you walk onto it to go in');
-        ok(/\{ name: 'Checker', out: 'assets\/models\/checker\.glb', godot: 'art\/checker\.glb' \}/.test(GM),
-          '…and gen:models carries the checker into the game, the way it carries him');
+        ok(/\{ name: 'Checker', out: 'assets\/models\/checker\.glb', godot: 'art\/checker\.glb', smooth: 20 \}/.test(GM),
+          '…and gen:models carries the checker into the game, the way it carries him (smooth since his 11-24 size review, its sawtooth rim kept crisp at 20°)');
         const cr = code(rd('checker_room.gd'));
         ok(/const ROOM := Rect2\(-576\.0, -330\.0, 1152\.0, 660\.0\)/.test(cr) && /world_bounds = FLOOR/.test(cr)
            && /extends CheckerRoom/.test(hm),
@@ -8489,6 +8489,20 @@ const server = http.createServer((req, res) => {
                 && !['wB', 'bB', 'wN', 'bN'].some((c) => fs.existsSync(path.join(GD, 'pieces3d', c + '.glb')))
                 && /const WORD = \{ K: 'king', Q: 'queen', B: 'bishop', N: 'knight', R: 'rook', P: 'pawn' \};/.test(gp3)
                 && /var m := _flat_mat\(\(LIGHT if color == "w" else DARK\)\.linear_to_srgb\(\), 0\.5\)\s*\n\t\tm\.cull_mode = BaseMaterial3D\.CULL_DISABLED/.test(fnGd(b3Txt, '_skin')),
+              /* ⭐ HIS 11-24 SIZE REVIEW ("now is a good time to set a standard"): the pieces keep their detail levels (without them
+                 the 3D board measured 0.7 ms a frame slower) but not the shadow copies (no cost, measured); a prop drawn once
+                 into a picture keeps neither; the 2D pieces are stored at 256px here (drawn ≤ ~157px at 1080p) */
+              'his size review': (() => {
+                const imp = (f) => (fs.existsSync(path.join(GD, f + '.import')) ? fs.readFileSync(path.join(GD, f + '.import'), 'utf8') : '');
+                const has = (f, k, v) => new RegExp('^' + k + '=' + v + '$', 'm').test(imp(f));
+                return fs.readdirSync(path.join(GD, 'pieces3d')).filter((f) => f.endsWith('.glb'))
+                  .every((f) => has('pieces3d/' + f, 'meshes/generate_lods', 'true') && has('pieces3d/' + f, 'meshes/create_shadow_meshes', 'false'))
+                  && ['art/checker.glb', 'art/fridge.glb', 'art/rug.glb'].every((f) => has(f, 'meshes/generate_lods', 'false') && has(f, 'meshes/create_shadow_meshes', 'false'))
+                  && fs.readdirSync(path.join(GD, 'pieces')).filter((f) => f.endsWith('.png'))
+                    .every((f) => has('pieces/' + f, 'process/size_limit', '256') && has('pieces/' + f, 'mipmaps/generate', 'true'))
+                  /* …and the two sheets baked off nate.glb are stored lossy (his "yes on 5", seen side by side): 226 → 81 KB, 47 → 19 KB */
+                  && ['art/people_idle.png', 'art/people_front.png'].every((f) => has(f, 'compress/mode', '1'));
+              })(),
               'the board bows the side that lost': /func bow\(color: String, calm := false\) -> void:/.test(b3Txt)
                 && /ap\.play\(ap\.get_animation_list\(\)\[0\]\)/.test(fnGd(b3Txt, 'bow')) && /ap\.stop\(\)/.test(fnGd(b3Txt, 'unbow'))
                 && /_bow_t -= dt/.test(fnGd(b3Txt, 'step'))

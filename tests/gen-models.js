@@ -20,8 +20,11 @@ const BLEND_DIR = process.env.BLEND_DIR || path.join(os.homedir(), 'Desktop', 'B
 const MODELS = [
   { name: 'Altar', out: 'assets/models/gambit-altar.glb' },
   // `godot` is the path inside the game: its models live in art/ (2026-10-19).
-  { name: 'Checker', out: 'assets/models/checker.glb', godot: 'art/checker.glb' },
-  { name: 'Nate', out: 'assets/models/nate.glb', godot: 'art/nate.glb' },
+  // `smooth`: exported as the chess pieces are (his 11-24 size review), edges sharper than this many degrees kept crisp —
+  // 20 holds the checker's sawtooth rim, which the pieces' 30 softened (blender-export.py)
+  { name: 'Checker', out: 'assets/models/checker.glb', godot: 'art/checker.glb', smooth: 20 },
+  // no `out` since 11-24 (his size review): no page loaded the site's 172 KB copy
+  { name: 'Nate', godot: 'art/nate.glb' },
   // ⭐ NO `out`: furniture for his checker, and nothing on the site shows it.
   { name: 'Fridge', godot: 'art/fridge.glb' },
   { name: 'Rug', godot: 'art/rug.glb' },
@@ -91,11 +94,12 @@ for (const m of MODELS) {
   const out = m.out ? path.join(ROOT, m.out) : path.join(os.tmpdir(), 'gen-models-' + path.basename(m.godot));
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const log = execFileSync(blender, ['-b', src, '--factory-startup', '--python',
-    path.join(__dirname, 'blender-export.py'), '--', out], { encoding: 'utf8' });
+    path.join(__dirname, 'blender-export.py'), '--', out, ...(m.smooth ? [String(m.smooth)] : [])], { encoding: 'utf8' });
   const line = (log.match(/^EXPORTED .*$/m) || [''])[0];
   // a bad export still exits 0 — Blender only prints the traceback
   if (!line || !fs.existsSync(out)) { console.error(`✗ ${m.name}: export failed\n${log.slice(-1500)}`); failed++; continue; }
   const also = m.godot ? '\n    ' + toGodot(out, m.godot) : '';
-  console.log(`✓ ${path.basename(src)} → ${m.out || 'the game only'} (${(fs.statSync(out).size / 1024).toFixed(1)} KB) ${line.split(' ').slice(2).join(' ')}${also}`);
+  const smoothed = (log.match(/^SMOOTHED (.*)$/m) || ['', ''])[1];
+  console.log(`✓ ${path.basename(src)} → ${m.out || 'the game only'} (${(fs.statSync(out).size / 1024).toFixed(1)} KB) ${line.split(' ').slice(2).join(' ')}${smoothed ? '  smooth, ' + smoothed : ''}${also}`);
 }
 process.exit(failed ? 1 : 0);

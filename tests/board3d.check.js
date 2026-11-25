@@ -67,9 +67,11 @@ if (b3gd && ctgd) {
   /* ⭐ HIS 11-24 ("the smooth with half of the faces looks just fine"): every piece ships smooth, with no texture
      coordinates and under the budget; the YouTube board's render prepares it with the same three numbers */
   const py2d = fs.readFileSync(path.join(ROOT, 'tests/blender-piece.py'), 'utf8'), py3d = gd('tests/blender_glb.py');
+  const pyExp = fs.readFileSync(path.join(ROOT, 'tests/blender-export.py'), 'utf8');   // the props' export (his checker)
   const pyn = (src, n) => +((new RegExp('^' + n + ' = ([\\d.]+)', 'm').exec(src) || [])[1]);
   const budget = pyn(py3d, 'BUDGET');
   const heavy = ['SMOOTH_ANGLE', 'BUDGET', 'FLOOR'].filter((n) => !(pyn(py2d, n) > 0 && pyn(py2d, n) === pyn(py3d, n)))
+    .concat(['BUDGET', 'FLOOR'].filter((n) => !(pyn(pyExp, n) > 0 && pyn(pyExp, n) === pyn(py3d, n))).map((n) => 'export.' + n))
     .concat(['P', 'B', 'N', 'K', 'Q', 'R'].filter((c) => {
       const b = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d', c + '.glb'));
       const j = JSON.parse(b.slice(20, 20 + b.readUInt32LE(12)).toString());

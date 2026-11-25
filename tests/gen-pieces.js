@@ -147,32 +147,37 @@ detect_3d/compress_to=1
 `;
 }
 
-// Writes the import file beside a freshly placed PNG, or turns mipmaps back on in the one
-// that is already there. ⚠ It reports rather than asserting: Godot still has to run before
-// the .ctex exists, and until it does piece_art.gd draws the piece instead. Returns a note
-// when it changed something.
-function mipmap(dir, name) {
+// Writes the import file beside a freshly placed PNG, or turns mipmaps back on (and sets the
+// size limit) in the one that is already there. ⚠ It reports rather than asserting: Godot
+// still has to run before the .ctex exists, and until it does piece_art.gd draws the piece
+// instead. Returns a note when it changed something.
+// ⭐ HIS 11-24 (the size review): Checker Town keeps its pieces at 256px — drawn at most ~157px
+// on a 1080p screen, ~314 on 4K — a third of the 512's bytes. The Tournament Board keeps 512:
+// it renders a video, where size costs nothing and sharpness is the point.
+function mipmap(dir, name, limit) {
   const f = path.join(dir, 'pieces', name + '.png.import');
   if (!fs.existsSync(f)) {
-    fs.writeFileSync(f, importFile(dir, name));
+    fs.writeFileSync(f, importFile(dir, name).replace(/^process\/size_limit=0$/m, 'process/size_limit=' + limit));
     return 'new .import';
   }
   const was = fs.readFileSync(f, 'utf8');
-  if (!/^mipmaps\/generate=false$/m.test(was)) return '';
-  fs.writeFileSync(f, was.replace(/^mipmaps\/generate=false$/m, 'mipmaps/generate=true'));
-  return 'mipmaps on';
+  const now = was.replace(/^mipmaps\/generate=false$/m, 'mipmaps/generate=true')
+    .replace(/^process\/size_limit=\d+$/m, 'process/size_limit=' + limit);
+  if (now === was) return '';
+  fs.writeFileSync(f, now);
+  return 'import settings set';
 }
 
 // the same bytes, in the place Godot loads from. A missing project is a note and not a
 // failure: this has to run on a machine with no Tournament Board checked out.
 function place(png, name) {
   const notes = [];
-  for (const [label, dir] of [['board', BOARD], ['mirror', MIRROR], ['town', TOWN]]) {
+  for (const [label, dir, limit] of [['board', BOARD, 0], ['mirror', MIRROR, 0], ['town', TOWN, 256]]) {
     if (!fs.existsSync(dir)) { notes.push(`(no ${label} at ${dir})`); continue; }
     const dest = path.join(dir, 'pieces', name + '.png');
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.copyFileSync(png, dest);
-    const m = mipmap(dir, name);
+    const m = mipmap(dir, name, limit);
     notes.push(`→ ${label}${m ? ' (' + m + ')' : ''}`);
   }
   return notes.join('  ');
