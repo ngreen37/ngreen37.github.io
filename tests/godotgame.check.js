@@ -222,6 +222,9 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(/var need := Broadcast\.read_secs\(/.test(mainN0) && /if b >= 2 and gap < need:\n\t\t\t_holds\[b - 2\] \+= need - gap/.test(mainN0)
      && /clampf\(0\.6 \+ 0\.3 \* float\(text\.split\(" ", false\)\.size\(\)\), 2\.0, LINE_SECS\)/.test(castN0),
     '⭐ every line is read before the next replaces it: the board waits (his Game 2 lines sat one move apart)');
+  ok(/if said\.size\(\) >= 2 and int\(said\[0\]\) == 0 and int\(said\[1\]\) == 1:\n\t\t_open_hold = maxf\(0\.0, Broadcast\.read_secs\(/.test(mainN0)
+     && /if _ply == 0 and not _opened:\n\t\t_opened = true\n\t\tcast\.hide_card\(\)\n\t\tcast\.open_desk\(\)\n\t\tif _open_hold > 0\.0:\n\t\t\t_wait = _open_hold\n\t\t\treturn/.test(mainN0),
+    '⚠ …the opening line too: with a line on move 1 it waits on the start position (Game 3\'s "Welcome back" was up 0.2 s)');
   /* ══ his 11-26 ══ two commentators, talking to each other, above the board */
   const fnGd = (src, name) => { const i = src.indexOf('\nfunc ' + name + '('); if (i < 0) return ''; const j = src.indexOf('\nfunc ', i + 1); return src.slice(i, j < 0 ? undefined : j); };
   const voices = ((/const VOICES := \[([^\]]*)\]/.exec(boothN) || [])[1] || '').split(',').map((v) => v.trim().replace(/"/g, '')).filter(Boolean);
@@ -290,6 +293,19 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
      && /\telse:\s*\n[^\n]*\n\s*for r in 8:/.test(bview),
     '⭐ his Blender board is one file dropped in (board/board.png); until then the squares are drawn',
     'turned with the board when it flips');
+  /* ⭐ his 11-26: "for round 4, when we mention a specific piece, let's highlight it on the board ... we won't unveil it yet" */
+  const boothL = lf('booth.gd');
+  ok(/static func named\(text: String, at: Dictionary, wn: String, bn: String\) -> Array:/.test(boothL)
+     && /RegEx\.create_from_string\("\\\\b\[KQRBN\]\?x\?\(\[a-h\]\[1-8\]\)\\\\b"\)/.test(boothL)
+     && /if at\.has\(sq\) and not sq in out:/.test(boothL) && /if hits\.size\(\) == 1 and not hits\[0\] in out:/.test(boothL)
+     && /func _light\(\) -> void:\n\tif not bool\(_game\.get\("point", false\)\):\n\t\treturn/.test(mainN)
+     && /\tboard\.fade\(delta, _flash_secs\)\n\t_light\(\)\n/.test(mainN)
+     && /_lit = Booth\.named\(str\(s\[1\]\), board\.codes\(\)/.test(mainN)
+     && /for sq in _lit:\n[^\n]*\n\t\tdraw_rect\(r, Color\(_lit_col, _lit_col\.a \* 0\.35\)\)/.test(bview)
+     && /^const POINT_FROM = 4;$/m.test(bsrc) && /game\.point = !!\(o\.point \|\| m\.game >= POINT_FROM\);/.test(bsrc)
+     && /else if \(a\[i\] === '--point'\) o\.point = true;/.test(bsrc),
+    '⭐ from Round 4 the piece a line names is lit on the board in its speaker\'s color — a square with a piece on it, '
+    + 'or a player\'s only king or queen; --point shows it early, and Game 3 goes out without it (his 11-26)');
 } else ok(false, 'the tournament board mirror is missing its new scripts');
 
 (async () => {

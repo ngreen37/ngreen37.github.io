@@ -11,6 +11,7 @@
        npm run wc -- --render                                      …and record both clips
        npm run wc -- --rehearse [--render]                         every game, timed
        npm run wc -- --pgn file.pgn                                offline: a saved PGN instead
+       npm run wc -- --point                                       light the pieces the desk names, before Round 4
 
    Fetch → grade → the board's data/game.json → (with --render) Godot records the square, the
    vertical (a YouTube Short) and the wide (16:9, a regular video) cut, ffmpeg stitches them, and
@@ -31,12 +32,16 @@ const GODOT = process.env.GODOT || path.join(os.homedir(), 'Desktop', 'Godot', '
 const VIDEOS = process.env.WC_OUT || path.join(os.homedir(), 'Videos', 'ChessWild');
 const ENGINE_MS = 1000;            // the eval bar only — see `marks` in gen-godot-game.js
 const FPS = 30;
+// ⭐ HIS 11-26: "for round 4, when we mention a specific piece, let's highlight it on the board ... we won't unveil it
+// yet". The board lights the piece a line names from this game on; --point shows it early (a preview).
+const POINT_FROM = 4;
 
 function args() {
-  const a = process.argv.slice(2), o = { url: null, game: null, render: false, rehearse: false, pgn: null, out: null };
+  const a = process.argv.slice(2), o = { url: null, game: null, render: false, rehearse: false, pgn: null, out: null, point: false };
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--game') o.game = +a[++i];
     else if (a[i] === '--render') o.render = true;
+    else if (a[i] === '--point') o.point = true;
     else if (a[i] === '--rehearse') o.rehearse = true;
     else if (a[i] === '--pgn') o.pgn = a[++i];
     else if (a[i] === '--out') o.out = a[++i];
@@ -225,6 +230,8 @@ async function one(games, pgn, match, o, log) {
   const m = game.match;
   const dir = path.join(o.out || VIDEOS, slug(game.white_short + '-vs-' + game.black_short + '-game-' + m.game));
   game.desk = deskIn(dir, game, log);
+  game.point = !!(o.point || m.game >= POINT_FROM);
+  if (game.point) log('  the board lights the pieces the desk names' + (m.game < POINT_FROM ? ' (--point: early, a preview)' : ''));
   const file = writeGame(game);
   log('  Game ' + m.game + ': ' + game.white_short + ' – ' + game.black_short + '  ' + game.result
     + '   (score before ' + half(m.before[0]) + '–' + half(m.before[1]) + ', after ' + half(m.after[0]) + '–' + half(m.after[1]) + ')');
