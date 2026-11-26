@@ -190,9 +190,12 @@ function voiceIn(dir) {
    ⚠⚠ A LINE NAMES ITS MOVE, AND IT MUST BE THE GAME'S MOVE, or nothing renders: one ply off, a line questions the
    wrong player. ⚠ The ticker's [BOX]es went with the move above the board: a leftover one stops the render rather
    than show on screen as words.
-   ⭐ HIS OWN LIGHTS (his 11-26, "highlight the stuck rook at move 19, and then unhighlight it after move 21. c3"):
-       light a2 from 19. f3 to 21. c3
-   lit as the first move starts, dark as the move after the last does; both moves must be the game's. */
+   ⭐ HIS OWN CUES (his 11-26), each over "from 19. f3 to 21. c3" or one move "19. f3", the moves the game's:
+       light a2 from 19. f3 to 21. c3      the stuck rook, lit ("highlight the stuck rook at move 19 ...")
+       shake from 23. Nf3 to 25. Qd2       the board rattles (Sindarov shakes his foot)
+       slow 31. Rxe6                       slow motion: a moment he calls great
+   on as the first move starts, off as the move after the last does.
+       end: Garrett: That's Game 4 in the books.     a closing line after the last move, before the end card */
 const VOICES = ['Garrett', 'Jacob'];   // booth.gd's VOICES: the board gate holds the two equal
 function deskIn(dir, game, log) {
   const f = path.join(dir, 'desk.txt');
@@ -212,18 +215,32 @@ function deskIn(dir, game, log) {
   fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((raw, i) => {
     const s = raw.trim(), at = 'line ' + (i + 1) + ': ';
     if (!s || s[0] === '#') return;
-    const lt = /^light\s+([a-h][1-8])\s+from\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)\s+to\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)$/i.exec(s);
-    if (lt) {
-      const a = plyOf(lt[2], lt[3], lt[4], at), b = plyOf(lt[5], lt[6], lt[7], at);
-      if (a && b && b < a) bad.push(at + 'the light would end before it starts');
-      else if (a && b) (out.lights = out.lights || []).push({ sq: lt[1].toLowerCase(), from: a, to: b });
+    const cue = /^(light\s+([a-h][1-8])|shake|slow)\s+(.+)$/i.exec(s);
+    if (cue) {
+      const two = /^from\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)\s+to\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)$/i.exec(cue[3].trim());
+      const one = /^(\d+)\s*(\.\.\.|\.)\s*(\S+)$/.exec(cue[3].trim());
+      if (!two && !one) { bad.push(at + 'say its moves as "from 19. f3 to 21. c3", or one move as "19. f3" — ' + s); return; }
+      const a = two ? plyOf(two[1], two[2], two[3], at) : plyOf(one[1], one[2], one[3], at);
+      const b = two ? plyOf(two[4], two[5], two[6], at) : a;
+      if (a && b && b < a) bad.push(at + 'it would end before it starts');
+      else if (a && b) {
+        const kind = cue[1].split(/\s+/)[0].toLowerCase();
+        const list = (out[kind + 's'] = out[kind + 's'] || []);
+        list.push(kind === 'light' ? { sq: cue[2].toLowerCase(), from: a, to: b } : { from: a, to: b });
+      }
       return;
     }
-    let m = /^new\s*:\s*(.+)$/i.exec(s), say;
-    if (m) say = voiced(m[1].trim());
+    let m = /^(new|end)\s*:\s*(.+)$/i.exec(s), say;
+    if (m && m[1].toLowerCase() === 'end') {
+      const closing = voiced(m[2].trim());
+      if (/^\[[^\]]*\]/.test(closing.text)) { bad.push(at + 'the [BOX]es are gone (11-26): name who says it instead, "' + VOICES[0] + ': …"'); return; }
+      (out.end = out.end || []).push(closing);
+      return;
+    }
+    if (m) say = voiced(m[2].trim());
     else {
       m = /^(\d+)\s*(\.\.\.|\.)\s*([^\s:]+)\s*:\s*(.+)$/.exec(s);
-      if (!m) { bad.push(at + 'not "new: …", "9. Bxe5: …" or "light a2 from 19. f3 to 21. c3" — ' + s); return; }
+      if (!m) { bad.push(at + 'not "new: …", "9. Bxe5: …", "end: …", "light a2 …", "shake …" or "slow …" — ' + s); return; }
       const ply = (+m[1] - 1) * 2 + (m[2] === '.' ? 1 : 2), mv = game.moves[ply - 1];
       if (!mv || plain(mv.san) !== plain(m[3])) {
         bad.push(at + m[1] + m[2] + ' ' + m[3] + ', but the game has ' + (mv ? m[1] + m[2] + ' ' + mv.san : 'no such move'));
@@ -237,8 +254,9 @@ function deskIn(dir, game, log) {
     if (say.ply) out.lines.push(say); else out.new = say.who ? { text: say.text, who: say.who } : { text: say.text };
   });
   if (bad.length) throw new Error('desk.txt (' + f + ') has ' + bad.length + ' line(s) that would land wrong:\n    ' + bad.join('\n    '));
+  const cues = ['lights', 'shakes', 'slows'].filter((k) => out[k]).map((k) => out[k].length + ' ' + k.slice(0, -1));
   log('  desk.txt: ' + (out.new ? 'what is new on our board, and ' : '') + out.lines.length + ' line(s) of his, each on its move'
-    + (out.lights ? ', and ' + out.lights.length + ' light(s) of his' : ''));
+    + (out.end ? ', ' + out.end.length + ' closing' : '') + (cues.length ? '; ' + cues.join(', ') : ''));
   return out;
 }
 

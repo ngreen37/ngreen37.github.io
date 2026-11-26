@@ -182,6 +182,14 @@ ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\
   ok(/would land wrong/.test(tryDesk().error || ''), '…a light that would end before it starts stops the render');
   write('light a2 from 9. ' + g1.moves[0].san + ' to 9... ' + b9.san + '\n');
   ok(/would land wrong/.test(tryDesk().error || ''), '…and so does one naming a move the game did not play');
+  /* ⭐ his 11-26 after Game 3: a closing commentary, the board shaking on his cue, slow motion on his cue */
+  write('shake from 9. ' + w9.san + ' to 9... ' + b9.san + '\nslow 9... ' + b9.san + '\nend: Garrett: That is a wrap.\nend: See you next game.\n');
+  const cues = tryDesk();
+  eq(JSON.stringify([cues.shakes, cues.slows, cues.end]), JSON.stringify([[{ from: 17, to: 18 }], [{ from: 18, to: 18 }],
+    [{ who: 'Garrett', text: 'That is a wrap.' }, { text: 'See you next game.' }]]),
+    '⭐ "shake …" and "slow …" take a stretch or one move; "end:" lines close the video in order, a commentator named or not');
+  write('shake around move 9\n');
+  ok(/would land wrong/.test(tryDesk().error || ''), '…and a cue without its moves stops the render');
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
@@ -273,7 +281,7 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(clk !== '' && /^class_name GameClock\s*\nextends RefCounted$/m.test(clk) && /func advance\(dt: float\) -> String:/.test(clk)
      && !/Time\.get_ticks|create_tween|create_timer/.test(clk),
     '⭐ there is a chess clock beside the board, and it runs on the recorder\'s clock like everything else on the stage');
-  ok(/cast\.cue_press\(str\(\(_moves\[_ply\] as Dictionary\)\.get\("side", "w"\)\), _move_secs\)/.test(mainN)
+  ok(/board\.begin_move\(_moves\[_ply\], _slide_of\(_ply\)\)\n\tcast\.cue_press\(str\(\(_moves\[_ply\] as Dictionary\)\.get\("side", "w"\)\), _slide_of\(_ply\)\)/.test(mainN)
      && /var hit_in := slide_secs \+ GameClock\.PRESS_LAG\s*\n\s*clock\.cue\(side, hit_in\)/.test(castN)
      && /seat\.cue_press\(hit_in\)/.test(castN) && lag > 0 && lag <= 0.3,
     '⭐ the mover\'s hand lands on the clock ' + lag + 's after the piece does, cued as the piece starts to slide',
@@ -325,6 +333,24 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
      && /if int\(p\) >= int\(l\["from"\]\) and int\(p\) <= int\(l\["to"\]\) and names\.search\(str\(said\["text"\]\)\) != null:/.test(mainN),
     '⭐ his own lights hold for their moves and govern their square: Game 3\'s stuck rook lit from 19. f3, dark after 21. c3 '
     + 'though the line about it is still up, in the color of whoever names it (his 11-26)');
+  /* ⭐ his 11-26 after Game 3 */
+  ok(/out\[after\] = \{ "tag": "", "text": str\(l\["text"\]\), "kind": "end", "who": str\(l\.get\("who", ""\)\) \}\n\t_voice\(out\)/.test(boothL)
+     && /if _closing < _ends\.size\(\):\n\t\t\tcast\.say\(int\(_ends\[_closing\]\)\)\n\t\t\t_wait = Broadcast\.read_secs\(/.test(mainN)
+     && mainN.indexOf('cast.say(int(_ends[_closing]))') < mainN.indexOf('cast.show_card("end")'),
+    '⭐ his closing lines are said after the last move, each held to be read, before the end card ("let\'s add a closing commentary")');
+  ok(/\t_light\(\)\n\t_shake\(delta\)\n/.test(mainN) && /^const SHAKE_PX := 3\.0 /m.test(mainN)
+     && /for sp in _shakes:\n\t\tif _ply >= int\(sp\["from"\]\) and _ply <= int\(sp\["to"\]\):/.test(mainN)
+     && /_shake_amp = move_toward\(_shake_amp, 1\.0 if on else 0\.0, delta \* 4\.0\)/.test(mainN) && /\t_home = board\.position\n/.test(mainN),
+    '⭐ the board shakes a little when his desk.txt says so, eased in and out, and settles back where it stood (Sindarov\'s foot)');
+  ok(/if marks and cls in \["blunder", "mistake"\]:\n\t\treturn true/.test(mainN) && /if _first_under\(i, 300\) or _first_under\(i, 60\):/.test(mainN)
+     && /if marks and i \+ 1 == int\(_game\.get\("swing_ply", -1\)\):/.test(mainN) && /for sp in _slows:/.test(mainN)
+     && /_slides\.append\(_move_secs \* \(SLOW_SLIDE if slow else 1\.0\)\)/.test(mainN) && /^const SLOW_SLIDE := 3\.0 /m.test(mainN),
+    '⭐ critical moments play in slow motion and hold: graded blunders and mistakes, the punishment, the biggest swing, a clock first under 5 minutes and 1, and his "slow"');
+  ok(/^const BOLT_AT := 8\.0$/m.test(castN0) && /^const BOLT_TOP := 3\.0$/m.test(castN0)
+     && /if m\.get\("eval"\) != null and _struck\(was, _eval_to, ply\):/.test(castN0)
+     && /return d >= BOLT_AT or \(ply == int\(game\.get\("swing_ply", -1\)\) and d >= BOLT_TOP\)/.test(castN0)
+     && /\tif _bolt >= 0\.0:\n\t\t_strike\(r\)\n/.test(castN0),
+    '⭐ lightning strikes the eval bar when it jumps 8 points on a move, or at the game\'s biggest swing (Game 3: 14. a3, 3.9)');
   ok(!/Booth\.DESK|STYLE\["live"\]/.test(castN0) && !/const DESK/.test(boothL)
      && /\t_text\(f, "chesswild\.com", r\.get_center\(\) \+ Vector2\(0\.0, 11\.0 \* _k\), 30, STYLE\["ink"\], true\)/.test(fnGd(castN0, '_ticker')),
     '⭐ along the bottom only the site, centered, bigger and in ink: the CHESSWILD 24 bug is gone (his 11-26)');
