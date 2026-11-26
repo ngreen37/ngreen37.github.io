@@ -85,6 +85,13 @@ if (b3gd && ctgd) {
   const gp2 = fs.readFileSync(path.join(ROOT, 'tests/gen-pieces.js'), 'utf8'), gp3d = gd('tests/gen_pieces3d.js');
   ok(appr(gp2) !== '' && appr(gp2) === appr(gp3d),
      '⛑ his laptop saves ship only once he OKs them by name, the YouTube board and the 3D boards alike  [' + (appr(gp2) || 'no list') + ']');
+  /* ⚠ 11-26: his rook at the May set's 0.860 stood shorter than its own pawn, and the height moved in two files */
+  const tall2 = {}, tall3 = {};
+  for (const m of gp2.matchAll(/\{ out: '([wb])([KQBNRP])', src: '[wb][kqbnrp]', h: ([\d.]+) \}/g)) tall2[m[1] + m[2]] = +m[3];
+  for (const m of (((/const HEIGHT = \{([^}]*)\};/.exec(gp3d) || [])[1]) || '').matchAll(/([KQBNRP]): ([\d.]+)/g)) tall3[m[1]] = +m[2];
+  const tallOff = ['K', 'Q', 'B', 'N', 'R', 'P'].filter((c) => !(tall3[c] > 0 && tall2['w' + c] === tall3[c] && tall2['b' + c] === tall3[c]));
+  ok(tallOff.length === 0 && tall3.R > tall3.P,
+     'every piece stands as tall on the YouTube board as on the 3D boards, and the rook over its pawn  [' + (tallOff.join(' ') || 'R ' + tall3.R + ' over P ' + tall3.P) + ']');
   ok(heavy.length === 0 && /export_texcoords=False/.test(py3d) && /shade_smooth\(\)/.test(py2d) && /shade_smooth\(\)/.test(py3d),
      '⭐ every piece ships smooth, with no texture coordinates and at most ' + budget + ' triangles, the YouTube board\'s alike  [' + (heavy.join(' ') || 'all six') + ']');
   const pawn = fs.readFileSync(path.join(ROOT, 'assets/models/pieces3d/P.glb'));
@@ -295,6 +302,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
       'a press in a cut is the square under the finger, and ends the cut  [' + pre + ' → "' + after[0] + '", sel ' + after[1] + ']');
     /* ── 6. a mate: the slow circle, the card held half a second at most ── */
     await page.evaluate(() => T3.setFen('6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
     /* ⚠ POLLED, NOT SAMPLED: the cut begins when the move's slide lands, 270–340 ms after the move on a busy machine
@@ -337,6 +345,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
       cls: document.getElementById('board').classList.contains('pjcc-b3-on'), btn: document.querySelector('.pjcc-board-view').textContent }));
     ok(fl.flat && fl.canvas === 'none' && !fl.cls && fl.btn === 'Board: Flat', 'V lays the board flat, a device preference, and the button says so  ' + JSON.stringify(fl));
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
     /* ⚠ POLLED, NOT SAMPLED, as the mate's above: on a busy machine a look at 260 ms came before the slide had landed */
@@ -352,6 +361,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     /* ── 10. Reduce Motion: no cut ── */
     page = await open({ calm: true });
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
     await sleep(300);
@@ -397,6 +407,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate((f) => T3.setFen(f), START);
     await sleep(200);
     await page.evaluate(() => T3.setFen('4k3/8/8/3q4/8/8/8/3QK3 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(300);
     await page.evaluate(() => T3.moveUci('d1d5'));
     let acted = '';
@@ -406,6 +417,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     await page.evaluate((f) => T3.setFen(f), START);
     await sleep(200);
     await page.evaluate(() => T3.setFen('4k3/8/8/8/3r4/8/8/3QK3 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(300);
     await page.evaluate(() => T3.moveUci('d1d3'));
     acted = '';
@@ -416,6 +428,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
     page = await open({ block: 'three.pjcc' });
     await sleep(600);
     await page.evaluate(() => T3.setFen('4k3/8/8/8/8/8/8/R3K3 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(100);
     await page.evaluate(() => T3.moveUci('a1a8'));
     await sleep(120);
@@ -438,6 +451,7 @@ ok(used.length >= 10 && missing.length === 0, 'every three.js class it uses is i
       return { at: out, bowed: b.bowed };
     });
     await page.evaluate(() => T3.setFen('6k1/2pp1ppp/8/8/8/8/5PPP/R5K1 w - - 0 1'));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));   // the capture's rule
     await sleep(500);
     const stand = await bones();
     await page.evaluate(() => T3.moveUci('a1a8'));

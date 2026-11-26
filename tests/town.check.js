@@ -7747,7 +7747,7 @@ const server = http.createServer((req, res) => {
                && /tablemove:e4d5;wait:4;num:ChessTable:_b3\._falling:>0;/.test(bcCase('table3d'))
                && /key:v;num:ChessTable:_b3\.visible:=0;gseq:board_flat=true;tapmap;/.test(bcCase('table3d'))
                && new RegExp('^[^#\\n]*\\btable3d\\b', 'm').test(suiteT),
-              '⭐⭐ THE TILTED 3D BOARD  (his 11-04: "then tilted 3d chess board"): every table\'s board in 3D at a tilt, in his own Blender pieces (his pawn, bishop and knight; the May set\'s king, queen and rook; each one model for both sides, in the board\'s two materials), the table\'s woods under a lamp with real shadows, fitted to its frame whatever its shape; a move arcs, a capture knocks the taken piece aside, the cuts move its camera and a ring rides it with its piece; a press is the piece or the square under it, as drawn; "Board: Flat" (V, a pad\'s R) is a device preference (probed: all 64 squares pressed where they are drawn, at rest, in a cut and flat; a check\'s ring held on the king through the cut)',
+              '⭐⭐ THE TILTED 3D BOARD  (his 11-04: "then tilted 3d chess board"): every table\'s board in 3D at a tilt, in his own Blender pieces (his pawn, bishop, knight and rook; the May set\'s king and queen; each one model for both sides, in the board\'s two materials), the table\'s woods under a lamp with real shadows, fitted to its frame whatever its shape; a move arcs, a capture knocks the taken piece aside, the cuts move its camera and a ring rides it with its piece; a press is the piece or the square under it, as drawn; "Board: Flat" (V, a pad\'s R) is a device preference (probed: all 64 squares pressed where they are drawn, at rest, in a cut and flat; a check\'s ring held on the king through the cut)',
               tallOff.length || glbOff.length ? 'off: ' + tallOff.concat(glbOff).join(' ') : 'six models, at the canon heights');
             /* ⭐ PUSH IN WHEN YOU SIT, AND THE OPPONENT ACROSS (his 11-05, #1 of the view ideas) */
             const tpT = rd('table_push.gd');
@@ -8484,7 +8484,7 @@ const server = http.createServer((req, res) => {
                 && fs.existsSync(pawnGlb + '.import') && !fs.existsSync(path.join(GD, 'pieces3d', 'wP.glb'))
                 && /const LAPTOP = process\.env\.LAPTOP_DIR \|\| 'C:\/Users\/Nate\/Desktop\/Blender_Laptop';/.test(gp3)
                 /* ⛑ his saves ship only once he OKs them, by name (11-25: "I made a queen but don't add it yet") */
-                && /const APPROVED = \{ P: 'pawn4', B: 'bishop2', N: 'knight3' \};/.test(gp3)
+                && /const APPROVED = \{ P: 'pawn4', B: 'bishop2', N: 'knight3', R: 'rook1' \};/.test(gp3)
                 && /const f = APPROVED\[L\] \? path\.join\(LAPTOP, APPROVED\[L\] \+ '\.blend'\) : null;/.test(gp3)
                 && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
               /* ⭐ HIS 11-24: his bishop and knight, made as his pawn is, one file for both sides in the board's two materials */
