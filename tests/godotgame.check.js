@@ -225,6 +225,10 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(/if said\.size\(\) >= 2 and int\(said\[0\]\) == 0 and int\(said\[1\]\) == 1:\n\t\t_open_hold = maxf\(0\.0, Broadcast\.read_secs\(/.test(mainN0)
      && /if _ply == 0 and not _opened:\n\t\t_opened = true\n\t\tcast\.hide_card\(\)\n\t\tcast\.open_desk\(\)\n\t\tif _open_hold > 0\.0:\n\t\t\t_wait = _open_hold\n\t\t\treturn/.test(mainN0),
     '⚠ …the opening line too: with a line on move 1 it waits on the start position (Game 3\'s "Welcome back" was up 0.2 s)');
+  ok(/func _unhandled_input\(event: InputEvent\) -> void:\n(?:\t#[^\n]*\n)*\tif _capturing:\n\t\treturn\n/.test(mainN0),
+    '⚠ a recording takes no keys: its window comes up on his screen, and a stray End cut Game 3\'s vertical preview 23 s short');
+  ok(/elif r != "1\/2-1\/2":\n\t\t\thead = "GAME %d CONTINUES"/.test(castN0),
+    '…and a preview of a game still being played ends "GAME 3 CONTINUES", never "DRAWN"');
   /* ══ his 11-26 ══ two commentators, talking to each other, above the board */
   const fnGd = (src, name) => { const i = src.indexOf('\nfunc ' + name + '('); if (i < 0) return ''; const j = src.indexOf('\nfunc ', i + 1); return src.slice(i, j < 0 ? undefined : j); };
   const voices = ((/const VOICES := \[([^\]]*)\]/.exec(boothN) || [])[1] || '').split(',').map((v) => v.trim().replace(/"/g, '')).filter(Boolean);
