@@ -32,9 +32,10 @@ const GODOT = process.env.GODOT || path.join(os.homedir(), 'Desktop', 'Godot', '
 const VIDEOS = process.env.WC_OUT || path.join(os.homedir(), 'Videos', 'ChessWild');
 const ENGINE_MS = 1000;            // the eval bar only — see `marks` in gen-godot-game.js
 const FPS = 30;
-// ⭐ HIS 11-26: "for round 4, when we mention a specific piece, let's highlight it on the board ... we won't unveil it
-// yet". The board lights the piece a line names from this game on; --point shows it early (a preview).
-const POINT_FROM = 4;
+// ⭐ HIS 11-26: "when we mention a specific piece, let's highlight it on the board" — first for Round 4, then the same
+// day "let's use the highlighted piece for the final version of round three". The board lights the piece a line names
+// from this game on; --point shows it early (a preview).
+const POINT_FROM = 3;
 
 function args() {
   const a = process.argv.slice(2), o = { url: null, game: null, render: false, rehearse: false, pgn: null, out: null, point: false };
@@ -188,7 +189,10 @@ function voiceIn(dir) {
    colon says who speaks (his 11-26); a line naming nobody goes to whoever did not speak last (booth.gd _voice).
    ⚠⚠ A LINE NAMES ITS MOVE, AND IT MUST BE THE GAME'S MOVE, or nothing renders: one ply off, a line questions the
    wrong player. ⚠ The ticker's [BOX]es went with the move above the board: a leftover one stops the render rather
-   than show on screen as words. */
+   than show on screen as words.
+   ⭐ HIS OWN LIGHTS (his 11-26, "highlight the stuck rook at move 19, and then unhighlight it after move 21. c3"):
+       light a2 from 19. f3 to 21. c3
+   lit as the first move starts, dark as the move after the last does; both moves must be the game's. */
 const VOICES = ['Garrett', 'Jacob'];   // booth.gd's VOICES: the board gate holds the two equal
 function deskIn(dir, game, log) {
   const f = path.join(dir, 'desk.txt');
@@ -199,14 +203,27 @@ function deskIn(dir, game, log) {
     return m ? { who: VOICES.find((v) => v.toLowerCase() === m[1].toLowerCase()), text: m[2].trim() } : { text: t };
   };
   const plain = (san) => String(san).replace(/0/g, 'O').replace(/[+#!?]+$/, '');
+  const plyOf = (n, dots, san, at) => {
+    const ply = (+n - 1) * 2 + (dots === '.' ? 1 : 2), mv = game.moves[ply - 1];
+    if (mv && plain(mv.san) === plain(san)) return ply;
+    bad.push(at + n + dots + ' ' + san + ', but the game has ' + (mv ? n + dots + ' ' + mv.san : 'no such move'));
+    return 0;
+  };
   fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((raw, i) => {
     const s = raw.trim(), at = 'line ' + (i + 1) + ': ';
     if (!s || s[0] === '#') return;
+    const lt = /^light\s+([a-h][1-8])\s+from\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)\s+to\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)$/i.exec(s);
+    if (lt) {
+      const a = plyOf(lt[2], lt[3], lt[4], at), b = plyOf(lt[5], lt[6], lt[7], at);
+      if (a && b && b < a) bad.push(at + 'the light would end before it starts');
+      else if (a && b) (out.lights = out.lights || []).push({ sq: lt[1].toLowerCase(), from: a, to: b });
+      return;
+    }
     let m = /^new\s*:\s*(.+)$/i.exec(s), say;
     if (m) say = voiced(m[1].trim());
     else {
       m = /^(\d+)\s*(\.\.\.|\.)\s*([^\s:]+)\s*:\s*(.+)$/.exec(s);
-      if (!m) { bad.push(at + 'neither "new: …" nor "9. Bxe5: …" — ' + s); return; }
+      if (!m) { bad.push(at + 'not "new: …", "9. Bxe5: …" or "light a2 from 19. f3 to 21. c3" — ' + s); return; }
       const ply = (+m[1] - 1) * 2 + (m[2] === '.' ? 1 : 2), mv = game.moves[ply - 1];
       if (!mv || plain(mv.san) !== plain(m[3])) {
         bad.push(at + m[1] + m[2] + ' ' + m[3] + ', but the game has ' + (mv ? m[1] + m[2] + ' ' + mv.san : 'no such move'));
@@ -220,7 +237,8 @@ function deskIn(dir, game, log) {
     if (say.ply) out.lines.push(say); else out.new = say.who ? { text: say.text, who: say.who } : { text: say.text };
   });
   if (bad.length) throw new Error('desk.txt (' + f + ') has ' + bad.length + ' line(s) that would land wrong:\n    ' + bad.join('\n    '));
-  log('  desk.txt: ' + (out.new ? 'what is new on our board, and ' : '') + out.lines.length + ' line(s) of his, each on its move');
+  log('  desk.txt: ' + (out.new ? 'what is new on our board, and ' : '') + out.lines.length + ' line(s) of his, each on its move'
+    + (out.lights ? ', and ' + out.lights.length + ' light(s) of his' : ''));
   return out;
 }
 

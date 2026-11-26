@@ -174,6 +174,14 @@ ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\
   ok(/would land wrong/.test(tryDesk().error || ''), '⚠⚠ a line naming a move the game did not play stops the render: one ply off, it questions the wrong player');
   write('9. ' + w9.san + ': [BREAKING] a box from before the commentators\n');
   ok(/the \[BOX\]es are gone/.test(tryDesk().error || ''), '…and so does a leftover [BOX]: the boxes went with the ticker, and on screen it would be words');
+  /* ⭐ his own lights (11-26: "highlight the stuck rook at move 19, and then unhighlight it after move 21. c3") */
+  write('light A2 from 9. ' + w9.san + ' to 9... ' + b9.san + '\n');
+  eq(JSON.stringify(tryDesk().lights), JSON.stringify([{ sq: 'a2', from: 17, to: 18 }]),
+    '⭐ "light a2 from 9. … to 9... …" lights a square from one of the game\'s moves to another');
+  write('light a2 from 9... ' + b9.san + ' to 9. ' + w9.san + '\n');
+  ok(/would land wrong/.test(tryDesk().error || ''), '…a light that would end before it starts stops the render');
+  write('light a2 from 9. ' + g1.moves[0].san + ' to 9... ' + b9.san + '\n');
+  ok(/would land wrong/.test(tryDesk().error || ''), '…and so does one naming a move the game did not play');
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
@@ -302,16 +310,24 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(/static func named\(text: String, at: Dictionary, wn: String, bn: String\) -> Array:/.test(boothL)
      && /RegEx\.create_from_string\("\\\\b\[KQRBN\]\?x\?\(\[a-h\]\[1-8\]\)\\\\b"\)/.test(boothL)
      && /if at\.has\(sq\) and not sq in out:/.test(boothL) && /if hits\.size\(\) == 1 and not hits\[0\] in out:/.test(boothL)
-     && /func _light\(\) -> void:\n\tif not bool\(_game\.get\("point", false\)\):\n\t\treturn/.test(mainN)
+     && /\tif bool\(_game\.get\("point", false\)\):\n\t\tvar s: Array = cast\.saying\(\)/.test(mainN)
      && /\tboard\.fade\(delta, _flash_secs\)\n\t_light\(\)\n/.test(mainN)
-     && /for sq in Booth\.named\(str\(s\[1\]\), at, /.test(mainN)
-     && /if str\(now\.get\(sq, ""\)\) == str\(_lit\[sq\]\):\n\t\t\tkeep\.append\(sq\)\n\tboard\.light\(keep, c\)/.test(mainN)
-     && /for sq in _lit:\n[^\n]*\n\t\tdraw_rect\(r, Color\(_lit_col, _lit_col\.a \* 0\.35\)\)/.test(bview)
-     && /^const POINT_FROM = 4;$/m.test(bsrc) && /game\.point = !!\(o\.point \|\| m\.game >= POINT_FROM\);/.test(bsrc)
+     && /for sq in Booth\.named\(str\(s\[1\]\), now, /.test(mainN)
+     && /if str\(now\.get\(sq, ""\)\) == str\(_lit\[sq\]\) and not lit\.has\(sq\):\n\t\t\t\t\tlit\[sq\] = c\n\tboard\.light\(lit\)/.test(mainN)
+     && /for sq in _lit:\n\t\tvar lc: Color = _lit\[sq\]\n[^\n]*\n\t\tdraw_rect\(r, Color\(lc, lc\.a \* 0\.35\)\)/.test(bview)
+     && /^const POINT_FROM = 3;$/m.test(bsrc) && /game\.point = !!\(o\.point \|\| m\.game >= POINT_FROM\);/.test(bsrc)
      && /else if \(a\[i\] === '--point'\) o\.point = true;/.test(bsrc),
-    '⭐ from Round 4 the piece a line names is lit on the board in its speaker\'s color — a square with a piece on it, '
-    + 'or a player\'s only king or queen; dark again once that piece moves or is taken; --point shows it early, and Game 3 '
-    + 'goes out without it (his 11-26)');
+    '⭐ from Round 3 the piece a line names is lit on the board in its speaker\'s color — a square with a piece on it, '
+    + 'or a player\'s only king or queen; dark again once that piece moves or is taken; --point shows it early (his 11-26: '
+    + 'first "for round 4", then "use the highlighted piece for the final version of round three")');
+  ok(/for sp in _spans:\n\t\tif _ply >= int\(sp\["from"\]\) and _ply <= int\(sp\["to"\]\) and now\.has\(str\(sp\["sq"\]\)\):/.test(mainN)
+     && /if not _held\(str\(sq\), int\(s\[0\]\)\):/.test(mainN) && /\t_plan\(\)\n\t_plan_lights\(\)\n/.test(mainN)
+     && /if int\(p\) >= int\(l\["from"\]\) and int\(p\) <= int\(l\["to"\]\) and names\.search\(str\(said\["text"\]\)\) != null:/.test(mainN),
+    '⭐ his own lights hold for their moves and govern their square: Game 3\'s stuck rook lit from 19. f3, dark after 21. c3 '
+    + 'though the line about it is still up, in the color of whoever names it (his 11-26)');
+  ok(!/Booth\.DESK|STYLE\["live"\]/.test(castN0) && !/const DESK/.test(boothL)
+     && /\t_text\(f, "chesswild\.com", r\.get_center\(\) \+ Vector2\(0\.0, 11\.0 \* _k\), 30, STYLE\["ink"\], true\)/.test(fnGd(castN0, '_ticker')),
+    '⭐ along the bottom only the site, centered, bigger and in ink: the CHESSWILD 24 bug is gone (his 11-26)');
 } else ok(false, 'the tournament board mirror is missing its new scripts');
 
 (async () => {
