@@ -11,7 +11,8 @@
        npm run wc -- --render                                      …and record both clips
        npm run wc -- --rehearse [--render]                         every game, timed
        npm run wc -- --pgn file.pgn                                offline: a saved PGN instead
-       npm run wc -- --point                                       light the pieces the desk names, before Round 4
+       npm run wc -- --point                                       light the pieces the desk names, before Round 3
+       npm run wc -- --site                                        chesswild.com/wc's match data, and results to the leaderboard
 
    Fetch → grade → the board's data/game.json → (with --render) Godot records the square, the
    vertical (a YouTube Short) and the wide (16:9, a regular video) cut, ffmpeg stitches them, and
@@ -24,6 +25,8 @@ const os = require('os');
 const path = require('path');
 const { execFileSync, spawnSync } = require('child_process');
 const G = require('./gen-godot-game.js');
+const WCS = require('./wc-site.js');
+const P = require('./wc-puzzle.js');
 
 const ROOT = path.join(__dirname, '..');
 const BOARD = process.env.BOARD_PROJECT || path.join(os.homedir(), 'Documents', 'chesswild-board');
@@ -43,6 +46,7 @@ function args() {
     if (a[i] === '--game') o.game = +a[++i];
     else if (a[i] === '--render') o.render = true;
     else if (a[i] === '--point') o.point = true;
+    else if (a[i] === '--site') o.site = true;
     else if (a[i] === '--rehearse') o.rehearse = true;
     else if (a[i] === '--pgn') o.pgn = a[++i];
     else if (a[i] === '--out') o.out = a[++i];
@@ -98,6 +102,13 @@ function scoreBefore(games, n) {
     s[tag(g, 'Black')] = (s[tag(g, 'Black')] || 0) + p[1];
   });
   return s;
+}
+
+/* Each finished game's PGN by its number (2026 tags Game 3 as round "3.1"). */
+function finishedByNumber(games) {
+  const out = {};
+  games.filter((g) => POINTS[tag(g, 'Result')]).forEach((g) => { out[gameNo(g)] = g; });
+  return out;
 }
 
 function pick(games, n) {
@@ -195,7 +206,8 @@ function voiceIn(dir) {
        shake from 23. Nf3 to 25. Qd2       the board rattles (Sindarov shakes his foot)
        slow 31. Rxe6                       slow motion: a moment he calls great
    on as the first move starts, off as the move after the last does.
-       end: Garrett: That's Game 4 in the books.     a closing line after the last move, before the end card */
+       end: Garrett: That's Game 4 in the books.     a closing line after the last move, before the end card
+       hook: He never castled                         the thumbnail's big words, and the title's (else the result) */
 const VOICES = ['Garrett', 'Jacob'];   // booth.gd's VOICES: the board gate holds the two equal
 function deskIn(dir, game, log) {
   const f = path.join(dir, 'desk.txt');
@@ -215,6 +227,8 @@ function deskIn(dir, game, log) {
   fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((raw, i) => {
     const s = raw.trim(), at = 'line ' + (i + 1) + ': ';
     if (!s || s[0] === '#') return;
+    const hook = /^hook\s*:\s*(.+)$/i.exec(s);    // his words for the thumbnail and the title (wc-site.js hookOf)
+    if (hook) { out.hook = hook[1].trim(); return; }
     const cue = /^(light\s+([a-h][1-8])|shake|slow)\s+(.+)$/i.exec(s);
     if (cue) {
       const two = /^from\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)\s+to\s+(\d+)\s*(\.\.\.|\.)\s*(\S+)$/i.exec(cue[3].trim());
@@ -268,6 +282,15 @@ async function one(games, pgn, match, o, log) {
   game.desk = deskIn(dir, game, log);
   game.point = !!(o.point || m.game >= POINT_FROM);
   if (game.point) log('  the board lights the pieces the desk names' + (m.game < POINT_FROM ? ' (--point: early, a preview)' : ''));
+  // ⭐ HIS 11-26 #2 #3: the closing sends people to chesswild.com/wc — the next game to predict, and this game's puzzle
+  // when it has one (booth.gd SIGN_OFF reads game.puzzle and match.next). A puzzle is searched once (wc-site.js).
+  m.next = m.game < (m.games || 14) ? m.game + 1 : 0;
+  let puzzle;
+  if (POINTS[game.result] && !o.pgn) {
+    const had = ((WCS.readData(match.event || 'wc2026') || {}).games || []).filter((g) => g.game === m.game)[0];
+    puzzle = had && 'puzzle' in had ? had.puzzle : await P.findPuzzle(game, G.engine(), log);
+    game.puzzle = !!puzzle;
+  }
   const file = writeGame(game);
   log('  Game ' + m.game + ': ' + game.white_short + ' – ' + game.black_short + '  ' + game.result
     + '   (score before ' + half(m.before[0]) + '–' + half(m.before[1]) + ', after ' + half(m.after[0]) + '–' + half(m.after[1]) + ')');
@@ -280,11 +303,23 @@ async function one(games, pgn, match, o, log) {
     for (const layout of ['square', 'vertical', 'wide']) {
       const r = record(layout, path.join(dir, layout), log);
       times[layout] = r.seconds;
+      times[layout + '_frames'] = r.frames;
       times[layout + '_mp4'] = stitch(path.join(dir, layout), path.join(dir, 'game-' + m.game + '-' + layout + '.mp4'), voice);
       log('  ' + layout + ': ' + r.frames + ' frames (' + (r.frames / FPS).toFixed(1) + 's of video) in '
         + r.seconds.toFixed(0) + 's, stitched in ' + times[layout + '_mp4'].toFixed(0) + 's');
     }
     log('  → ' + dir + (voice ? '   (voice: ' + path.basename(voice) + ')' : '   (no voice file — drop voice.wav in the folder and run again)'));
+  }
+  // ⭐ HIS 11-26 #1 #2 #5: the match on chesswild.com/wc, the result for the predictions leaderboard, and the video's
+  // title, description, pinned comment and thumbnail.
+  if (POINTS[game.result] && !o.pgn && match.tour) {
+    const data = await WCS.refresh(match, (await get('https://lichess.org/api/broadcast/' + match.tour, 'json')).rounds || [],
+      finishedByNumber(games), G.engine(), log, G, { [m.game]: puzzle });
+    await WCS.settle(match, m.game, WCS.resultKey(game), log);
+    if (o.render) {
+      WCS.youtube(game, data, dir, (times.wide_frames || 0) / FPS);
+      await WCS.thumbnail(game, dir, log);
+    }
   }
   times.total = (Date.now() - t0) / 1000;
   return times;
@@ -310,6 +345,15 @@ async function main() {
   const games = splitGames(pgn);
   log('=== ' + (tag(games[0] || '', 'Event') || 'the match') + ' — ' + games.length + ' game(s) in the broadcast ===');
 
+  // ⭐ npm run wc -- --site: chesswild.com/wc's data for every finished game (a missing puzzle is searched), and every
+  // finished result to the predictions leaderboard. Game day does this for its own game after the render.
+  if (o.site) {
+    const data = await WCS.refresh(match, (await get('https://lichess.org/api/broadcast/' + match.tour, 'json')).rounds || [],
+      finishedByNumber(games), G.engine(), log, G);
+    for (const g of data.games.filter((x) => x.result)) await WCS.settle(match, g.game, g.result, log);
+    log('RESULT: DONE');
+    return;
+  }
   if (!o.rehearse) {
     const t = await one(games, pick(games, o.game), match, o, log);
     log('RESULT: DONE in ' + (t.total / 60).toFixed(1) + ' min');

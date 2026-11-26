@@ -1,0 +1,78 @@
+/* =============================================================================
+ * /wc/ — THE WORLD CHAMPIONSHIP (his 11-26 growth picks #1 and #2): predict the next game, a puzzle from every
+ * game's position, the best predictors, every game. The room is theme-hall's charcoal; its ONE accent stays green
+ * and means what it means everywhere: something to PLAY (here, a pick to make). No gold: the room has none.
+ * ⭐ THE BOARD IS THE CANON BOARD (chess-visual-canon: "every new board defaults to Park Table Default"): the
+ *   Academy's .bc-* to the number — frame, recessed shadows, the 152deg key-light over the grain, canvas pieces.
+ * ⚠ Phones: every row wraps, and nothing is wider than its card (test:mobile at 320 and 390).
+ * ========================================================================== */
+.wc { max-width: 760px; margin: 0 auto; color: var(--hall-ink-2, #b9c0cb); }
+.wc-match { font: 800 clamp(26px, 6vw, 40px)/1.15 'Poppins', sans-serif; color: var(--hall-ink, #eef1f5); text-align: center;
+  margin: 6px 0 2px; overflow-wrap: anywhere; }
+.wc-vs { color: var(--hall-ink-3, #8b93a1); font-weight: 600; font-size: 0.6em; }
+.wc-score { text-align: center; color: var(--hall-wood, #d8b98a); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  font-size: 14px; margin: 0 0 18px; }
+.wc-card { background: rgba(22, 24, 29, 0.72); border: 1px solid var(--edge, #2f333a); border-radius: 14px; padding: 16px 18px 18px;
+  margin: 0 0 18px; min-width: 0; }
+.wc-card h2 { margin-top: 0; }
+.wc-quiet { color: var(--hall-ink-3, #8b93a1); font-size: 14px; margin: 0 0 12px; }
+
+/* predict the next game: three choices, the one you made pressed */
+.wc-when { margin: 0 0 12px; font-size: 15px; }
+.wc-picks { display: flex; flex-wrap: wrap; gap: 10px; }
+.wc-pick { flex: 1 1 140px; min-height: 48px; padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  font: 700 16px/1.2 'Inter', sans-serif; color: var(--hall-ink, #eef1f5); background: #20242b;
+  border: 2px solid var(--edge, #2f333a); }
+.wc-pick:hover, .wc-pick:focus-visible { border-color: var(--hall-go, #6bffb8); }
+.wc-pick[aria-pressed="true"] { background: var(--hall-go, #6bffb8); border-color: var(--hall-go, #6bffb8); color: #10231a; }
+.wc-split { margin: 12px 0 0; font-size: 14px; color: var(--hall-ink-3, #8b93a1); }
+.wc-split:empty { display: none; }
+.wc-note { margin: 10px 0 0; font-size: 15px; color: var(--hall-ink-2, #b9c0cb); }
+.wc-predict #pjcc-profile-bar { margin-top: 12px; }
+
+/* a puzzle from every game */
+.wc-puzzle-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px; }
+.wc-pz { min-width: 0; scroll-margin-top: 80px; }
+.wc-pz-h { margin: 0 0 8px; font-size: 16px; }
+.wc-pz-say { margin: 10px 0 0; font-size: 15px; min-height: 2.6em; }
+.wc-ok { color: var(--hall-go, #6bffb8); }
+.wc-no { color: #ff9e8a; }
+.wc-pz-again { margin-top: 6px; min-height: 44px; padding: 8px 14px; border-radius: 9px; cursor: pointer;
+  font: 600 14px 'Inter', sans-serif; color: var(--hall-ink, #eef1f5); background: transparent; border: 1px solid var(--edge, #2f333a); }
+.wc-board { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr));
+  aspect-ratio: 1; width: 100%; container-type: inline-size;
+  border: 3px solid var(--chess-frame, #4a3320); border-radius: 8px; overflow: hidden;
+  box-shadow: 0 18px 36px -14px rgba(0,0,0,.72), inset 0 3px 9px rgba(255,255,255,.06), inset 0 -12px 22px rgba(0,0,0,.32);
+  touch-action: manipulation; }
+.wc-sq { position: relative; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; border: 0;
+  border-radius: 0; min-width: 0; min-height: 0; cursor: default; font: inherit; }
+.wc-sq.lt { background-color: var(--chess-lt);
+  background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
+.wc-sq.dk { background-color: var(--chess-dk);
+  background-image: linear-gradient(152deg, rgba(255,240,214,0.10), rgba(0,0,0,0.10) 62%), var(--chess-grain); }
+.wc-pc { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 1; }
+.wc-sq.from::before { content: ''; position: absolute; inset: 0; background: rgba(224,138,60,0.18); z-index: 0; }
+.wc-sq.go, .wc-sq.cap { cursor: pointer; }
+.wc-sq.go::after { content: ''; width: 26%; height: 26%; border-radius: 50%;
+  background: rgba(30,54,38,0.55); box-shadow: 0 0 0 2px rgba(224,138,60,0.8); }
+.wc-sq.cap { box-shadow: inset 0 0 0 4px rgba(224,138,60,0.85); }
+.wc-sq.cap::after { content: ''; position: absolute; inset: 0; margin: auto; width: 26%; height: 26%; border-radius: 50%;
+  background: rgba(30,54,38,0.55); box-shadow: 0 0 0 2px rgba(224,138,60,0.8); z-index: 2; pointer-events: none; }
+.wc-sq.sol { box-shadow: inset 0 0 0 4px var(--hall-go, #6bffb8); }
+.wc-sq:focus-visible { outline: 2px solid #e08a3c; outline-offset: -2px; }
+.wc-rank, .wc-file { position: absolute; font-size: 9px; font-style: normal; font-family: 'Share Tech Mono', monospace;
+  color: rgba(40,20,10,0.5); z-index: 2; pointer-events: none; }
+.wc-sq.dk .wc-rank, .wc-sq.dk .wc-file { color: rgba(255,255,255,0.5); }
+.wc-rank { top: 2px; left: 3px; }
+.wc-file { bottom: 1px; right: 3px; }
+
+/* the best predictors, and every game */
+.wc-board-list, .wc-game-list { margin: 0; padding-left: 1.6em; }
+.wc-board-list li, .wc-game-list li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); overflow-wrap: anywhere; }
+.wc-b-name { color: var(--hall-ink, #eef1f5); font-weight: 700; }
+.wc-b-n { color: var(--hall-ink-3, #8b93a1); }
+.wc-g-n { color: var(--hall-wood, #d8b98a); font-weight: 700; margin-right: 4px; }
+.wc-g-res { color: var(--hall-ink, #eef1f5); }
+.wc-g-live { color: var(--hall-go, #6bffb8); }
+.wc-g-when { color: var(--hall-ink-3, #8b93a1); }
+body.theme-hall .page-body a.wc-g-pz { color: var(--hall-go, #6bffb8); }

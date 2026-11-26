@@ -336,6 +336,22 @@ function engine() {
       const best = bm.split(/\s+/)[1];
       return { cp: cp, best: best && best !== '(none)' ? best : null };
     },
+    /* The two best moves and their scores, mover's POV — how far the best stands above the next (a game's puzzle). */
+    top2: async function (fen, ms) {
+      await ready;
+      lines = [];
+      sf.postMessage('setoption name MultiPV value 2');
+      sf.postMessage('position fen ' + fen);
+      sf.postMessage('go movetime ' + ms);
+      await until(function (l) { return l.startsWith('bestmove'); }, ms + 15000);
+      sf.postMessage('setoption name MultiPV value 1');
+      const last = {};
+      for (const l of lines) {
+        const m = /\bmultipv (\d+)\b.*?\bscore (cp|mate) (-?\d+)\b.*?\bpv (\S+)/.exec(l);
+        if (m) last[m[1]] = { move: m[4], cp: m[2] === 'mate' ? (+m[3] > 0 ? 1500 : -1500) : Math.max(-1500, Math.min(1500, +m[3])) };
+      }
+      return [last['1'] || null, last['2'] || null];
+    },
     quit: function () { try { sf.postMessage('quit'); } catch (e) {} }
   };
   return SF;
@@ -409,4 +425,4 @@ function main() {
 
 if (require.main === module) main();
 module.exports = { convert: convert, readPGN: readPGN, gradeWithEngine: gradeWithEngine,
-  shortName: shortName, clockOf: clockOf, evalOf: evalOf };
+  shortName: shortName, clockOf: clockOf, evalOf: evalOf, engine: engine };

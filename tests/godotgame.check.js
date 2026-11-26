@@ -334,7 +334,8 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
     '⭐ his own lights hold for their moves and govern their square: Game 3\'s stuck rook lit from 19. f3, dark after 21. c3 '
     + 'though the line about it is still up, in the color of whoever names it (his 11-26)');
   /* ⭐ his 11-26 after Game 3 */
-  ok(/out\[after\] = \{ "tag": "", "text": str\(l\["text"\]\), "kind": "end", "who": str\(l\.get\("who", ""\)\) \}\n\t_voice\(out\)/.test(boothL)
+  ok(/out\[after\] = \{ "tag": "", "text": str\(l\["text"\]\), "kind": "end", "who": str\(l\.get\("who", ""\)\) \}\n/.test(boothL)
+     && boothL.indexOf('"kind": "end"') > 0 && boothL.indexOf('"kind": "end"') < boothL.indexOf('\t_voice(out)\n\treturn out')
      && /if _closing < _ends\.size\(\):\n\t\t\tcast\.say\(int\(_ends\[_closing\]\)\)\n\t\t\t_wait = Broadcast\.read_secs\(/.test(mainN)
      && mainN.indexOf('cast.say(int(_ends[_closing]))') < mainN.indexOf('cast.show_card("end")'),
     '⭐ his closing lines are said after the last move, each held to be read, before the end card ("let\'s add a closing commentary")');

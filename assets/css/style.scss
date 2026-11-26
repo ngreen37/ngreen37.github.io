@@ -75,3 +75,6 @@
 /* 31 — Blender models drawn on a page (the location art box today). Last: it only adds
    rules for its own classes and takes no sizing from 27. */
 @import 'pjcc-31-stage';
+/* 32 — /wc/, the World Championship (11-26). Last: rules for its own classes only, and every control it has sets
+   its own tap target (48px picks, 44px "Try it again"), so nothing in 27 needs to reach it. */
+@import 'pjcc-32-wc';

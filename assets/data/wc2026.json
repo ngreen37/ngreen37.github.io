@@ -1,0 +1,107 @@
+{
+ "event": "wc2026",
+ "title": "2026 World Championships",
+ "players": [
+  {
+   "key": "gukesh",
+   "name": "Gukesh"
+  },
+  {
+   "key": "sindarov",
+   "name": "Sindarov"
+  }
+ ],
+ "games": [
+  {
+   "game": 1,
+   "starts": "2026-11-24T14:00:00.000Z",
+   "white": "sindarov",
+   "black": "gukesh",
+   "result": "draw",
+   "plies": 76,
+   "puzzle": {
+    "ply": 75,
+    "move": 38,
+    "side": "w",
+    "fen": "r2r4/1pp2p1k/2n4B/2p3R1/2P3P1/1PbN3P/8/3R2K1 w - - 11 38",
+    "uci": "g5h5",
+    "san": "Rh5",
+    "played": "Rh5",
+    "found": true,
+    "gap": 392
+   }
+  },
+  {
+   "game": 2,
+   "starts": "2026-11-25T14:00:00.000Z",
+   "white": "gukesh",
+   "black": "sindarov",
+   "result": "draw",
+   "plies": 40,
+   "puzzle": null
+  },
+  {
+   "game": 3,
+   "starts": "2026-11-26T14:00:00.000Z",
+   "white": "sindarov",
+   "black": "gukesh",
+   "result": "draw",
+   "plies": 120,
+   "puzzle": {
+    "ply": 115,
+    "move": 58,
+    "side": "w",
+    "fen": "8/8/b7/2p4p/P6P/2Kp4/4k3/4B3 w - - 5 58",
+    "uci": "e1d2",
+    "san": "Bd2",
+    "played": "Bd2",
+    "found": true,
+    "gap": 1455
+   }
+  },
+  {
+   "game": 4,
+   "starts": "2026-11-28T14:00:00.000Z"
+  },
+  {
+   "game": 5,
+   "starts": "2026-11-29T14:00:00.000Z"
+  },
+  {
+   "game": 6,
+   "starts": "2026-11-30T14:00:00.000Z"
+  },
+  {
+   "game": 7,
+   "starts": "2026-12-02T14:00:00.000Z"
+  },
+  {
+   "game": 8,
+   "starts": "2026-12-03T14:00:00.000Z"
+  },
+  {
+   "game": 9,
+   "starts": "2026-12-04T14:00:00.000Z"
+  },
+  {
+   "game": 10,
+   "starts": "2026-12-06T14:00:00.000Z"
+  },
+  {
+   "game": 11,
+   "starts": "2026-12-07T14:00:00.000Z"
+  },
+  {
+   "game": 12,
+   "starts": "2026-12-08T14:00:00.000Z"
+  },
+  {
+   "game": 13,
+   "starts": "2026-12-10T14:00:00.000Z"
+  },
+  {
+   "game": 14,
+   "starts": "2026-12-11T14:00:00.000Z"
+  }
+ ]
+}
