@@ -304,12 +304,14 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
      && /if at\.has\(sq\) and not sq in out:/.test(boothL) && /if hits\.size\(\) == 1 and not hits\[0\] in out:/.test(boothL)
      && /func _light\(\) -> void:\n\tif not bool\(_game\.get\("point", false\)\):\n\t\treturn/.test(mainN)
      && /\tboard\.fade\(delta, _flash_secs\)\n\t_light\(\)\n/.test(mainN)
-     && /_lit = Booth\.named\(str\(s\[1\]\), board\.codes\(\)/.test(mainN)
+     && /for sq in Booth\.named\(str\(s\[1\]\), at, /.test(mainN)
+     && /if str\(now\.get\(sq, ""\)\) == str\(_lit\[sq\]\):\n\t\t\tkeep\.append\(sq\)\n\tboard\.light\(keep, c\)/.test(mainN)
      && /for sq in _lit:\n[^\n]*\n\t\tdraw_rect\(r, Color\(_lit_col, _lit_col\.a \* 0\.35\)\)/.test(bview)
      && /^const POINT_FROM = 4;$/m.test(bsrc) && /game\.point = !!\(o\.point \|\| m\.game >= POINT_FROM\);/.test(bsrc)
      && /else if \(a\[i\] === '--point'\) o\.point = true;/.test(bsrc),
     '⭐ from Round 4 the piece a line names is lit on the board in its speaker\'s color — a square with a piece on it, '
-    + 'or a player\'s only king or queen; --point shows it early, and Game 3 goes out without it (his 11-26)');
+    + 'or a player\'s only king or queen; dark again once that piece moves or is taken; --point shows it early, and Game 3 '
+    + 'goes out without it (his 11-26)');
 } else ok(false, 'the tournament board mirror is missing its new scripts');
 
 (async () => {
