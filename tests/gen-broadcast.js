@@ -178,22 +178,27 @@ function voiceIn(dir) {
 /* ⭐ HIS OWN LINES FOR THIS VIDEO (his 11-25), in desk.txt beside the voice file, one to a line:
        new: The knight is now on our board, and the bishop looks better.
        9. Bxe5: Re-takes with the bishop? Does Gukesh have a plan?
-       9... Bd7: [DEVELOPING] Sindarov is blitzing out his moves with confidence.
-   "new:" is what changed on our board since the last video (his running theme); a [TAG] picks the box.
+       9... Bd7: Jacob: Sindarov is blitzing out his moves with confidence.
+   "new:" is what changed on our board since the last video (his running theme). ⭐ A commentator's name after the
+   colon says who speaks (his 11-26); a line naming nobody goes to whoever did not speak last (booth.gd _voice).
    ⚠⚠ A LINE NAMES ITS MOVE, AND IT MUST BE THE GAME'S MOVE, or nothing renders: one ply off, a line questions the
-   wrong player. */
-const DESK_TAGS = ['BREAKING', 'DEVELOPING', 'JUST IN', 'LIVE'];
+   wrong player. ⚠ The ticker's [BOX]es went with the move above the board: a leftover one stops the render rather
+   than show on screen as words. */
+const VOICES = ['Garrett', 'Jacob'];   // booth.gd's VOICES: the board gate holds the two equal
 function deskIn(dir, game, log) {
   const f = path.join(dir, 'desk.txt');
   if (!fs.existsSync(f)) { log('  (no desk.txt — his lines for this video go in ' + f + ')'); return {}; }
   const out = { lines: [] }, bad = [], taken = {};
-  const tagged = (t, dflt) => { const m = /^\[([A-Z ]+)\]\s*(.+)$/.exec(t); return m ? { tag: m[1], text: m[2].trim() } : { tag: dflt, text: t }; };
+  const voiced = (t) => {
+    const m = new RegExp('^(' + VOICES.join('|') + ')\\s*:\\s*(.+)$', 'i').exec(t);
+    return m ? { who: VOICES.find((v) => v.toLowerCase() === m[1].toLowerCase()), text: m[2].trim() } : { text: t };
+  };
   const plain = (san) => String(san).replace(/0/g, 'O').replace(/[+#!?]+$/, '');
   fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((raw, i) => {
     const s = raw.trim(), at = 'line ' + (i + 1) + ': ';
     if (!s || s[0] === '#') return;
     let m = /^new\s*:\s*(.+)$/i.exec(s), say;
-    if (m) say = tagged(m[1].trim(), 'JUST IN');
+    if (m) say = voiced(m[1].trim());
     else {
       m = /^(\d+)\s*(\.\.\.|\.)\s*([^\s:]+)\s*:\s*(.+)$/.exec(s);
       if (!m) { bad.push(at + 'neither "new: …" nor "9. Bxe5: …" — ' + s); return; }
@@ -204,10 +209,10 @@ function deskIn(dir, game, log) {
       }
       if (taken[ply]) { bad.push(at + 'a second line on ' + m[1] + m[2] + ' ' + mv.san); return; }
       taken[ply] = true;
-      say = Object.assign({ ply }, tagged(m[4].trim(), 'LIVE'));
+      say = Object.assign({ ply }, voiced(m[4].trim()));
     }
-    if (DESK_TAGS.indexOf(say.tag) < 0) { bad.push(at + '[' + say.tag + '] is not one of ' + DESK_TAGS.join(', ')); return; }
-    if (say.ply) out.lines.push(say); else out.new = { tag: say.tag, text: say.text };
+    if (/^\[[^\]]*\]/.test(say.text)) { bad.push(at + 'the [BOX]es are gone (11-26): name who says it instead, "' + VOICES[0] + ': …"'); return; }
+    if (say.ply) out.lines.push(say); else out.new = say.who ? { text: say.text, who: say.who } : { text: say.text };
   });
   if (bad.length) throw new Error('desk.txt (' + f + ') has ' + bad.length + ' line(s) that would land wrong:\n    ' + bad.join('\n    '));
   log('  desk.txt: ' + (out.new ? 'what is new on our board, and ' : '') + out.lines.length + ' line(s) of his, each on its move');
@@ -280,4 +285,4 @@ async function main() {
 
 /* ⚠ EXIT BY HAND: a Stockfish that graded a game keeps the process alive after the last line. */
 if (require.main === module) main().then(() => process.exit(0), (e) => { console.error('FAILED — ' + e.message); process.exit(1); });
-module.exports = { splitGames, scoreBefore, pick, tag, tourFrom, slug, gameNo, deskIn };
+module.exports = { splitGames, scoreBefore, pick, tag, tourFrom, slug, gameNo, deskIn, VOICES };

@@ -165,14 +165,15 @@ ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\
   const write = (s) => fs.writeFileSync(path.join(dir, 'desk.txt'), s);
   const tryDesk = () => { try { return W.deskIn(dir, g1, () => {}); } catch (e) { return { error: e.message }; } };
   eq(JSON.stringify(tryDesk()), '{}', 'no desk.txt, no lines of his');
-  write('# a note\nnew: New on our board.\n9. ' + w9.san + ': A question?\n9...' + b9.san + ': [DEVELOPING] An answer.\n');
-  eq(JSON.stringify(tryDesk()), JSON.stringify({ lines: [{ ply: 17, tag: 'LIVE', text: 'A question?' },
-    { ply: 18, tag: 'DEVELOPING', text: 'An answer.' }], new: { tag: 'JUST IN', text: 'New on our board.' } }),
-    '⭐ his lines land on the moves they name ("9." is ply 17, "9..." ply 18); "new:" is what changed on our board');
+  write('# a note\nnew: Garrett: New on our board.\n9. ' + w9.san + ': A question?\n9...' + b9.san + ': jacob: An answer.\n');
+  eq(JSON.stringify(tryDesk()), JSON.stringify({ lines: [{ ply: 17, text: 'A question?' },
+    { ply: 18, who: 'Jacob', text: 'An answer.' }], new: { text: 'New on our board.', who: 'Garrett' } }),
+    '⭐ his lines land on the moves they name ("9." is ply 17, "9..." ply 18); "new:" is what changed on our board; '
+    + 'a commentator\'s name after the colon says who speaks (his 11-26)');
   write('9. ' + g1.moves[0].san + ': on a move the game did not play\n');
   ok(/would land wrong/.test(tryDesk().error || ''), '⚠⚠ a line naming a move the game did not play stops the render: one ply off, it questions the wrong player');
-  write('9. ' + w9.san + ': [OPINION] a box the ticker does not have\n');
-  ok(/would land wrong/.test(tryDesk().error || ''), '…and so does a box the ticker does not have');
+  write('9. ' + w9.san + ': [BREAKING] a box from before the commentators\n');
+  ok(/the \[BOX\]es are gone/.test(tryDesk().error || ''), '…and so does a leftover [BOX]: the boxes went with the ticker, and on screen it would be words');
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
@@ -221,6 +222,25 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(/var need := Broadcast\.read_secs\(/.test(mainN0) && /if b >= 2 and gap < need:\n\t\t\t_holds\[b - 2\] \+= need - gap/.test(mainN0)
      && /clampf\(0\.6 \+ 0\.3 \* float\(text\.split\(" ", false\)\.size\(\)\), 2\.0, LINE_SECS\)/.test(castN0),
     '⭐ every line is read before the next replaces it: the board waits (his Game 2 lines sat one move apart)');
+  /* ══ his 11-26 ══ two commentators, talking to each other, above the board */
+  const fnGd = (src, name) => { const i = src.indexOf('\nfunc ' + name + '('); if (i < 0) return ''; const j = src.indexOf('\nfunc ', i + 1); return src.slice(i, j < 0 ? undefined : j); };
+  const voices = ((/const VOICES := \[([^\]]*)\]/.exec(boothN) || [])[1] || '').split(',').map((v) => v.trim().replace(/"/g, '')).filter(Boolean);
+  ok(voices.length === 2 && voices.join() === W.VOICES.join()
+     && voices.every((v) => new RegExp('"' + v.toLowerCase() + '": Color\\("[0-9a-f]{6}"\\)').test(castN0))
+     && /\t_voice\(out\)\n\treturn out\n/.test(boothN)
+     && /if not who in VOICES:\n\t\t\twho = VOICES\[\(VOICES\.find\(last\) \+ 1\) % VOICES\.size\(\)\]\n\t\ts\["who"\] = who\n\t\tlast = who/.test(boothN),
+    '⭐ his two commentators (' + voices.join(', ') + '), each in his own color, the clip machine\'s list the desk\'s: '
+    + 'a line naming nobody goes to whoever did not speak last, so they talk to each other');
+  ok(/\t_talk\(f, talk_rect\(vp\)\)\n/.test(castN0) && /var y := board_rect\.position\.y - _talk_room\(\)/.test(castN0)
+     && !/_line/.test(fnGd(castN0, '_ticker')) && /_who = str\(said\.get\("who", ""\)\)/.test(castN0)
+     && ['square', 'vertical', 'wide'].every((l) => new RegExp('"' + l + '": \\[[\\d.]+, \\d+\\]').test((/const TALK := \{[^}]*\}/.exec(castN0) || [''])[0]))
+     && /"top": 30\.0 \* _k \+ talk/.test(castN0) && /"top": 126\.0 \* _k \+ talk/.test(castN0)
+     && /board_rect\.position\.y - 130\.0 \* _k - _talk_room\(\)/.test(castN0),
+    '⭐ the commentary is said right above the board in every cut, the board giving way (his 11-26: "move the commentary from the bottom of the screen")');
+  ok(/if most > 1 and f\.get_string_size\(s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs\)\.x > room:/.test(castN0)
+     && /if m < worst:\n\t\t\t\tworst = m\n\t\t\t\trows = \[a, b\]/.test(castN0)
+     && /1 if layout == "wide" else 2/.test(castN0),
+    '⚠ a long line wraps to two rows at the word that evens them before it shrinks (his Game 3 opener is 94 characters)');
   ok(/var graded := bool\(game\.get\("marks", false\)\)/.test(booth)
     && /MARK\.has\(cls\) and bool\(game\.get\("marks", false\)\)/.test(cast),
     'the desk and the board both stay quiet about grades the broadcast did not give');
