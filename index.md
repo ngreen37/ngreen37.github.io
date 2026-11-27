@@ -520,6 +520,15 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      {%- endcomment -%}
 <h2 class="mc-h2">More Ways In</h2>
 <div class="mc-doors">
+  <a class="mc-door" href="{{ '/wc/' | relative_url }}" data-until="2026-12-11">
+    <span class="mc-door-ico" aria-hidden="true">&#9818;&#xFE0E;</span>
+    <b>World Championship</b>
+    <small>Gukesh vs Sindarov. Predict every game.</small>
+  </a>
+  {%- comment -%} ⭐ THE TOURNAMENT DOOR (his 11-26: "a link to /wc/ on the homepage"; his 11-27: first in the grid, and "pull
+       the prediction after december 11th - but we can use the same process for other tournaments"). The one-line script
+       under this grid removes it once the viewer's own date is past `data-until`, so the pull needs no deploy. Next
+       tournament: this same card with its page, its line and its last day. {%- endcomment -%}
   <a class="mc-door" href="{{ '/games/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9654;</span>
     <b>Games Hall</b>
@@ -613,14 +622,9 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        which is worse, and shuffling the grid to hide one gap is how a page ends up with a
        layout nobody chose. If it reads as a hole, the fix is a SIXTH DOOR worth having, not a
        new column count. {%- endcomment -%}
-  {%- comment -%} ⭐ THE SIXTH DOOR (his 11-26): "A link to /wc/ on the homepage, so people who type just
-       chesswild.com find it." ⚠ "Predict every game" goes stale after the match (Dec 11): his to reword or pull. {%- endcomment -%}
-  <a class="mc-door" href="{{ '/wc/' | relative_url }}">
-    <span class="mc-door-ico" aria-hidden="true">&#9818;&#xFE0E;</span>
-    <b>World Championship</b>
-    <small>Gukesh vs Sindarov. Predict every game.</small>
-  </a>
 </div>
+
+<script>(function () { var d = new Date(), t = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); Array.prototype.forEach.call(document.querySelectorAll('.mc-door[data-until]'), function (a) { if (t > a.getAttribute('data-until')) a.remove(); }); })();</script>
 
 {%- comment -%} ⚠ THE HONEST STRIP LIVES IN THE HERO (`.mc-lead-col`, beside the green
      button), which is where a proof belongs. This note is left standing so nobody re-adds a

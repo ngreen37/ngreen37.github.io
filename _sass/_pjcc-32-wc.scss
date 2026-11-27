@@ -38,7 +38,7 @@
 .wc-pz-say { margin: 10px 0 0; font-size: 15px; min-height: 2.6em; }
 .wc-ok { color: var(--hall-go, #6bffb8); }
 .wc-no { color: #ff9e8a; }
-.wc-pz-again { margin-top: 6px; min-height: 44px; padding: 8px 14px; border-radius: 9px; cursor: pointer;
+.wc-pz-btn { margin-top: 6px; min-height: 44px; padding: 8px 14px; border-radius: 9px; cursor: pointer;
   font: 600 14px 'Inter', sans-serif; color: var(--hall-ink, #eef1f5); background: transparent; border: 1px solid var(--edge, #2f333a); }
 .wc-board { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr));
   aspect-ratio: 1; width: 100%; container-type: inline-size;

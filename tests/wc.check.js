@@ -4,7 +4,8 @@
    · the puzzle finder's rules, on a stand-in engine (no Stockfish in a gate)
    · the page in Chrome: two puzzles that grade a move, the predictions panel ABSENT until the SQL runs and whole
      when it has (a stand-in account), every pick a button, no codename unescaped, nothing sliding sideways on a phone
-   · Championship Eye with the real pjcc-profile.js: the first try kept, and banked only for a finished match
+   · Championship Eye with the real pjcc-profile.js: a miss is free, a shown answer is kept, banked only for a finished match
+   · the front door's tournament card: first in the grid, and gone the day after its `data-until`
    · game day: the sign-off says the URL, the clip machine settles results and writes the YouTube text */
 'use strict';
 const fs = require('fs');
@@ -42,6 +43,26 @@ ok(bad.length === 0 && puzzles >= 2 && data.games.length === 14 && data.games.ev
 ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.result === g.white || g.result === g.black)
   && (data.players || []).length === 2,
   'every result is a draw or one of the two players, as predict_settle will take it');
+
+/* ── 1b. the front door's tournament card (his 11-27): first in the grid, pulled by the viewer's own date ─────────── */
+{
+  const home = read('index.md').replace(/\r\n/g, '\n');
+  const grid = (/<div class="mc-doors">\n([\s\S]*?)\n<\/div>\n/.exec(home) || [])[1] || '';
+  const gate = /<div class="mc-doors">\n[\s\S]*?\n<\/div>\n\n<script>([^\n]*)<\/script>\n/.exec(home);
+  const lead = /^\s*<a class="mc-door" href="\{\{ '([^']+)' \| relative_url \}\}" data-until="(\d{4})-(\d\d)-(\d\d)">/.exec(grid);
+  const cards = (grid.match(/data-until=/g) || []).length, wc = grid.indexOf("'/wc/' | relative_url") >= 0;
+  const day = (n) => {
+    const t = new Date(Date.UTC(+lead[2], lead[3] - 1, +lead[4] + n)), y = t.getUTCFullYear(), mo = t.getUTCMonth(), d = t.getUTCDate();
+    let gone = false;
+    class D { getFullYear() { return y; } getMonth() { return mo; } getDate() { return d; } }
+    require('vm').runInNewContext(gate[1], { Date: D, Array, document: { querySelectorAll: (s) => s !== '.mc-door[data-until]' ? []
+      : [{ getAttribute: () => lead[2] + '-' + lead[3] + '-' + lead[4], remove: () => { gone = true; } }] } });
+    return !gone;
+  };
+  ok(grid && (cards === 0 ? !wc : cards === 1 && lead && gate && day(0) && !day(1) && day(-9) && !day(40)),
+    '⭐ the front door\'s tournament card leads the grid and is gone from the day after its last day, by the viewer\'s own date, no deploy needed (his 11-27)  ['
+    + (lead ? lead[1] + ' until ' + lead[2] + '-' + lead[3] + '-' + lead[4] : cards ? 'NOT FIRST' : wc ? '/wc/ HAS NO LAST DAY' : 'no tournament card') + ']');
+}
 
 /* ── 2. the finder's rules, on a stand-in engine ───────────────────────────────────────── */
 (async () => {
@@ -87,11 +108,15 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
   const ABSENT = '<script>window.PJCC={enabled:true,ready:Promise.resolve(),onChange:function(f){setTimeout(f,50);setTimeout(f,120);},currentUser:function(){return null;},getProfile:function(){return null;},'
     + 'db:function(){return {rpc:function(){window.PROBES=(window.PROBES||0)+1;return Promise.resolve({data:null,error:{message:"function predict_split does not exist"}});}};}};</script>';
   let mode = 'absent', dataOver = null;
+  /* ⚠ THE PAGE RUNS ON A PINNED MATCH, never the live file: Games 1–3 as played, the rest ahead of the test's own clock.
+     Read live, Game 4's result moves the next game, the score and the puzzle count, and fails the push that carries it. */
+  const FIX = JSON.parse(JSON.stringify(data));
+  FIX.games = FIX.games.map((g) => g.game <= 3 ? g : { game: g.game, white: g.white, black: g.black, starts: new Date(Date.now() + (g.game - 3) * 864e5).toISOString() });
   const REAL = '<script src="/assets/js/pjcc-profile.js"></script>';
   const srv = http.createServer((req, rsp) => {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     if (p === '/__site.css') { rsp.writeHead(200, { 'Content-Type': 'text/css' }); rsp.end(css); return; }
-    if (p === '/assets/data/wc2026.json' && dataOver) { rsp.writeHead(200, { 'Content-Type': 'application/json' }); rsp.end(JSON.stringify(dataOver)); return; }
+    if (p === '/assets/data/wc2026.json') { rsp.writeHead(200, { 'Content-Type': 'application/json' }); rsp.end(JSON.stringify(dataOver || FIX)); return; }
     if (p === '/wc/') {
       const html = H.jekyllPage(md, '/__site.css', 'theme-hall').replace('</body>', (mode === 'absent' ? ABSENT : mode === 'real' ? REAL : MOCK(mode === 'in')) + '</body>');
       rsp.writeHead(200, { 'Content-Type': 'text/html' }); rsp.end(html); return;
@@ -139,25 +164,48 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
       split: document.getElementById('wc-split').textContent }));
     ok(c.up.event === 'wc2026' && c.up.game === 4 && c.up.pick === 'draw' && c.up.user_id === 'u1' && c.pressed === 'Draw' && /picks so far/.test(c.split),
       '⭐ signed in, a pick saves as (you, wc2026, Game 4, draw), the button stays pressed and the crowd\'s split shows  ' + JSON.stringify({ pressed: c.pressed, split: c.split }));
-    const fen = data.games.filter((g) => g.puzzle).slice(-1)[0];
-    const pz = fen.puzzle, from = C.sqFromName(pz.uci.slice(0, 2)), to = C.sqFromName(pz.uci.slice(2, 4));
-    await page.evaluate((id) => document.getElementById(id).scrollIntoView(), 'game-' + fen.game);
-    await page.click('#game-' + fen.game + ' .wc-sq[data-i="' + from + '"]');
-    await page.click('#game-' + fen.game + ' .wc-sq[data-i="' + to + '"]');
-    const right = await page.evaluate((id) => document.querySelector('#' + id + ' .wc-pz-say').textContent, 'game-' + fen.game);
-    await page.click('#game-' + fen.game + ' .wc-pz-again');
+    const fen = FIX.games.filter((g) => g.puzzle).slice(-1)[0];
+    const pz = fen.puzzle, from = C.sqFromName(pz.uci.slice(0, 2)), to = C.sqFromName(pz.uci.slice(2, 4)), id = 'game-' + fen.game;
+    const card = () => page.evaluate((id) => {
+      const q = (s) => document.querySelectorAll('#' + id + ' ' + s);
+      return { say: q('.wc-pz-say')[0].textContent, sol: q('.wc-sq.sol').length, dots: q('.wc-sq.go').length + q('.wc-sq.cap').length,
+        show: !q('.wc-pz-show')[0].hidden, again: !q('.wc-pz-again')[0].hidden };
+    }, id);
+    await page.evaluate((id) => document.getElementById(id).scrollIntoView(), id);
+    await page.click('#' + id + ' .wc-sq[data-i="' + from + '"]');
+    await page.click('#' + id + ' .wc-sq[data-i="' + to + '"]');
+    const right = await card();
+    await page.click('#' + id + ' .wc-pz-again');
     const wrongMove = C.legalMoves(C.parseFEN(pz.fen)).filter((m) => !(m.from === from && m.to === to))[0];
-    await page.click('#game-' + fen.game + ' .wc-sq[data-i="' + wrongMove.from + '"]');
-    await page.click('#game-' + fen.game + ' .wc-sq[data-i="' + wrongMove.to + '"]');
-    const wrong = await page.evaluate((id) => [document.querySelector('#' + id + ' .wc-pz-say').textContent, document.querySelectorAll('#' + id + ' .wc-sq.sol').length,
-      document.querySelectorAll('#' + id + ' .wc-sq.go, #' + id + ' .wc-sq.cap').length], 'game-' + fen.game);
-    ok(/^Right: /.test(right) && /^Not this one\./.test(wrong[0]) && wrong[1] === 2 && wrong[2] === 0,
-      '⭐ the puzzle grades a move: the answer is "Right", any other legal move "Not this one", the answer\'s two squares shown and no move dots left over  ' + JSON.stringify([right, wrong[0]]));
+    await page.click('#' + id + ' .wc-sq[data-i="' + wrongMove.from + '"]');
+    await page.click('#' + id + ' .wc-sq[data-i="' + wrongMove.to + '"]');
+    const wrong = await card();
+    await page.click('#' + id + ' .wc-pz-show');
+    const shown = await card();
+    ok(/^Solved: /.test(right.say) && right.sol === 2 && !right.show && right.again
+       && wrong.say === 'Not ' + C.toSAN(C.parseFEN(pz.fen), wrongMove) + '. Try again.' && wrong.sol === 0 && wrong.dots === 0 && wrong.show && !wrong.again
+       && /^The best move is /.test(shown.say) && shown.sol === 2 && !shown.show && shown.again,
+      '⭐ the puzzle grades a move: the answer is "Solved", any other legal move "Not <it>. Try again." with the answer still hidden, and only Show the Answer lights its two squares (his 11-27)  '
+      + JSON.stringify([right.say, wrong.say, shown.say]));
     await page.close();
+    const over = (unsearched) => {
+      const d = JSON.parse(JSON.stringify(FIX));
+      d.games.forEach((g) => { if (g.game >= 4 && g.game <= 10) { g.result = d.players[0].key; if (g.game !== unsearched) g.puzzle = null; } });
+      return d;
+    };
+    mode = 'out';
+    dataOver = over(0);
+    page = await open(390);
+    const early = await page.evaluate(() => ({ predict: document.getElementById('wc-predict').hidden, leaders: !document.getElementById('wc-leaders').hidden,
+      rest: Array.prototype.filter.call(document.querySelectorAll('.wc-g'), (li) => !li.classList.contains('done')).map((li) => li.textContent) }));
+    await page.close();
+    dataOver = null;
+    ok(early.predict && early.leaders && early.rest.length === 4 && early.rest.every((t) => / not played$/.test(t)),
+      '⭐ a match won early (7½) asks for no more picks, and the games it never needed say "not played"  ' + JSON.stringify(early));
 
-    /* ⭐ CHAMPIONSHIP EYE (his 11-26), with the REAL pjcc-profile.js, signed out, each run in its own clean storage */
+    /* ⭐ CHAMPIONSHIP EYE (his 11-26; the softer rule his 11-27), with the REAL pjcc-profile.js, signed out, each run in its own clean storage */
     mode = 'real';
-    const [p1, p3] = data.games.filter((g) => g.puzzle);
+    const [p1, p3] = FIX.games.filter((g) => g.puzzle);
     const best = (g) => ({ from: C.sqFromName(g.puzzle.uci.slice(0, 2)), to: C.sqFromName(g.puzzle.uci.slice(2, 4)) });
     const miss = (g) => C.legalMoves(C.parseFEN(g.puzzle.fen)).filter((m) => !(m.from === best(g).from && m.to === best(g).to))[0];
     const openIn = async (ctx) => {
@@ -180,10 +228,14 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
     let ctx = await browser.createBrowserContext();
     page = await openIn(ctx);
     const t0 = await tally(page), href0 = (await look(page)).href;
+    await play(page, p3, miss(p3));
+    const free = (await look(page)).tries;
     await play(page, p3, best(p3));
     await page.click('#game-' + p3.game + ' .wc-pz-again');
     await play(page, p3, miss(p3));
+    await page.click('#game-' + p3.game + ' .wc-pz-show');
     await play(page, p1, miss(p1));
+    await page.click('#game-' + p1.game + ' .wc-pz-show');
     await page.click('#game-' + p1.game + ' .wc-pz-again');
     await play(page, p1, best(p1));
     const practice = await say(page, p1), kept = await look(page);
@@ -191,24 +243,20 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
     page = await openIn(ctx);
     const back = [await say(page, p3), await say(page, p1), await tally(page)];
     await page.close();
-    const over = (unsearched) => {
-      const d = JSON.parse(JSON.stringify(data));
-      d.games.forEach((g) => { if (g.game >= 4 && g.game <= 10) { g.result = d.players[0].key; if (g.game !== unsearched) g.puzzle = null; } });
-      return d;
-    };
     dataOver = over(0);
     page = await openIn(ctx);
-    const missed = (await look(page)).best;
+    const shownBest = (await look(page)).best;
     await ctx.close();
     dataOver = null;
-    ok(/^Solve every puzzle from this match on the first try to earn the Championship Eye title\. Sign in to keep your solves\.$/.test(t0)
-       && /\/dossier\/$/.test(href0) && kept.tries['g' + p3.game].r === 'right' && kept.tries['g' + p1.game].r === 'wrong'
-       && /^Right: .*Practice only/.test(practice) && /^Solved on your first try: /.test(back[0]) && /^Missed on your first try\./.test(back[1])
-       && back[2] === 'First try: 1 of 2 solved.' && missed === null,
-      '⭐ the FIRST move on each puzzle is kept: a retry never changes it, a practice solve says so, a return visit shows it, and a miss never banks  '
-      + JSON.stringify([kept.tries, practice, back, missed]));
+    ok(/^Solve every puzzle from this match, without showing the answer, to earn the Championship Eye title\. Sign in to keep your solves\.$/.test(t0)
+       && /\/dossier\/$/.test(href0) && JSON.stringify(free) === '{}' && kept.tries['g' + p3.game].r === 'right' && kept.tries['g' + p1.game].r === 'wrong'
+       && /^Right: .* Practice only: you saw the answer first\.$/.test(practice) && /^Solved: /.test(back[0]) && /^The best move is /.test(back[1])
+       && back[2] === 'Solved: 1 of 2.' && shownBest === null,
+      '⭐ a miss keeps nothing, so a solve after one counts; a shown answer is kept for good (a practice solve after it says so), a return visit shows both, and a shown answer never banks  '
+      + JSON.stringify([free, kept.tries, practice, back, shownBest]));
     ctx = await browser.createBrowserContext();
     page = await openIn(ctx);
+    await play(page, p1, miss(p1));
     await play(page, p1, best(p1));
     await play(page, p3, best(p3));
     const live = [await tally(page), (await look(page)).best];
@@ -222,9 +270,9 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
     const won = [await tally(page), (await look(page)).best];
     await ctx.close();
     dataOver = null;
-    ok(/^First try: 2 of 2 solved\. Solve every/.test(live[0]) && live[1] === null && gap === null
-       && won[0] === 'Every puzzle, solved on the first try. Sign in to claim Championship Eye.' && won[1] === '1',
-      '⭐ a perfect record banks only once the match is OVER and every played game was searched, and a return visit finds it  ' + JSON.stringify([live, gap, won]));
+    ok(/^Solved: 2 of 2\. Solve every/.test(live[0]) && live[1] === null && gap === null
+       && won[0] === 'Every puzzle solved. Sign in to claim Championship Eye.' && won[1] === '1',
+      '⭐ every puzzle solved (a miss along the way is fine) banks only once the match is OVER and every played game was searched, and a return visit finds it  ' + JSON.stringify([live, gap, won]));
     const slid = [];
     for (const w of [320, 390]) {
       page = await open(w);
@@ -241,7 +289,7 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
   const gb = read('tests/gen-broadcast.js').replace(/\r\n/g, '\n');
   ok(/const SIGN_OFF := \["Predict Game %d at chesswild\.com\/wc\.", "Try and solve a puzzle from this game's position at chesswild\.com\/wc\."\]/.test(booth)
      && /if int\(mt\.get\("next", 0\)\) > 0:/.test(booth) && /if bool\(game\.get\("puzzle", false\)\):/.test(booth)
-     && /m\.next = m\.game < \(m\.games \|\| 14\) \? m\.game \+ 1 : 0;/.test(gb) && /game\.puzzle = !!puzzle;/.test(gb),
+     && /m\.next = WCS\.nextGame\(m\);/.test(gb) && /game\.puzzle = !!puzzle;/.test(gb),
     '⭐ every match video signs off with the URL — the next game to predict, and its puzzle only when it has one ("say the URL", his #3)');
   ok(/await WCS\.settle\(match, m\.game, WCS\.resultKey\(game\), log\);/.test(gb) && /WCS\.youtube\(game, data, dir,/.test(gb) && /await WCS\.thumbnail\(game, dir, log\);/.test(gb)
      && /if \(o\.site\) \{/.test(gb),
@@ -254,10 +302,16 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
   ok(his.hook === 'He never castled' && S.hookOf(Object.assign({}, fake, { desk: his })) === 'He never castled',
     'his desk.txt "hook:" is the thumbnail\'s big words and the title\'s; without one, the result');
   const yt = S.youtube(fake, data, tmp, 103.8).join('\n');
+  const end = (n, after) => S.youtube(Object.assign({}, fake, { match: Object.assign({}, fake.match, { game: n, after: after }) }), FIX, tmp, 103.8).join('\n');
+  const won = end(11, [7.5, 3.5]), last = end(14, [7, 7]), on = end(11, [7, 4]);
   fs.rmSync(tmp, { recursive: true, force: true });
   ok(/^Sindarov vs Gukesh · Game 3 · Drawn in 60 moves · World Chess Championship 2026$/m.test(yt)
      && /Predict Game 4 \(free\): https:\/\/chesswild\.com\/wc\//.test(yt) && /#game-3/.test(yt) && /^Who wins Game 4\? Predict it free at chesswild\.com\/wc/m.test(yt),
     'one title pattern every game, searchable as "World Chess Championship", the links in the description and the pinned comment');
+  ok(S.nextGame(fake.match) === 4 && !/Predict/.test(won) && /^Thanks for watching the whole match!$/m.test(won)
+     && /^Thanks for watching the whole match!$/m.test(last) && /^Who wins Game 12\? Predict it free at chesswild\.com\/wc\.$/m.test(on),
+    '⭐ once a player has 7½ the match is over: no video, description or pinned comment asks for a game that will not be played, and the last says thanks once  '
+    + JSON.stringify([won.split('\n').slice(-2)[0], last.split('\n').slice(-2)[0], on.split('\n').slice(-2)[0]]));
   const docSql = read('docs/wc-predictions-setup.md');
   const mf = path.join(ROOT, 'private/docs/godot/tournament_board/match.json');
   const key = fs.existsSync(mf) ? JSON.parse(fs.readFileSync(mf, 'utf8')).predictKey : null;

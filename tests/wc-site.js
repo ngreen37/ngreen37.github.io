@@ -97,9 +97,16 @@ function hookOf(game) {
   return '';
 }
 
+/* the game to predict next: none after the last, and none once a player is past half the games (7½ of 14 ends it),
+   so a video, its description and the pinned comment never ask for a game that will not be played */
+function nextGame(m) {
+  const n = m.games || 14;
+  return m.game < n && Math.max.apply(null, m.after || [0]) <= n / 2 ? m.game + 1 : 0;
+}
+
 function youtube(game, data, dir, secs) {
   const m = game.match, W = game.white_short, B = game.black_short, hook = hookOf(game);
-  const next = m.game < (m.games || 14) ? m.game + 1 : 0;
+  const next = nextGame(m);
   const pz = data && (data.games || []).filter((g) => g.game === m.game)[0];
   const score = W + ' ' + half(m.after[0]) + '–' + half(m.after[1]) + ' ' + B;
   const lines = [
@@ -119,8 +126,8 @@ function youtube(game, data, dir, secs) {
   lines.push('Play chess free: ' + SITE, '', 'Commentary by Garrett and Jacob in the ChessWild booth. Pieces modeled in Blender for ChessWild.',
     '', '#chess #WorldChessChampionship #' + W.replace(/\s+/g, '') + ' #' + B.replace(/\s+/g, ''), '',
     'PINNED COMMENT (the wide video)',
-    (next ? 'Who wins Game ' + next + '? Predict it free at chesswild.com/wc' : 'Thanks for watching the whole match!')
-      + (pz && pz.puzzle ? ' — and try the puzzle from this game\'s position.' : '.'), '');
+    (next ? 'Who wins Game ' + next + '? Predict it free at chesswild.com/wc' : 'Thanks for watching the whole match')
+      + (pz && pz.puzzle ? ' — and try the puzzle from this game\'s position.' : next ? '.' : '!'), '');
   fs.writeFileSync(path.join(dir, 'youtube.txt'), lines.join('\n'));
   return lines;
 }
@@ -166,4 +173,4 @@ async function thumbnail(game, dir, log) {
 }
 
 module.exports = { refresh: refresh, settle: settle, youtube: youtube, thumbnail: thumbnail, resultKey: resultKey,
-  hookOf: hookOf, readData: readData, dataPath: dataPath, keyOf: keyOf, PAGE: PAGE, POINTS: POINTS };
+  hookOf: hookOf, nextGame: nextGame, readData: readData, dataPath: dataPath, keyOf: keyOf, PAGE: PAGE, POINTS: POINTS };

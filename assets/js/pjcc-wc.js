@@ -50,7 +50,8 @@
         var r = g.result === 'draw' ? '½–½' : (g.result === g.white ? '1–0' : '0–1');
         line = '<span class="wc-g-who">' + esc(nameOf(g.white)) + ' – ' + esc(nameOf(g.black)) + '</span> <b class="wc-g-res">' + r + '</b>'
           + (g.puzzle ? ' <a class="wc-g-pz" href="#game-' + g.game + '">puzzle</a>' : '');
-      } else if (started(g)) line = '<b class="wc-g-live">being played now</b>';
+      } else if (over()) line = '<span class="wc-g-when">not played</span>';
+      else if (started(g)) line = '<b class="wc-g-live">being played now</b>';
       else line = '<span class="wc-g-when">' + esc(when(g.starts)) + '</span>';
       return '<li class="wc-g' + (g.result ? ' done' : '') + '"><span class="wc-g-n">Game ' + g.game + '</span> ' + line + '</li>';
     }).join('');
@@ -75,7 +76,9 @@
     ctx.fillText(GLYPH[pc.toUpperCase()], mid, PC_PX * 0.547);
   }
 
-  /* ⭐ Championship Eye (his 11-26): your FIRST move on each puzzle counts, kept and synced by pjcc-profile.js */
+  /* ⭐ Championship Eye (his 11-26): every puzzle solved. ⭐ His 11-27, the softer rule: a miss keeps the puzzle open, and
+     only "Show the Answer" spends it. A puzzle's first result (r 'right', or 'wrong' = the answer was shown first) is
+     kept and synced by pjcc-profile.js. ⚠ Records from 11-26 hold first-try misses: that flow showed the answer too. */
   function tries() { return window.PJCC && PJCC.wcPuzzles ? PJCC.wcPuzzles() : {}; }
   function first(g) { return tries()['g' + g.game] || null; }
   function over() {
@@ -94,21 +97,21 @@
     var el = $('wc-pz-tally'), set = DATA.games.filter(function (g) { return g.puzzle; });
     if (!set.length) { el.hidden = true; return; }
     var solved = set.filter(function (g) { return (first(g) || {}).r === 'right'; }).length;
-    var missed = set.filter(function (g) { return (first(g) || {}).r === 'wrong'; }).length;
+    var shown = set.filter(function (g) { return (first(g) || {}).r === 'wrong'; }).length;
     var me = window.PJCC && PJCC.currentUser && PJCC.currentUser();
     var signIn = '<a href="' + ($('wc-predict').hidden ? '/dossier/' : '#pjcc-profile-bar') + '">Sign in</a>';
     el.hidden = false;
     if (every()) {
       if (window.PJCC && PJCC.bankWcEvery) PJCC.bankWcEvery();
       var eye = me && PJCC.EARNED && PJCC.holdsEarned ? PJCC.EARNED.filter(function (e) { return e.key === 'wc-eye'; })[0] : null;
-      el.innerHTML = '<b class="wc-ok">Every puzzle, solved on the first try.</b> '
+      el.innerHTML = '<b class="wc-ok">Every puzzle solved.</b> '
         + (eye && PJCC.holdsEarned(eye) ? 'Championship Eye is yours.'
           : me ? '<a href="/collection/">Claim Championship Eye</a> in your collection.' : signIn + ' to claim Championship Eye.');
       return;
     }
     var line = [];
-    if (solved || missed) line.push('First try: ' + solved + ' of ' + set.length + ' solved.');
-    if (!missed) line.push('Solve every puzzle from this match on the first try to earn the Championship Eye title.' + (me ? '' : ' ' + signIn + ' to keep your solves.'));
+    if (solved || shown) line.push('Solved: ' + solved + ' of ' + set.length + '.');
+    if (!shown) line.push('Solve every puzzle from this match, without showing the answer, to earn the Championship Eye title.' + (me ? '' : ' ' + signIn + ' to keep your solves.'));
     el.innerHTML = line.join(' ');
   }
 
@@ -118,8 +121,10 @@
     host.innerHTML = '<h3 class="wc-pz-h">Game ' + g.game + ' · ' + esc(mover) + ' to Move</h3>'
       + '<div class="wc-board" role="grid" aria-label="Game ' + g.game + ' puzzle board"></div>'
       + '<p class="wc-pz-say" aria-live="polite">Find the best move.</p>'
-      + '<button type="button" class="wc-pz-again" hidden>Try it again</button>';
-    var board = host.querySelector('.wc-board'), say = host.querySelector('.wc-pz-say'), again = host.querySelector('.wc-pz-again');
+      + '<button type="button" class="wc-pz-btn wc-pz-show" hidden>Show the Answer</button>'
+      + '<button type="button" class="wc-pz-btn wc-pz-again" hidden>Try It Again</button>';
+    var board = host.querySelector('.wc-board'), say = host.querySelector('.wc-pz-say');
+    var show = host.querySelector('.wc-pz-show'), again = host.querySelector('.wc-pz-again');
     function sqAt(r, f) { return flip ? (7 - r) * 8 + (7 - f) : r * 8 + f; }
     function draw(sol) {
       var legal = sel >= 0 ? C.legalMoves(S).filter(function (m) { return m.from === sel; }) : [];
@@ -145,24 +150,28 @@
         return C.nameFromSq(m.from) === u.slice(0, 2) && C.nameFromSq(m.to) === u.slice(2, 4) && (!u[4] || (m.promo || '').toLowerCase() === u[4]);
       })[0];
     }
-    /* how: 'try' a move just made · 'back' your first try, on a return visit */
-    function verdict(right, how) {
-      var sol = answer(), num = pz.move + (pz.side === 'w' ? '. ' : '... ') + pz.san, had = first(g);
+    /* how: 'solve' the best move · 'show' the button · 'back' a return visit, from the kept result */
+    function verdict(how) {
+      var num = pz.move + (pz.side === 'w' ? '. ' : '... ') + pz.san, had = first(g);
       var game = pz.found ? esc(mover) + ' found it in the game.' : 'In the game, ' + esc(mover) + ' played ' + esc(pz.played) + '.';
+      var right = how === 'solve' || (how === 'back' && had.r === 'right'), late = right && had && had.r === 'wrong';
       done = true;
       sel = -1;
-      if (how === 'try' && !had && window.PJCC && PJCC.bankWcTry) PJCC.bankWcTry(g.game, right);
-      if (how === 'back') {
-        say.innerHTML = right ? '<b class="wc-ok">Solved on your first try: ' + esc(num) + '.</b> ' + game
-          : '<b class="wc-no">Missed on your first try.</b> The best move is ' + esc(num) + (pz.found ? ', and ' + esc(mover) + ' found it in the game.' : '.');
-      } else {
-        say.innerHTML = right
-          ? '<b class="wc-ok">Right: ' + esc(num) + '.</b> ' + (had && had.r === 'wrong' ? 'Practice only: your first try is the one that counts.' : game)
-          : '<b class="wc-no">Not this one.</b> The best move is ' + esc(num) + (pz.found ? ', and ' + esc(mover) + ' found it in the game.' : '.');
-      }
+      if (how !== 'back' && !had && window.PJCC && PJCC.bankWcTry) PJCC.bankWcTry(g.game, right);
+      say.innerHTML = !right ? '<b>The best move is ' + esc(num) + '.</b> ' + game
+        : late ? '<b class="wc-ok">Right: ' + esc(num) + '.</b> Practice only: you saw the answer first.'
+        : '<b class="wc-ok">Solved: ' + esc(num) + '.</b> ' + game;
+      show.hidden = true;
       again.hidden = false;
-      draw(sol);
+      draw(answer());
       renderTally();
+      if (how === 'show') again.focus();
+    }
+    function miss(m) {
+      sel = -1;
+      say.innerHTML = '<b class="wc-no">Not ' + esc(C.toSAN(S, m)) + '.</b> Try again.';
+      show.hidden = false;
+      draw();
     }
     board.addEventListener('click', function (e) {
       var b = e.target.closest('.wc-sq');
@@ -172,15 +181,17 @@
         var m = C.legalMoves(S).filter(function (x) { return x.from === sel && x.to === i; });
         if (m.length) {
           var sol = answer();
-          verdict(!!sol && sol.from === m[0].from && sol.to === m[0].to, 'try');
+          if (sol && sol.from === m[0].from && sol.to === m[0].to) verdict('solve');
+          else miss(m[0]);
           return;
         }
       }
       sel = pc && C.colorOf(pc) === S.turn && sel !== i ? i : -1;
       draw();
     });
+    show.addEventListener('click', function () { verdict('show'); });
     again.addEventListener('click', function () { done = false; sel = -1; again.hidden = true; say.textContent = 'Find the best move.'; draw(); });
-    if (first(g)) verdict(first(g).r === 'right', 'back');
+    if (first(g)) verdict('back');
     else draw();
   }
   var drewTries = false;
@@ -196,7 +207,8 @@
 
   /* ── predict the next game (docs/wc-predictions-setup.md) ──────────────────────── */
   function db() { return window.PJCC && PJCC.enabled !== false && PJCC.db ? PJCC.db() : null; }
-  function next() { return DATA.games.filter(function (g) { return !started(g) && !g.result; })[0] || null; }
+  /* ⚠ a match won early (7½) leaves scheduled games that are never played: nothing left to predict */
+  function next() { return over() ? null : DATA.games.filter(function (g) { return !started(g) && !g.result; })[0] || null; }
   function renderPredict() {
     var g = next(), box = $('wc-predict');
     if (!OPEN || !g) { box.hidden = true; renderTally(); return; }

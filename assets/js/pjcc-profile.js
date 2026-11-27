@@ -241,7 +241,7 @@
       rule: 'ach:last-general',  how: 'Win a war of four players on Hard' },
     /* ⭐ his 11-26: "A collectable for solving all 14 puzzles with an account" (WCPZ_SLUG below). The name is mine, veto open. */
     { kind: 'title',  key: 'wc-eye',     value: 1000, label: 'Championship Eye',
-      rule: 'ach:championship-eye', how: 'Solve every puzzle from the 2026 World Championship on the first try, at chesswild.com/wc/' }
+      rule: 'ach:championship-eye', how: 'Solve every puzzle from the 2026 World Championship without showing the answer, at chesswild.com/wc/' }
   ];
   EARNED.forEach(function (e) { if (e.kind === 'avatar' && !AVATARS[e.key]) AVATARS[e.key] = '★'; });
   function earnedEntry(kind, key) {
@@ -1716,9 +1716,10 @@
     return true;
   };
 
-  /* ⭐ THE WORLD CHAMPIONSHIP'S PUZZLES (his 11-26, Championship Eye in EARNED): your FIRST move on each game's puzzle at
-     /wc/, by game ('g4'), mirrored to game_stats `wc2026-puzzles` and merged back by the myStats pull.
-     ⚠ THE EARLIER TRY WINS, NEVER THE BETTER ONE: a miss shows the answer, so a later "right" elsewhere is not a solve.
+  /* ⭐ THE WORLD CHAMPIONSHIP'S PUZZLES (his 11-26, Championship Eye in EARNED): each game's puzzle at /wc/ keeps its FIRST
+     result, by game ('g4'): 'right', or 'wrong' = the answer was shown first (his 11-27: misses are free, a shown answer
+     is not). Mirrored to game_stats `wc2026-puzzles` and merged back by the myStats pull.
+     ⚠ THE EARLIER RESULT WINS, NEVER THE BETTER ONE: after a shown answer, a "right" elsewhere is not a solve.
      ⚠ ONE DATA KEY PER GAME: saveScore merges `data` one key deep, so a try sends only its own game and drops none.
      best_score is 1 once /wc/ saw every puzzle of a finished match solved: only that page reads the match. */
   var WCPZ_KEY = 'pjcc.wc2026.puzzles.v1', WCPZ_SLUG = 'wc2026-puzzles', WCPZ_EVENT = 'pjcc:wcpuzzles';
@@ -2102,7 +2103,7 @@
     { key: 'campaigner',    icon: '🚩', label: 'Campaigner',     desc: 'Win a Campaign',                   test: function (c) { return c.best(WAR_SLUG) >= 1; } },
     { key: 'iron-general',  icon: '🛡', label: 'Iron General',   desc: 'Win a Campaign on Hard',           test: function (c) { return c.best(WAR_SLUG) >= 2; } },
     { key: 'last-general',  icon: '🎖', label: 'Last General',   desc: 'Win a war of four players on Hard', test: function (c) { return c.best(WAR_SLUG) >= 3; } },
-    { key: 'championship-eye', icon: '🏆', label: 'Championship Eye', desc: 'Solve every 2026 World Championship puzzle on the first try', test: function (c) { return c.best(WCPZ_SLUG) >= 1; } }
+    { key: 'championship-eye', icon: '🏆', label: 'Championship Eye', desc: 'Solve every 2026 World Championship puzzle without showing the answer', test: function (c) { return c.best(WCPZ_SLUG) >= 1; } }
   ];
   PJCC.ACHIEVEMENTS = ACHIEVEMENTS;
   PJCC.earnedAchievements = function (prof, stats) {

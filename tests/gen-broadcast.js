@@ -284,7 +284,7 @@ async function one(games, pgn, match, o, log) {
   if (game.point) log('  the board lights the pieces the desk names' + (m.game < POINT_FROM ? ' (--point: early, a preview)' : ''));
   // ⭐ HIS 11-26 #2 #3: the closing sends people to chesswild.com/wc — the next game to predict, and this game's puzzle
   // when it has one (booth.gd SIGN_OFF reads game.puzzle and match.next). A puzzle is searched once (wc-site.js).
-  m.next = m.game < (m.games || 14) ? m.game + 1 : 0;
+  m.next = WCS.nextGame(m);
   let puzzle;
   if (POINTS[game.result] && !o.pgn) {
     const had = ((WCS.readData(match.event || 'wc2026') || {}).games || []).filter((g) => g.game === m.game)[0];
