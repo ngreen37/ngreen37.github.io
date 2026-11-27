@@ -193,6 +193,65 @@ check('Legendary is the top band', P.BANDS[P.BANDS.length - 1].key === 'legendar
     JSON.stringify(junk.scenarioStars()) === '{}' && junk.bankStars('blitz', 9) && junk.scenarioStars().blitz === 3);
 }
 
+/* ── 6d. ⭐ CHAMPIONSHIP EYE (his 11-26): your FIRST try at each /wc/ puzzle, synced, and the finished set banked once ── */
+const WCK = 'pjcc.wc2026.puzzles.v1';
+function wcBoot(local, opts) {
+  opts = opts || {};
+  const store = Object.assign({}, opts.store || {});
+  if (local) store[WCK] = JSON.stringify(local);
+  const b = boot(store), real = b.saveScore, sent = [];
+  b.saveScore = function (g, s, x) { sent.push({ g, s, data: x && x.data }); return real.apply(this, arguments); };
+  b.currentUser = () => (opts.out ? null : { id: 'u1' });
+  b.myStats = () => Promise.resolve(opts.rows || []);
+  return { b, store, sent };
+}
+{
+  const { b, store, sent } = wcBoot();
+  const one = b.bankWcTry(3, true), again = b.bankWcTry(3, false), other = b.bankWcTry('1', false), t = b.wcPuzzles();
+  check('a first try is banked; a second at the same puzzle is not, and cannot turn a solve into a miss',
+    one && !again && other && t.g3.r === 'right' && t.g1.r === 'wrong' && sent.length === 2, JSON.stringify(t) + ' · ' + sent.length + ' writes');
+  check('…each try sends only its own game, so a device that never pulled cannot drop the account\'s others',
+    sent.every(s => s.g === b.WCPZ_SLUG && Object.keys(s.data).length === 1) && Object.keys(sent[0].data)[0] === 'g3',
+    JSON.stringify(sent.map(s => s.data)));
+  const every = b.bankWcEvery(), twice = b.bankWcEvery();
+  check('the finished set banks 1 once, and a second look sends nothing', every && !twice && sent.length === 3 && sent[2].s === 1
+    && store['pjcc.best.' + b.WCPZ_SLUG] === '1', sent.length + ' writes · best ' + store['pjcc.best.' + b.WCPZ_SLUG]);
+  const junk = wcBoot([1, 2]).b, junk2 = wcBoot({ g1: 'right', g2: { r: 'maybe', at: 1 }, x9: { r: 'right', at: 1 } }).b;
+  check('…a broken record reads as no tries', JSON.stringify(junk.wcPuzzles()) === '{}' && JSON.stringify(junk2.wcPuzzles()) === '{}');
+  const eye = P.EARNED.find(e => e.key === 'wc-eye');
+  const at = n => P.earnedMet(eye, null, [{ game: P.WCPZ_SLUG, best_score: n, plays: 1 }]);
+  check('Championship Eye is an EARNED title, met at 1 and not at 0, never sold or staked',
+    eye && eye.kind === 'title' && P.TITLES['wc-eye'] && P.TITLES['wc-eye'].rule === 'earned' && at(1) && !at(0)
+    && P.sellValue('title', 'wc-eye') === 0 && P.isEarned('title', 'wc-eye'));
+}
+const wcPull = async (local, row, opts) => {
+  const w = wcBoot(local, Object.assign({ rows: row ? [Object.assign({ game: 'wc2026-puzzles', plays: 1 }, row)] : [] }, opts || {}));
+  await w.b.ready;
+  await new Promise(r => setTimeout(r, 20));
+  return w;
+};
+const wcDone = (async () => {
+  const miss = { r: 'wrong', at: 100 }, hit = { r: 'right', at: 200 }, tie = { r: 'right', at: 100 };
+  const a = await wcPull({ g1: miss }, { best_score: 0, data: { g1: hit } });
+  const b2 = await wcPull({ g1: hit }, { best_score: 0, data: { g1: miss } });
+  const c = await wcPull({ g1: tie }, { best_score: 0, data: { g1: miss } });
+  const d = await wcPull({ g1: miss }, { best_score: 0, data: { g1: tie } });
+  const same = [a, b2, c, d].map(w => JSON.stringify(w.b.wcPuzzles().g1));
+  check('⭐ the EARLIER try wins in either direction, never the better one, and a tie is the miss',
+    same.every(s => s === JSON.stringify(miss)), same.join(' · '));
+  const e = await wcPull({ g1: miss, g3: hit }, { best_score: 0, data: { g1: miss } });
+  const f = await wcPull({ g1: miss }, { best_score: 0, data: { g1: miss } });
+  const g = await wcPull({ g1: miss, g3: hit }, null, { out: true });
+  check('a try made signed out reaches the account on the pull, only what it lacks; nothing when equal or signed out',
+    e.sent.length === 1 && JSON.stringify(Object.keys(e.sent[0].data)) === '["g3"]' && f.sent.length === 0 && g.sent.length === 0,
+    JSON.stringify([e.sent.map(s => s.data), f.sent.length, g.sent.length]));
+  const h = await wcPull(null, null, { store: { 'pjcc.best.wc2026-puzzles': '1' } });
+  const i = await wcPull(null, { best_score: 1, data: {} });
+  check('…a set finished signed out is banked to the account, and one banked elsewhere lands here',
+    h.sent.length === 1 && h.sent[0].s === 1 && i.store['pjcc.best.wc2026-puzzles'] === '1' && i.sent.length === 0,
+    JSON.stringify([h.sent.map(s => s.s), i.store['pjcc.best.wc2026-puzzles']]));
+})();
+
 /* ── 7. the claim refuses everything it should ────────────────────────────────────── */
 {
   const g = boot();
@@ -201,7 +260,7 @@ check('Legendary is the top band', P.BANDS[P.BANDS.length - 1].key === 'legendar
     try { await g.claimEarned(e.kind, e.key, []); return 'RESOLVED'; }
     catch (err) { return err.message; }
   };
-  refuses().then(msg => {
+  wcDone.then(refuses).then(msg => {
     check('claiming while signed out is refused', msg === 'not signed in', msg);
     console.log(`\n  ${pass} passed, ${fail} failed\n`);
     process.exit(fail ? 1 : 0);

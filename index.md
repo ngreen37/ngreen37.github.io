@@ -613,6 +613,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        which is worse, and shuffling the grid to hide one gap is how a page ends up with a
        layout nobody chose. If it reads as a hole, the fix is a SIXTH DOOR worth having, not a
        new column count. {%- endcomment -%}
+  {%- comment -%} ⭐ THE SIXTH DOOR (his 11-26): "A link to /wc/ on the homepage, so people who type just
+       chesswild.com find it." ⚠ "Predict every game" goes stale after the match (Dec 11): his to reword or pull. {%- endcomment -%}
+  <a class="mc-door" href="{{ '/wc/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9818;&#xFE0E;</span>
+    <b>World Championship</b>
+    <small>Gukesh vs Sindarov. Predict every game.</small>
+  </a>
 </div>
 
 {%- comment -%} ⚠ THE HONEST STRIP LIVES IN THE HERO (`.mc-lead-col`, beside the green

@@ -4,6 +4,7 @@
    · the puzzle finder's rules, on a stand-in engine (no Stockfish in a gate)
    · the page in Chrome: two puzzles that grade a move, the predictions panel ABSENT until the SQL runs and whole
      when it has (a stand-in account), every pick a button, no codename unescaped, nothing sliding sideways on a phone
+   · Championship Eye with the real pjcc-profile.js: the first try kept, and banked only for a finished match
    · game day: the sign-off says the URL, the clip machine settles results and writes the YouTube text */
 'use strict';
 const fs = require('fs');
@@ -70,6 +71,9 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
      && ['pjcc-chess.js', 'pjcc-pieces.js', 'pjcc-wc.js'].every((f) => md.indexOf("'/assets/js/" + f + "' | relative_url") > 0)
      && /bar\.src = root\.getAttribute\('data-bar'\)/.test(js) && !/pjcc-profile\.js/.test(md),
     'the page loads its data, the board\'s two scripts and its own; the sign-in bar is loaded once PJCC exists, and pjcc-profile.js never twice');
+  ok(/window\.addEventListener\(PJCC\.WCPZ_EVENT, /.test(js) && !/pjcc:wcpuzzles/.test(js)
+     && /WCPZ_EVENT = 'pjcc:wcpuzzles'/.test(read('assets/js/pjcc-profile.js')) && /window\.dispatchEvent\(new Event\(WCPZ_EVENT\)\)/.test(read('assets/js/pjcc-profile.js')),
+    'tries merged in from another device redraw the puzzles: the page listens on the module\'s own event name, never a copy of it');
   const css = H.siteCss();
   const MOCK = (signedIn) => '<script>(function(){var picks={},split=[{game:4,pick:"draw",n:7},{game:4,pick:"gukesh",n:3}];'
     + 'var q=function(v){return Promise.resolve({data:v,error:null});};'
@@ -82,12 +86,14 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
      page that probes again on every change (the break went uncaught until it did) */
   const ABSENT = '<script>window.PJCC={enabled:true,ready:Promise.resolve(),onChange:function(f){setTimeout(f,50);setTimeout(f,120);},currentUser:function(){return null;},getProfile:function(){return null;},'
     + 'db:function(){return {rpc:function(){window.PROBES=(window.PROBES||0)+1;return Promise.resolve({data:null,error:{message:"function predict_split does not exist"}});}};}};</script>';
-  let mode = 'absent';
+  let mode = 'absent', dataOver = null;
+  const REAL = '<script src="/assets/js/pjcc-profile.js"></script>';
   const srv = http.createServer((req, rsp) => {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     if (p === '/__site.css') { rsp.writeHead(200, { 'Content-Type': 'text/css' }); rsp.end(css); return; }
+    if (p === '/assets/data/wc2026.json' && dataOver) { rsp.writeHead(200, { 'Content-Type': 'application/json' }); rsp.end(JSON.stringify(dataOver)); return; }
     if (p === '/wc/') {
-      const html = H.jekyllPage(md, '/__site.css', 'theme-hall').replace('</body>', (mode === 'absent' ? ABSENT : MOCK(mode === 'in')) + '</body>');
+      const html = H.jekyllPage(md, '/__site.css', 'theme-hall').replace('</body>', (mode === 'absent' ? ABSENT : mode === 'real' ? REAL : MOCK(mode === 'in')) + '</body>');
       rsp.writeHead(200, { 'Content-Type': 'text/html' }); rsp.end(html); return;
     }
     if (p === '/assets/js/pjcc-profile-bar.js') { rsp.writeHead(200, { 'Content-Type': 'text/javascript' }); rsp.end(''); return; }
@@ -148,6 +154,77 @@ ok(data.games.filter((g) => g.result).every((g) => g.result === 'draw' || g.resu
     ok(/^Right: /.test(right) && /^Not this one\./.test(wrong[0]) && wrong[1] === 2 && wrong[2] === 0,
       '⭐ the puzzle grades a move: the answer is "Right", any other legal move "Not this one", the answer\'s two squares shown and no move dots left over  ' + JSON.stringify([right, wrong[0]]));
     await page.close();
+
+    /* ⭐ CHAMPIONSHIP EYE (his 11-26), with the REAL pjcc-profile.js, signed out, each run in its own clean storage */
+    mode = 'real';
+    const [p1, p3] = data.games.filter((g) => g.puzzle);
+    const best = (g) => ({ from: C.sqFromName(g.puzzle.uci.slice(0, 2)), to: C.sqFromName(g.puzzle.uci.slice(2, 4)) });
+    const miss = (g) => C.legalMoves(C.parseFEN(g.puzzle.fen)).filter((m) => !(m.from === best(g).from && m.to === best(g).to))[0];
+    const openIn = async (ctx) => {
+      const p = await ctx.newPage();
+      p.on('pageerror', (e) => errs.push(e.message));
+      await p.setViewport({ width: 390, height: 900 });
+      await p.goto(url, { waitUntil: 'networkidle0' });
+      await p.waitForFunction(() => window.PJCC && PJCC.wcPuzzles && document.querySelectorAll('.wc-pz').length > 0, { timeout: 8000 });
+      await new Promise((r) => setTimeout(r, 200));
+      return p;
+    };
+    const play = async (p, g, m) => {
+      await p.click('#game-' + g.game + ' .wc-sq[data-i="' + m.from + '"]');
+      await p.click('#game-' + g.game + ' .wc-sq[data-i="' + m.to + '"]');
+    };
+    const say = (p, g) => p.evaluate((id) => document.querySelector('#' + id + ' .wc-pz-say').textContent, 'game-' + g.game);
+    const tally = (p) => p.evaluate(() => { const t = document.getElementById('wc-pz-tally'); return t.hidden ? '(hidden)' : t.textContent; });
+    const look = (p) => p.evaluate(() => ({ best: localStorage.getItem('pjcc.best.wc2026-puzzles'),
+      tries: JSON.parse(localStorage.getItem('pjcc.wc2026.puzzles.v1') || '{}'), href: (document.querySelector('#wc-pz-tally a') || {}).href || '' }));
+    let ctx = await browser.createBrowserContext();
+    page = await openIn(ctx);
+    const t0 = await tally(page), href0 = (await look(page)).href;
+    await play(page, p3, best(p3));
+    await page.click('#game-' + p3.game + ' .wc-pz-again');
+    await play(page, p3, miss(p3));
+    await play(page, p1, miss(p1));
+    await page.click('#game-' + p1.game + ' .wc-pz-again');
+    await play(page, p1, best(p1));
+    const practice = await say(page, p1), kept = await look(page);
+    await page.close();
+    page = await openIn(ctx);
+    const back = [await say(page, p3), await say(page, p1), await tally(page)];
+    await page.close();
+    const over = (unsearched) => {
+      const d = JSON.parse(JSON.stringify(data));
+      d.games.forEach((g) => { if (g.game >= 4 && g.game <= 10) { g.result = d.players[0].key; if (g.game !== unsearched) g.puzzle = null; } });
+      return d;
+    };
+    dataOver = over(0);
+    page = await openIn(ctx);
+    const missed = (await look(page)).best;
+    await ctx.close();
+    dataOver = null;
+    ok(/^Solve every puzzle from this match on the first try to earn the Championship Eye title\. Sign in to keep your solves\.$/.test(t0)
+       && /\/dossier\/$/.test(href0) && kept.tries['g' + p3.game].r === 'right' && kept.tries['g' + p1.game].r === 'wrong'
+       && /^Right: .*Practice only/.test(practice) && /^Solved on your first try: /.test(back[0]) && /^Missed on your first try\./.test(back[1])
+       && back[2] === 'First try: 1 of 2 solved.' && missed === null,
+      '⭐ the FIRST move on each puzzle is kept: a retry never changes it, a practice solve says so, a return visit shows it, and a miss never banks  '
+      + JSON.stringify([kept.tries, practice, back, missed]));
+    ctx = await browser.createBrowserContext();
+    page = await openIn(ctx);
+    await play(page, p1, best(p1));
+    await play(page, p3, best(p3));
+    const live = [await tally(page), (await look(page)).best];
+    await page.close();
+    dataOver = over(7);
+    page = await openIn(ctx);
+    const gap = (await look(page)).best;
+    await page.close();
+    dataOver = over(0);
+    page = await openIn(ctx);
+    const won = [await tally(page), (await look(page)).best];
+    await ctx.close();
+    dataOver = null;
+    ok(/^First try: 2 of 2 solved\. Solve every/.test(live[0]) && live[1] === null && gap === null
+       && won[0] === 'Every puzzle, solved on the first try. Sign in to claim Championship Eye.' && won[1] === '1',
+      '⭐ a perfect record banks only once the match is OVER and every played game was searched, and a return visit finds it  ' + JSON.stringify([live, gap, won]));
     const slid = [];
     for (const w of [320, 390]) {
       page = await open(w);

@@ -22,6 +22,7 @@ body_class: theme-hall
 <section class="wc-card wc-puzzles" id="wc-puzzles">
 <h2>A Puzzle from Every Game</h2>
 <p class="wc-quiet">Each one is a position from the game. Find the best move.</p>
+<p class="wc-tally" id="wc-pz-tally" hidden></p>
 <div class="wc-puzzle-list" id="wc-puzzle-list"></div>
 </section>
 <section class="wc-card wc-leaders" id="wc-leaders" hidden>

@@ -75,6 +75,43 @@
     ctx.fillText(GLYPH[pc.toUpperCase()], mid, PC_PX * 0.547);
   }
 
+  /* ⭐ Championship Eye (his 11-26): your FIRST move on each puzzle counts, kept and synced by pjcc-profile.js */
+  function tries() { return window.PJCC && PJCC.wcPuzzles ? PJCC.wcPuzzles() : {}; }
+  function first(g) { return tries()['g' + g.game] || null; }
+  function over() {
+    var pts = score(), most = 0;
+    for (var k in pts) if (pts[k] > most) most = pts[k];
+    return most > DATA.games.length / 2 || DATA.games.every(function (g) { return g.result; });
+  }
+  /* ⚠ a played game whose puzzle was never searched has no `puzzle` key: the set is not whole until it is */
+  function every() {
+    var played = DATA.games.filter(function (g) { return g.result; });
+    return over() && played.some(function (g) { return g.puzzle; }) && played.every(function (g) {
+      return 'puzzle' in g && (!g.puzzle || (first(g) || {}).r === 'right');
+    });
+  }
+  function renderTally() {
+    var el = $('wc-pz-tally'), set = DATA.games.filter(function (g) { return g.puzzle; });
+    if (!set.length) { el.hidden = true; return; }
+    var solved = set.filter(function (g) { return (first(g) || {}).r === 'right'; }).length;
+    var missed = set.filter(function (g) { return (first(g) || {}).r === 'wrong'; }).length;
+    var me = window.PJCC && PJCC.currentUser && PJCC.currentUser();
+    var signIn = '<a href="' + ($('wc-predict').hidden ? '/dossier/' : '#pjcc-profile-bar') + '">Sign in</a>';
+    el.hidden = false;
+    if (every()) {
+      if (window.PJCC && PJCC.bankWcEvery) PJCC.bankWcEvery();
+      var eye = me && PJCC.EARNED && PJCC.holdsEarned ? PJCC.EARNED.filter(function (e) { return e.key === 'wc-eye'; })[0] : null;
+      el.innerHTML = '<b class="wc-ok">Every puzzle, solved on the first try.</b> '
+        + (eye && PJCC.holdsEarned(eye) ? 'Championship Eye is yours.'
+          : me ? '<a href="/collection/">Claim Championship Eye</a> in your collection.' : signIn + ' to claim Championship Eye.');
+      return;
+    }
+    var line = [];
+    if (solved || missed) line.push('First try: ' + solved + ' of ' + set.length + ' solved.');
+    if (!missed) line.push('Solve every puzzle from this match on the first try to earn the Championship Eye title.' + (me ? '' : ' ' + signIn + ' to keep your solves.'));
+    el.innerHTML = line.join(' ');
+  }
+
   function Puzzle(g, host) {
     var pz = g.puzzle, S = C.parseFEN(pz.fen), flip = pz.side === 'b', sel = -1, done = false;
     var mover = nameOf(pz.side === 'w' ? g.white : g.black);
@@ -108,16 +145,24 @@
         return C.nameFromSq(m.from) === u.slice(0, 2) && C.nameFromSq(m.to) === u.slice(2, 4) && (!u[4] || (m.promo || '').toLowerCase() === u[4]);
       })[0];
     }
-    function verdict(right) {
-      var sol = answer(), num = pz.move + (pz.side === 'w' ? '. ' : '... ') + pz.san;
+    /* how: 'try' a move just made · 'back' your first try, on a return visit */
+    function verdict(right, how) {
+      var sol = answer(), num = pz.move + (pz.side === 'w' ? '. ' : '... ') + pz.san, had = first(g);
+      var game = pz.found ? esc(mover) + ' found it in the game.' : 'In the game, ' + esc(mover) + ' played ' + esc(pz.played) + '.';
       done = true;
       sel = -1;
-      say.innerHTML = right
-        ? '<b class="wc-ok">Right: ' + esc(num) + '.</b> ' + (pz.found ? esc(mover) + ' found it in the game.' : 'In the game, ' + esc(mover) + ' played ' + esc(pz.played) + '.')
-        : '<b class="wc-no">Not this one.</b> The best move is ' + esc(num) + (pz.found ? ', and ' + esc(mover) + ' found it in the game.' : '.');
+      if (how === 'try' && !had && window.PJCC && PJCC.bankWcTry) PJCC.bankWcTry(g.game, right);
+      if (how === 'back') {
+        say.innerHTML = right ? '<b class="wc-ok">Solved on your first try: ' + esc(num) + '.</b> ' + game
+          : '<b class="wc-no">Missed on your first try.</b> The best move is ' + esc(num) + (pz.found ? ', and ' + esc(mover) + ' found it in the game.' : '.');
+      } else {
+        say.innerHTML = right
+          ? '<b class="wc-ok">Right: ' + esc(num) + '.</b> ' + (had && had.r === 'wrong' ? 'Practice only: your first try is the one that counts.' : game)
+          : '<b class="wc-no">Not this one.</b> The best move is ' + esc(num) + (pz.found ? ', and ' + esc(mover) + ' found it in the game.' : '.');
+      }
       again.hidden = false;
       draw(sol);
-      try { localStorage.setItem('wc.pz.' + EVENT + '.' + g.game, right ? 'right' : 'wrong'); } catch (e) {}
+      renderTally();
     }
     board.addEventListener('click', function (e) {
       var b = e.target.closest('.wc-sq');
@@ -127,7 +172,7 @@
         var m = C.legalMoves(S).filter(function (x) { return x.from === sel && x.to === i; });
         if (m.length) {
           var sol = answer();
-          verdict(!!sol && sol.from === m[0].from && sol.to === m[0].to);
+          verdict(!!sol && sol.from === m[0].from && sol.to === m[0].to, 'try');
           return;
         }
       }
@@ -135,14 +180,18 @@
       draw();
     });
     again.addEventListener('click', function () { done = false; sel = -1; again.hidden = true; say.textContent = 'Find the best move.'; draw(); });
-    draw();
+    if (first(g)) verdict(first(g).r === 'right', 'back');
+    else draw();
   }
-  function renderPuzzles() {
+  var drewTries = false;
+  function renderPuzzles(scroll) {
     var list = $('wc-puzzle-list'), games = DATA.games.filter(function (g) { return g.puzzle; }).reverse();
+    drewTries = !!(window.PJCC && PJCC.wcPuzzles);
+    renderTally();
     if (!games.length) { list.innerHTML = '<p class="wc-quiet">The first puzzle arrives with the first game.</p>'; return; }
     list.innerHTML = games.map(function (g) { return '<article class="wc-pz" id="game-' + g.game + '"></article>'; }).join('');
     games.forEach(function (g) { Puzzle(g, $('game-' + g.game)); });
-    if (location.hash && $(location.hash.slice(1))) $(location.hash.slice(1)).scrollIntoView();
+    if (scroll && location.hash && $(location.hash.slice(1))) $(location.hash.slice(1)).scrollIntoView();
   }
 
   /* ── predict the next game (docs/wc-predictions-setup.md) ──────────────────────── */
@@ -150,7 +199,7 @@
   function next() { return DATA.games.filter(function (g) { return !started(g) && !g.result; })[0] || null; }
   function renderPredict() {
     var g = next(), box = $('wc-predict');
-    if (!OPEN || !g) { box.hidden = true; return; }
+    if (!OPEN || !g) { box.hidden = true; renderTally(); return; }
     box.hidden = false;
     var me = window.PJCC && PJCC.currentUser && PJCC.currentUser(), prof = window.PJCC && PJCC.getProfile && PJCC.getProfile();
     var mine = MINE[g.game], ps = DATA.players || [];
@@ -168,6 +217,7 @@
     $('wc-note').textContent = !me ? 'Make your pick with a free account: sign in just below.'
       : !(prof && prof.codename) ? 'Claim a codename just below, then make your pick.'
       : mine ? 'Your pick is in. You can change it until the first move.' : 'Pick a result.';
+    renderTally();
   }
   function loadSplit() {
     return db().rpc('predict_split', { ev: EVENT }).then(function (r) { if (r.error) throw r.error; SPLIT = r.data || []; });
@@ -232,11 +282,13 @@
     EVENT = d.event || EVENT;
     renderScore();
     renderGames();
-    if (C) renderPuzzles();
+    if (C) renderPuzzles(true);
     whenPJCC(function () {
       var bar = document.createElement('script');
       bar.src = root.getAttribute('data-bar');
       document.body.appendChild(bar);
+      if (C && !drewTries) renderPuzzles();
+      if (PJCC.WCPZ_EVENT) window.addEventListener(PJCC.WCPZ_EVENT, function () { if (C) renderPuzzles(); });
       PJCC.ready.then(route);
       PJCC.onChange(route);
     });

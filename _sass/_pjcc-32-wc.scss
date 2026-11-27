@@ -33,6 +33,7 @@
 /* a puzzle from every game */
 .wc-puzzle-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px; }
 .wc-pz { min-width: 0; scroll-margin-top: 80px; }
+.wc-tally { margin: -4px 0 14px; font-size: 15px; }
 .wc-pz-h { margin: 0 0 8px; font-size: 16px; }
 .wc-pz-say { margin: 10px 0 0; font-size: 15px; min-height: 2.6em; }
 .wc-ok { color: var(--hall-go, #6bffb8); }

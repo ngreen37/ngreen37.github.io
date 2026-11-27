@@ -238,7 +238,10 @@
     { kind: 'title',  key: 'general',    value: 700, label: 'Iron General',
       rule: 'ach:iron-general',  how: 'Win a Campaign or a war on Hard' },
     { kind: 'avatar', key: 'ea-medal',   value: 980, label: 'The War Medal',
-      rule: 'ach:last-general',  how: 'Win a war of four players on Hard' }
+      rule: 'ach:last-general',  how: 'Win a war of four players on Hard' },
+    /* ⭐ his 11-26: "A collectable for solving all 14 puzzles with an account" (WCPZ_SLUG below). The name is mine, veto open. */
+    { kind: 'title',  key: 'wc-eye',     value: 1000, label: 'Championship Eye',
+      rule: 'ach:championship-eye', how: 'Solve every puzzle from the 2026 World Championship on the first try, at chesswild.com/wc/' }
   ];
   EARNED.forEach(function (e) { if (e.kind === 'avatar' && !AVATARS[e.key]) AVATARS[e.key] = '★'; });
   function earnedEntry(kind, key) {
@@ -1177,6 +1180,9 @@
         if (nr && nr.data && nr.data.bf && bfDoorMerge(true)) opened = true;
         var bfr = (rows || []).find(function (r) { return r.game === 'blindfold'; });
         if (bfr && bfProgressMerge(bfr)) opened = true;
+        if (wcReconcile((rows || []).find(function (r) { return r.game === WCPZ_SLUG; }))) {
+          try { window.dispatchEvent(new Event(WCPZ_EVENT)); } catch (e) {}
+        }
         if (opened) {
           try { window.dispatchEvent(new Event('pjcc:unlocks')); } catch (e) {}
         }
@@ -1710,6 +1716,70 @@
     return true;
   };
 
+  /* ⭐ THE WORLD CHAMPIONSHIP'S PUZZLES (his 11-26, Championship Eye in EARNED): your FIRST move on each game's puzzle at
+     /wc/, by game ('g4'), mirrored to game_stats `wc2026-puzzles` and merged back by the myStats pull.
+     ⚠ THE EARLIER TRY WINS, NEVER THE BETTER ONE: a miss shows the answer, so a later "right" elsewhere is not a solve.
+     ⚠ ONE DATA KEY PER GAME: saveScore merges `data` one key deep, so a try sends only its own game and drops none.
+     best_score is 1 once /wc/ saw every puzzle of a finished match solved: only that page reads the match. */
+  var WCPZ_KEY = 'pjcc.wc2026.puzzles.v1', WCPZ_SLUG = 'wc2026-puzzles', WCPZ_EVENT = 'pjcc:wcpuzzles';
+  function wcTry(t) {
+    return t && (t.r === 'right' || t.r === 'wrong') && isFinite(t.at) ? { r: t.r, at: +t.at } : null;
+  }
+  function wcPuzzles() {
+    var o = null, out = {};
+    try { o = JSON.parse(localStorage.getItem(WCPZ_KEY)); } catch (e) { o = null; }
+    if (o && typeof o === 'object' && !Array.isArray(o)) {
+      for (var k in o) if (o.hasOwnProperty(k) && /^g\d+$/.test(k) && wcTry(o[k])) out[k] = wcTry(o[k]);
+    }
+    return out;
+  }
+  /* a tie goes to the miss, so both devices agree whichever merges first */
+  function wcFirst(a, b) {
+    if (!a || !b) return a || b;
+    if (a.at !== b.at) return a.at < b.at ? a : b;
+    return a.r === 'wrong' ? a : b;
+  }
+  function wcPuzzlesMerge(pz) {
+    var cur = wcPuzzles(), up = false;
+    for (var k in pz) {
+      if (!pz.hasOwnProperty(k) || !/^g\d+$/.test(k) || !wcTry(pz[k])) continue;
+      var w = wcFirst(cur[k], wcTry(pz[k]));
+      if (!cur[k] || w.r !== cur[k].r || w.at !== cur[k].at) { cur[k] = w; up = true; }
+    }
+    if (up) { try { localStorage.setItem(WCPZ_KEY, JSON.stringify(cur)); } catch (e) {} }
+    return up;
+  }
+  /* the account's tries in, then this device's out: a try or a set finished signed out reaches the account here */
+  function wcReconcile(row) {
+    if (!PJCC.currentUser()) return false;
+    var pz = (row && row.data) || {}, rb = row ? (+row.best_score || 0) : 0, up = wcPuzzlesMerge(pz);
+    if (rb > PJCC.localBest(WCPZ_SLUG)) { setLocalBest(WCPZ_SLUG, rb); up = true; }
+    var mine = wcPuzzles(), out = {}, send = PJCC.localBest(WCPZ_SLUG) > rb;
+    for (var k in mine) {
+      var t = wcTry(pz[k]);
+      if (mine.hasOwnProperty(k) && (!t || t.r !== mine[k].r || t.at !== mine[k].at)) { out[k] = mine[k]; send = true; }
+    }
+    if (send) PJCC.saveScore(WCPZ_SLUG, PJCC.localBest(WCPZ_SLUG), { data: out });
+    return up;
+  }
+  PJCC.WCPZ_SLUG = WCPZ_SLUG;
+  PJCC.WCPZ_EVENT = WCPZ_EVENT;
+  PJCC.wcPuzzles = wcPuzzles;
+  /* a move on a puzzle you have not tried: true when it was your first (and the account was told) */
+  PJCC.bankWcTry = function (game, right) {
+    var k = 'g' + (parseInt(game, 10) || 0), one = {};
+    if (k === 'g0' || wcPuzzles()[k]) return false;
+    one[k] = { r: right ? 'right' : 'wrong', at: Date.now() };
+    wcPuzzlesMerge(one);
+    PJCC.saveScore(WCPZ_SLUG, PJCC.localBest(WCPZ_SLUG), { data: one });
+    return true;
+  };
+  PJCC.bankWcEvery = function () {
+    if (PJCC.localBest(WCPZ_SLUG) >= 1) return false;
+    PJCC.saveScore(WCPZ_SLUG, 1, { data: wcPuzzles() });
+    return true;
+  };
+
   /* ⭐ THE LAST WAR (his 11-16, #10 "The town remembers your wars"): the page and the town (web) note each campaign or war
      of three or four that ends; the front door's wire, the town's paper and Maxwell read it back.
      ⚠ THIS DEVICE'S, NOT THE ACCOUNT'S: news is about this screen's reader, as the town's "since your last paper" is.
@@ -2031,7 +2101,8 @@
     { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own something from the Shopkeeper', test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } },
     { key: 'campaigner',    icon: '🚩', label: 'Campaigner',     desc: 'Win a Campaign',                   test: function (c) { return c.best(WAR_SLUG) >= 1; } },
     { key: 'iron-general',  icon: '🛡', label: 'Iron General',   desc: 'Win a Campaign on Hard',           test: function (c) { return c.best(WAR_SLUG) >= 2; } },
-    { key: 'last-general',  icon: '🎖', label: 'Last General',   desc: 'Win a war of four players on Hard', test: function (c) { return c.best(WAR_SLUG) >= 3; } }
+    { key: 'last-general',  icon: '🎖', label: 'Last General',   desc: 'Win a war of four players on Hard', test: function (c) { return c.best(WAR_SLUG) >= 3; } },
+    { key: 'championship-eye', icon: '🏆', label: 'Championship Eye', desc: 'Solve every 2026 World Championship puzzle on the first try', test: function (c) { return c.best(WCPZ_SLUG) >= 1; } }
   ];
   PJCC.ACHIEVEMENTS = ACHIEVEMENTS;
   PJCC.earnedAchievements = function (prof, stats) {
@@ -2089,7 +2160,8 @@
        a separate word only so the Quartermaster can say WHERE it came from. */
     'finder':    { label: 'The Finder',            rule: 'earned' },
     'citizen':   { label: 'Citizen of Chess City', rule: 'earned' },
-    'general':   { label: 'Iron General',          rule: 'earned' }
+    'general':   { label: 'Iron General',          rule: 'earned' },
+    'wc-eye':    { label: 'Championship Eye',      rule: 'earned' }
   };
   PJCC.TITLES = TITLES;
   // ⚑ RE-TIERED 2026-08-04 with the avatar shelf — see the note on AVATAR_SHOP.
