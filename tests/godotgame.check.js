@@ -157,6 +157,17 @@ eq(W.tag(W.pick(WC, null), 'Round'), '14', 'with no game named, the latest finis
 const bsrc = fs.readFileSync(path.join(__dirname, 'gen-broadcast.js'), 'utf8');
 ok(/title: match\.title \|\| 'The World Championship'/.test(bsrc) && !/title:[^\n]*game\.event/.test(bsrc),
   '⚠ the card never prints the PGN\'s Event, which carries the sponsor\'s name');
+/* ⭐ his 11-26: "the eval bar jumps way too much … This game was dead even the whole time" */
+{
+  const gsrc = fs.readFileSync(path.join(__dirname, 'gen-godot-game.js'), 'utf8').replace(/\r\n/g, '\n');
+  const zz = G.smoothLocal([20, 100, 20, 100, 20, 100]), bl = G.smoothLocal([20, 25, 30, -400, -410, -420]);
+  ok(zz.slice(1).every((v) => v === 60) && bl[3] < -150 && bl[4] <= -400 && G.smoothLocal([20, 300, 1500])[2] === 1500
+     && /if \(!patch\) return applyGrade\(game, smoothLocal\(evW, L\.fens\), bests, 'stockfish '/.test(gsrc)
+     && /return applyGrade\(game, evW, null, 'broadcast evals'\);/.test(gsrc)
+     && /if \(\/\\b\(lower\|upper\)bound\\b\/\.test\(lines\[i\]\)\) continue;/.test(gsrc),
+    '⭐ a local search\'s move-by-move zigzag is averaged out of the eval bar (Game 3: 287 win% points of travel to Lichess\'s 43); '
+    + 'a blunder still lands, a mate stays a mate, a search\'s provisional bound is never read as its score, and Lichess\'s evals are never touched');
+}
 
 /* ⭐ HIS OWN LINES (desk.txt beside the voice file, his 11-25): each lands on the move it names, or nothing renders */
 {

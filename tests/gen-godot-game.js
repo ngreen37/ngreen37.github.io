@@ -328,6 +328,7 @@ function engine() {
       const bm = await until(function (l) { return l.startsWith('bestmove'); }, ms + 15000);
       let cp = 0;
       for (let i = lines.length - 1; i >= 0; i--) {
+        if (/\b(lower|upper)bound\b/.test(lines[i])) continue;   // ⚠ a failed aspiration window's bound, not the score
         const c = /score cp (-?\d+)/.exec(lines[i]);
         if (c) { cp = Math.max(-1500, Math.min(1500, +c[1])); break; }
         const mt = /score mate (-?\d+)/.exec(lines[i]);
@@ -361,6 +362,21 @@ function engine() {
    fourteen games were missing 1–9 evals. Only those positions are searched here, and the moves
    that touch a patched position lose their mark (the grade rests on our shallower eval); every
    other move keeps the broadcast's. With most evals missing, the whole game is ours and unmarked. */
+/* ⭐ A LOCAL SEARCH ZIGZAGS, SO THE BAR HEARS TWO PLIES AT ONCE (his 11-26: "the eval bar jumps way too much … This game
+   was dead even the whole time"). Stockfish 10 at a second a position favors whoever is to move: Game 3 read 1... e5
+   as +1.01 where Lichess had +0.22, and the bar traveled 287 win% points to Lichess's 43. Each eval is averaged with
+   the one before it, which cancels a move-by-move zigzag exactly (86 points, biggest jump 3.6 to Lichess's 3.9); a
+   real swing still lands, half on its move and whole a move later.
+   ⚠ Never a broadcast's evals (Lichess's own deep analysis), never a mate or a stalemate: the end stays the end. */
+function smoothLocal(evW, fens) {
+  return evW.map(function (e, i) {
+    if (i === 0 || Math.abs(e) >= 1500 || Math.abs(evW[i - 1]) >= 1500) return e;
+    const S = fens && fens[i] ? C.parseFEN(fens[i]) : null;
+    if (S && !C.legalMoves(S).length) return e;
+    return Math.round((evW[i - 1] + e) / 2);
+  });
+}
+
 async function gradeWithEngine(game, ms, onStep) {
   if (game.graded_by) return game;
   const L = game.moves._line;
@@ -382,7 +398,7 @@ async function gradeWithEngine(game, ms, onStep) {
       if (onStep) onStep(k + 1, todo.length);
     }
   }
-  if (!patch) return applyGrade(game, evW, bests, 'stockfish ' + ms + 'ms');
+  if (!patch) return applyGrade(game, smoothLocal(evW, L.fens), bests, 'stockfish ' + ms + 'ms');
   applyGrade(game, evW, null, 'broadcast evals, ' + gaps.length + ' filled locally');
   gaps.forEach(function (g) {
     [g - 1, g].forEach(function (i) { if (game.moves[i]) { game.moves[i].cls = null; game.moves[i].swing = null; } });
@@ -425,4 +441,4 @@ function main() {
 
 if (require.main === module) main();
 module.exports = { convert: convert, readPGN: readPGN, gradeWithEngine: gradeWithEngine,
-  shortName: shortName, clockOf: clockOf, evalOf: evalOf, engine: engine };
+  shortName: shortName, clockOf: clockOf, evalOf: evalOf, engine: engine, smoothLocal: smoothLocal };
