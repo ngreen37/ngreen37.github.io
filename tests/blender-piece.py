@@ -8,9 +8,13 @@
 import sys
 import math
 import bpy
+import bmesh
+import os
 from mathutils import Vector, Matrix
 
 argv = sys.argv[sys.argv.index("--") + 1:]
+# ⚠ ONLY THE PIECES THE GENERATOR NAMES (OUTWARD there): see the turning below
+OUTWARD = os.environ.get("PIECE_OUTWARD") == "1"
 OUT = argv[0]
 HEIGHT = float(argv[1])        # this piece's height in canon units (King = 1.43)
 ELEV = math.radians(float(argv[2]))
@@ -85,7 +89,22 @@ def count_tris():
 
 modeled = count_tris()
 ratio = min(1.0, max(FLOOR, BUDGET / modeled)) if modeled else 1.0
+# ⚠ A SAVE LEFT IN EDIT MODE (knight3's head was) cannot be turned until Blender is back in Object Mode — and only a piece
+# being turned goes there: the switch alone rewrote knight3's head and changed its export.
+if OUTWARD and bpy.context.view_layer.objects.active and bpy.context.view_layer.objects.active.mode != 'OBJECT':
+    bpy.ops.object.mode_set(mode='OBJECT')
 for o in meshes:
+    # ⚠ FACES TURNED OUTWARD, FOR THE PIECES NAMED (11-26, his "weird shading on top" of the rook): rook1's crown pointed
+    # 18 faces INTO the piece, so the light reached them from behind — a smudge; Blender's viewport lights both sides
+    # alike, so a modeler never sees it. Recalculate Outside, as Shift+N does. ⚠ NOT EVERY PIECE: turned, knight3's head
+    # lost the carved planes he approved and shaded smooth (rendered side by side, 11-26).
+    if OUTWARD:
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        bm.to_mesh(o.data)
+        bm.free()
+        o.data.update()
     o.data.shade_smooth()
     o.data.set_sharp_from_angle(angle=math.radians(SMOOTH_ANGLE))
     if ratio < 1.0:

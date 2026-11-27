@@ -85,6 +85,15 @@ if (b3gd && ctgd) {
   const gp2 = fs.readFileSync(path.join(ROOT, 'tests/gen-pieces.js'), 'utf8'), gp3d = gd('tests/gen_pieces3d.js');
   ok(appr(gp2) !== '' && appr(gp2) === appr(gp3d),
      '⛑ his laptop saves ship only once he OKs them by name, the YouTube board and the 3D boards alike  [' + (appr(gp2) || 'no list') + ']');
+  /* ⚠ 11-26, his "weird shading on top": rook1's crown faced into the piece. Turned outward for the pieces named, in
+     both pipelines alike — and only those: turned, knight3's head lost the carved planes he approved */
+  const outw = (src) => ((/const OUTWARD = \{([^}]*)\};/.exec(src) || [])[1] || '').replace(/\s/g, '');
+  const turnStep = (py) => /OUTWARD = os\.environ\.get\("PIECE_OUTWARD"\) == "1"/.test(py)
+    && /\n    if OUTWARD:\n        bm = bmesh\.new\(\)\n        bm\.from_mesh\(o\.data\)\n        bmesh\.ops\.recalc_face_normals\(bm, faces=bm\.faces\)/.test(py)
+    && /\nif OUTWARD and bpy\.context\.view_layer\.objects\.active and /.test(py);
+  ok(outw(gp2) === 'R:true' && outw(gp3d) === outw(gp2) && turnStep(py2d) && turnStep(py3d)
+     && /PIECE_OUTWARD: lap && OUTWARD\[L\] \? '1' : ''/.test(gp2) && /PIECE_OUTWARD: laptop\[j\.out\] && OUTWARD\[j\.out\] \? '1' : ''/.test(gp3d),
+    '⭐ the rook\'s crown faces out (his "weird shading on top"), the YouTube board\'s and the 3D boards\' alike, and no other piece is turned  [' + (outw(gp2) || 'no list') + ']');
   /* ⚠ 11-26: his rook at the May set's 0.860 stood shorter than its own pawn, and the height moved in two files */
   const tall2 = {}, tall3 = {};
   for (const m of gp2.matchAll(/\{ out: '([wb])([KQBNRP])', src: '[wb][kqbnrp]', h: ([\d.]+) \}/g)) tall2[m[1] + m[2]] = +m[3];

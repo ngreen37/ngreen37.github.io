@@ -28,6 +28,10 @@ const APPROVED = { P: 'pawn4', B: 'bishop2', N: 'knight3', R: 'rook1' };
 // ⚠ his knight looks along Blender +Y, straight at this camera: head-on it is a slab with
 // notches, a rook. Turned, it shows its profile facing left, as a printed diagram's does.
 const TURN = { N: 90 };
+// ⚠ rook1's crown had 18 faces pointing into the piece (his 11-26 "weird shading on top"): Blender turns them outward
+// for these pieces only (PIECE_OUTWARD in blender-piece.py). Not every piece — turned, the knight lost its carved
+// planes. Checker Town's gen_pieces3d.js keeps the same list; test:board3d holds them equal.
+const OUTWARD = { R: true };
 // Checker Town's Board3D.LIGHT and DARK (his September bishops' materials), linear as
 // Blender holds them — test:board3d holds all three copies equal.
 const LIVERY = {
@@ -220,7 +224,7 @@ for (const p of PIECES) {
   const dress = lap ? [String(TURN[L] || 0), LIVERY[p.out[0]].concat(0.5).join(',')] : [];
   const log = execFileSync(blender, ['-b', src.file, '--factory-startup', '--python',
     path.join(__dirname, 'blender-piece.py'), '--', png, String(p.h), ELEV, ...dress],
-    { encoding: 'utf8' });
+    { encoding: 'utf8', env: Object.assign({}, process.env, { PIECE_OUTWARD: lap && OUTWARD[L] ? '1' : '' }) });
   // ⚠ a failed render still exits 0 — Blender prints the traceback and says nothing else
   const ok = (log.match(/^PIECE_OK .*$/m) || [''])[0];
   const clip = (log.match(/^PIECE_CLIP .*$/m) || [''])[0];
