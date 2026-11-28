@@ -242,6 +242,11 @@ if (fs.existsSync(path.join(TB, 'booth.gd'))) {
   ok(/_text\(f, "MATCH SCORE"/.test(castN0) && /roll = clampf\(\(_card_t - MORPH_AT\) \/ MORPH_SECS, 0\.0, 1\.0\)/.test(castN0)
      && /\t_card_t \+= dt\n/.test(castN0) && /_card = kind\n\t_card_t = 0\.0/.test(castN0),
     '⭐ both cards say MATCH SCORE, and the end card rolls the old score into the new on the recorder\'s clock');
+  ok(/func _title_frames\(n: int\) -> Array:/.test(castN0) && /var img := Image\.load_from_file\(p\)/.test(castN0)
+     && /var tf := _title_frames\(int\(m\.get\("game", 0\)\)\)\n\t\tif tf\.is_empty\(\):\n\t\t\t_text\(f, "GAME %d"/.test(castN0)
+     && /tf\[clampi\(int\(\(_card_t - TITLE_AT\) \* TITLE_FPS\), 0, tf\.size\(\) - 1\)\]/.test(castN0)
+     && /Color\(1, 1, 1, a\)\)/.test(castN0) && fs.existsSync(path.join(__dirname, 'wc-title.js')) && fs.existsSync(path.join(__dirname, 'blender-title.py')),
+    '⭐ his animated title (titles/<game>/, from wc-title.js) takes the opening card\'s GAME N slot on the recorder\'s clock, fades with the card and holds its last frame; no folder, the gold text (his 11-27)');
   ok(/static func schedule\(game: Dictionary\) -> Dictionary:/.test(boothN) && /_desk = Booth\.schedule\(g\)/.test(castN0)
      && /var said: Dictionary = _desk\.get\(ply, \{\}\)/.test(castN0) && /var said: Dictionary = _desk\.get\(0, \{\}\)/.test(castN0)
      && !/Booth\.observe\(/.test(castN0),
