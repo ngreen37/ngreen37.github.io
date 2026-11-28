@@ -326,6 +326,75 @@ ok(/run\.step >= HALF_STEP && run\.legStartStep < HALF_STEP/.test(FORK),
 ok(FORK.indexOf('pjcc-fragments.js') < FORK.indexOf('const HALF_STEP'),
    'the room loads the ledger in its head, above the game code that mints');
 
+/* ── 11 · ⭐ his 11-27 ("it's also slightly off"): a sky door works only over OPEN SKY ──────────────────────
+   In Chrome, on the real door markup and the site's CSS: the horizon door stood ON the page card at most widths and,
+   on a phone, over Play Now, taking its taps. */
+const doorsDone = (async () => {
+  const H = require('./harness.js');
+  const http = require('http');
+  const pp = require(path.join(ROOT, 'node_modules', 'puppeteer-core'));
+  const WRAPS = ['ts-eclipse-wrap', 'ts-sky-door-wrap'].map((c) => (new RegExp('<div class="' + c + '">[\\s\\S]*?</div>').exec(TOWN) || [''])[0]).join('\n');
+  const css = H.siteCss();
+  const html = (q) => '<!doctype html><html class="' + q.html + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<link rel="stylesheet" href="/__site.css"></head><body class="' + q.body + '">' + WRAPS
+    + '<main class="page-content"><div class="wrapper"><div class="page-card"><p>The page.</p></div></div></main>'
+    + (q.js === '0' ? '' : '<script src="/assets/js/pjcc-eggs.js" defer></script>') + '</body></html>';
+  const srv = http.createServer((req, rsp) => {
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/__site.css') { rsp.writeHead(200, { 'Content-Type': 'text/css' }); rsp.end(css); return; }
+    if (u.pathname === '/assets/js/pjcc-eggs.js') { rsp.writeHead(200, { 'Content-Type': 'text/javascript' }); rsp.end(fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-eggs.js'))); return; }
+    if (u.pathname === '/t') { rsp.writeHead(200, { 'Content-Type': 'text/html' }); rsp.end(html(Object.fromEntries(u.searchParams))); return; }
+    rsp.writeHead(404); rsp.end();
+  });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const browser = await pp.launch({ executablePath: H.findChrome(), headless: 'new', args: ['--no-sandbox'] });
+  const errs = [];
+  const look = async (w, q, then) => {
+    const p = await browser.newPage();
+    p.on('pageerror', (e) => errs.push(e.message));
+    await p.setViewport({ width: w, height: w > 800 ? 900 : 844 });
+    await p.goto('http://127.0.0.1:' + srv.address().port + '/t?' + new URLSearchParams(q), { waitUntil: 'load' });
+    await new Promise((r) => setTimeout(r, 150));
+    if (then) await then(p);
+    const m = await p.evaluate(() => {
+      const d = document.getElementById('ts-sky-door'), r = d.getBoundingClientRect(), cs = getComputedStyle(d);
+      const c = document.querySelector('.page-card').getBoundingClientRect(), s = d.parentNode.getBoundingClientRect();
+      return { shown: cs.visibility === 'visible' && cs.pointerEvents === 'auto', left: Math.round(r.left - s.left), right: Math.round(c.left - r.right),
+        over: r.right > c.left && r.left < c.right, ecl: getComputedStyle(document.getElementById('ts-eclipse-door')).pointerEvents };
+    });
+    await p.close();
+    return m;
+  };
+  try {
+    const AUR = { html: 'sky-night aurora-night', body: 'theme-chess nav-collapsed' };
+    const wide = await look(1920, AUR), mid = await look(1512, AUR), phone = await look(390, AUR);
+    const rail = await look(1920, AUR, async (p) => {
+      await p.evaluate(() => document.body.classList.remove('nav-collapsed'));
+      await new Promise((r) => setTimeout(r, 500));
+    });
+    ok(wide.shown && !wide.over && wide.left >= 8 && wide.right >= 8 && Math.abs(wide.left - wide.right) <= 1
+       && rail.shown && !rail.over && Math.abs(rail.left - rail.right) <= 1,
+       '⭐ an aurora night stands the horizon door centered in the strip of sky left of the page column, and it follows the rail open',
+       JSON.stringify({ wide, rail }));
+    ok(!phone.shown && (!mid.shown || !mid.over),
+       '…and where that strip is too narrow (a phone) there is no door: never drawn over the page, never taking a tap meant for Play Now',
+       JSON.stringify({ phone, mid }));
+    const plain = await look(1920, { html: 'sky-night', body: 'theme-chess nav-collapsed' }), bare = await look(1920, Object.assign({ js: '0' }, AUR));
+    ok(!plain.shown && !bare.shown, '…an ordinary night shows none, and an aurora night shows none until the script has placed it',
+       JSON.stringify({ plain, bare }));
+    const TOT = { html: 'sky-day eclipse eclipse-total', body: 'theme-chess nav-collapsed' };
+    const sunOver = await look(1920, TOT), sunOpen = await look(1920, TOT, async (p) => {
+      await p.evaluate(() => { document.documentElement.style.setProperty('--orb-x', '3%'); dispatchEvent(new Event('resize')); });
+    });
+    ok(sunOver.ecl === 'none' && sunOpen.ecl === 'auto',
+       '…and in totality the eclipse door takes no tap while the sun is over the page column, only over open sky',
+       JSON.stringify({ sunOver: sunOver.ecl, sunOpen: sunOpen.ecl }));
+    ok(errs.length === 0, 'no script error with the doors on the page', errs.join(' | '));
+  } finally { await browser.close(); srv.close(); }
+})();
+
 /* ── done ──────────────────────────────────────────────────────────────────────── */
-console.log('\n  ' + PASS + ' passed, ' + FAIL + ' failed\n');
-if (FAIL) { console.log('  FAILED:\n' + fails.map(f => '   · ' + f).join('\n') + '\n'); process.exit(1); }
+doorsDone.catch((e) => { ok(false, 'the open-sky checks ran', String(e && e.stack || e)); }).then(() => {
+  console.log('\n  ' + PASS + ' passed, ' + FAIL + ' failed\n');
+  if (FAIL) { console.log('  FAILED:\n' + fails.map(f => '   · ' + f).join('\n') + '\n'); process.exit(1); }
+});

@@ -694,6 +694,9 @@ html.eclipse-total.sky-day .ts-eclipse-door { pointer-events: auto; }
   padding: 0; border: 0; cursor: pointer;
   pointer-events: none;                 /* ← the safety. Three rules below lift it. */
   opacity: 0;                           /* ← the other half of it. */
+  /* ⭐ his 11-27: until pjcc-eggs.js stands it in open sky beside the page column (`left` is
+     rewritten there). No strip of sky wide enough, it stays hidden: never drawn over the page. */
+  visibility: hidden;
   -webkit-tap-highlight-color: transparent;
   /* the doorway: an arch, dark at the foot and lit at the head, standing in its own frame */
   border-radius: 28px 28px 3px 3px;

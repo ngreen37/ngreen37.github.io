@@ -235,6 +235,48 @@ function showTxToast(msg, duration) {
   wire('ts-sky-door',     'You were looking up at the right moment. A fragment is yours.');
 })();
 
+/* ⭐ HIS 11-27 ("it's also slightly off"): A SKY DOOR WORKS ONLY OVER OPEN SKY. Both doors are fixed buttons drawn ABOVE
+   the page, and the horizon door's `left: 11%` stood ON the page card at most widths, and on a phone over Play Now,
+   taking its taps. So the horizon door stands centered in the strip of sky left of the page column, and where that
+   strip is too narrow there is no door; the eclipse door takes no tap while the sun is over the column. The CSS keeps
+   the horizon door `visibility: hidden` until this has placed it. Layout is read only while a door is armed. */
+(function () {
+  var sky = document.getElementById('ts-sky-door'), ecl = document.getElementById('ts-eclipse-door');
+  if (!sky && !ecl) return;
+  var root = document.documentElement, MARGIN = 8, timer = 0;
+  function is(c) { return root.classList.contains(c); }
+  function column() {
+    var card = document.querySelector('.page-card'), w = card || document.querySelector('.page-content > .wrapper');
+    if (!w) return null;
+    var b = w.getBoundingClientRect(), s = card ? null : getComputedStyle(w);
+    return { left: b.left + (s ? parseFloat(s.paddingLeft) || 0 : 0), right: b.right - (s ? parseFloat(s.paddingRight) || 0 : 0) };
+  }
+  function place() {
+    var total = is('eclipse-total') && is('sky-day');
+    var lit = total || (is('sky-night') && (is('meteor-night') || is('aurora-night')));
+    var col = lit ? column() : null;
+    if (sky && lit) {
+      var room = col ? col.left - sky.parentNode.getBoundingClientRect().left : Infinity, w = sky.offsetWidth || 56;
+      if (isFinite(room)) sky.style.left = Math.round((room - w) / 2) + 'px';
+      sky.style.visibility = room >= w + 2 * MARGIN ? 'visible' : 'hidden';
+    }
+    if (ecl) {
+      var r = total && col ? ecl.getBoundingClientRect() : null, x = r ? (r.left + r.right) / 2 : 0;
+      ecl.style.pointerEvents = r && x > col.left && x < col.right ? 'none' : '';
+    }
+    clearTimeout(timer);
+    if (total && ecl) timer = setTimeout(place, 10000);   // the sun keeps moving under the disc
+  }
+  /* the rail slides the column over ~0.3 s: once now, once when it has settled */
+  function soon() { place(); setTimeout(place, 350); }
+  place();
+  addEventListener('resize', place);
+  if (window.MutationObserver) {
+    new MutationObserver(soon).observe(root, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(soon).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
+
 // Chess City Entry Permit badge in footer (#28)
 (function() {
   var slot = document.getElementById('chess-city-permit-slot');
