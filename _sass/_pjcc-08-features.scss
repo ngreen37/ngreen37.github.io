@@ -475,6 +475,9 @@
   font-size: 13px;
   color: rgba(255,255,255,0.75);
   flex: 1;
+  /* ⚠ a chess.com username is one unbreakable word: a 20-letter one slid the Academy 6px at 320px (11-27) */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .game-opp-rating {
