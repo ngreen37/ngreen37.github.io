@@ -44,7 +44,7 @@
     check: { secs: 0.45, zoom: 1.03685, push: 1.0879375, turn: 0.0, circle: 0.0 },
     mate: { secs: 1.60, zoom: 1.067, push: 1.125625, turn: 0.06, circle: 0.35 },
   };
-  var TALL = { K: 1.43, Q: 1.30, B: 1.34, N: 1.278, R: 1.07, P: 0.97 };
+  var TALL = { K: 1.43, Q: 1.39, B: 1.34, N: 1.278, R: 1.07, P: 0.97 };
   // ⭐ EACH MODEL IS ONE PIECE FOR BOTH SIDES, worn in LIGHT or DARK: his pawn that bows in defeat (11-18), his bishop and
   // knight (11-24), his rook (11-26), the May set for the rest
   var CODES = ['P', 'B', 'N', 'K', 'Q', 'R'];

@@ -24,7 +24,7 @@ const WORD = { K: 'king', Q: 'queen', B: 'bishop', N: 'knight', R: 'rook', P: 'p
 // ⛑⛑ A LAPTOP SAVE SHIPS ONLY ONCE HE HAS OKED IT, BY NAME (his 11-25: "I made a queen but don't
 // add it yet"). His numbers count iterations: Queen1, Queen2 and King1 sat numbered, unfinished.
 // Checker Town's tests/gen_pieces3d.js keeps the same list; test:board3d holds them equal.
-const APPROVED = { P: 'pawn4', B: 'bishop2', N: 'knight3', R: 'rook1' };
+const APPROVED = { P: 'pawn4', B: 'bishop2', N: 'knight3', R: 'rook1', Q: 'Queen3' };   // Queen3: his 11-27 "it's ready"
 // ⚠ his knight looks along Blender +Y, straight at this camera: head-on it is a slab with
 // notches, a rook. Turned, it shows its profile facing left, as a printed diagram's does.
 const TURN = { N: 90 };
@@ -57,16 +57,18 @@ const TOWN = process.env.CHECKER_TOWN || 'C:/Users/Nate/Documents/checker-town';
 // wp_0.1 is 3.148 units tall standing on z=-1. The render script rescales to this number.
 // ⚠ EXCEPT THE ROOK: the May rook's 0.860 is shorter than the pawn, and his rook1 at that height
 // read as a lesser piece than its own pawn. 1.070 was picked off the board at 0.86 / 1.00 / 1.07 / 1.14 (11-26).
+// ⚠ AND THE QUEEN: the May 1.300 stood no taller than the bishop (1.340). His Queen3 at 1.390, picked off a lineup at
+// 1.30 / 1.36 / 1.39 / 1.42 beside the board's pieces and King1 (11-27): above the bishop, under the king.
 // Checker Town's gen_pieces3d.js HEIGHT is the same column; test:board3d holds them equal.
 const PIECES = [
   { out: 'wK', src: 'wk', h: 1.430 },
-  { out: 'wQ', src: 'wq', h: 1.300 },
+  { out: 'wQ', src: 'wq', h: 1.390 },
   { out: 'wB', src: 'wb', h: 1.340 },
   { out: 'wN', src: 'wn', h: 1.278 },
   { out: 'wR', src: 'wr', h: 1.070 },
   { out: 'wP', src: 'wp', h: 0.970 },
   { out: 'bK', src: 'bk', h: 1.430 },
-  { out: 'bQ', src: 'bq', h: 1.300 },
+  { out: 'bQ', src: 'bq', h: 1.390 },
   { out: 'bB', src: 'bb', h: 1.340 },
   { out: 'bN', src: 'bn', h: 1.278 },
   { out: 'bR', src: 'br', h: 1.070 },

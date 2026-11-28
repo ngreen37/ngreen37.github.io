@@ -8483,8 +8483,9 @@ const server = http.createServer((req, res) => {
               'his pawn, rigged, bowing': (pawnJ.skins || []).length === 1 && (pawnJ.animations || []).length === 1
                 && fs.existsSync(pawnGlb + '.import') && !fs.existsSync(path.join(GD, 'pieces3d', 'wP.glb'))
                 && /const LAPTOP = process\.env\.LAPTOP_DIR \|\| 'C:\/Users\/Nate\/Desktop\/Blender_Laptop';/.test(gp3)
-                /* ⛑ his saves ship only once he OKs them, by name (11-25: "I made a queen but don't add it yet") */
-                && /const APPROVED = \{ P: 'pawn4', B: 'bishop2', N: 'knight3', R: 'rook1' \};/.test(gp3)
+                /* ⛑ his saves ship only once he OKs them, by name (11-25: "I made a queen but don't add it yet"; 11-27 Queen3,
+                   "it's ready") */
+                && /const APPROVED = \{ P: 'pawn4', B: 'bishop2', N: 'knight3', R: 'rook1', Q: 'Queen3' \};/.test(gp3)
                 && /const f = APPROVED\[L\] \? path\.join\(LAPTOP, APPROVED\[L\] \+ '\.blend'\) : null;/.test(gp3)
                 && /turn: TURN\[L\] \|\| 0/.test(gp3) && /const TURN = \{ P: -90, N: 90 \};/.test(gp3),
               /* ⭐ HIS 11-24: his bishop and knight, made as his pawn is, one file for both sides in the board's two materials */
